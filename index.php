@@ -2,13 +2,12 @@
 session_start();
 $_SESSION 	= null;
 
-require_once("_config.php");
 
-$couch_proj = $_CFG->couch_proj; 
-$couch_db 	= $_CFG->couch_db; 
-$couch_url 	= $_CFG->couch_url . "/$couch_proj" . "/$couch_db";
-$couch_adm 	= $_CFG->couch_adm; 
-$couch_pw 	= $_CFG->couch_pw; 
+$couch_proj = $_ENV["couch_proj"]; 
+$couch_db 	= $_ENV["couch_db"]; 
+$couch_url 	= $_ENV["couch_url"] . "/$couch_proj" . "/$couch_db";
+$couch_adm 	= $_ENV["couch_adm"]; 
+$couch_pw 	= $_ENV["couch_pw"]; 
 
 if(!isset($_SESSION["DT"])){
 	//CURL OPTIONS

@@ -1,16 +1,15 @@
 <?php
 session_start();
 
-require_once("_config.php");
-$gmaps_key 		= $_CFG->gmaps_key;
+$gmaps_key 		= $_ENV["gmaps_key"];
 
 // FIRST GET THE PROJECT DATA
 if(!isset($_SESSION["DT"])){
-	$couch_proj = $_CFG->couch_proj; 
-	$couch_db 	= $_CFG->couch_db; 
-	$couch_url 	= $_CFG->couch_url . "/$couch_proj" . "/$couch_db";
-	$couch_adm 	= $_CFG->couch_adm; 
-	$couch_pw 	= $_CFG->couch_pw; 
+	$couch_proj = $_ENV["couch_proj"]; 
+	$couch_db 	= $_ENV["couch_db"]; 
+	$couch_url 	= $_ENV["couch_url"] . "/$couch_proj" . "/$couch_db";
+	$couch_adm 	= $_ENV["couch_adm"]; 
+	$couch_pw 	= $_ENV["couch_pw"]; 
 
 	//CURL OPTIONS
 	$ch 		= curl_init($couch_url);
@@ -57,14 +56,14 @@ if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
 <body id="main">
 <?php
 if( $active_project_id ){
-	$couch_proj = $_CFG->couch_proj_users;
-	$couch_db 	= $_CFG->couch_db_all;
+	$couch_proj = $_ENV["couch_proj_users"];
+	$couch_db 	= $_ENV["couch_db_all"];
 	$qs 		= "?include_docs=true";
 
-	$couch_base = $_CFG->couch_url;
+	$couch_base = $_ENV["couch_url"];
 	$couch_url 	= $couch_base. "/$couch_proj" ."/$couch_db" .$qs;
-	$couch_adm 	= $_CFG->couch_adm; 
-	$couch_pw 	= $_CFG->couch_pw; 
+	$couch_adm 	= $_ENV["couch_adm"]; 
+	$couch_pw 	= $_ENV["couch_pw"]; 
 
 	//CURL OPTIONS
 	$ch 		= curl_init($couch_url);
