@@ -1,0 +1,87 @@
+fieldset {
+	border:1px solid #888;
+	margin-bottom:30px; 
+	font-size:108%;
+	font-family:arial;
+}
+legend{
+	font-size:140%;
+}
+
+label{
+	margin-bottom:20px;
+	display:block; 
+}
+
+label input[type='password'],
+label input[type='text']{
+	width:300px;
+	border-radius:5px; 
+	padding:5px 10px;
+	font-size:120%
+}
+
+label span {
+	display:inline-block; 
+	font-size:85%;
+	margin-right:10px; 
+	font-weight:bold;
+}
+
+.text_key{
+	margin-bottom:10px;
+}
+.text_key span{
+	width:134px; 
+}
+label .key + input {
+	width:250px; 
+}	
+.val{
+	margin-left:15px; 
+}
+label .val + input {
+	width:80%; 
+}
+
+.app_meta span {
+	width:180px; 
+}
+.app_meta .languages div {
+	margin-bottom:10px; 
+}
+.app_meta .code {
+	width: 40px;
+}
+.app_meta .full {
+	width: 70px;
+	margin-left:15px; 
+}
+.app_meta .code + input {
+	width: 60px; 
+}
+span:after{
+	content:":";
+}
+
+hr{
+	margin:30px 20px;
+	border-top:1px solid #ccc; 
+}
+hr.answer_div{
+	border-top:1px solid lightblue;
+}
+
+.one_unit {
+	position:relative; 
+}
+.delete_parent {
+	position:absolute; 
+	top:10px; right:0; 
+	display:inline-block; 
+	text-decoration:none;
+}
+.delete_parent,
+.delete_parent:visited{
+	color:blue;
+}

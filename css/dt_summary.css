@@ -1,0 +1,139 @@
+#main {
+	margin:20px 40px;
+}
+.user_entry {
+	border-radius:10px; 
+	background:#efefef;
+	padding:20px; 
+	margin-bottom:20px;
+	box-shadow:0 0 3px #888;
+	overflow:hidden; 
+}
+.user_entry hgroup{
+	overflow:hidden; 
+}
+.user_entry h4{
+	overflow:hidden;
+	padding-bottom:3px; 
+	border-bottom:1px solid #333;
+}
+.user_entry h4 b {
+	font-weight:normal;
+}
+.user_entry h4 i{
+	color: #bbb;
+    font-size: 80%;
+    float: right;
+}
+.user_entry h4 i:before{
+	display:inline-block; 
+	content:"_id :";
+	margin-right:3px; 
+}
+.gmap {
+	box-shadow:0 0 3px  #888; 
+	width:420px;
+	height:300px;
+	float:right;
+	margin:20px 0;
+}
+h4, p{
+	margin:0; 
+	padding:0; 
+}
+
+section{
+	width: calc(100% - 440px);
+	margin:20px 0;
+}
+section h5{
+	margin:0 10px 10px;
+	font-size:92%;
+}
+
+.thumbs {
+	margin: 0 10px; 
+}
+.thumbs ul{
+	list-style:none; 
+	padding:0;
+	margin:0;
+	display:inline-block;
+}
+.thumbs li {
+	display:inline-block;
+	margin:0 10px 20px 0; 
+}
+.thumbs figure {
+	margin:0; 
+}
+.thumbs figcaption span {
+	margin-right:8px;
+}
+.thumbs img {
+	width:140px; 
+}
+.time{
+	display:inline-block;
+	vertical-align:bottom;
+}
+.audio {
+	width:20px;
+	height:19px;
+	background:url(img/icon_listen.png) top left no-repeat;
+	background-size:100%;
+	vertical-align:middle;
+}
+.audio.has {
+	display:inline-block;
+}
+.goodbad {
+	width:20px;
+	height:20px;
+	background:url(img/icon_smilies.png) top left no-repeat;
+	background-size:200%;
+	display:none;
+	vertical-align:middle;
+}
+.goodbad.good{
+	display:inline-block;
+}
+.goodbad.bad{
+	display:inline-block;
+	background-position:top right;
+}
+.survey{
+	margin:0 10px;
+}
+.survey ul{
+	list-style:none;
+	margin:0; 
+	padding:0; 
+}
+.survey li {
+	margin-bottom:5px;
+}
+
+legend{
+	font-size:140%;
+}
+
+label{
+	margin-bottom:20px;
+	display:block; 
+}
+
+label input[type='password'],
+label input[type='text']{
+	width:300px;
+	border-radius:5px; 
+	padding:5px 10px;
+	font-size:120%
+}
+
+label span {
+	display:inline-block; 
+	font-size:85%;
+	margin-right:10px; 
+	font-weight:bold;
+}
