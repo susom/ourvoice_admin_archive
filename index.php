@@ -2,6 +2,14 @@
 session_start();
 $_SESSION 	= null;
 
+$_ENV['couch_url'   	] 	='https://cci-hrp-cdb.stanford.edu'			;	
+$_ENV['couch_proj_proj' ] 	='disc_projects';
+$_ENV['couch_db_proj'  	] 	='all_projects';
+$_ENV['couch_proj_users']  	='disc_users';
+$_ENV['couch_db_all' 	] 	='_all_docs';
+$_ENV['couch_adm'   	] 	='disc_user_general';
+$_ENV['couch_pw'    	] 	="rQaKibbDx7rP";
+$_ENV['gmaps_key'		] 	="AIzaSyCn-w3xVV38nZZcuRtrjrgy4MUAW35iBOo";
 
 $couch_proj = $_ENV["couch_proj"]; 
 $couch_db 	= $_ENV["couch_db"]; 
@@ -21,11 +29,16 @@ if(!isset($_SESSION["DT"])){
 	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
 
 	$response 	= curl_exec($ch);
+	echo "<pre>";
+	print_r($ch);
+
 	curl_close($ch);
 
 	//TURN IT INTO PHP ARRAY
 	$_SESSION["DT"] = json_decode(stripslashes($response),1);
 }
+
+exit;
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">

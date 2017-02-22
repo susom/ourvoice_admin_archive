@@ -1,12 +1,22 @@
 <?php
 session_start();
+session_destroy();
+
+$_ENV['couch_url'   	] 	='https://cci-hrp-cdb.stanford.edu'			;	
+$_ENV['couch_proj_proj' ] 	='disc_projects';
+$_ENV['couch_db_proj'  	] 	='all_projects';
+$_ENV['couch_proj_users']  	='disc_users';
+$_ENV['couch_db_all' 	] 	='_all_docs';
+$_ENV['couch_adm'   	] 	='disc_user_general';
+$_ENV['couch_pw'    	] 	="rQaKibbDx7rP";
+$_ENV['gmaps_key'		] 	="AIzaSyCn-w3xVV38nZZcuRtrjrgy4MUAW35iBOo";
 
 $gmaps_key 		= $_ENV["gmaps_key"];
 
 // FIRST GET THE PROJECT DATA
-if(!isset($_SESSION["DT"])){
-	$couch_proj = $_ENV["couch_proj"]; 
-	$couch_db 	= $_ENV["couch_db"]; 
+if( empty($_SESSION["DT"]) ){
+	$couch_proj = $_ENV["couch_proj_proj"]; 
+	$couch_db 	= $_ENV["couch_db_proj"]; 
 	$couch_url 	= $_ENV["couch_url"] . "/$couch_proj" . "/$couch_db";
 	$couch_adm 	= $_ENV["couch_adm"]; 
 	$couch_pw 	= $_ENV["couch_pw"]; 
@@ -22,12 +32,12 @@ if(!isset($_SESSION["DT"])){
 	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
 
 	$response 	= curl_exec($ch);
+
 	curl_close($ch);
 
 	//TURN IT INTO PHP ARRAY
 	$_SESSION["DT"] = json_decode(stripslashes($response),1);
 }
-
 $ap 				= $_SESSION["DT"];
 $_id 				= $ap["_id"];
 $_rev 				= $ap["_rev"];
