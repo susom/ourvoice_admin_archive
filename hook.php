@@ -7,8 +7,8 @@
  * @author  Miloslav Hůla (https://github.com/milo)
  */
 
-function logit(file,text){
-	file_put_contents(file, text . EOL, FILE_APPEND);
+function logit($file,$text){
+	file_put_contents($file, $text . EOL, FILE_APPEND);
 	return;
 }
 
