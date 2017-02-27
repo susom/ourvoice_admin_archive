@@ -7,8 +7,14 @@
  * @author  Miloslav Hůla (https://github.com/milo)
  */
 
+function logit(file,text){
+	file_put_contents(file, text . EOL, FILE_APPEND);
+	return;
+}
+
 $hookSecret = 'SPpqvOHzZ!Qf*a*tHQ&yecfCwGkQ5jLiql4b2TB3YLIM!yZ7';  # set NULL to disable check
 
+logit("/tmp/test.log","LOGGIN HOOK");
 
 set_error_handler(function($severity, $message, $file, $line) {
 	throw new \ErrorException($message, 0, $severity, $file, $line);
@@ -63,11 +69,11 @@ switch ($_SERVER['HTTP_CONTENT_TYPE']) {
 $payload = json_decode($json);
 
 
-file_put_contents("/tmp/test.log", "POST:" . json_encode($_POST) . EOL, FILE_APPEND);
+
 switch (strtolower($_SERVER['HTTP_X_GITHUB_EVENT'])) {
 	case 'push':
 		$result = exec("/usr/bin/pull");
-		file_put_contents("/tmp/test.log", "PULL:" . json_encode($result) . EOL, FILE_APPEND);
+		logit("/tmp/test.log","PULL:" . json_encode($result));
 		break;
 
 //	case 'create':
