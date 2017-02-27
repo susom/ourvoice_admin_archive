@@ -82,4 +82,4 @@ switch (strtolower($_SERVER['HTTP_X_GITHUB_EVENT'])) {
 
 
 ?>
-hook version 0.3
+hook version 0.4
