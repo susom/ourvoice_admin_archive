@@ -63,11 +63,11 @@ switch ($_SERVER['HTTP_CONTENT_TYPE']) {
 $payload = json_decode($json);
 
 
-file_put_contents("/tmp/test.log", json_encode($_POST) . EOL, FILE_APPEND);
+file_put_contents("/tmp/test.log", "POST:" . json_encode($_POST) . EOL, FILE_APPEND);
 switch (strtolower($_SERVER['HTTP_X_GITHUB_EVENT'])) {
 	case 'push':
 		$result = exec("/usr/bin/pull");
-		file_put_contents("/tmp/test.log", json_encode($result) . EOL, FILE_APPEND);
+		file_put_contents("/tmp/test.log", "PULL:" . json_encode($result) . EOL, FILE_APPEND);
 		break;
 
 //	case 'create':
