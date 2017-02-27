@@ -68,12 +68,10 @@ switch ($_SERVER['HTTP_CONTENT_TYPE']) {
 # https://developer.github.com/v3/activity/events/types/
 $payload = json_decode($json);
 
-
-
 switch (strtolower($_SERVER['HTTP_X_GITHUB_EVENT'])) {
 	case 'push':
 		$result = exec("/usr/bin/pull");
-		logit("/tmp/test.log","PULL:" . json_encode($result));
+		// logit("/tmp/test.log","PULL:" . json_encode($result));
 		break;
 
 //	case 'create':
