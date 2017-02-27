@@ -14,7 +14,7 @@ function logit($file,$text){
 
 $hookSecret = 'SPpqvOHzZ!Qf*a*tHQ&yecfCwGkQ5jLiql4b2TB3YLIM!yZ7';  # set NULL to disable check
 
-error_log("LOGGIN HOOK 2");
+error_log("LOGGIN HOOK 3");
 
 set_error_handler(function($severity, $message, $file, $line) {
 	throw new \ErrorException($message, 0, $severity, $file, $line);
