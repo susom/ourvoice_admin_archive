@@ -80,3 +80,4 @@ switch (strtolower($_SERVER['HTTP_X_GITHUB_EVENT'])) {
 
 
 ?>
+hook version 0.2
