@@ -77,3 +77,6 @@ switch (strtolower($_SERVER['HTTP_X_GITHUB_EVENT'])) {
 		print_r($payload); # For debug only. Can be found in GitHub hook log.
 		die();
 }
+
+
+?>
