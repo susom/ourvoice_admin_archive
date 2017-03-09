@@ -219,8 +219,8 @@ if( $active_project_id ){
 	<?php
 }
 ?>
-<script type="text/javascript" src="http://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha256-/SIrNqv8h6QGKDuNoLGA4iret+kyesCkHGzVUUV0shc=" crossorigin="anonymous"></script>
-<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=<?php echo $gmaps_key; ?>"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha256-/SIrNqv8h6QGKDuNoLGA4iret+kyesCkHGzVUUV0shc=" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo $gmaps_key; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js"></script>
 <script>
 $(document).ready(function(){
