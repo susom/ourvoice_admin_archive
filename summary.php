@@ -64,6 +64,7 @@ if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
 <link href="css/dt_summary.css" rel="stylesheet" type="text/css"/>
 </head>
 <body id="main">
+hello test test 
 <?php
 if( $active_project_id ){
 	$couch_proj = $_ENV["couch_proj_users"];
