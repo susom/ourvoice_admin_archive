@@ -80,7 +80,7 @@ section h5{
 .audio {
 	width:20px;
 	height:19px;
-	background:url(img/icon_listen.png) top left no-repeat;
+	background:url(../img/icon_listen.png) top left no-repeat;
 	background-size:100%;
 	vertical-align:middle;
 }
@@ -90,7 +90,7 @@ section h5{
 .goodbad {
 	width:20px;
 	height:20px;
-	background:url(img/icon_smilies.png) top left no-repeat;
+	background:url(../img/icon_smilies.png) top left no-repeat;
 	background-size:200%;
 	display:none;
 	vertical-align:middle;

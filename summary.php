@@ -64,7 +64,6 @@ if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
 <link href="css/dt_summary.css" rel="stylesheet" type="text/css"/>
 </head>
 <body id="main">
-hello test test 
 <?php
 if( $active_project_id ){
 	$couch_proj = $_ENV["couch_proj_users"];
@@ -93,7 +92,7 @@ if( $active_project_id ){
 	$all_projects = json_decode(stripslashes($response),1);
 	echo "<h1>Discovery Tool Data Summary for $active_project_id</h1>";
 
-	$projects 	= ["XYZ","GIRLTREK","GNT","KMU"];
+	$projects 	= ["GTT","GNT"];
 	$gmaps 		= array();
 	$proj 		= array();
 	foreach($ap["project_list"] as $p){
@@ -133,9 +132,6 @@ if( $active_project_id ){
 		echo "<section class='photo_previews'>";
 		echo "<h5>Photo Previews</h5>";
 		echo "<div class='thumbs'>";
-		if(empty($photos)){
-			echo "<p><i>No Photo Previews</i></p>";
-		}
 		echo "<ul>";
 		foreach($photos as $n => $photo){
 			$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
