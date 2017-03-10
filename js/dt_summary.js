@@ -32,17 +32,17 @@ function drawGMap(o_geotags, i_uniquemap){
 	}
 
 	var myOptions = {
-	    zoom        : 18,
+	    zoom        : 16,
 	    center      : walkMap[0],
 	    mapTypeId   : google.maps.MapTypeId.ROADMAP
 	}
 
 	// Create the map
-	var map 			= new google.maps.Map(document.getElementById(map_id), myOptions);
+	window[map_id] = new google.maps.Map(document.getElementById(map_id), myOptions);
 
 	for(var i = 0; i < geotags.length; i++) {
 		new google.maps.Marker({
-			map: map,
+			map: window[map_id],
 			position: walkMap[0],
 			icon: {
 			    path: google.maps.SymbolPath.CIRCLE,
@@ -58,7 +58,7 @@ function drawGMap(o_geotags, i_uniquemap){
 
 	// Creates the polyline object
 	var polyline = new google.maps.Polyline({
-	  map: map,
+	  map: window[map_id],
 	  path: walkMap,
 	  strokeColor: '#0000FF',
 	  strokeOpacity: 0.7,

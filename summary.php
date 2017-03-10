@@ -151,12 +151,12 @@ if( $active_project_id ){
 					$audio_name = "audio_".$n."_".$a.".wav";
 					$attach_url = $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $audio_name;
 					$attach_url = "passthru.php?_id=".$doc["_id"]."&_file=$audio_name";
-					$audio_attachments .= "<a href='$attach_url' target='_blank' class='audio $hasaudio'></a>";
+					$audio_attachments .= "<a href='$attach_url' class='audio $hasaudio'></a>";
 				}
 			}
 			echo "<li>
 			<figure>
-			<a href='$photo_uri' target='_blank'><img src='$photo_uri' class='preview'/></a>
+			<a href='$photo_uri' target='_blank' rel='google_map_$i' data-long='$long' data-lat='$lat' class='preview'><img src='$photo_uri' /></a>
 			<figcaption>
 				<span class='time'>@".date("g:i a", floor($timestamp/1000))."</span>
 				<span class='goodbad $isgood'></span>
@@ -223,10 +223,43 @@ if( $active_project_id ){
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo $gmaps_key; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js"></script>
 <script>
+function addmarker(latilongi,map_id) {
+    var marker = new google.maps.Marker({
+        position  : latilongi,
+        map       : window[map_id],
+        icon      : {
+			    path        : google.maps.SymbolPath.CIRCLE,
+			    scale       : 8,
+			    fillColor   : "#ffffff",
+			    fillOpacity : 1
+			},
+    });
+    window[map_id].setCenter(marker.getPosition());
+    window.current_preview = marker;
+}
+
 $(document).ready(function(){
 <?php
 	echo implode($gmaps);
 ?>
+
+	window.current_preview = null;
+	$(".preview").hover(function(){
+		var long 	= $(this).data("long");
+		var lat 	= $(this).data("lat"); 
+		var map_id 	= $(this).attr("rel");
+		var latlng 	= new google.maps.LatLng(lat, long);
+
+		addmarker(latlng,map_id);
+	},function(){
+		current_preview.setMap(null);
+	});
+
+	$(".audio").click(function(){
+		var soundclip 	= $(this).attr("href");
+		window.open(soundclip);
+		return false;
+	});
 });
 </script>
 </body>
