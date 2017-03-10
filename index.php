@@ -1,5 +1,5 @@
 <?php
-echo "hi dev 2";
+echo "hi dev 3";
 exit;
 session_start();
 $_SESSION 	= null;
