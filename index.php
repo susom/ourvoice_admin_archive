@@ -1,4 +1,6 @@
 <?php
+echo "hi dev";
+exit;
 session_start();
 $_SESSION 	= null;
 
