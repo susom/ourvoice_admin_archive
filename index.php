@@ -13,8 +13,8 @@ $_ENV['couch_adm'   	] 	='disc_user_general';
 $_ENV['couch_pw'    	] 	="rQaKibbDx7rP";
 $_ENV['gmaps_key'		] 	="AIzaSyCn-w3xVV38nZZcuRtrjrgy4MUAW35iBOo";
 
-$couch_proj = $_ENV["couch_proj"]; 
-$couch_db 	= $_ENV["couch_db"]; 
+$couch_proj = $_ENV["couch_proj_proj"]; 
+$couch_db 	= $_ENV["couch_db_proj"]; 
 $couch_url 	= $_ENV["couch_url"] . "/$couch_proj" . "/$couch_db";
 $couch_adm 	= $_ENV["couch_adm"]; 
 $couch_pw 	= $_ENV["couch_pw"]; 
