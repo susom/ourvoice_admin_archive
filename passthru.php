@@ -4,7 +4,7 @@
  * A test for passthru
  */
 
-$url 		= "https://cci-hrp-cdb.stanford.edu/";
+$url 		= "https://ourvoice-cdb.med.stanford.edu/";
 $username 	= "disc_user_general";
 $password 	= "rQaKibbDx7rP";
 
