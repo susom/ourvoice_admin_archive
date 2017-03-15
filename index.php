@@ -1,5 +1,4 @@
 <?php
-echo "hi master 3";
 exit;
 session_start();
 $_SESSION 	= null;

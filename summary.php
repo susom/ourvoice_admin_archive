@@ -2,7 +2,7 @@
 session_start();
 session_destroy();
 
-$_ENV['couch_url'   	] 	='https://cci-hrp-cdb.stanford.edu'			;	
+$_ENV['couch_url'   	] 	='https://ourvoice-cdb.med.stanford.edu'			;	
 $_ENV['couch_proj_proj' ] 	='disc_projects';
 $_ENV['couch_db_proj'  	] 	='all_projects';
 $_ENV['couch_proj_users']  	='disc_users';
@@ -92,7 +92,7 @@ if( $active_project_id ){
 	$all_projects = json_decode(stripslashes($response),1);
 	echo "<h1>Discovery Tool Data Summary for $active_project_id</h1>";
 
-	$projects 	= ["GTT","GNT"];
+	$projects 	= ["GTT","GNT","CPT"];
 	$gmaps 		= array();
 	$proj 		= array();
 	foreach($ap["project_list"] as $p){
@@ -135,31 +135,37 @@ if( $active_project_id ){
 		echo "<ul>";
 		foreach($photos as $n => $photo){
 			$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
-			$isgood 	= !empty($photo["goodbad"]) ? ($photo["goodbad"] > 1 ? "good" : "bad" ): "";
 			$long 		= $photo["geotag"]["longitude"];
 			$lat 		= $photo["geotag"]["latitude"];
 			$timestamp  = $photo["geotag"]["timestamp"];
 
+			$goodbad 	= "";
+			if($photo["goodbad"] > 1){
+				$goodbad  .= "<span class='goodbad good'></span>";
+			}
+
+			if($photo["goodbad"] == 1 || $photo["goodbad"] == 3){
+				$goodbad  .= "<span class='goodbad bad'></span>";
+			}
+
 			$photo_name = "photo_".$n.".jpg";
 			$photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
 			$photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name";
+			$detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
+
 			$attach_url = "#";
 			$audio_attachments = "";
 			if(!empty($photo["audio"])){
 				$num_audios = intval($photo["audio"]);
-				for($a = 1; $a <= $num_audios; $a++){
-					$audio_name = "audio_".$n."_".$a.".wav";
-					$attach_url = $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $audio_name;
-					$attach_url = "passthru.php?_id=".$doc["_id"]."&_file=$audio_name";
-					$audio_attachments .= "<a href='$attach_url' class='audio $hasaudio'></a>";
-				}
+				$num 		= $num_audios > 1 ? "<span>x$num_audios</span>" :"";
+				$audio_attachments .= "<a href='$attach_url' class='audio $hasaudio'></a> $num";
 			}
 			echo "<li>
 			<figure>
-			<a href='$photo_uri' target='_blank' rel='google_map_$i' data-long='$long' data-lat='$lat' class='preview'><img src='$photo_uri' /></a>
+			<a href='$detail_url' target='_blank' rel='google_map_$i' data-long='$long' data-lat='$lat' class='preview'><img src='$photo_uri' /></a>
 			<figcaption>
 				<span class='time'>@".date("g:i a", floor($timestamp/1000))."</span>
-				<span class='goodbad $isgood'></span>
+				".$goodbad."
 				".$audio_attachments."
 			</figcaption>
 			</figure></li>";
