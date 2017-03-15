@@ -2,7 +2,7 @@
 session_start();
 session_destroy();
 
-$_ENV['couch_url'   	] 	='https://cci-hrp-cdb.stanford.edu'			;	
+$_ENV['couch_url'   	] 	='https://ourvoice-cdb.med.stanford.edu'			;	
 $_ENV['couch_proj_proj' ] 	='disc_projects';
 $_ENV['couch_db_proj'  	] 	='all_projects';
 $_ENV['couch_proj_users']  	='disc_users';
@@ -91,7 +91,7 @@ if( $active_project_id ){
 	//TURN IT INTO PHP ARRAY
 	$all_projects 	= json_decode(stripslashes($response),1);
 
-	$projects 	 	= ["GTT","GNT"];
+	$projects 	 	= ["GTT","GNT","CPT"];
 	$gmaps 		   	= array();
 	$proj 		    = array();
 	foreach($ap["project_list"] as $p){

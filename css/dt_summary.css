@@ -67,11 +67,19 @@ section h5{
 .thumbs figure {
 	margin:0; 
 }
+
 .thumbs figcaption span {
 	margin-right:8px;
 }
+.thumbs a.preview{
+	display:block;
+	min-height:150px;
+}
 .thumbs img {
-	width:140px; 
+	max-width:140px;
+	max-height:140px;
+	transform: rotate(90deg) translate(20px,0);
+	image-orientation: from-image;
 }
 .time{
 	display:inline-block;

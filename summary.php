@@ -92,7 +92,7 @@ if( $active_project_id ){
 	$all_projects = json_decode(stripslashes($response),1);
 	echo "<h1>Discovery Tool Data Summary for $active_project_id</h1>";
 
-	$projects 	= ["GTT","GNT"];
+	$projects 	= ["GTT","GNT","CPT"];
 	$gmaps 		= array();
 	$proj 		= array();
 	foreach($ap["project_list"] as $p){
@@ -207,6 +207,8 @@ if( $active_project_id ){
 		echo "</section>";
 		echo "</div>";
 		$gmaps[] = "drawGMap($json_geo, $i);\n";
+
+		break;
 	}
 }else{
 	?>
