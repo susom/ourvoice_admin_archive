@@ -85,6 +85,7 @@ section h5{
 	display:inline-block;
 	vertical-align:bottom;
 }
+
 .audio {
 	width:20px;
 	height:19px;
@@ -145,3 +146,82 @@ label span {
 	margin-right:10px; 
 	font-weight:bold;
 }
+
+
+.photo_detail .user_entry {
+	margin:0 auto;
+	width:1024px;
+}	
+
+.photo_detail figure{
+	margin:0;
+}
+
+
+.photo_detail .preview{
+	display:block;
+	min-height:750px;
+}
+
+.photo_detail figure img{
+	max-width:740px;
+	transform:rotate(90deg) translate(90px,90px);
+}
+
+.photo_detail figure figcaption{
+	margin:10px 0;
+}
+
+.photo_detail aside{
+	float:right;
+	overflow:hidden;
+	clear:right;
+	width:420px;
+	margin-bottom:20px;
+}
+.photo_detail aside h4{
+	color:#333;
+	margin-bottom:10px;
+}
+
+.photo_detail aside span {
+	clear: both;
+	display:inline-block;
+	width:50px;
+	height:50px;
+	background-size:200%;
+	margin-right:10px;
+}
+.photo_detail aside input{ 
+	height:30px;
+	font-size:16px;
+	padding:5px;
+	width:80%;
+	border:1px solid #888;
+	border-radius:5px;
+}
+
+.photo_detail .audio {
+	width:50px;
+	height:50px;
+	vertical-align: middle;
+	margin-right:10px;
+	border-radius:5px;
+	border:1px solid #666;
+	box-shadow:2px 2px 2px #999; 
+	cursor:pointer;
+	position:relative;
+	z-index:10;
+}
+
+.photo_detail div{
+	margin-bottom:10px;
+}
+.photo_detail textarea{
+	display:inline-block;
+	width:660px;
+	height:80px;
+	vertical-align: middle
+}
+
+
