@@ -135,10 +135,18 @@ if( $active_project_id ){
 		echo "<ul>";
 		foreach($photos as $n => $photo){
 			$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
-			$isgood 	= !empty($photo["goodbad"]) ? ($photo["goodbad"] > 1 ? "good" : "bad" ): "";
 			$long 		= $photo["geotag"]["longitude"];
 			$lat 		= $photo["geotag"]["latitude"];
 			$timestamp  = $photo["geotag"]["timestamp"];
+
+			$goodbad 	= "";
+			if($photo["goodbad"] > 1){
+				$goodbad  .= "<span class='goodbad good'></span>";
+			}
+
+			if($photo["goodbad"] == 1 || $photo["goodbad"] == 3){
+				$goodbad  .= "<span class='goodbad bad'></span>";
+			}
 
 			$photo_name = "photo_".$n.".jpg";
 			$photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
@@ -153,7 +161,7 @@ if( $active_project_id ){
 					$audio_name = "audio_".$n."_".$a.".wav";
 					$attach_url = $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $audio_name;
 					$attach_url = "passthru.php?_id=".$doc["_id"]."&_file=$audio_name";
-					$audio_attachments .= "<div><a href='$attach_url' class='audio $hasaudio'></a></div>";
+					$audio_attachments .= "<a href='$attach_url' class='audio $hasaudio'></a>";
 				}
 			}
 			echo "<li>
@@ -161,7 +169,7 @@ if( $active_project_id ){
 			<a href='$detail_url' rel='google_map_$i' data-long='$long' data-lat='$lat' class='preview'><img src='$photo_uri' /></a>
 			<figcaption>
 				<span class='time'>@".date("g:i a", floor($timestamp/1000))."</span>
-				<span class='goodbad $isgood'></span>
+				".$goodbad."
 				".$audio_attachments."
 			</figcaption>
 			</figure></li>";
