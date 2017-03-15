@@ -207,8 +207,6 @@ if( $active_project_id ){
 		echo "</section>";
 		echo "</div>";
 		$gmaps[] = "drawGMap($json_geo, $i);\n";
-
-		break;
 	}
 }else{
 	?>
