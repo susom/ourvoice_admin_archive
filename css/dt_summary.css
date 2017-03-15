@@ -70,7 +70,7 @@ section h5{
 }
 
 .thumbs figcaption span {
-	margin-right:8px;
+	margin-right:3px;
 }
 .thumbs a.preview{
 	display:block;
@@ -93,6 +93,9 @@ section h5{
 	background:url(../img/icon_listen.png) top left no-repeat;
 	background-size:100%;
 	vertical-align:middle;
+}
+.audio + span {
+	font-size:15px;
 }
 .audio.has {
 	display:inline-block;

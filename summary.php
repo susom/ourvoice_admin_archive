@@ -157,16 +157,12 @@ if( $active_project_id ){
 			$audio_attachments = "";
 			if(!empty($photo["audio"])){
 				$num_audios = intval($photo["audio"]);
-				for($a = 1; $a <= $num_audios; $a++){
-					$audio_name = "audio_".$n."_".$a.".wav";
-					$attach_url = $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $audio_name;
-					$attach_url = "passthru.php?_id=".$doc["_id"]."&_file=$audio_name";
-					$audio_attachments .= "<a href='$attach_url' class='audio $hasaudio'></a>";
-				}
+				$num 		= $num_audios > 1 ? "<span>x$num_audios</span>" :"";
+				$audio_attachments .= "<a href='$attach_url' class='audio $hasaudio'></a> $num";
 			}
 			echo "<li>
 			<figure>
-			<a href='$detail_url' rel='google_map_$i' data-long='$long' data-lat='$lat' class='preview'><img src='$photo_uri' /></a>
+			<a href='$detail_url' target='_blank' rel='google_map_$i' data-long='$long' data-lat='$lat' class='preview'><img src='$photo_uri' /></a>
 			<figcaption>
 				<span class='time'>@".date("g:i a", floor($timestamp/1000))."</span>
 				".$goodbad."
