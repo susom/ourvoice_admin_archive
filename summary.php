@@ -11,8 +11,6 @@ $_ENV['couch_adm'   	] 	='disc_user_general';
 $_ENV['couch_pw'    	] 	="rQaKibbDx7rP";
 $_ENV['gmaps_key'		] 	="AIzaSyCn-w3xVV38nZZcuRtrjrgy4MUAW35iBOo";
 
-$gmaps_key 		= $_ENV["gmaps_key"];
-
 // FIRST GET THE PROJECT DATA
 if( empty($_SESSION["DT"]) ){
 	$couch_proj = $_ENV["couch_proj_proj"]; 
@@ -32,27 +30,28 @@ if( empty($_SESSION["DT"]) ){
 	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
 
 	$response 	= curl_exec($ch);
-
 	curl_close($ch);
 
 	//TURN IT INTO PHP ARRAY
 	$_SESSION["DT"] = json_decode(stripslashes($response),1);
 }
+
+// NEXT GET SPECIFIC PROJECT DATA
 $ap 				= $_SESSION["DT"];
 $_id 				= $ap["_id"];
 $_rev 				= $ap["_rev"];
 $projs 				= $ap["project_list"];
+$projects 			= [];
 $active_project_id 	= null;
 
+//NOW LOGIN TO YOUR PROJECT
 if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
 	$proj_id = trim(strtoupper($_POST["proj_id"]));
 	$proj_pw = $_POST["proj_pw"];
 	foreach($projs as $proj){
+		array_push($projects, $proj["project_id"]);
 		if($proj_id == $proj["project_id"] && $proj_pw == $proj["project_pass"]){
 			$active_project_id = $proj_id;
-			break;
-		}else{
-			continue;
 		}
 	}
 }
@@ -68,9 +67,11 @@ if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
 if( $active_project_id ){
 	$couch_proj = $_ENV["couch_proj_users"];
 	$couch_db 	= $_ENV["couch_db_all"];
-	$qs 		= "?include_docs=true";
+	$limit 		= 10;
+	$offset 	= 0; //offset
+	$qs 		= "?include_docs=true";//&limit=$limit&skip=$offset
 
-	$couch_base = $_ENV["couch_url"];
+	$couch_base = $_ENV["couch_url"];//https://ourvoice-cdb.med.stanford.edu/disc_users/_design/hasphotos/_view/all
 	$couch_url 	= $couch_base. "/$couch_proj" ."/$couch_db" .$qs;
 	$couch_adm 	= $_ENV["couch_adm"]; 
 	$couch_pw 	= $_ENV["couch_pw"]; 
@@ -89,12 +90,14 @@ if( $active_project_id ){
 	curl_close($ch);
 
 	//TURN IT INTO PHP ARRAY
-	$all_projects = json_decode(stripslashes($response),1);
+	$all_projects 	= json_decode($response,1);
+	$tot_rows 		= $all_projects["total_rows"];
+	$tot_pages 		= ceil($tot_rows/$limit); 
+
 	echo "<h1>Discovery Tool Data Summary for $active_project_id</h1>";
 
-	$projects 	= ["GTT","GNT","CPT"];
-	$gmaps 		= array();
-	$proj 		= array();
+	$gmaps 			= array();
+	$proj 			= array();
 	foreach($ap["project_list"] as $p){
 		$proj[$p["project_id"]] = $p;
 	}
@@ -226,7 +229,7 @@ if( $active_project_id ){
 }
 ?>
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha256-/SIrNqv8h6QGKDuNoLGA4iret+kyesCkHGzVUUV0shc=" crossorigin="anonymous"></script>
-<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo $gmaps_key; ?>"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo $_ENV["gmaps_key"]; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js"></script>
 <script>
 function addmarker(latilongi,map_id) {
