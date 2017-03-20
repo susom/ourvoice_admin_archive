@@ -158,7 +158,7 @@ if( $active_project_id ){
 			if(!empty($photo["audio"])){
 				$num_audios = intval($photo["audio"]);
 				$num 		= $num_audios > 1 ? "<span>x$num_audios</span>" :"";
-				$audio_attachments .= "<a href='$attach_url' class='audio $hasaudio'></a> $num";
+				$audio_attachments .= "<a class='audio $hasaudio'></a> $num";
 			}
 			echo "<li>
 			<figure>
@@ -259,12 +259,6 @@ $(document).ready(function(){
 		addmarker(latlng,map_id);
 	},function(){
 		current_preview.setMap(null);
-	});
-
-	$(".audio").click(function(){
-		var soundclip 	= $(this).attr("href");
-		window.open(soundclip);
-		return false;
 	});
 });
 </script>
