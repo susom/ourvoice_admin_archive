@@ -75,11 +75,31 @@ section h5{
 .thumbs a.preview{
 	display:block;
 	min-height:150px;
+	position:relative;
+}
+.thumbs a.preview span{
+	position:absolute;
+	top:0;
+	right:0;
+	width:20px;
+	height:20px;
+	background:#fff url(../img/icon_rotate.gif) 50% no-repeat;
+	background-size:80%;
+	transform: rotate(270deg);
+	border:1px solid #999;
+	border-radius:3px;
+	box-shadow:1px 1px 1px #333;
 }
 .thumbs img {
 	max-width:140px;
 	max-height:140px;
 	transform: rotate(90deg) translate(20px,0);
+	image-orientation: from-image;
+}
+.thumbs .rotate img {
+	max-width:140px;
+	max-height:140px;
+	transform: rotate(0) translate(0,0);
 	image-orientation: from-image;
 }
 .time{

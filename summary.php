@@ -71,10 +71,11 @@ if( $active_project_id ){
 	$offset 	= 0; //offset
 	$qs 		= "?include_docs=true";//&limit=$limit&skip=$offset
 
-	$couch_base = $_ENV["couch_url"];//https://ourvoice-cdb.med.stanford.edu/disc_users/_design/hasphotos/_view/all
+	$couch_base = $_ENV["couch_url"];
 	$couch_url 	= $couch_base. "/$couch_proj" ."/$couch_db" .$qs;
 	$couch_adm 	= $_ENV["couch_adm"]; 
 	$couch_pw 	= $_ENV["couch_pw"]; 
+	$couch_url  = "https://ourvoice-cdb.med.stanford.edu/disc_users/_design/hasphotos/_view/all";
 
 	//CURL OPTIONS
 	$ch 		= curl_init($couch_url);
@@ -103,10 +104,11 @@ if( $active_project_id ){
 	}
 
 	$active_project = array();
-	foreach($all_projects["rows"] as $i=> $row){
+	foreach($all_projects["rows"] as  $i => $row){
+
 		if(strpos($row["id"],$active_project_id) > -1){
-			$doc 	= $row["doc"];
-			$temp 	= explode("_",$row["doc"]["_id"]);
+			$doc 	= $row["value"];
+			$temp 	= explode("_",$row["value"]["_id"]);
 			$active_project[array_pop($temp)] = $doc;
 		}
 	}
@@ -165,7 +167,7 @@ if( $active_project_id ){
 			}
 			echo "<li>
 			<figure>
-			<a href='$detail_url' target='_blank' rel='google_map_$i' data-long='$long' data-lat='$lat' class='preview'><img src='$photo_uri' /></a>
+			<a href='$detail_url' target='_blank' rel='google_map_$i' data-long='$long' data-lat='$lat' class='preview'><img src='$photo_uri' /><span></span></a>
 			<figcaption>
 				<span class='time'>@".date("g:i a", floor($timestamp/1000))."</span>
 				".$goodbad."
@@ -251,7 +253,6 @@ $(document).ready(function(){
 <?php
 	echo implode($gmaps);
 ?>
-
 	window.current_preview = null;
 	$(".preview").hover(function(){
 		var long 	= $(this).data("long");
@@ -263,6 +264,11 @@ $(document).ready(function(){
 	},function(){
 		current_preview.setMap(null);
 	});
+
+	$(".preview span").click(function(){
+		$(this).parent().toggleClass("rotate");
+		return false;
+	})
 });
 </script>
 </body>
