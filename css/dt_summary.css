@@ -72,12 +72,12 @@ section h5{
 .thumbs figcaption span {
 	margin-right:3px;
 }
-.thumbs a.preview{
+a.preview{
 	display:block;
 	min-height:150px;
 	position:relative;
 }
-.thumbs a.preview span{
+a.preview span{
 	position:absolute;
 	top:0;
 	right:0;
@@ -89,6 +89,7 @@ section h5{
 	border:1px solid #999;
 	border-radius:3px;
 	box-shadow:1px 1px 1px #333;
+	cursor:pointer;
 }
 .thumbs img {
 	max-width:140px;
@@ -174,7 +175,7 @@ label span {
 
 .photo_detail .user_entry {
 	margin:0 auto;
-	width:1024px;
+	width:1180px;
 }	
 
 .photo_detail figure{
@@ -189,7 +190,11 @@ label span {
 
 .photo_detail figure img{
 	max-width:740px;
-	transform:rotate(90deg) translate(90px,90px);
+	transform:rotate(90deg) translate(90px,0);
+}
+.photo_detail .rotate img {
+	transform: rotate(0) translate(0,0);
+	image-orientation: from-image;
 }
 
 .photo_detail figure figcaption{

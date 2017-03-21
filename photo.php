@@ -123,7 +123,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo "<div>";	
 	echo "
 		<figure>
-		<a class='preview' rel='google_map_0' data-long='$long' data-lat='$lat'><img src='$photo_uri' /></a>
+		<a class='preview' rel='google_map_0' data-long='$long' data-lat='$lat'><img src='$photo_uri' /><span></span></a>
 		</figure>";
 		
 		$geotags   = array();
@@ -180,6 +180,11 @@ $(document).ready(function(){
 		snd = null;
 		return false;
 	});
+
+	$(".preview span").click(function(){
+		$(this).parent().toggleClass("rotate");
+		return false;
+	})
 });
 </script>
 </body>
