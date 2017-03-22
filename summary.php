@@ -44,6 +44,20 @@ $projs 				= $ap["project_list"];
 $projects 			= [];
 $active_project_id 	= null;
 
+if(isset($_POST["for_delete"])){
+	$fordelete 	= [];
+	foreach($_POST["for_delete"] as $i=> $row){
+		$temp 	= explode("|",$row);
+		array_push($fordelete,array(
+			 "_id" 		=> $temp[0]
+			,"_rev" 	=> $temp[1]
+			,"_deleted" => true
+		));
+	}
+
+	bulkUpdateDocs($fordelete);
+}
+
 //NOW LOGIN TO YOUR PROJECT
 if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
 	$proj_id = trim(strtoupper($_POST["proj_id"]));
@@ -55,6 +69,8 @@ if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
 		}
 	}
 }
+
+
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -75,7 +91,7 @@ if( $active_project_id ){
 	$couch_url 	= $couch_base. "/$couch_proj" ."/$couch_db" .$qs;
 	$couch_adm 	= $_ENV["couch_adm"]; 
 	$couch_pw 	= $_ENV["couch_pw"]; 
-	$couch_url  = "https://ourvoice-cdb.med.stanford.edu/disc_users/_design/hasphotos/_view/all";
+	// $couch_url  = "https://ourvoice-cdb.med.stanford.edu/disc_users/_design/hasphotos/_view/all";
 
 	//CURL OPTIONS
 	$ch 		= curl_init($couch_url);
@@ -96,7 +112,6 @@ if( $active_project_id ){
 	$tot_pages 		= ceil($tot_rows/$limit); 
 
 	echo "<h1>Discovery Tool Data Summary for $active_project_id</h1>";
-
 	$gmaps 			= array();
 	$proj 			= array();
 	foreach($ap["project_list"] as $p){
@@ -105,14 +120,18 @@ if( $active_project_id ){
 
 	$active_project = array();
 	foreach($all_projects["rows"] as  $i => $row){
-
 		if(strpos($row["id"],$active_project_id) > -1){
-			$doc 	= $row["value"];
-			$temp 	= explode("_",$row["value"]["_id"]);
+			$doc 	= $row["doc"];
+			$temp 	= explode("_",$row["doc"]["_id"]);
 			$active_project[array_pop($temp)] = $doc;
 		}
 	}
 	krsort($active_project);
+
+	echo "<form id='project_summary' method='post'>";
+	echo "<input id='delete_all' type='submit' value='Delete Checked Data Entries'></input>";
+	echo "<input type='hidden' name='proj_id' value='".$_POST["proj_id"]."'/>";
+	echo "<input type='hidden' name='proj_pw' value='".$_POST["proj_pw"]."'/>";
 
 	foreach($active_project  as $i =>  $doc){
 		$parent 	= $proj[$projects[$doc["project_id"]]];
@@ -122,7 +141,7 @@ if( $active_project_id ){
 		$_attach 	= !empty($doc["_attachments"]) ? $doc["_attachments"] : null;
 		$json_geo 	= json_encode($geotags);
 
-		if(empty($photos)){
+		if(empty($photos) || strpos($doc["_id"], "_design") > -1){
 			continue;
 		}
 
@@ -135,6 +154,7 @@ if( $active_project_id ){
 		echo "<div id='google_map_$i' class='gmap'></div>";
 		
 		echo "<section class='photo_previews'>";
+		echo "<label><input type='checkbox' name='for_delete[]' value='".$doc["_id"]."|".$doc["_rev"]."'/>Delete This Entry</label>";
 		echo "<h5>Photo Previews</h5>";
 		echo "<div class='thumbs'>";
 		echo "<ul>";
@@ -219,6 +239,7 @@ if( $active_project_id ){
 		echo "</div>";
 		$gmaps[] = "drawGMap($json_geo, $i);\n";
 	}
+	echo "</form>";
 }else{
 	?>
 	<form method="post">
@@ -268,11 +289,53 @@ $(document).ready(function(){
 	$(".preview span").click(function(){
 		$(this).parent().toggleClass("rotate");
 		return false;
-	})
+	});
+
+	$("#project_summary").submit(function(){
+		var yn = confirm("You will delete this entry and all photos/audio/survey answers associated with it.  Click OK to continue.");
+		return yn;
+	});
 });
 </script>
 </body>
 </html>
+<?php
+// $fordelete = array();
+// foreach($all_projects["rows"] as $i=> $row){
+// 	if(strpos($row["doc"]["_id"],"EEC10161-1A3C-4C91-ADF9-805383B5598F") > -1){
+// 		array_push($fordelete,array(
+// 			 "_id" 		=> $row["doc"]["_id"]
+// 			,"_rev" 	=> $row["doc"]["_rev"]
+// 			,"_deleted" => true
+// 		));
+// 	}
+// }
+function bulkUpdateDocs($docs_o){
+	//BULK UPDATE PROCESS
+	$couch_db 	= "_bulk_docs";
+	$couch_proj = $_ENV["couch_proj_users"];
+	$couch_adm 	= $_ENV["couch_adm"]; 
+	$couch_pw 	= $_ENV["couch_pw"]; 
+	$couch_base = $_ENV["couch_url"];
+	$couch_url 	= $couch_base. "/$couch_proj" ."/$couch_db" ;
+	
+	//CURL OPTIONS
+	$ch 		= curl_init($couch_url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+		"Content-type: application/json",
+		"Accept: */*"
+	));
+	curl_setopt($ch, CURLOPT_USERPWD, "$couch_adm:$couch_pw");
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST"); //JUST FETCH DATA
+	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array("docs" => $docs_o)));
+
+	$response 	= curl_exec($ch);
+	curl_close($ch);
+
+	return;
+}
+?>
 
 
 

@@ -254,3 +254,15 @@ label span {
 }
 
 
+
+
+#project_summary {
+	position:relative;
+	padding-top:30px;
+}
+
+#delete_all {
+	position:absolute;
+	top:0;
+	right:0; 
+}
