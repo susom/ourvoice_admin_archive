@@ -85,3 +85,17 @@ hr.answer_div{
 .delete_parent:visited{
 	color:blue;
 }
+
+
+.configurator legend {
+	cursor:pointer;
+}
+.configurator .fieldbody{
+	display:none;
+}
+
+.configurator .open .fieldbody{
+	display:block;
+}
+
+.

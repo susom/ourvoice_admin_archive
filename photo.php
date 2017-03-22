@@ -189,3 +189,30 @@ $(document).ready(function(){
 </script>
 </body>
 </html>
+<?php 
+function bulkUpdateDocs($docs_o){
+	//BULK UPDATE PROCESS
+	$couch_db 	= "_bulk_docs";
+	$couch_proj = $_ENV["couch_proj_users"];
+	$couch_adm 	= $_ENV["couch_adm"]; 
+	$couch_pw 	= $_ENV["couch_pw"]; 
+	$couch_base = $_ENV["couch_url"];
+	$couch_url 	= $couch_base. "/$couch_proj" ."/$couch_db" ;
+	
+	//CURL OPTIONS
+	$ch 		= curl_init($couch_url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+		"Content-type: application/json",
+		"Accept: */*"
+	));
+	curl_setopt($ch, CURLOPT_USERPWD, "$couch_adm:$couch_pw");
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST"); //JUST FETCH DATA
+	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array("docs" => $docs_o)));
+
+	$response 	= curl_exec($ch);
+	curl_close($ch);
+
+	return;
+}
+?>
