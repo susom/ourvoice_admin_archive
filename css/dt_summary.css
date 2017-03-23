@@ -257,18 +257,18 @@ label span {
 	top:20px;
 }
 
-.photo_previews .thumbs{
+.photo_detail .photo_previews .thumbs{
 	min-height:145px;
 	margin:0 auto;
 	text-align:center;
 }
-.photo_previews .thumbs a{
+.photo_detail .photo_previews .thumbs a{
 	display:inline-block;
 }
-.photo_previews .thumbs .current {
+.photo_detail .photo_previews .thumbs .current {
 	position:relative;
 }
-.photo_previews .thumbs .current:after {
+.photo_detail .photo_previews .thumbs .current:after {
 	content:"";
 	position:absolute;
 	top:0; left:17px;
@@ -278,6 +278,16 @@ label span {
 	opacity:.6;
 	z-index:1;
 }
+
+.photo_detail .audio_clip {
+	padding-bottom:15px;
+	margin-bottom:15px;
+	border-bottom:1px solid #ccc; 
+	background:url(../img/icon_listen.png) 0 5px no-repeat;
+	background-size:6%;
+	padding-left:30px;
+}
+
 
 #project_summary {
 	position:relative;

@@ -128,7 +128,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				$attach_url = $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $audio_name;
 				$attach_url = "passthru.php?_id=".$doc["_id"]."&_file=$audio_name";
 				$transcription 		= isset($doc["transcriptions"][$audio_name]) ? $doc["transcriptions"][$audio_name] : "";
-				$audio_attachments .= "<div><a href='$attach_url' class='audio $hasaudio'></a> <input  type='text' name='transcriptions[$audio_name]' value='$transcription' placeholder='Click the icon and transcribe what you hear'></input></div>";
+				$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$attach_url'/></audio> <input  type='text' name='transcriptions[$audio_name]' value='$transcription' placeholder='Click the icon and transcribe what you hear'></input></div>";
 			}
 		}
 	}
@@ -200,6 +200,7 @@ $(document).ready(function(){
 		echo implode($gmaps);
 	?>
 
+	window.snd_o = null;
 	window.current_preview = null;
 	$(".preview").hover(function(){
 		var long 	= $(this).data("long");
@@ -214,10 +215,8 @@ $(document).ready(function(){
 
 	$(".audio").click(function(){
 		var soundclip 	= $(this).attr("href");
-		var snd 		= new Audio(soundclip);
-		snd.play();
-
-		snd = null;
+		window.snd_o	= new Audio(soundclip);
+		window.snd_o.play();
 		return false;
 	});
 
