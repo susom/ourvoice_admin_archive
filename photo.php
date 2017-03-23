@@ -87,12 +87,8 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 
 	$thumbs 	= [];
 	foreach($photos as $i => $photo){
-		$thum_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=photo_".$i.".jpg";
 		if($i !== intval($photo_i)){
-			$thumbs[] 	= "<a href='photo.php?_id=".$doc["_id"]."&_file=photo_".$i.".jpg'><img src='$thum_uri'></a>";
 			continue;
-		}else{
-			$thumbs[] 	= "<a href='photo.php?_id=".$doc["_id"]."&_file=photo_".$i.".jpg' class='current'><img src='$thum_uri'></a>";
 		}
 
 		$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
@@ -158,7 +154,6 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		</aside>";
 
 	echo "<section class='photo_previews'>";
-	echo "<div class='thumbs'>".implode("",$thumbs)."</div>";
 	echo "<div>";	
 	echo "
 		<figure>
