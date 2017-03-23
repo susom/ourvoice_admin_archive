@@ -190,10 +190,10 @@ label span {
 
 .photo_detail figure img{
 	max-width:740px;
-	transform:rotate(90deg) translate(90px,0);
+	transform:rotate(90deg) translate(110px,0);
 }
 .photo_detail .rotate img {
-	transform: rotate(0) translate(0,0);
+	transform: rotate(0) translate(0,20px);
 	image-orientation: from-image;
 }
 
@@ -253,8 +253,31 @@ label span {
 	vertical-align: middle
 }
 
+.photo_detail a.preview span{
+	top:20px;
+}
 
-
+.photo_previews .thumbs{
+	min-height:145px;
+	margin:0 auto;
+	text-align:center;
+}
+.photo_previews .thumbs a{
+	display:inline-block;
+}
+.photo_previews .thumbs .current {
+	position:relative;
+}
+.photo_previews .thumbs .current:after {
+	content:"";
+	position:absolute;
+	top:0; left:17px;
+	width:106px; 
+	height:143px;
+	background:#333;
+	opacity:.6;
+	z-index:1;
+}
 
 #project_summary {
 	position:relative;

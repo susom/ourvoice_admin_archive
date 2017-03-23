@@ -34,16 +34,7 @@ if(!isset($_SESSION["DT"])){
 	//TURN IT INTO PHP ARRAY
 	$_SESSION["DT"] = json_decode($response,1);
 }
-?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
-<head>
-<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
-<link href="css/dt_index.css" rel="stylesheet" type="text/css"/>
-</head>
-<body id="main" class="configurator">
-<h1>Discovery Tool Project Configurator</h1>
-<?php
+
 $ap 		= $_SESSION["DT"];
 $_id 		= $ap["_id"];
 $_rev 		= $ap["_rev"];
@@ -59,7 +50,7 @@ if( isset($_POST["proj_idx"]) ){
 		//MEANS THIS IS A NEW PROJECT
 		//NEED A NEW PROJECT ID!
 		$proj_idx 	= count($projects);
-
+		$redi 	= true;
 	}
 	
 	//GOT ALL THE DATA IN A STRUCTURE, NOW JUST MASSAGE IT INTO RIGHT FORMAT THEN SUBMIT IT
@@ -107,10 +98,24 @@ if( isset($_POST["proj_idx"]) ){
 
 	putDoc($payload);
 	$ap = $_SESSION["DT"] = $payload;
+	if($redi){
+		header("location:index.php?proj_idx=$pidx");
+	}
 }
-
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
+<link href="css/dt_index.css" rel="stylesheet" type="text/css"/>
+</head>
+<body id="main" class="configurator">
+<hgroup>
+	<h1>Discovery Tool Project Configurator</h1>
+	<a href="index.php">Back to Project Picker</a>
+</hgroup>
+<?php
 $projs 	= $ap["project_list"];
-
 if( isset($_GET["proj_idx"]) ){
 	$p 		  = $projs[$_GET["proj_idx"]];
 	$pid 	  = $p["project_id"];
@@ -261,7 +266,7 @@ if( isset($_GET["proj_idx"]) ){
 		</select>
 		<input type="submit"/>
 	</form>
-	<p><em>* To Configure New Project, Choose an existing one to use as template and change the Project ID!</em></p>
+	<p><strong><em>* To Configure New Project: <br> Simply choose an existing project (as a template) and change the Project ID!</em></strong></p>
 	<?php
 }
 ?>

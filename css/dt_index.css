@@ -98,4 +98,11 @@ hr.answer_div{
 	display:block;
 }
 
-.
+hgroup {
+	position:relative;
+}
+hgroup a {
+	position:absolute;
+	right:10px;
+	top:10px;
+}

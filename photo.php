@@ -12,7 +12,37 @@ $_ENV['couch_pw'    	] 	="rQaKibbDx7rP";
 $_ENV['gmaps_key'		] 	="AIzaSyCn-w3xVV38nZZcuRtrjrgy4MUAW35iBOo";
 
 $gmaps_key 					= $_ENV["gmaps_key"];
-$projects 					= ["GTT","GNT","CPT"];
+$projects 					= [];
+
+if( isset($_POST["doc_id"]) ){
+	$_id  	= $_POST["doc_id"];
+
+	$couch_base = $_ENV["couch_url"];
+	$couch_proj = $_ENV["couch_proj_users"];
+	$couch_url 	= $couch_base. "/$couch_proj" ."/$_id";
+	$couch_adm 	= $_ENV["couch_adm"]; 
+	$couch_pw 	= $_ENV["couch_pw"]; 
+
+	//CURL OPTIONS
+	$ch 		= curl_init($couch_url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+		"Content-type: application/json",
+		"Accept: */*"
+	));
+	curl_setopt($ch, CURLOPT_USERPWD, "$couch_adm:$couch_pw");
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
+
+	$response 	= curl_exec($ch);
+	curl_close($ch);
+
+	$doc 	 = json_decode(stripslashes($response),1);
+	$payload = $doc;
+	foreach($_POST["transcriptions"] as $audio_name => $transcription){
+		$payload["transcriptions"][$audio_name] = $transcription;
+	}
+	putDoc($_id, $payload);
+}
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -26,13 +56,9 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	$_id 	= trim(strtoupper($_GET["_id"]));
 	$_file 	= $_GET["_file"];
 
-	$couch_proj = $_ENV["couch_proj_users"];
-	$couch_db 	= $_ENV["couch_db_all"];
-	$qs 		= "?include_docs=true";
-
 	$couch_base = $_ENV["couch_url"];
+	$couch_proj = $_ENV["couch_proj_users"];
 	$couch_url 	= $couch_base. "/$couch_proj" ."/$_id";
-
 	$couch_adm 	= $_ENV["couch_adm"]; 
 	$couch_pw 	= $_ENV["couch_pw"]; 
 
@@ -50,6 +76,8 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	curl_close($ch);
 
 	$doc 		= json_decode(stripslashes($response),1);
+	$_rev 		= $doc["_rev"];
+
 	$photos 	= $doc["photos"];
 	$_attach 	= !empty($doc["_attachments"]) ? $doc["_attachments"] : null;
 
@@ -57,13 +85,17 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	$temp_2 	= explode(".",$temp_1[1]);
 	$photo_i 	= $temp_2[0];
 
+	$thumbs 	= [];
 	foreach($photos as $i => $photo){
+		$thum_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=photo_".$i.".jpg";
 		if($i !== intval($photo_i)){
+			$thumbs[] 	= "<a href='photo.php?_id=".$doc["_id"]."&_file=photo_".$i.".jpg'><img src='$thum_uri'></a>";
 			continue;
+		}else{
+			$thumbs[] 	= "<a href='photo.php?_id=".$doc["_id"]."&_file=photo_".$i.".jpg' class='current'><img src='$thum_uri'></a>";
 		}
 
 		$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
-
 		$goodbad 	= "";
 		if($photo["goodbad"] > 1){
 			$goodbad  .= "<span class='goodbad good'></span>";
@@ -77,7 +109,6 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			$goodbad = "N/A";
 		}
 
-
 		$long 		= $photo["geotag"]["longitude"];
 		$lat 		= $photo["geotag"]["latitude"];
 		$timestamp  = $photo["geotag"]["timestamp"];
@@ -85,6 +116,9 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$photo_name = "photo_".$i.".jpg";
 		$photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
 		$photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name";
+		
+		
+
 		$attach_url = "#";
 		$audio_attachments = "";
 		if(!empty($photo["audio"])){
@@ -93,22 +127,24 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				$audio_name = "audio_".$i."_".$a.".wav";
 				$attach_url = $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $audio_name;
 				$attach_url = "passthru.php?_id=".$doc["_id"]."&_file=$audio_name";
-				$audio_attachments .= "<div><a href='$attach_url' class='audio $hasaudio'></a> <input  type='text' name='".$doc["_id"]. $audio_name ."' value='' placeholder='Click the icon and transcribe what you hear'></input></div>";
+				$transcription 		= isset($doc["transcriptions"][$audio_name]) ? $doc["transcriptions"][$audio_name] : "";
+				$audio_attachments .= "<div><a href='$attach_url' class='audio $hasaudio'></a> <input  type='text' name='transcriptions[$audio_name]' value='$transcription' placeholder='Click the icon and transcribe what you hear'></input></div>";
 			}
 		}
-		break;
 	}
 
+	echo "<form id='photo_detail' method='POST'>";
+	echo "<input type='hidden' name='doc_id' value='".$doc["_id"]."'/>";
 	echo "<div class='user_entry'>";
 	echo "<hgroup>";
-	echo "<h4>Photo Detail ". $projects[$doc["project_id"]] ." (".$doc["lang"] .") : 
+	echo "<h4>Photo Detail : 
 	<b>".date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000))." <span class='time'>@".date("g:i a", floor($timestamp/1000))."</span></b> 
 	<i>".$doc["_id"]."</i></h4>";
 	echo "</hgroup>";
 
 	echo "<aside>
-		<div id='google_map_0' class='gmap'></div>
-				</aside>";
+			<div id='google_map_0' class='gmap'></div>
+		</aside>";
 	echo "<aside>
 			<h4>Good or Bad for the community</h4>
 			$goodbad
@@ -117,9 +153,12 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo "<aside>
 			<h4>Transcribe Audio</h4>
 			$audio_attachments
+
+			<input type='submit' value='Save Transcriptions'/>
 		</aside>";
 
 	echo "<section class='photo_previews'>";
+	echo "<div class='thumbs'>".implode("",$thumbs)."</div>";
 	echo "<div>";	
 	echo "
 		<figure>
@@ -134,6 +173,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo "</div>";
 	echo "</section>";
 	echo "</div>";
+	echo "</form>";
 }
 ?>
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha256-/SIrNqv8h6QGKDuNoLGA4iret+kyesCkHGzVUUV0shc=" crossorigin="anonymous"></script>
@@ -190,16 +230,13 @@ $(document).ready(function(){
 </body>
 </html>
 <?php 
-function bulkUpdateDocs($docs_o){
-	//BULK UPDATE PROCESS
-	$couch_db 	= "_bulk_docs";
-	$couch_proj = $_ENV["couch_proj_users"];
+function putDoc($_id, $payload){
+	$couch_proj = $_ENV["couch_proj_users"]; 
+	$couch_url 	= $_ENV["couch_url"] . "/$couch_proj" . "/$_id";
 	$couch_adm 	= $_ENV["couch_adm"]; 
 	$couch_pw 	= $_ENV["couch_pw"]; 
-	$couch_base = $_ENV["couch_url"];
-	$couch_url 	= $couch_base. "/$couch_proj" ."/$couch_db" ;
-	
-	//CURL OPTIONS
+
+	// CURL OPTIONS
 	$ch 		= curl_init($couch_url);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -207,12 +244,10 @@ function bulkUpdateDocs($docs_o){
 		"Accept: */*"
 	));
 	curl_setopt($ch, CURLOPT_USERPWD, "$couch_adm:$couch_pw");
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST"); //JUST FETCH DATA
-	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array("docs" => $docs_o)));
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT'); //PUT to UPDATE/CREATE IF NOT EXIST
+	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
 
 	$response 	= curl_exec($ch);
 	curl_close($ch);
-
-	return;
 }
 ?>
