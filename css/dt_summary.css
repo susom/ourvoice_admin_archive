@@ -190,10 +190,10 @@ label span {
 
 .photo_detail figure img{
 	max-width:740px;
-	transform:rotate(90deg) translate(110px,0);
+	transform:rotate(90deg) translate(90px,0);
 }
 .photo_detail .rotate img {
-	transform: rotate(0) translate(0,20px);
+	transform: rotate(0) translate(0,0);
 	image-orientation: from-image;
 }
 
@@ -253,9 +253,6 @@ label span {
 	vertical-align: middle
 }
 
-.photo_detail a.preview span{
-	top:20px;
-}
 
 .photo_detail .photo_previews .thumbs{
 	min-height:145px;
