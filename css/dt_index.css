@@ -106,3 +106,10 @@ hgroup a {
 	right:10px;
 	top:10px;
 }
+
+.nlbr {
+	width:80%;
+	height:100px;
+	vertical-align:top;
+	font-size:120%;	
+}

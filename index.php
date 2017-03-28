@@ -198,8 +198,9 @@ if(!isset($_SESSION["discpw"]) && 1==2) {
 					echo "</div>";	
 					echo "<div><h3>Text</h3>";
 					foreach($text as $lkey => $trans){
+						$input = "<textarea class='nlbr' name='consent_trans[$cdx][text][$lkey]'>".$trans."</textarea>" ;
 						echo  "<label><span class='key'>Code</span> <i>$lkey</i>
-						<span class='val'>Value</span><input type='text' name='consent_trans[$cdx][text][$lkey]' value=\"$trans\"/></label>";
+						<span class='val'>Value</span>$input</label>";
 					}
 					echo "</div>";	
 					echo "<div><h3>Button</h3>";
