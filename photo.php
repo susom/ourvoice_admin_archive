@@ -85,10 +85,18 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	$temp_2 	= explode(".",$temp_1[1]);
 	$photo_i 	= $temp_2[0];
 
-	$thumbs 	= [];
+	$prevnext 	= [];
 	foreach($photos as $i => $photo){
 		if($i !== intval($photo_i)){
 			continue;
+		}
+
+		//PREV NEXT
+		if(isset($photos[$i-1])){
+			$prevnext[0] = "photo.php?_id=" . $doc["_id"] . "&_file=photo_" . ($i - 1) . ".jpg";
+		}
+		if(isset($photos[$i+1])){
+			$prevnext[1] = "photo.php?_id=" . $doc["_id"] . "&_file=photo_" . ($i + 1) . ".jpg";
 		}
 
 		$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
@@ -125,6 +133,8 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$attach_url'/></audio> <input  type='text' name='transcriptions[$audio_name]' value='$transcription' placeholder='Click the icon and transcribe what you hear'></input></div>";
 			}
 		}
+
+		break;
 	}
 
 	echo "<form id='photo_detail' method='POST'>";
@@ -149,6 +159,17 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			$audio_attachments
 			<input type='submit' value='Save Transcriptions'/>
 		</aside>";
+
+	if(count($prevnext)> 0){
+		echo "<aside>";
+		if(isset($prevnext[0])){
+			echo "<a href='".$prevnext[0]."' class='prev'>Previous Photo</a>";
+		}	
+		if(isset($prevnext[1])){
+			echo "<a href='".$prevnext[1]."' class='next'>Next Photo</a>";
+		}
+		echo "</aside>";
+	}
 
 	echo "<section class='photo_previews'>";
 	echo "<div>";	

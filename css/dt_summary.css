@@ -296,3 +296,33 @@ label span {
 	top:0;
 	right:0; 
 }
+
+.photo_detail aside{
+	overflow:hidden;
+}
+
+.photo_detail input[type='submit']{
+	display:block;
+	margin:0 auto;
+}
+.prev,.next{
+    float: right;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 110%;
+    color: #333;
+    font-family: Helvetica;
+    display:inline-block;
+    vertical-align:top;
+}
+.prev {
+	float:left;
+}
+.prev:before{
+	content:"<< ";
+	vertical-align:top;
+}
+.next:after{
+	content:" >>";
+	vertical-align:top;
+}
