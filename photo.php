@@ -113,8 +113,6 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
 		$photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name";
 		
-		
-
 		$attach_url = "#";
 		$audio_attachments = "";
 		if(!empty($photo["audio"])){
@@ -149,7 +147,6 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo "<aside>
 			<h4>Transcribe Audio</h4>
 			$audio_attachments
-
 			<input type='submit' value='Save Transcriptions'/>
 		</aside>";
 
@@ -163,7 +160,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$geotags   = array();
 		$geotags[] = array("lat" => $lat, "lng" => $long);
 		$json_geo  = json_encode($geotags);
-		$gmaps[]   = "drawGMap($json_geo, 0);\n";
+		$gmaps[]   = "drawGMap($json_geo, 0, 16);\n";
 
 	echo "</div>";
 	echo "</section>";
@@ -195,19 +192,7 @@ $(document).ready(function(){
 		echo implode($gmaps);
 	?>
 
-	window.snd_o = null;
-	window.current_preview = null;
-	$(".preview").hover(function(){
-		var long 	= $(this).data("long");
-		var lat 	= $(this).data("lat"); 
-		var map_id 	= $(this).attr("rel");
-		var latlng 	= new google.maps.LatLng(lat, long);
-
-		addmarker(latlng,map_id);
-	},function(){
-		current_preview.setMap(null);
-	});
-
+	window.snd_o           = null;
 	$(".audio").click(function(){
 		var soundclip 	= $(this).attr("href");
 		window.snd_o	= new Audio(soundclip);

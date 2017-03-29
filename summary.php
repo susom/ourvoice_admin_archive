@@ -154,7 +154,7 @@ if( $active_project_id ){
 		echo "<div id='google_map_$i' class='gmap'></div>";
 		
 		echo "<section class='photo_previews'>";
-		echo "<label><input type='checkbox' name='for_delete[]' value='".$doc["_id"]."|".$doc["_rev"]."'/>Delete This Entry</label>";
+		echo "<label><input type='checkbox' name='for_delete[]' value='".$doc["_id"]."|".$doc["_rev"]."'/>Delete This Walk</label>";
 		echo "<h5>Photo Previews</h5>";
 		echo "<div class='thumbs'>";
 		echo "<ul>";
