@@ -40,8 +40,21 @@ if( isset($_POST["doc_id"]) ){
 
 	$doc 	 = json_decode(stripslashes($response),1);
 	$payload = $doc;
-	foreach($_POST["transcriptions"] as $audio_name => $transcription){
-		$payload["transcriptions"][$audio_name] = $transcription;
+
+
+
+	if(isset($_POST["photo_i"]) && isset($_POST["rotate"])){
+		//SAVE ROTATION
+		$photo_i 	= $_POST["photo_i"];
+		$rotate 	= $_POST["rotate"]; 
+		$payload["photos"][$photo_i]["rotate"] = $rotate;
+		putDoc($_id, $payload);
+		exit;
+	}else{
+		//SAVE TRANSCRIPTIONS
+		foreach($_POST["transcriptions"] as $audio_name => $transcription){
+			$payload["transcriptions"][$audio_name] = $transcription;
+		}
 	}
 	putDoc($_id, $payload);
 }
@@ -102,6 +115,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		}
 
 		$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
+		$hasrotate 	= isset($photo["rotate"]) ? $photo["rotate"] : 0;
 		$goodbad 	= "";
 		if($photo["goodbad"] > 1){
 			$goodbad  .= "<span class='goodbad good'></span>";
@@ -177,7 +191,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo "<div>";	
 	echo "
 		<figure>
-		<a class='preview' rel='google_map_0' data-long='$long' data-lat='$lat'><img src='$photo_uri' /><span></span></a>
+		<a class='preview rotate' rev='$hasrotate' rel='google_map_0' data-long='$long' data-lat='$lat'><img src='$photo_uri' /><span></span></a>
 		</figure>";
 		
 		$geotags   = array();
@@ -191,7 +205,10 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo "</form>";
 }
 ?>
-<script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha256-/SIrNqv8h6QGKDuNoLGA4iret+kyesCkHGzVUUV0shc=" crossorigin="anonymous"></script>
+<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo $gmaps_key; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js"></script>
 <script>
@@ -213,6 +230,8 @@ function addmarker(latilongi,map_id) {
 $(document).ready(function(){
 	<?php
 		echo implode($gmaps);
+		echo "var doc_id 	= '".$doc["_id"]."';\n";
+		echo "var photo_i 	= '".$photo_i."';";
 	?>
 
 	window.snd_o           = null;
@@ -224,7 +243,24 @@ $(document).ready(function(){
 	});
 
 	$(".preview span").click(function(){
-		$(this).parent().toggleClass("rotate");
+		var rotate = $(this).parent().attr("rev");
+		if(rotate < 3){
+			rotate++;
+		}else{
+			rotate = 0;
+		}
+		$(this).parent().attr("rev",rotate);
+
+		$.ajax({
+		  method: "POST",
+		  url: "photo.php",
+		  data: { doc_id: doc_id, photo_i: photo_i, rotate: rotate },
+		  dataType: "JSON"
+		}).done(function( msg ) {
+			alert( "Data Saved: " + msg );
+		});
+
+		
 		return false;
 	})
 });

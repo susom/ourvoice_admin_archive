@@ -196,6 +196,18 @@ label span {
 	transform: rotate(0) translate(0,0);
 	image-orientation: from-image;
 }
+.photo_detail .rotate[rev='1'] img {
+	transform: rotate(90deg) translate(0,0);
+	image-orientation: from-image;
+}
+.photo_detail .rotate[rev='2'] img {
+	transform: rotate(180deg) translate(0,0);
+	image-orientation: from-image;
+}
+.photo_detail .rotate[rev='3'] img {
+	transform: rotate(270deg) translate(0,0);
+	image-orientation: from-image;
+}
 
 .photo_detail figure figcaption{
 	margin:10px 0;
