@@ -191,7 +191,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo "<div>";	
 	echo "
 		<figure>
-		<a class='preview rotate' rev='$hasrotate' rel='google_map_0' data-long='$long' data-lat='$lat'><img src='$photo_uri' /><span></span></a>
+		<a class='preview rotate' rev='$hasrotate' data-photo_i=$photo_i data-doc_id='".$doc["_id"]."' rel='google_map_0' data-long='$long' data-lat='$lat'><img src='$photo_uri' /><span></span></a>
 		</figure>";
 		
 		$geotags   = array();
@@ -205,10 +205,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo "</form>";
 }
 ?>
-<script
-  src="https://code.jquery.com/jquery-3.2.1.min.js"
-  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-  crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo $gmaps_key; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js"></script>
 <script>
@@ -230,8 +227,6 @@ function addmarker(latilongi,map_id) {
 $(document).ready(function(){
 	<?php
 		echo implode($gmaps);
-		echo "var doc_id 	= '".$doc["_id"]."';\n";
-		echo "var photo_i 	= '".$photo_i."';";
 	?>
 
 	window.snd_o           = null;
@@ -251,6 +246,8 @@ $(document).ready(function(){
 		}
 		$(this).parent().attr("rev",rotate);
 
+		var doc_id 	= $(this).parent().data("doc_id");
+		var photo_i = $(this).parent().data("photo_i");
 		$.ajax({
 		  method: "POST",
 		  url: "photo.php",
@@ -262,7 +259,7 @@ $(document).ready(function(){
 
 		
 		return false;
-	})
+	});
 });
 </script>
 </body>

@@ -176,6 +176,7 @@ if( $active_project_id ){
 				$goodbad  .= "<span class='goodbad bad'></span>";
 			}
 
+			$rotate 	= isset($photo["rotate"]) ? $photo["rotate"] : 0;
 			$photo_name = "photo_".$n.".jpg";
 			$photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
 			$photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name";
@@ -190,7 +191,7 @@ if( $active_project_id ){
 			}
 			echo "<li>
 			<figure>
-			<a href='$detail_url' target='_blank' rel='google_map_$i' data-long='$long' data-lat='$lat' class='preview'><img src='$photo_uri' /><span></span></a>
+			<a href='$detail_url' target='_blank' rel='google_map_$i' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate' rev='$rotate'><img src='$photo_uri' /><span></span></a>
 			<figcaption>
 				<span class='time'>@".date("g:i a", floor($timestamp/1000))."</span>
 				".$goodbad."
@@ -254,7 +255,7 @@ if( $active_project_id ){
 	<?php
 }
 ?>
-<script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha256-/SIrNqv8h6QGKDuNoLGA4iret+kyesCkHGzVUUV0shc=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo $_ENV["gmaps_key"]; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js"></script>
 <script>
@@ -290,7 +291,26 @@ $(document).ready(function(){
 	});
 
 	$(".preview span").click(function(){
-		$(this).parent().toggleClass("rotate");
+		var rotate = $(this).parent().attr("rev");
+		if(rotate < 3){
+			rotate++;
+		}else{
+			rotate = 0;
+		}
+		$(this).parent().attr("rev",rotate);
+
+		var doc_id 	= $(this).parent().data("doc_id");
+		var photo_i = $(this).parent().data("photo_i"); 
+		$.ajax({
+		  method: "POST",
+		  url: "photo.php",
+		  data: { doc_id: doc_id, photo_i: photo_i, rotate: rotate },
+		  dataType: "JSON"
+		}).done(function( msg ) {
+			alert( "Data Saved: " + msg );
+		});
+
+		
 		return false;
 	});
 
