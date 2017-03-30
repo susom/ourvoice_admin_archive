@@ -2,6 +2,8 @@
 session_start();
 session_destroy();
 
+date_default_timezone_set('America/Los_Angeles');
+
 $_ENV['couch_url'   	] 	='https://ourvoice-cdb.med.stanford.edu'			;	
 $_ENV['couch_proj_proj' ] 	='disc_projects';
 $_ENV['couch_db_proj'  	] 	='all_projects';
@@ -53,7 +55,7 @@ if( isset($_POST["doc_id"]) ){
 <body id="main" class="photo_detail">
 <?php
 if(isset($_GET["_id"]) && isset($_GET["_file"])){
-	$_id 	= trim(strtoupper($_GET["_id"]));
+	$_id 	= trim($_GET["_id"]);
 	$_file 	= $_GET["_file"];
 
 	$couch_base = $_ENV["couch_url"];

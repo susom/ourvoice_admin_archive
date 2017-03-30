@@ -17,8 +17,6 @@ $couch_url 	= $_ENV["couch_url"] . "/$couch_proj" . "/$couch_db";
 $couch_adm 	= $_ENV["couch_adm"]; 
 $couch_pw 	= $_ENV["couch_pw"]; 
 
-
-
 if(!isset($_SESSION["DT"])){
 	//CURL OPTIONS
 	$ch 		= curl_init($couch_url);
@@ -47,61 +45,75 @@ foreach($ap["project_list"] as $pid => $proj){
 
 if( isset($_POST["proj_idx"]) ){
 	$proj_idx  	= $_POST["proj_idx"];
-	$redi 		= false;
-	if( $projects[$proj_idx] !==  $_POST["project_id"]){
-		//MEANS THIS IS A NEW PROJECT
-		//NEED A NEW PROJECT ID!
-		$proj_idx 	= count($projects);
-		$redi 	= true;
-	}
-	
-	//GOT ALL THE DATA IN A STRUCTURE, NOW JUST MASSAGE IT INTO RIGHT FORMAT THEN SUBMIT IT
-	$app_lang = array();
-	foreach($_POST["lang_code"] as $ldx => $code){
-		array_push($app_lang, array("lang" => $code , "language" => $_POST["lang_full"][$ldx]));
-	}
+	if(isset($_POST["delete_project_id"])){
+		$pidx 		= $proj_idx;
+		$payload 	= $ap;
+		unset($payload["project_list"][$pidx]);
 
-	$app_text = array();
-	foreach($_POST["app_text_key"] as $tdx => $key){
-		array_push($app_text, array(
-			 "key" => $key
-			,"val" => $_POST["app_text_trans"][$tdx]
-		));
-	}
-
-	$surveys  = array();
-	foreach($_POST["survey_key"] as $sdx => $name){
-		$survey_q = array(
-			 "name" 	=> $name
-			,"type" 	=> $_POST["survey_type"][$sdx]
-			,"label" 	=> $_POST["survey_label"][$sdx]
-		);
-		if(isset($_POST["option_value"][$sdx])){
-			$survey_q["options"] = $_POST["option_value"][$sdx];
+		putDoc($payload);
+		$msg = "Project " . $projects[$pidx] . " has been deleted";
+		header("location:index.php?msg=$msg");
+		exit;
+	}else{
+		$redi 		= false;
+		if( $projects[$proj_idx] !==  $_POST["project_id"]){
+			//MEANS THIS IS A NEW PROJECT
+			//NEED A NEW PROJECT ID!
+			$temp 		= array_keys($projects);
+			$last_key 	= array_pop($temp);
+			$last_key++;
+			$proj_idx 	= $last_key;
+			$redi 		= true;
 		}
-		array_push($surveys, $survey_q);
-	}
-	$consents  = $_POST["consent_trans"];
+		
+		//GOT ALL THE DATA IN A STRUCTURE, NOW JUST MASSAGE IT INTO RIGHT FORMAT THEN SUBMIT IT
+		$app_lang = array();
+		foreach($_POST["lang_code"] as $ldx => $code){
+			array_push($app_lang, array("lang" => $code , "language" => $_POST["lang_full"][$ldx]));
+		}
 
-	$updated_project = array(
-		 "project_id" 		=> $_POST["project_id"]
-		,"project_name" 	=> $_POST["project_name"]
-		,"project_pass" 	=> $_POST["project_pass"]
-		,"thumbs"			=> $_POST["thumbs"]
-		,"app_lang" 		=> $app_lang
-		,"app_text" 		=> $app_text
-		,"surveys"	 		=> $surveys
-		,"consent" 			=> $consents
-	);
+		$app_text = array();
+		foreach($_POST["app_text_key"] as $tdx => $key){
+			array_push($app_text, array(
+				 "key" => $key
+				,"val" => $_POST["app_text_trans"][$tdx]
+			));
+		}
 
-	$pidx 		= $proj_idx;
-	$payload 	= $ap;
-	$payload["project_list"][$pidx] = $updated_project;
+		$surveys  = array();
+		foreach($_POST["survey_key"] as $sdx => $name){
+			$survey_q = array(
+				 "name" 	=> $name
+				,"type" 	=> $_POST["survey_type"][$sdx]
+				,"label" 	=> $_POST["survey_label"][$sdx]
+			);
+			if(isset($_POST["option_value"][$sdx])){
+				$survey_q["options"] = $_POST["option_value"][$sdx];
+			}
+			array_push($surveys, $survey_q);
+		}
+		$consents  = $_POST["consent_trans"];
 
-	putDoc($payload);
-	$ap = $_SESSION["DT"] = $payload;
-	if($redi){
-		header("location:index.php?proj_idx=$pidx");
+		$updated_project = array(
+			 "project_id" 		=> $_POST["project_id"]
+			,"project_name" 	=> $_POST["project_name"]
+			,"project_pass" 	=> $_POST["project_pass"]
+			,"thumbs"			=> $_POST["thumbs"]
+			,"app_lang" 		=> $app_lang
+			,"app_text" 		=> $app_text
+			,"surveys"	 		=> $surveys
+			,"consent" 			=> $consents
+		);
+
+		$pidx 		= $proj_idx;
+		$payload 	= $ap;
+		$payload["project_list"][$pidx] = $updated_project;
+
+		putDoc($payload);
+		$ap = $_SESSION["DT"] = $payload;
+		if($redi){
+			header("location:index.php?proj_idx=$pidx");
+		}
 	}
 }
 ?>
@@ -139,7 +151,7 @@ if(!isset($_SESSION["discpw"]) && 1==2) {
 		$app_surv = $p["surveys"];
 		$app_cons = $p["consent"];
 		?>
-		<form method="post">
+		<form id="project_config" method="post">
 			<fieldset class="app_meta">
 				<legend>Project Meta</legend>
 				<input type="hidden" name="proj_idx" value="<?php echo $_GET["proj_idx"]; ?>"/>
@@ -159,6 +171,8 @@ if(!isset($_SESSION["discpw"]) && 1==2) {
 				}
 				?>
 				</label>
+
+				<a href="#" id="delete_project">Delete This Project</a>
 			</fieldset>
 			<fieldset class="app_trans">
 				<legend>App Translations</legend>
@@ -286,7 +300,22 @@ if(!isset($_SESSION["discpw"]) && 1==2) {
 <script src="http://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha256-/SIrNqv8h6QGKDuNoLGA4iret+kyesCkHGzVUUV0shc=" crossorigin="anonymous"></script>
 <script>
 $(document).ready(function(){
-	$(".delete_parent").click(function(){
+	<?php
+		if(isset($_GET["proj_idx"])){
+			echo "var current_project_id = ".$_GET["proj_idx"]. ";\n";
+		}
+		if(isset($_GET["msg"])){
+			echo "alert('" . $_GET["msg"] . "');\n";
+		}
+	?>
+
+	$("input[name='project_id']").change(function(){
+		var newpid = $(this).val();
+		alert("By changing the Project ID value, when you click 'Submit' you will be creating a new Project with the ID : " + newpid );
+		return false;
+	});
+
+	$("fieldset").on("click",".delete_parent",function(){
 		$(this).parent().remove();
 		return false;	
 	});
@@ -294,7 +323,25 @@ $(document).ready(function(){
 	$("legend").click(function(){
 		$(this).parent().toggleClass("open");
 		return false;
+	});
+
+	$(".add_language").click(function(){
+		var new_lang = "<div class='one_unit'><span class='code'>Code</span><input type='text' name='lang_code[]' value=''/> <span class='full'>Language</span> <input type='text' name='lang_full[]' value=''/><a href='#' class='delete_parent'>- Delete Language</a></div>";
+		$("label.languages").append(new_lang);
+		return false;
 	})
+
+	$("#delete_project").click(function(){
+		var delete_project_id 	= prompt("Please type the Project Id of this project to confirm that you are deleting it.");
+		var hinput 				= $("<input type='hidden' name='delete_project_id'/>").val(delete_project);
+		if(delete_project_id 	== current_project_id){
+			$("#project_config").append(hinput);
+			$("#project_config").submit();
+		}else{
+			alert("Project IDs do not match.  No action taken.");			
+		}
+		return false;
+	});
 });
 </script>	
 </body>

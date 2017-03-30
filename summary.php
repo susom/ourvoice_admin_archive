@@ -2,6 +2,8 @@
 session_start();
 session_destroy();
 
+date_default_timezone_set('America/Los_Angeles');
+
 $_ENV['couch_url'   	] 	='https://ourvoice-cdb.med.stanford.edu'			;	
 $_ENV['couch_proj_proj' ] 	='disc_projects';
 $_ENV['couch_db_proj'  	] 	='all_projects';
@@ -62,7 +64,8 @@ if(isset($_POST["for_delete"])){
 if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
 	$proj_id = trim(strtoupper($_POST["proj_id"]));
 	$proj_pw = $_POST["proj_pw"];
-	foreach($projs as $proj){
+
+	foreach($projs as $pid => $proj){
 		array_push($projects, $proj["project_id"]);
 		if($proj_id == $proj["project_id"] && $proj_pw == $proj["project_pass"]){
 			$active_project_id = $proj_id;
@@ -134,7 +137,7 @@ if( $active_project_id ){
 	echo "<input type='hidden' name='proj_pw' value='".$_POST["proj_pw"]."'/>";
 
 	foreach($active_project  as $i =>  $doc){
-		$parent 	= $proj[$projects[$doc["project_id"]]];
+		$parent 	= $proj[$active_project_id];
 		$photos 	= $doc["photos"];
 		$geotags 	= $doc["geotags"];
 		$survey 	= $doc["survey"];
@@ -147,7 +150,7 @@ if( $active_project_id ){
 
 		echo "<div class='user_entry'>";
 		echo "<hgroup>";
-		echo "<h4>Project ". $projects[$doc["project_id"]] ." (".$doc["lang"] .") : 
+		echo "<h4>Project ". $active_project_id ." (".$doc["lang"] .") : 
 		<b>".date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000))."</b> 
 		<i>".$doc["_id"]."</i></h4>";
 		echo "</hgroup>";

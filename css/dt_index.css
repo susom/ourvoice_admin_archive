@@ -113,3 +113,21 @@ hgroup a {
 	vertical-align:top;
 	font-size:120%;	
 }
+
+
+.app_meta{
+	position:relative;
+}
+#delete_project{
+	display:block;
+	border:1px solid #888;
+	padding:12px 15px;
+	position:absolute;
+	top:30px;
+	right:30px;
+	border-radius:5px;
+	background:red;
+	color:#fff;
+	font-weight:Bold;
+	text-decoration:none;
+}
