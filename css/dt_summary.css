@@ -77,7 +77,8 @@ a.preview{
 	min-height:150px;
 	position:relative;
 }
-a.preview span{
+a.preview span,
+a.preview b{
 	position:absolute;
 	top:0;
 	right:0;
@@ -91,11 +92,12 @@ a.preview span{
 	box-shadow:1px 1px 1px #333;
 	cursor:pointer;
 }
-.thumbs img {
-	max-width:140px;
-	max-height:140px;
-	transform: rotate(90deg) translate(20px,0);
-	image-orientation: from-image;
+a.preview b{
+	background:#fff url(../img/icon_trash.png) 50% no-repeat;
+	top:25px;
+	background-size:contain;
+	transform: rotate(0);
+
 }
 .thumbs .rotate img {
 	max-width:140px;

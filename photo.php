@@ -41,13 +41,32 @@ if( isset($_POST["doc_id"]) ){
 	$doc 	 = json_decode(stripslashes($response),1);
 	$payload = $doc;
 
-
-
-	if(isset($_POST["photo_i"]) && isset($_POST["rotate"])){
-		//SAVE ROTATION
-		$photo_i 	= $_POST["photo_i"];
-		$rotate 	= $_POST["rotate"]; 
-		$payload["photos"][$photo_i]["rotate"] = $rotate;
+	if(isset($_POST["photo_i"])){
+		$photo_i = $_POST["photo_i"];
+		if(isset($_POST["rotate"])){
+			//SAVE ROTATION
+			$rotate = $_POST["rotate"]; 
+			$payload["photos"][$photo_i]["rotate"] = $rotate;
+		}
+		
+		if(isset($_POST["delete"])){
+			unset($payload["photos"][$photo_i]);
+			$photo_name 	= "photo_".$photo_i.".jpg";
+			$audio_match 	= "audio_".$photo_i."_";
+			foreach($payload["_attachments"] as $name => $val){
+				if($name == $photo_name){
+					unset($payload["_attachments"][$name]);
+				}
+				if(strpos($name,$audio_match) > -1){
+					unset($payload["_attachments"][$name]);
+				}
+			}
+			foreach($payload["transcriptions"] as $name => $val){
+				if(strpos($name,$audio_match) > -1){
+					unset($payload["transcriptions"][$name]);
+				}
+			}
+		}
 		putDoc($_id, $payload);
 		exit;
 	}else{

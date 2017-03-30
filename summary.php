@@ -189,9 +189,9 @@ if( $active_project_id ){
 				$num 		= $num_audios > 1 ? "<span>x$num_audios</span>" :"";
 				$audio_attachments .= "<a class='audio $hasaudio'></a> $num";
 			}
-			echo "<li>
+			echo "<li id='photo_$n'>
 			<figure>
-			<a href='$detail_url' target='_blank' rel='google_map_$i' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate' rev='$rotate'><img src='$photo_uri' /><span></span></a>
+			<a href='$detail_url' target='_blank' rel='google_map_$i' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate' rev='$rotate'><img src='$photo_uri' /><span></span><b></b></a>
 			<figcaption>
 				<span class='time'>@".date("g:i a", floor($timestamp/1000))."</span>
 				".$goodbad."
@@ -302,15 +302,31 @@ $(document).ready(function(){
 		var doc_id 	= $(this).parent().data("doc_id");
 		var photo_i = $(this).parent().data("photo_i"); 
 		$.ajax({
-		  method: "POST",
-		  url: "photo.php",
-		  data: { doc_id: doc_id, photo_i: photo_i, rotate: rotate },
-		  dataType: "JSON"
-		}).done(function( msg ) {
-			alert( "Data Saved: " + msg );
+		  type 		: "POST",
+		  url 		: "photo.php",
+		  data 		: { doc_id: doc_id, photo_i: photo_i, rotate: rotate },
+		}).done(function(response) {
+			// console.log("rotation saved");
+		}).fail(function(msg){
+			// console.log("rotation save failed");
 		});
+		return false;
+	});
 
-		
+	$(".preview b").click(function(){
+		var doc_id 	= $(this).parent().data("doc_id");
+		var photo_i = $(this).parent().data("photo_i"); 
+		$.ajax({
+		  type 		: "POST",
+		  url 		: "photo.php",
+		  data 		: { doc_id: doc_id, photo_i: photo_i, delete: true }
+		}).done(function(response) {
+			$("#photo_"+photo_i).fadeOut("fast",function(){
+				$(this).remove();
+			});
+		}).fail(function(response){
+			// console.log("delete failed");
+		});
 		return false;
 	});
 
