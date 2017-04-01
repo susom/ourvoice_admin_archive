@@ -121,7 +121,7 @@ if( isset($_POST["proj_idx"]) ){
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
-<link href="css/dt_index.css" rel="stylesheet" type="text/css"/>
+<link href="css/dt_index.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 </head>
 <body id="main" class="configurator">
 <hgroup>
@@ -148,8 +148,8 @@ if(!isset($_SESSION["discpw"]) && 1==2) {
 		$langs 	  = $p["app_lang"];
 
 		$app_text = $p["app_text"];
-		$app_surv = $p["surveys"];
-		$app_cons = $p["consent"];
+		$app_surv = !empty($p["surveys"]) ? $p["surveys"] : array();
+		$app_cons = !empty($p["consent"]) ? $p["consent"] : array();
 		?>
 		<form id="project_config" method="post">
 			<fieldset class="app_meta">

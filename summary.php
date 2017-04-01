@@ -79,7 +79,7 @@ if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
-<link href="css/dt_summary.css" rel="stylesheet" type="text/css"/>
+<link href="css/dt_summary.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 </head>
 <body id="main">
 <?php
@@ -162,6 +162,9 @@ if( $active_project_id ){
 		echo "<div class='thumbs'>";
 		echo "<ul>";
 		foreach($photos as $n => $photo){
+			if(is_null($photo)){
+				continue;
+			}
 			$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
 			$long 		= $photo["geotag"]["longitude"];
 			$lat 		= $photo["geotag"]["latitude"];
@@ -257,7 +260,7 @@ if( $active_project_id ){
 ?>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo $_ENV["gmaps_key"]; ?>"></script>
-<script type="text/javascript" src="js/dt_summary.js"></script>
+<script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
 <script>
 function addmarker(latilongi,map_id) {
     var marker = new google.maps.Marker({
@@ -316,17 +319,21 @@ $(document).ready(function(){
 	$(".preview b").click(function(){
 		var doc_id 	= $(this).parent().data("doc_id");
 		var photo_i = $(this).parent().data("photo_i"); 
-		$.ajax({
-		  type 		: "POST",
-		  url 		: "photo.php",
-		  data 		: { doc_id: doc_id, photo_i: photo_i, delete: true }
-		}).done(function(response) {
-			$("#photo_"+photo_i).fadeOut("fast",function(){
-				$(this).remove();
+		
+		var deleteyes = confirm("Please, confirm you are deleting this photo and its associated audio.");
+		if(deleteyes){
+			$.ajax({
+			  type 		: "POST",
+			  url 		: "photo.php",
+			  data 		: { doc_id: doc_id, photo_i: photo_i, delete: true }
+			}).done(function(response) {
+				$("#photo_"+photo_i).fadeOut("fast",function(){
+					$(this).remove();
+				});
+			}).fail(function(response){
+				// console.log("delete failed");
 			});
-		}).fail(function(response){
-			// console.log("delete failed");
-		});
+		}
 		return false;
 	});
 

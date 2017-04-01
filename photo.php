@@ -82,7 +82,7 @@ if( isset($_POST["doc_id"]) ){
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
-<link href="css/dt_summary.css" rel="stylesheet" type="text/css"/>
+<link href="css/dt_summary.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 </head>
 <body id="main" class="photo_detail">
 <?php
@@ -226,7 +226,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 ?>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo $gmaps_key; ?>"></script>
-<script type="text/javascript" src="js/dt_summary.js"></script>
+<script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
 <script>
 function addmarker(latilongi,map_id) {
     var marker = new google.maps.Marker({
