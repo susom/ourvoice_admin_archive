@@ -54,14 +54,14 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level){
             });
     	}
 
-    	// Creates the polyline object
-        var polyline = new google.maps.Polyline({
-          map: window[map_id],
-          path: walkMap,
-          strokeColor: '#0000FF',
-          strokeOpacity: 0.7,
-          strokeWeight: 1
-        });
+    	// // Creates the polyline object
+     //    var polyline = new google.maps.Polyline({
+     //      map: window[map_id],
+     //      path: walkMap,
+     //      strokeColor: '#0000FF',
+     //      strokeOpacity: 0.7,
+     //      strokeWeight: 1
+     //    });
 
         window[map_id].fitBounds(latLngBounds); 
     }

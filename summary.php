@@ -142,7 +142,15 @@ if( $active_project_id ){
 		$geotags 	= $doc["geotags"];
 		$survey 	= $doc["survey"];
 		$_attach 	= !empty($doc["_attachments"]) ? $doc["_attachments"] : null;
-		$json_geo 	= json_encode($geotags);
+		$forjsongeo = array();
+		
+		// filter low accuracy
+		foreach($geotags as $tag){
+			if($tag["accuracy"] >= 20){
+				array_push($forjsongeo,$tag);
+			}
+		}
+		$json_geo 	= json_encode($forjsongeo);
 
 		if(empty($photos) || strpos($doc["_id"], "_design") > -1){
 			continue;
