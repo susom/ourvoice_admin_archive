@@ -146,7 +146,7 @@ if( $active_project_id ){
 		
 		// filter low accuracy
 		foreach($geotags as $tag){
-			if($tag["accuracy"] >= 20){
+			if($tag["accuracy"] <= 50){
 				array_push($forjsongeo,$tag);
 			}
 		}
