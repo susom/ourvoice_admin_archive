@@ -4,23 +4,19 @@
  * A test for passthru
  */
 
-$url 		= "https://ourvoice-cdb.med.stanford.edu/";
-$username 	= "disc_user_general";
-$password 	= "rQaKibbDx7rP";
+$url 		= cfg::$couch_url . "/";
+$username 	= cfg::$couch_user;
+$password 	= cfg::$couch_pw;
 
 // File would be obtained from url of ajax request, like /download/?id=GNT_4C01067B-5704-4C7E-A30E-A501C13A19E7_1_1482192593554&file=photo_0.jpg
-$id 	= isset($_GET["_id"])	? $_GET["_id"] 		: "GNT_4C01067B-5704-4C7E-A30E-A501C13A19E7_1_1482192593554";
-$file 	= isset($_GET["_file"]) ? $_GET["_file"] 	: "photo_0.jpg";
+//$id 	= isset($_GET["_id"])	? $_GET["_id"] 		: "GNT_4C01067B-5704-4C7E-A30E-A501C13A19E7_1_1482192593554";
+//$file 	= isset($_GET["_file"]) ? $_GET["_file"] 	: "photo_0.jpg";
 
+$id = isset($_GET["_id"]) ? $_GET["_id"] : NULL;
+$file = isset($_GET["_file"]) ? $_GET["_file"] : NULL;
 
-function doCurl($url, $username, $password) {
-    $process = curl_init($url);
-    curl_setopt($process, CURLOPT_USERPWD, $username . ":" . $password);
-    curl_setopt($process, CURLOPT_TIMEOUT, 30);
-    curl_setopt($process, CURLOPT_RETURNTRANSFER, TRUE);
-    $result = curl_exec($process);
-    curl_close($process);
-    return $result;
+if (empty($id) || empty($file)) {
+    exit ("Invalid id or file");
 }
 
 

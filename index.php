@@ -1,40 +1,41 @@
 <?php
-session_start();
+
+require_once "common.php";
+
+
 $_SESSION 	= null;
 
-$_ENV['couch_url'   	] 	='https://ourvoice-cdb.med.stanford.edu'			;	
-$_ENV['couch_proj_proj' ] 	='disc_projects';
-$_ENV['couch_db_proj'  	] 	='all_projects';
-$_ENV['couch_proj_users']  	='disc_users';
-$_ENV['couch_db_all' 	] 	='_all_docs';
-$_ENV['couch_adm'   	] 	='disc_user_general';
-$_ENV['couch_pw'    	] 	="rQaKibbDx7rP";
-$_ENV['gmaps_key'		] 	="AIzaSyCn-w3xVV38nZZcuRtrjrgy4MUAW35iBOo";
+$couch_proj     = cfg::$couch_proj_db;
+$couch_db 	    = cfg::$couch_config_db;
+$couch_url 	    = cfg::$couch_url . "/" . $couch_proj . "/" . $couch_db;
+$couch_user 	= cfg::$couch_user;
+$couch_pw 	    = cfg::$couch_pw;
 
-$couch_proj = $_ENV["couch_proj_proj"]; 
-$couch_db 	= $_ENV["couch_db_proj"]; 
-$couch_url 	= $_ENV["couch_url"] . "/$couch_proj" . "/$couch_db";
-$couch_adm 	= $_ENV["couch_adm"]; 
-$couch_pw 	= $_ENV["couch_pw"]; 
+
 
 if(!isset($_SESSION["DT"])){
-	//CURL OPTIONS
-	$ch 		= curl_init($couch_url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-		"Content-type: application/json",
-		"Accept: */*"
-	));
-	curl_setopt($ch, CURLOPT_USERPWD, "$couch_adm:$couch_pw");
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
-
-	$response 	= curl_exec($ch);
-	curl_close($ch);
+//	//CURL OPTIONS
+//	$ch 		= curl_init($couch_url);
+//	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+//		"Content-type: application/json",
+//		"Accept: */*"
+//	));
+//	curl_setopt($ch, CURLOPT_USERPWD, "$couch_user:$couch_pw");
+//	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
+//
+//	$response 	= curl_exec($ch);
+//	curl_close($ch);
 
 	//TURN IT INTO PHP ARRAY
+
+    // Query for the all projects document
+    $url = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+    $response = doCurl($url);
 	$_SESSION["DT"] = json_decode($response,1);
 }
 
+// Loop through all projects
 $ap 		= $_SESSION["DT"];
 $_id 		= $ap["_id"];
 $_rev 		= $ap["_rev"];
@@ -43,18 +44,27 @@ foreach($ap["project_list"] as $pid => $proj){
 	$projects[$pid] = $proj["project_id"];
 } 
 
+
+// Handle actions on PSOT
 if( isset($_POST["proj_idx"]) ){
 	$proj_idx  	= $_POST["proj_idx"];
+
+	// Delete
 	if(isset($_POST["delete_project_id"])){
 		$pidx 		= $proj_idx;
 		$payload 	= $ap;
 		unset($payload["project_list"][$pidx]);
 
-		putDoc($payload);
-		$msg = "Project " . $projects[$pidx] . " has been deleted";
+        //putDoc($payload);
+        $url = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+        $response = doCurl($url, json_encode($payload), 'PUT');
+        // TODO: Check for success
+
+        $msg = "Project " . $projects[$pidx] . " has been deleted";
 		header("location:index.php?msg=$msg");
 		exit;
 	}else{
+	    // REDIRECT IF NO OTHER ACTION
 		$redi 		= false;
 		if( $projects[$proj_idx] !==  $_POST["project_id"]){
 			//MEANS THIS IS A NEW PROJECT
@@ -109,8 +119,11 @@ if( isset($_POST["proj_idx"]) ){
 		$payload 	= $ap;
 		$payload["project_list"][$pidx] = $updated_project;
 
-		putDoc($payload);
-		$ap = $_SESSION["DT"] = $payload;
+//		putDoc($payload);
+        $url = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+        $response = doCurl($url, json_encode($payload), 'PUT');
+
+        $ap = $_SESSION["DT"] = $payload;
 		if($redi){
 			header("location:index.php?proj_idx=$pidx");
 		}
@@ -121,7 +134,8 @@ if( isset($_POST["proj_idx"]) ){
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
-<link href="css/dt_index.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href="css/dt_index.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 </head>
 <body id="main" class="configurator">
 <hgroup>
@@ -274,7 +288,7 @@ if(!isset($_SESSION["discpw"]) && 1==2) {
 				?>
 				</div>
 			</fieldset>
-			<input type="submit"/>
+			<btn type="submit" class="btn btn-primary"/>
 		</form>
 		<?php
 	}else{
@@ -297,7 +311,10 @@ if(!isset($_SESSION["discpw"]) && 1==2) {
 	}
 }
 ?>
+
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
 <script>
 $(document).ready(function(){
 	<?php
@@ -346,28 +363,5 @@ $(document).ready(function(){
 </script>	
 </body>
 </html>
-<?php
-function putDoc($payload){
-	$couch_proj = $_ENV["couch_proj_proj"]; 
-	$couch_db 	= $_ENV["couch_db_proj"]; 
-	$couch_url 	= $_ENV["couch_url"] . "/$couch_proj" . "/$couch_db";
-	$couch_adm 	= $_ENV["couch_adm"]; 
-	$couch_pw 	= $_ENV["couch_pw"]; 
-
-	// CURL OPTIONS
-	$ch 		= curl_init($couch_url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-		"Content-type: application/json",
-		"Accept: */*"
-	));
-	curl_setopt($ch, CURLOPT_USERPWD, "$couch_adm:$couch_pw");
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT'); //PUT to UPDATE/CREATE IF NOT EXIST
-	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-
-	$response 	= curl_exec($ch);
-	curl_close($ch);
-}
-?>
 
 

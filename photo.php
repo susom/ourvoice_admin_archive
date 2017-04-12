@@ -1,42 +1,48 @@
 <?php
-session_start();
-session_destroy();
+
+require_once "common.php";
+
+//session_start();
+//session_destroy();
 
 date_default_timezone_set('America/Los_Angeles');
 
-$_ENV['couch_url'   	] 	='https://ourvoice-cdb.med.stanford.edu'			;	
-$_ENV['couch_proj_proj' ] 	='disc_projects';
-$_ENV['couch_db_proj'  	] 	='all_projects';
-$_ENV['couch_proj_users']  	='disc_users';
-$_ENV['couch_db_all' 	] 	='_all_docs';
-$_ENV['couch_adm'   	] 	='disc_user_general';
-$_ENV['couch_pw'    	] 	="rQaKibbDx7rP";
-$_ENV['gmaps_key'		] 	="AIzaSyCn-w3xVV38nZZcuRtrjrgy4MUAW35iBOo";
+//$_ENV['couch_url'   	] 	='https://ourvoice-cdb.med.stanford.edu'			;
+//$_ENV['couch_proj_db'   ] 	='disc_projects';
+//$_ENV['couch_config_db'  	] 	='all_projects';
+//$_ENV['couch_users_db']  	='disc_users';
+//$_ENV['couch_all_db' 	] 	='_all_docs';
+//$_ENV['couch_user'   	] 	='disc_user_general';
+//$_ENV['couch_pw'    	] 	="rQaKibbDx7rP";
+//$_ENV['gmaps_key'		] 	="AIzaSyCn-w3xVV38nZZcuRtrjrgy4MUAW35iBOo";
 
-$gmaps_key 					= $_ENV["gmaps_key"];
+$gmaps_key 					= cfg::$gmaps_key;
 $projects 					= [];
 
 if( isset($_POST["doc_id"]) ){
 	$_id  	= $_POST["doc_id"];
 
-	$couch_base = $_ENV["couch_url"];
-	$couch_proj = $_ENV["couch_proj_users"];
-	$couch_url 	= $couch_base. "/$couch_proj" ."/$_id";
-	$couch_adm 	= $_ENV["couch_adm"]; 
-	$couch_pw 	= $_ENV["couch_pw"]; 
+//	$couch_base = $_ENV["couch_url"];
+//	$couch_proj = $_ENV["couch_users_db"];
+//	$couch_url 	= $couch_base. "/$couch_proj" ."/$_id";
+//	$couch_user 	= $_ENV["couch_user"];
+//	$couch_pw 	= $_ENV["couch_pw"];
+//
+//	//CURL OPTIONS
+//	$ch 		= curl_init($couch_url);
+//	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+//		"Content-type: application/json",
+//		"Accept: */*"
+//	));
+//	curl_setopt($ch, CURLOPT_USERPWD, "$couch_user:$couch_pw");
+//	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
+//
+//	$response 	= curl_exec($ch);
+//	curl_close($ch);
 
-	//CURL OPTIONS
-	$ch 		= curl_init($couch_url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-		"Content-type: application/json",
-		"Accept: */*"
-	));
-	curl_setopt($ch, CURLOPT_USERPWD, "$couch_adm:$couch_pw");
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
-
-	$response 	= curl_exec($ch);
-	curl_close($ch);
+    $url = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
+	$response = doCurl($url);
 
 	$doc 	 = json_decode(stripslashes($response),1);
 	$payload = $doc;
@@ -67,7 +73,8 @@ if( isset($_POST["doc_id"]) ){
 				}
 			}
 		}
-		putDoc($_id, $payload);
+//		putDoc($_id, $payload);
+        doCurl($url, json_encode($payload),"PUT");
 		exit;
 	}else{
 		//SAVE TRANSCRIPTIONS
@@ -75,7 +82,11 @@ if( isset($_POST["doc_id"]) ){
 			$payload["transcriptions"][$audio_name] = $transcription;
 		}
 	}
-	putDoc($_id, $payload);
+//    putDoc($_id, $payload);
+	doCurl($url, json_encode($payload),"PUT");
+
+
+
 }
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -90,24 +101,27 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	$_id 	= trim($_GET["_id"]);
 	$_file 	= $_GET["_file"];
 
-	$couch_base = $_ENV["couch_url"];
-	$couch_proj = $_ENV["couch_proj_users"];
-	$couch_url 	= $couch_base. "/$couch_proj" ."/$_id";
-	$couch_adm 	= $_ENV["couch_adm"]; 
-	$couch_pw 	= $_ENV["couch_pw"]; 
+//	$couch_base = $_ENV["couch_url"];
+//	$couch_proj = $_ENV["couch_users_db"];
+//	$couch_url 	= $couch_base. "/$couch_proj" ."/$_id";
+//	$couch_user 	= $_ENV["couch_user"];
+//	$couch_pw 	= $_ENV["couch_pw"];
+//
+//	//CURL OPTIONS
+//	$ch 		= curl_init($couch_url);
+//	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+//		"Content-type: application/json",
+//		"Accept: */*"
+//	));
+//	curl_setopt($ch, CURLOPT_USERPWD, "$couch_user:$couch_pw");
+//	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
+//
+//	$response 	= curl_exec($ch);
+//	curl_close($ch);
 
-	//CURL OPTIONS
-	$ch 		= curl_init($couch_url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-		"Content-type: application/json",
-		"Accept: */*"
-	));
-	curl_setopt($ch, CURLOPT_USERPWD, "$couch_adm:$couch_pw");
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
-
-	$response 	= curl_exec($ch);
-	curl_close($ch);
+    $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
+    $response   = doCurl($url);
 
 	$doc 		= json_decode(stripslashes($response),1);
 	$_rev 		= $doc["_rev"];
@@ -153,7 +167,10 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$timestamp  = $photo["geotag"]["timestamp"];
 
 		$photo_name = "photo_".$i.".jpg";
-		$photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
+
+		$photo_uri  = "{cfg::$couch_url}/{cfg::$couch_users_db}/{$doc['_id']}/$photo_name";
+
+		//$photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
 		$photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name";
 		
 		$attach_url = "#";
@@ -162,8 +179,10 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			$num_audios = intval($photo["audio"]);
 			for($a = 1; $a <= $num_audios; $a++){
 				$audio_name = "audio_".$i."_".$a.".wav";
-				$attach_url = $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $audio_name;
-				$attach_url = "passthru.php?_id=".$doc["_id"]."&_file=$audio_name";
+//				$attach_url = $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $audio_name;
+                $attach_url = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $doc["_id"] . "/" . $audio_name;
+
+                $attach_url = "passthru.php?_id=".$doc["_id"]."&_file=$audio_name";
 				$transcription 		= isset($doc["transcriptions"][$audio_name]) ? $doc["transcriptions"][$audio_name] : "";
 				$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$attach_url'/></audio> <input  type='text' name='transcriptions[$audio_name]' value='$transcription' placeholder='Click the icon and transcribe what you hear'></input></div>";
 			}
@@ -284,24 +303,24 @@ $(document).ready(function(){
 </body>
 </html>
 <?php 
-function putDoc($_id, $payload){
-	$couch_proj = $_ENV["couch_proj_users"]; 
-	$couch_url 	= $_ENV["couch_url"] . "/$couch_proj" . "/$_id";
-	$couch_adm 	= $_ENV["couch_adm"]; 
-	$couch_pw 	= $_ENV["couch_pw"]; 
-
-	// CURL OPTIONS
-	$ch 		= curl_init($couch_url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-		"Content-type: application/json",
-		"Accept: */*"
-	));
-	curl_setopt($ch, CURLOPT_USERPWD, "$couch_adm:$couch_pw");
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT'); //PUT to UPDATE/CREATE IF NOT EXIST
-	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-
-	$response 	= curl_exec($ch);
-	curl_close($ch);
-}
+//function putDoc($_id, $payload){
+//	$couch_proj = $_ENV["couch_users_db"];
+//	$couch_url 	= $_ENV["couch_url"] . "/$couch_proj" . "/$_id";
+//	$couch_user 	= $_ENV["couch_user"];
+//	$couch_pw 	= $_ENV["couch_pw"];
+//
+//	// CURL OPTIONS
+//	$ch 		= curl_init($couch_url);
+//	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+//		"Content-type: application/json",
+//		"Accept: */*"
+//	));
+//	curl_setopt($ch, CURLOPT_USERPWD, "$couch_user:$couch_pw");
+//	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT'); //PUT to UPDATE/CREATE IF NOT EXIST
+//	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+//
+//	$response 	= curl_exec($ch);
+//	curl_close($ch);
+//}
 ?>

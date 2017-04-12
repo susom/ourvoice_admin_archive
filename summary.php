@@ -1,38 +1,52 @@
 <?php
-session_start();
-session_destroy();
+
+require_once "common.php";
+
+//session_start();
+//session_destroy();
 
 date_default_timezone_set('America/Los_Angeles');
 
-$_ENV['couch_url'   	] 	='https://ourvoice-cdb.med.stanford.edu'			;	
-$_ENV['couch_proj_proj' ] 	='disc_projects';
-$_ENV['couch_db_proj'  	] 	='all_projects';
-$_ENV['couch_proj_users']  	='disc_users';
-$_ENV['couch_db_all' 	] 	='_all_docs';
-$_ENV['couch_adm'   	] 	='disc_user_general';
-$_ENV['couch_pw'    	] 	="rQaKibbDx7rP";
-$_ENV['gmaps_key'		] 	="AIzaSyCn-w3xVV38nZZcuRtrjrgy4MUAW35iBOo";
+//$couch_proj     = cfg::$couch_proj_db;
+//$couch_db 	    = cfg::$couch_config_db;
+$couch_url 	    = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;;
+//$couch_user 	= cfg::$couch_user;
+//$couch_pw 	    = cfg::$couch_pw;
+
+
+//$_ENV['couch_url'   	] 	='https://ourvoice-cdb.med.stanford.edu'			;
+//$_ENV['couch_proj_proj' ] 	='disc_projects';
+//$_ENV['couch_config_db'  	] 	='all_projects';
+//$_ENV['couch_users_db']  	='disc_users';
+//$_ENV['couch_all_db' 	] 	='_all_docs';
+//$_ENV['couch_user'   	] 	='disc_user_general';
+//$_ENV['couch_pw'    	] 	="rQaKibbDx7rP";
+//$_ENV['gmaps_key'		] 	="AIzaSyCn-w3xVV38nZZcuRtrjrgy4MUAW35iBOo";
+
+
+
 
 // FIRST GET THE PROJECT DATA
 if( empty($_SESSION["DT"]) ){
-	$couch_proj = $_ENV["couch_proj_proj"]; 
-	$couch_db 	= $_ENV["couch_db_proj"]; 
-	$couch_url 	= $_ENV["couch_url"] . "/$couch_proj" . "/$couch_db";
-	$couch_adm 	= $_ENV["couch_adm"]; 
-	$couch_pw 	= $_ENV["couch_pw"]; 
+//	$couch_proj = cfg::$couch_proj_db;
+//	$couch_db 	= $_ENV["couch_config_db"];
+//	$couch_url 	= $_ENV["couch_url"] . "/$couch_proj" . "/$couch_db";
+//	$couch_user 	= $_ENV["couch_user"];
+//	$couch_pw 	= $_ENV["couch_pw"];
 
 	//CURL OPTIONS
-	$ch 		= curl_init($couch_url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-		"Content-type: application/json",
-		"Accept: */*"
-	));
-	curl_setopt($ch, CURLOPT_USERPWD, "$couch_adm:$couch_pw");
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
+//	$ch 		= curl_init($couch_url);
+//	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+//		"Content-type: application/json",
+//		"Accept: */*"
+//	));
+//	curl_setopt($ch, CURLOPT_USERPWD, "$couch_user:$couch_pw");
+//	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
 
-	$response 	= curl_exec($ch);
-	curl_close($ch);
+	$response 	= doCurl($couch_url);
+//	curl_exec($ch);
+//	curl_close($ch);
 
 	//TURN IT INTO PHP ARRAY
 	$_SESSION["DT"] = json_decode(stripslashes($response),1);
@@ -57,7 +71,9 @@ if(isset($_POST["for_delete"])){
 		));
 	}
 
-	bulkUpdateDocs($fordelete);
+	// Bulk update docs
+    $couch_url 	= cfg::$couch_url . "/" . cfg::$couch_users_db . "/_bulk_docs";
+    $response = doCurl($couch_url, json_encode(array("docs"=>$docs_o)), "POST");
 }
 
 //NOW LOGIN TO YOUR PROJECT
@@ -79,35 +95,46 @@ if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
-<link href="css/dt_summary.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"/>
+    <link href="css/dt_summary.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 </head>
 <body id="main">
 <?php
 if( $active_project_id ){
-	$couch_proj = $_ENV["couch_proj_users"];
-	$couch_db 	= $_ENV["couch_db_all"];
-	$limit 		= 10;
-	$offset 	= 0; //offset
-	$qs 		= "?include_docs=true";//&limit=$limit&skip=$offset
+//
+//
+//	$couch_proj = $_ENV["couch_users_db"];
+//	$couch_db 	= $_ENV["couch_all_db"];
+//	$limit 		= 10;
+//	$offset 	= 0; //offset
+//	$qs 		= "?include_docs=true";//&limit=$limit&skip=$offset
+//
+//	$couch_base = $_ENV["couch_url"];
+//	$couch_url 	= $couch_base. "/$couch_proj" ."/$couch_db" .$qs;
+//	$couch_user 	= $_ENV["couch_user"];
+//	$couch_pw 	= $_ENV["couch_pw"];
+//	// $couch_url  = "https://ourvoice-cdb.med.stanford.edu/disc_users/_design/hasphotos/_view/all";
+//
+//	//CURL OPTIONS
+//	$ch 		= curl_init($couch_url);
+//	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+//		"Content-type: application/json",
+//		"Accept: */*"
+//	));
+//	curl_setopt($ch, CURLOPT_USERPWD, "$couch_user:$couch_pw");
+//	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
+//
+//	$response 	= curl_exec($ch);
+//	curl_close($ch);
 
-	$couch_base = $_ENV["couch_url"];
-	$couch_url 	= $couch_base. "/$couch_proj" ."/$couch_db" .$qs;
-	$couch_adm 	= $_ENV["couch_adm"]; 
-	$couch_pw 	= $_ENV["couch_pw"]; 
-	// $couch_url  = "https://ourvoice-cdb.med.stanford.edu/disc_users/_design/hasphotos/_view/all";
+	// Build query string
+	$qs = http_build_query(array(
+	        'include_docs' => 'true'
+    ));
+    $couch_url = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . cfg::$couch_all_db . "?" . $qs;
+    $response = doCurl($couch_url);
 
-	//CURL OPTIONS
-	$ch 		= curl_init($couch_url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-		"Content-type: application/json",
-		"Accept: */*"
-	));
-	curl_setopt($ch, CURLOPT_USERPWD, "$couch_adm:$couch_pw");
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
-
-	$response 	= curl_exec($ch);
-	curl_close($ch);
 
 	//TURN IT INTO PHP ARRAY
 	$all_projects 	= json_decode($response,1);
@@ -261,12 +288,13 @@ if( $active_project_id ){
 		<h2>Admin Login to view Project Data</h2>
 		<label><input type="text" name="proj_id" id="proj_id" placeholder="Project Id"/></label>
 		<label><input type="password" name="proj_pw" id="proj_pw" placeholder="Project Password"/></label>
-		<input type="submit"/>
+		<button type="submit" class="btn btn-primary"/>
 	</form>
 	<?php
 }
 ?>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo $_ENV["gmaps_key"]; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
 <script>
@@ -353,43 +381,7 @@ $(document).ready(function(){
 </script>
 </body>
 </html>
-<?php
-// $fordelete = array();
-// foreach($all_projects["rows"] as $i=> $row){
-// 	if(strpos($row["doc"]["_id"],"EEC10161-1A3C-4C91-ADF9-805383B5598F") > -1){
-// 		array_push($fordelete,array(
-// 			 "_id" 		=> $row["doc"]["_id"]
-// 			,"_rev" 	=> $row["doc"]["_rev"]
-// 			,"_deleted" => true
-// 		));
-// 	}
-// }
-function bulkUpdateDocs($docs_o){
-	//BULK UPDATE PROCESS
-	$couch_db 	= "_bulk_docs";
-	$couch_proj = $_ENV["couch_proj_users"];
-	$couch_adm 	= $_ENV["couch_adm"]; 
-	$couch_pw 	= $_ENV["couch_pw"]; 
-	$couch_base = $_ENV["couch_url"];
-	$couch_url 	= $couch_base. "/$couch_proj" ."/$couch_db" ;
-	
-	//CURL OPTIONS
-	$ch 		= curl_init($couch_url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-		"Content-type: application/json",
-		"Accept: */*"
-	));
-	curl_setopt($ch, CURLOPT_USERPWD, "$couch_adm:$couch_pw");
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST"); //JUST FETCH DATA
-	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array("docs" => $docs_o)));
 
-	$response 	= curl_exec($ch);
-	curl_close($ch);
-
-	return;
-}
-?>
 
 
 
