@@ -94,31 +94,13 @@ if( isset($_POST["doc_id"]) ){
 <head>
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
 <link href="css/dt_summary.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
+<link href="css/dt_photo_print.css"  rel="stylesheet" type="text/css" media="print" />
 </head>
 <body id="main" class="photo_detail">
 <?php
 if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	$_id 	= trim($_GET["_id"]);
 	$_file 	= $_GET["_file"];
-
-//	$couch_base = $_ENV["couch_url"];
-//	$couch_proj = $_ENV["couch_users_db"];
-//	$couch_url 	= $couch_base. "/$couch_proj" ."/$_id";
-//	$couch_user 	= $_ENV["couch_user"];
-//	$couch_pw 	= $_ENV["couch_pw"];
-//
-//	//CURL OPTIONS
-//	$ch 		= curl_init($couch_url);
-//	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-//	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-//		"Content-type: application/json",
-//		"Accept: */*"
-//	));
-//	curl_setopt($ch, CURLOPT_USERPWD, "$couch_user:$couch_pw");
-//	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
-//
-//	$response 	= curl_exec($ch);
-//	curl_close($ch);
 
     $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
     $response   = doCurl($url);
@@ -167,27 +149,21 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$timestamp  = $photo["geotag"]["timestamp"];
 
 		$photo_name = "photo_".$i.".jpg";
-
-		$photo_uri  = "{cfg::$couch_url}/{cfg::$couch_users_db}/{$doc['_id']}/$photo_name";
-
-		//$photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
 		$photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name";
 		
 		$attach_url = "#";
 		$audio_attachments = "";
+		
 		if(!empty($photo["audio"])){
-			$num_audios = intval($photo["audio"]);
-			for($a = 1; $a <= $num_audios; $a++){
-				$audio_name = "audio_".$i."_".$a.".wav";
-//				$attach_url = $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $audio_name;
-                $attach_url = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $doc["_id"] . "/" . $audio_name;
-
-                $attach_url = "passthru.php?_id=".$doc["_id"]."&_file=$audio_name";
-				$transcription 		= isset($doc["transcriptions"][$audio_name]) ? $doc["transcriptions"][$audio_name] : "";
-				$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$attach_url'/></audio> <input  type='text' name='transcriptions[$audio_name]' value='$transcription' placeholder='Click the icon and transcribe what you hear'></input></div>";
+			foreach($doc["_attachments"] as $filename => $file){
+				$audio_name = "audio_".$i."_";
+				if(strpos($filename,$audio_name) > -1){
+	                $attach_url = "passthru.php?_id=".$doc["_id"]."&_file=$filename";
+					$transcription 		= isset($doc["transcriptions"][$audio_name]) ? $doc["transcriptions"][$audio_name] : "";
+					$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$attach_url'/></audio> <a class='download' href='$attach_url'>&#8676;</a> <input  type='text' name='transcriptions[$audio_name]' value='$transcription' placeholder='Click the icon and transcribe what you hear'></input></div>";
+				}
 			}
 		}
-
 		break;
 	}
 

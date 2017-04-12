@@ -353,3 +353,13 @@ label span {
 	content:" >>";
 	vertical-align:top;
 }
+
+
+.download {
+	display: inline-block;
+    vertical-align: top;
+    color: #333;
+    text-decoration: none;
+    transform: rotate(270deg);
+    font-size: 180%;
+}

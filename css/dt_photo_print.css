@@ -1,0 +1,14 @@
+.photo_detail .user_entry{
+	width:auto;
+	border-radius:none;
+	box-shadow:none;
+	background:none;
+}
+
+a.preview span
+,audio
+,.photo_detail input[type='submit']
+,.prev
+,.next{
+	display:none;
+}

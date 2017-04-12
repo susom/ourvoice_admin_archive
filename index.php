@@ -288,7 +288,7 @@ if(!isset($_SESSION["discpw"]) && 1==2) {
 				?>
 				</div>
 			</fieldset>
-			<btn type="submit" class="btn btn-primary"/>
+			<button type="submit" class="btn btn-primary">Save Project</button>
 		</form>
 		<?php
 	}else{

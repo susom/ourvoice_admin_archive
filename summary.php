@@ -1,5 +1,4 @@
 <?php
-
 require_once "common.php";
 
 //session_start();
@@ -138,8 +137,8 @@ if( $active_project_id ){
 
 	//TURN IT INTO PHP ARRAY
 	$all_projects 	= json_decode($response,1);
-	$tot_rows 		= $all_projects["total_rows"];
-	$tot_pages 		= ceil($tot_rows/$limit); 
+	// $tot_rows 		= $all_projects["total_rows"];
+	// $tot_pages 		= ceil($tot_rows/$limit); 
 
 	echo "<h1>Discovery Tool Data Summary for $active_project_id</h1>";
 	$gmaps 			= array();
@@ -216,7 +215,8 @@ if( $active_project_id ){
 
 			$rotate 	= isset($photo["rotate"]) ? $photo["rotate"] : 0;
 			$photo_name = "photo_".$n.".jpg";
-			$photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
+
+			// $photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
 			$photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name";
 			$detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 
@@ -288,14 +288,14 @@ if( $active_project_id ){
 		<h2>Admin Login to view Project Data</h2>
 		<label><input type="text" name="proj_id" id="proj_id" placeholder="Project Id"/></label>
 		<label><input type="password" name="proj_pw" id="proj_pw" placeholder="Project Password"/></label>
-		<button type="submit" class="btn btn-primary"/>
+		<button type="submit" class="btn btn-primary">Chose Project</button>
 	</form>
 	<?php
 }
 ?>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo $_ENV["gmaps_key"]; ?>"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
 <script>
 function addmarker(latilongi,map_id) {
