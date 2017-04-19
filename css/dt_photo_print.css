@@ -12,3 +12,8 @@ a.preview span
 ,.next{
 	display:none;
 }
+
+section,
+section.side{
+	float:none;
+}

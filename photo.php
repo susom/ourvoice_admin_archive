@@ -176,6 +176,22 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	<i>".$doc["_id"]."</i></h4>";
 	echo "</hgroup>";
 
+	echo "<section class='photo_previews'>";
+	echo "<div>";	
+	echo "
+		<figure>
+		<a class='preview rotate' rev='$hasrotate' data-photo_i=$photo_i data-doc_id='".$doc["_id"]."' rel='google_map_0' data-long='$long' data-lat='$lat'><img src='$photo_uri' /><span></span></a>
+		</figure>";
+		
+		$geotags   = array();
+		$geotags[] = array("lat" => $lat, "lng" => $long);
+		$json_geo  = json_encode($geotags);
+		$gmaps[]   = "drawGMap($json_geo, 0, 16);\n";
+
+	echo "</div>";
+	echo "</section>";
+
+	echo "<section class='side'>";
 	echo "<aside>
 			<div id='google_map_0' class='gmap'></div>
 		</aside>";
@@ -200,21 +216,8 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		}
 		echo "</aside>";
 	}
-
-	echo "<section class='photo_previews'>";
-	echo "<div>";	
-	echo "
-		<figure>
-		<a class='preview rotate' rev='$hasrotate' data-photo_i=$photo_i data-doc_id='".$doc["_id"]."' rel='google_map_0' data-long='$long' data-lat='$lat'><img src='$photo_uri' /><span></span></a>
-		</figure>";
-		
-		$geotags   = array();
-		$geotags[] = array("lat" => $lat, "lng" => $long);
-		$json_geo  = json_encode($geotags);
-		$gmaps[]   = "drawGMap($json_geo, 0, 16);\n";
-
-	echo "</div>";
 	echo "</section>";
+	
 	echo "</div>";
 	echo "</form>";
 }

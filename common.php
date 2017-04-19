@@ -9,10 +9,6 @@ require_once "_config.php";
 
 session_start();
 
-
-
-
-
 function doCurl($url, $data = null, $method = null, $username = null, $password = null) {
     if (empty($username)) $username = cfg::$couch_user;
     if (empty($password)) $password = cfg::$couch_pw;
@@ -21,6 +17,10 @@ function doCurl($url, $data = null, $method = null, $username = null, $password 
     curl_setopt($process, CURLOPT_USERPWD, $username . ":" . $password);
     curl_setopt($process, CURLOPT_TIMEOUT, 30);
     curl_setopt($process, CURLOPT_RETURNTRANSFER, TRUE);
+    curl_setopt($process, CURLOPT_HTTPHEADER, array(
+        "Content-type: application/json",
+        "Accept: */*"
+    ));
 
     if (!empty($data)) curl_setopt($process, CURLOPT_POSTFIELDS, $data);
     if (!empty($method)) curl_setopt($process, CURLOPT_CUSTOMREQUEST, $method);

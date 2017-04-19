@@ -314,12 +314,11 @@ if(!isset($_SESSION["discpw"]) && 1==2) {
 
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-
 <script>
 $(document).ready(function(){
 	<?php
-		if(isset($_GET["proj_idx"])){
-			echo "var current_project_id = ".$_GET["proj_idx"]. ";\n";
+		if(isset($pname)){
+			echo "var current_project_id = '".$pid. "';\n";
 		}
 		if(isset($_GET["msg"])){
 			echo "alert('" . $_GET["msg"] . "');\n";
@@ -345,6 +344,11 @@ $(document).ready(function(){
 	$(".add_language").click(function(){
 		var new_lang = "<div class='one_unit'><span class='code'>Code</span><input type='text' name='lang_code[]' value=''/> <span class='full'>Language</span> <input type='text' name='lang_full[]' value=''/><a href='#' class='delete_parent'>- Delete Language</a></div>";
 		$("label.languages").append(new_lang);
+		return false;
+	});
+
+	$(".add_trans").click(function(){
+		
 		return false;
 	})
 

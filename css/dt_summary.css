@@ -43,6 +43,7 @@ h4, p{
 }
 
 section{
+	float:left;
 	width: calc(100% - 440px);
 	margin:20px 0;
 }
@@ -197,6 +198,10 @@ label span {
 	margin:0;
 }
 
+.photo_detail .side{
+	width:420px;
+	float:right;
+}
 
 .photo_detail .preview{
 	display:block;
@@ -204,15 +209,33 @@ label span {
 }
 
 .photo_detail figure img{
-	max-width:740px;
+	max-width:525px;
+	max-height:700px;
 	transform:rotate(90deg) translate(90px,0);
 }
+/*.photo_detail .rotate img {
+	transform: rotate(0) translate(150px,0);
+	image-orientation: from-image;
+}
+.photo_detail .rotate[rev='1'] img {
+	transform: rotate(90deg) translate(0,-150px);
+	image-orientation: from-image;
+}
+.photo_detail .rotate[rev='2'] img {
+	transform: rotate(180deg) translate(-150px,0);
+	image-orientation: from-image;
+}
+.photo_detail .rotate[rev='3'] img {
+	transform: rotate(270deg) translate(0,150px);
+	image-orientation: from-image;
+}*/
+
 .photo_detail .rotate img {
 	transform: rotate(0) translate(0,0);
 	image-orientation: from-image;
 }
 .photo_detail .rotate[rev='1'] img {
-	transform: rotate(90deg) translate(0,0);
+	transform: rotate(90deg) translate(90px,-70px);
 	image-orientation: from-image;
 }
 .photo_detail .rotate[rev='2'] img {
@@ -220,16 +243,18 @@ label span {
 	image-orientation: from-image;
 }
 .photo_detail .rotate[rev='3'] img {
-	transform: rotate(270deg) translate(0,0);
+	transform: rotate(270deg) translate(-90px,-70px);
 	image-orientation: from-image;
 }
+
+
+
 
 .photo_detail figure figcaption{
 	margin:10px 0;
 }
 
 .photo_detail aside{
-	float:right;
 	overflow:hidden;
 	clear:right;
 	width:420px;
@@ -353,7 +378,6 @@ label span {
 	content:" >>";
 	vertical-align:top;
 }
-
 
 .download {
 	display: inline-block;

@@ -6,12 +6,11 @@ require_once "common.php";
 
 date_default_timezone_set('America/Los_Angeles');
 
-//$couch_proj     = cfg::$couch_proj_db;
+//$couch_proj     	= cfg::$couch_proj_db;
 //$couch_db 	    = cfg::$couch_config_db;
-$couch_url 	    = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;;
-//$couch_user 	= cfg::$couch_user;
+$couch_url 	    	= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+//$couch_user 		= cfg::$couch_user;
 //$couch_pw 	    = cfg::$couch_pw;
-
 
 //$_ENV['couch_url'   	] 	='https://ourvoice-cdb.med.stanford.edu'			;
 //$_ENV['couch_proj_proj' ] 	='disc_projects';
@@ -21,9 +20,6 @@ $couch_url 	    = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couc
 //$_ENV['couch_user'   	] 	='disc_user_general';
 //$_ENV['couch_pw'    	] 	="rQaKibbDx7rP";
 //$_ENV['gmaps_key'		] 	="AIzaSyCn-w3xVV38nZZcuRtrjrgy4MUAW35iBOo";
-
-
-
 
 // FIRST GET THE PROJECT DATA
 if( empty($_SESSION["DT"]) ){
@@ -72,7 +68,7 @@ if(isset($_POST["for_delete"])){
 
 	// Bulk update docs
     $couch_url 	= cfg::$couch_url . "/" . cfg::$couch_users_db . "/_bulk_docs";
-    $response = doCurl($couch_url, json_encode(array("docs"=>$docs_o)), "POST");
+    $response 	= doCurl($couch_url, json_encode(array("docs" => $fordelete)), "POST");
 }
 
 //NOW LOGIN TO YOUR PROJECT
