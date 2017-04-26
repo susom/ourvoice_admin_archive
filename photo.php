@@ -160,7 +160,8 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				if(strpos($filename,$audio_name) > -1){
 	                $attach_url = "passthru.php?_id=".$doc["_id"]."&_file=$filename";
 					$transcription 		= isset($doc["transcriptions"][$audio_name]) ? $doc["transcriptions"][$audio_name] : "";
-					$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$attach_url'/></audio> <a class='download' href='$attach_url' title='right click and save as link to download'>&#8676;</a> <input  type='text' name='transcriptions[$audio_name]' value='$transcription' placeholder='Click the icon and transcribe what you hear'></input></div>";
+					$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$attach_url'/></audio> <a class='download' href='$attach_url' title='right click and save as link to download'>&#8676;</a> 
+					<textarea name='transcriptions[$audio_name]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";
 				}
 			}
 		}
@@ -222,6 +223,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo "</form>";
 }
 ?>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/autosize.js/3.0.20/autosize.js"></script>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo $gmaps_key; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
@@ -277,6 +279,8 @@ $(document).ready(function(){
 		
 		return false;
 	});
+
+	autosize($('textarea'));
 });
 </script>
 </body>

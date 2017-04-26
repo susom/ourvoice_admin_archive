@@ -300,9 +300,10 @@ label span {
 }
 .photo_detail textarea{
 	display:inline-block;
-	width:660px;
-	height:80px;
-	vertical-align: middle
+	width:90%;
+	font-size:100%;
+	vertical-align: middle;
+	border-radius:5px;
 }
 
 
