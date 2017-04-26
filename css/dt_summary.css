@@ -8,6 +8,7 @@
 	margin-bottom:20px;
 	box-shadow:0 0 3px #888;
 	overflow:hidden; 
+	position:relative;
 }
 .user_entry hgroup{
 	overflow:hidden; 
@@ -37,6 +38,13 @@
 	float:right;
 	margin:20px 0;
 }
+.deletewalk {
+	position:absolute;
+	bottom:20px; right:20px;
+}
+
+
+
 h4, p{
 	margin:0; 
 	padding:0; 
@@ -388,3 +396,6 @@ label span {
     transform: rotate(270deg);
     font-size: 180%;
 }
+
+
+
