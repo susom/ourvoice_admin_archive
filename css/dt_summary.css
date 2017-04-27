@@ -152,6 +152,7 @@ a.preview b{
 	background-size:200%;
 	display:none;
 	vertical-align:middle;
+	-webkit-print-color-adjust: exact;
 }
 .goodbad.good{
 	display:inline-block;
@@ -344,6 +345,7 @@ label span {
 	background:url(../img/icon_listen.png) 0 5px no-repeat;
 	background-size:6%;
 	padding-left:30px;
+	-webkit-print-color-adjust: exact;
 }
 
 

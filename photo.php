@@ -94,7 +94,7 @@ if( isset($_POST["doc_id"]) ){
 <head>
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
 <link href="css/dt_summary.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
-<link href="css/dt_photo_print.css"  rel="stylesheet" type="text/css" media="print" />
+<link href="css/dt_photo_print.css?v=<?php echo time();?>"  rel="stylesheet" type="text/css" media="print" />
 </head>
 <body id="main" class="photo_detail">
 <?php
@@ -177,6 +177,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	<i>".$doc["_id"]."</i></h4>";
 	echo "</hgroup>";
 
+	echo "<div class='photobox'>";
 	echo "<section class='photo_previews'>";
 	echo "<div>";	
 	echo "
@@ -218,7 +219,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		echo "</aside>";
 	}
 	echo "</section>";
-	
+	echo "</div>";
 	echo "</div>";
 	echo "</form>";
 }

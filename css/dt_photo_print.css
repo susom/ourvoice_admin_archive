@@ -5,15 +5,59 @@
 	background:none;
 }
 
+.photo_detail .user_entry hgroup{
+	page-break-after: avoid;
+}
+
+.photobox{
+	display:inline-block;
+	width:100%;
+	page-break-before: avoid;
+	overflow:hidden;
+}
+
+.photo_detail .preview {
+    min-height: auto;
+}
+.photo_previews{
+	float:left;
+}
+
+.photo_detail .audio_clip{
+	border:none;
+}
+
 a.preview span
 ,audio
 ,.photo_detail input[type='submit']
 ,.prev
-,.next{
+,.next
+,.download{
 	display:none;
 }
 
 section,
 section.side{
 	float:none;
+}
+
+textarea{
+	border:none;
+}
+
+@media print {
+	.page-break	{ display: block; page-break-before: always; }
+}
+
+@media print and (orientation: portrait) {
+    /* Your code for portrait orientation */
+	.photo_detail figure img {
+    	max-width: 300px;
+    }
+}
+@media print and (orientation: landscape) {
+    /* Your code for portrait landscape */
+	.photo_detail figure img {
+    	max-height: 600px;
+    }
 }
