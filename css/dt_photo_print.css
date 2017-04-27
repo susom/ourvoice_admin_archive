@@ -19,6 +19,8 @@
 .photo_detail .preview {
     min-height: auto;
 }
+
+
 .photo_previews{
 	float:left;
 }
@@ -26,6 +28,22 @@
 .photo_detail .audio_clip{
 	border:none;
 }
+
+.photo_detail  figure img {
+    max-width: 570px;
+ }
+
+.photo_detail .rotate[rev='1'] img{
+	transform: rotate(90deg) translate(90px,70px);
+}
+/*.photo_detail .rotate[rev='3'] img{
+	transform: rotate(270deg) translate(-90px,-70px);
+}*/
+.photo_detail .rotate[rev='2'] img,
+.photo_detail .rotate[rev='0'] img {
+    max-width: 430px;
+ }
+
 
 a.preview span
 ,audio
