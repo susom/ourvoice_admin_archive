@@ -203,7 +203,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		</aside>";
 
 	echo "<aside>
-			<h4>Transcribe Audio</h4>
+			<h4>Why did you take this picture?</h4>
 			$audio_attachments
 			<input type='submit' value='Save Transcriptions'/>
 		</aside>";
