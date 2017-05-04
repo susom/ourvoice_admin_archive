@@ -105,7 +105,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
     $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
     $response   = doCurl($url);
 
-	$doc 		= json_decode($response,1);
+	$doc 		= json_decode(stripslashes($response),1);
 	$_rev 		= $doc["_rev"];
 
 	$photos 	= $doc["photos"];
