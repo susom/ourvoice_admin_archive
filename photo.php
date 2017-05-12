@@ -77,11 +77,16 @@ if( isset($_POST["doc_id"]) ){
         doCurl($url, json_encode($payload),"PUT");
 		exit;
 	}else{
+
+
+
 		//SAVE TRANSCRIPTIONS
 		foreach($_POST["transcriptions"] as $audio_name => $transcription){
 			$payload["transcriptions"][$audio_name] = $transcription;
 		}
 	}
+
+
 //    putDoc($_id, $payload);
 	doCurl($url, json_encode($payload),"PUT");
 
@@ -158,6 +163,9 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			foreach($doc["_attachments"] as $filename => $file){
 				$audio_name = "audio_".$i."_";
 				if(strpos($filename,$audio_name) > -1){
+					$sub_i = substr($filename, strlen($audio_name),  strpos($filename,".") - strlen($audio_name));
+					$audio_name = $audio_name . $sub_i;
+
 	                $attach_url = "passthru.php?_id=".$doc["_id"]."&_file=$filename";
 					$transcription 		= isset($doc["transcriptions"][$audio_name]) ? $doc["transcriptions"][$audio_name] : "";
 					$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$attach_url'/></audio> <a class='download' href='$attach_url' title='right click and save as link to download'>&#8676;</a> 
