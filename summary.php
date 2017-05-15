@@ -226,7 +226,7 @@ if( $active_project_id ){
 		<h2>Admin Login to view Project Data</h2>
 		<label><input type="text" name="proj_id" id="proj_id" placeholder="Project Id"/></label>
 		<label><input type="password" name="proj_pw" id="proj_pw" placeholder="Project Password"/></label>
-		<button type="submit" class="btn btn-primary">Chose Project</button>
+		<button type="submit" class="btn btn-primary">Go to Project</button>
 	</form>
 	<?php
 }
