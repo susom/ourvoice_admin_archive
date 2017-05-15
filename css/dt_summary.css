@@ -399,5 +399,8 @@ label span {
     font-size: 180%;
 }
 
+.print_only{
+	display:none;
+}
 
 

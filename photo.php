@@ -226,6 +226,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		}
 		echo "</aside>";
 	}
+	echo "<i class='print_only'>Data gathered using the Stanford Healthy Neighborhood Discovery Tool, © Stanford University 2017</i>";
 	echo "</section>";
 	echo "</div>";
 	echo "</div>";
