@@ -7,6 +7,7 @@
 
 .photo_detail .user_entry hgroup{
 	page-break-after: avoid;
+	display:none;
 }
 
 .photobox{
@@ -27,6 +28,8 @@
 
 .photo_detail .audio_clip{
 	border:none;
+	background:none;
+	padding-left:0
 }
 
 .photo_detail  figure img {
