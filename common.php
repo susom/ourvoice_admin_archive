@@ -14,9 +14,11 @@ function doCurl($url, $data = null, $method = null, $username = null, $password 
     if (empty($password)) $password = cfg::$couch_pw;
 
     $process = curl_init($url);
+
     curl_setopt($process, CURLOPT_USERPWD, $username . ":" . $password);
     curl_setopt($process, CURLOPT_TIMEOUT, 30);
     curl_setopt($process, CURLOPT_RETURNTRANSFER, TRUE);
+    curl_setopt($process, CURLOPT_SSL_VERIFYPEER, FALSE);
     curl_setopt($process, CURLOPT_HTTPHEADER, array(
         "Content-type: application/json",
         "Accept: */*"

@@ -30,8 +30,8 @@ if(!isset($_SESSION["DT"])){
 	//TURN IT INTO PHP ARRAY
 
     // Query for the all projects document
-    $url = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-    $response = doCurl($url);
+    $url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+    $response 		= doCurl($url);
 	$_SESSION["DT"] = json_decode($response,1);
 }
 
