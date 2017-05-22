@@ -6,8 +6,9 @@ if (!file_exists("_config.php")) {
 // Load the configuration
 require_once "_config.php";
 
-
+date_default_timezone_set('America/Los_Angeles');
 session_start();
+
 
 function doCurl($url, $data = null, $method = null, $username = null, $password = null) {
     if (empty($username)) $username = cfg::$couch_user;

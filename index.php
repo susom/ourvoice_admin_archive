@@ -11,8 +11,6 @@ $couch_url 	    = cfg::$couch_url . "/" . $couch_proj . "/" . $couch_db;
 $couch_user 	= cfg::$couch_user;
 $couch_pw 	    = cfg::$couch_pw;
 
-
-
 if(!isset($_SESSION["DT"])){
 //	//CURL OPTIONS
 //	$ch 		= curl_init($couch_url);

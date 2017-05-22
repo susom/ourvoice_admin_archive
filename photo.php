@@ -1,45 +1,10 @@
 <?php
-
 require_once "common.php";
-
-//session_start();
-//session_destroy();
-
-date_default_timezone_set('America/Los_Angeles');
-
-//$_ENV['couch_url'   	] 	='https://ourvoice-cdb.med.stanford.edu'			;
-//$_ENV['couch_proj_db'   ] 	='disc_projects';
-//$_ENV['couch_config_db'  	] 	='all_projects';
-//$_ENV['couch_users_db']  	='disc_users';
-//$_ENV['couch_all_db' 	] 	='_all_docs';
-//$_ENV['couch_user'   	] 	='disc_user_general';
-//$_ENV['couch_pw'    	] 	="rQaKibbDx7rP";
-//$_ENV['gmaps_key'		] 	="AIzaSyCn-w3xVV38nZZcuRtrjrgy4MUAW35iBOo";
-
 $gmaps_key 					= cfg::$gmaps_key;
 $projects 					= [];
 
 if( isset($_POST["doc_id"]) ){
 	$_id  	= $_POST["doc_id"];
-
-//	$couch_base = $_ENV["couch_url"];
-//	$couch_proj = $_ENV["couch_users_db"];
-//	$couch_url 	= $couch_base. "/$couch_proj" ."/$_id";
-//	$couch_user 	= $_ENV["couch_user"];
-//	$couch_pw 	= $_ENV["couch_pw"];
-//
-//	//CURL OPTIONS
-//	$ch 		= curl_init($couch_url);
-//	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-//	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-//		"Content-type: application/json",
-//		"Accept: */*"
-//	));
-//	curl_setopt($ch, CURLOPT_USERPWD, "$couch_user:$couch_pw");
-//	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
-//
-//	$response 	= curl_exec($ch);
-//	curl_close($ch);
 
     $url = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
 	$response = doCurl($url);
@@ -73,25 +38,15 @@ if( isset($_POST["doc_id"]) ){
 				}
 			}
 		}
-//		putDoc($_id, $payload);
         doCurl($url, json_encode($payload),"PUT");
 		exit;
 	}else{
-
-
-
 		//SAVE TRANSCRIPTIONS
 		foreach($_POST["transcriptions"] as $audio_name => $transcription){
 			$payload["transcriptions"][$audio_name] = $transcription;
 		}
 	}
-
-
-//    putDoc($_id, $payload);
 	doCurl($url, json_encode($payload),"PUT");
-
-
-
 }
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -166,9 +121,12 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 					$sub_i = substr($filename, strlen($audio_name),  strpos($filename,".") - strlen($audio_name));
 					$audio_name = $audio_name . $sub_i;
 
-	                $attach_url = "passthru.php?_id=".$doc["_id"]."&_file=$filename";
-					$transcription 		= isset($doc["transcriptions"][$audio_name]) ? $doc["transcriptions"][$audio_name] : "";
-					$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$attach_url'/></audio> <a class='download' href='$attach_url' title='right click and save as link to download'>&#8676;</a> 
+					//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
+	                $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename";
+					$transcription 	= isset($doc["transcriptions"][$audio_name]) ? $doc["transcriptions"][$audio_name] : "";
+					$audio_src 		= getConvertedAudio($attach_url);
+
+					$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$audio_src' title='right click and save as link to download'>&#8676;</a> 
 					<textarea name='transcriptions[$audio_name]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";
 				}
 			}
@@ -285,7 +243,6 @@ $(document).ready(function(){
 		}).done(function( msg ) {
 			alert( "Data Saved: " + msg );
 		});
-
 		
 		return false;
 	});
@@ -316,4 +273,81 @@ $(document).ready(function(){
 //	$response 	= curl_exec($ch);
 //	curl_close($ch);
 //}
+//
+
+// //GET FILE
+$filename = "android_test_2.wav";
+
+function convertAudio($filename){
+	$split = explode("." , $filename);
+	$noext = $split[0];
+
+	if (function_exists('curl_file_create')) { // php 5.5+
+	  $cFile = curl_file_create("./temp/".$filename);
+	} else { // 
+	  $cFile = '@' . realpath("./temp/".$filename);
+	}
+
+	$ffmpeg_url = cfg::$ffmpeg_url; //"http://127.0.0.1:1080";
+	$postfields = array(
+			 "file" 	=> $cFile
+			,"format" 	=> "mp3"
+			,"rate" 	=> 16000
+		);
+
+	// CURL OPTIONS
+	// POST IT TO FFMPEG SERVICE
+	$ch = curl_init($ffmpeg_url);
+	curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	$response = curl_exec($ch);
+	curl_close($ch);
+
+	// REPLACE ATTACHMENT
+	$newfile 	= "./temp/".$noext.".mp3";
+	$handle 	= fopen($newfile, 'w');
+	fwrite($handle, $response); 
+
+	return $newfile;
+}
+
+function getFullUrl($partialUrl){
+	$paths = explode("/",$_SERVER["SCRIPT_NAME"]);
+	array_unshift($paths,$_SERVER["HTTP_HOST"]);
+	array_pop($paths);
+
+	$fullpath = "";
+	foreach($paths as $part){
+		if($part == ""){
+			continue;
+		}
+		$fullpath .= $part;
+		$fullpath .= "/";
+	}
+	return $fullpath . $partialUrl;
+}
+
+function getConvertedAudio($attach_url){
+	//FIRST DOWNLOAD THE AUDIO FILE
+	$fullURL 	= getFullUrl($attach_url);
+	$ch 		= curl_init($fullURL);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	$data 		= curl_exec($ch);
+	$errors 	= curl_error($ch);
+	curl_close ($ch);
+
+	//THEN EXTRACT THE FILE NAME
+	$split 		= explode("=",$attach_url);
+	$filename 	= $split[count($split) -1];
+
+	$localfile 	= "./temp/$filename";
+	$file 		= fopen($localfile, "w+");
+	fputs($file, $data);
+	fclose($file);
+
+	//THEN CONVERT THE AUDIO
+	$newAudioPath = convertAudio($filename);
+	return $newAudioPath;
+}
 ?>
