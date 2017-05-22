@@ -121,10 +121,13 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 					$sub_i = substr($filename, strlen($audio_name),  strpos($filename,".") - strlen($audio_name));
 					$audio_name = $audio_name . $sub_i;
 
+					$audio_src 		= $attach_url;
+
 					//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
 	                $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename";
-					$transcription 	= isset($doc["transcriptions"][$audio_name]) ? $doc["transcriptions"][$audio_name] : "";
 					$audio_src 		= getConvertedAudio($attach_url);
+					
+					$transcription 	= isset($doc["transcriptions"][$audio_name]) ? $doc["transcriptions"][$audio_name] : "";
 
 					$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$audio_src' title='right click and save as link to download'>&#8676;</a> 
 					<textarea name='transcriptions[$audio_name]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";
