@@ -118,15 +118,14 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			foreach($doc["_attachments"] as $filename => $file){
 				$audio_name = "audio_".$i."_";
 				if(strpos($filename,$audio_name) > -1){
-					$sub_i = substr($filename, strlen($audio_name),  strpos($filename,".") - strlen($audio_name));
-					$audio_name = $audio_name . $sub_i;
-
+					$sub_i 			= substr($filename, strlen($audio_name),  strpos($filename,".") - strlen($audio_name));
+					$audio_name 	= $audio_name . $sub_i;
 					$audio_src 		= $attach_url;
 
 					//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
 	                $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename";
 					$audio_src 		= getConvertedAudio($attach_url);
-					
+
 					$transcription 	= isset($doc["transcriptions"][$audio_name]) ? $doc["transcriptions"][$audio_name] : "";
 
 					$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$audio_src' title='right click and save as link to download'>&#8676;</a> 
@@ -256,28 +255,6 @@ $(document).ready(function(){
 </body>
 </html>
 <?php 
-//function putDoc($_id, $payload){
-//	$couch_proj = $_ENV["couch_users_db"];
-//	$couch_url 	= $_ENV["couch_url"] . "/$couch_proj" . "/$_id";
-//	$couch_user 	= $_ENV["couch_user"];
-//	$couch_pw 	= $_ENV["couch_pw"];
-//
-//	// CURL OPTIONS
-//	$ch 		= curl_init($couch_url);
-//	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-//	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-//		"Content-type: application/json",
-//		"Accept: */*"
-//	));
-//	curl_setopt($ch, CURLOPT_USERPWD, "$couch_user:$couch_pw");
-//	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT'); //PUT to UPDATE/CREATE IF NOT EXIST
-//	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-//
-//	$response 	= curl_exec($ch);
-//	curl_close($ch);
-//}
-//
-
 // //GET FILE
 $filename = "android_test_2.wav";
 
@@ -291,7 +268,7 @@ function convertAudio($filename){
 	  $cFile = '@' . realpath("./temp/".$filename);
 	}
 
-	$ffmpeg_url = cfg::$ffmpeg_url; //"http://127.0.0.1:1080";
+	$ffmpeg_url = cfg::$ffmpeg_url; 
 	$postfields = array(
 			 "file" 	=> $cFile
 			,"format" 	=> "mp3"
