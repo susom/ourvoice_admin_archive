@@ -1,5 +1,4 @@
 <?php
-
 if (!file_exists("_config.php")) {
     exit("You must create a _config.php file from the template before this application can run properly");
 }

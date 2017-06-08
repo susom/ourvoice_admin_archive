@@ -1,16 +1,12 @@
 <?php
 require_once "common.php";
-
-//session_start();
 //session_destroy();
 
-date_default_timezone_set('America/Los_Angeles');
+$couch_url = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
 
-$couch_url 	    	= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-
-// FIRST GET THE PROJECT DATA
 if( empty($_SESSION["DT"]) ){
-	$response 	= doCurl($couch_url);
+	// FIRST GET THE PROJECT DATA
+	$response 		= doCurl($couch_url);
 
 	//TURN IT INTO PHP ARRAY
 	$_SESSION["DT"] = json_decode(stripslashes($response),1);
@@ -23,6 +19,7 @@ $_rev 				= $ap["_rev"];
 $projs 				= $ap["project_list"];
 $projects 			= [];
 $active_project_id 	= null;
+$alerts 			= array();
 
 if(isset($_POST["for_delete"]) && $_POST["for_delete"]){
 	$_id 	= $_POST["doc_id"];
@@ -43,25 +40,32 @@ if(isset($_POST["for_delete"]) && $_POST["for_delete"]){
 
 //NOW LOGIN TO YOUR PROJECT
 if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
-	$proj_id = trim(strtoupper($_POST["proj_id"]));
-	$proj_pw = $_POST["proj_pw"];
-
-	foreach($projs as $pid => $proj){
-		array_push($projects, $proj["project_id"]);
-		if($proj_id == $proj["project_id"] && $proj_pw == $proj["project_pass"]){
-			$active_project_id = $proj_id;
+	if(!isset($_POST["authorized"])){
+		$alerts[] = "Please check the box to indicate you are authorized to view these data.";
+	}else{
+		$proj_id 	= trim(strtoupper($_POST["proj_id"]));
+		$proj_pw 	= $_POST["proj_pw"];
+		$found  	= false;
+		foreach($projs as $pid => $proj){
+			array_push($projects, $proj["project_id"]);
+			if($proj_id == $proj["project_id"] && $proj_pw == $proj["project_pass"]){
+				$active_project_id = $proj_id;
+				$found = true;
+			}
+		}
+		
+		if(!$found){
+			$alerts[] = "Project Id or Project Password is incorrect. Please try again.";
 		}
 	}
 }
-
-
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"/>
-    <link href="css/dt_summary.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"/>
+<link href="css/dt_summary.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 </head>
 <body id="main">
 <?php
@@ -221,13 +225,33 @@ if( $active_project_id ){
 	}
 	echo "</form>";
 }else{
-	?>
-	<form method="post">
-		<h2>Admin Login to view Project Data</h2>
+	$show_alert 	= "";
+	$display_alert 	= "";
+	if(count($alerts)){
+		$show_alert 	= "show";
+		$display_alert 	= "<ul>";
+		foreach($alerts as $alert){
+			$display_alert .= "<li>$alert</li>";
+		}
+	}
+?>
+<div class="alert alert-danger <?php echo $show_alert;?>" role="alert"><?php echo $display_alert  ?></div>
+<div id="box">
+	<form id="summ_auth" method="post">
+		<h2>Our Voice: Citizen Science for Health Equity</h2>
+		<h3>Discovery Tool Data Portal</h3>
+		<copyright>© Stanford University 2017</copyright>
+		<disclaim>Please note that Discovery Tool data can be viewed only by signatories to the The Stanford Healthy Neighborhood Discovery Tool Software License Agreement and in accordance with all relevant IRB/Human Subjects requirements.</disclaim>
+		
+		<label class="checkauth">
+			<input type="checkbox" name='authorized'>  Check here to indicate that you are authorized to view these data
+		</label>
+
 		<label><input type="text" name="proj_id" id="proj_id" placeholder="Project Id"/></label>
 		<label><input type="password" name="proj_pw" id="proj_pw" placeholder="Project Password"/></label>
 		<button type="submit" class="btn btn-primary">Go to Project</button>
 	</form>
+</div>
 	<?php
 }
 ?>
