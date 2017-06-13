@@ -1,7 +1,7 @@
 <?php
 require_once "common.php";
-//session_destroy();
-
+// session_destroy();
+// exit;
 $couch_url = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
 
 if( empty($_SESSION["DT"]) ){
@@ -17,8 +17,8 @@ $ap 				= $_SESSION["DT"];
 $_id 				= $ap["_id"];
 $_rev 				= $ap["_rev"];
 $projs 				= $ap["project_list"];
-$projects 			= [];
 $active_project_id 	= null;
+$active_pid 		= null;
 $alerts 			= array();
 
 if(isset($_POST["for_delete"]) && $_POST["for_delete"]){
@@ -47,13 +47,14 @@ if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
 		$proj_pw 	= $_POST["proj_pw"];
 		$found  	= false;
 		foreach($projs as $pid => $proj){
-			array_push($projects, $proj["project_id"]);
 			if($proj_id == $proj["project_id"] && $proj_pw == $proj["project_pass"]){
 				$active_project_id = $proj_id;
-				$found = true;
+				$active_pid = $pid;
+				$found 		= true;
+				break;
 			}
 		}
-		
+
 		if(!$found){
 			$alerts[] = "Project Id or Project Password is incorrect. Please try again.";
 		}
@@ -71,12 +72,18 @@ if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
 <?php
 if( $active_project_id ){
 	// Build query string
-	$qs = http_build_query(array(
-	        'include_docs' => 'true'
-    ));
-    $couch_url = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . cfg::$couch_all_db . "?" . $qs;
-    $response = doCurl($couch_url);
+	$partial_id  = "IRV_";
+    $partial_end = $partial_id + "\uffff";
+    $active_pid;
 
+	$qs = http_build_query(array(
+	         'key' 		=> "\"$active_pid\""
+	        ,'include_docs' => 'true'
+	        // ,'startkey'	 	=> $partial_id
+	        // ,'endkey' 		=> $partial_end + '\u9999'
+    ));
+    $couch_url 		= cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/filter_by_projid/_view/all?" .  $qs;
+    $response 		= doCurl($couch_url);
 
 	//TURN IT INTO PHP ARRAY
 	$all_projects 	= json_decode($response,1);
@@ -235,24 +242,24 @@ if( $active_project_id ){
 		}
 	}
 ?>
-<div class="alert alert-danger <?php echo $show_alert;?>" role="alert"><?php echo $display_alert  ?></div>
-<div id="box">
-	<form id="summ_auth" method="post">
-		<h2>Our Voice: Citizen Science for Health Equity</h2>
-		<h3>Discovery Tool Data Portal</h3>
-		<copyright>© Stanford University 2017</copyright>
-		<disclaim>Please note that Discovery Tool data can be viewed only by signatories to the The Stanford Healthy Neighborhood Discovery Tool Software License Agreement and in accordance with all relevant IRB/Human Subjects requirements.</disclaim>
-		
-		<label class="checkauth">
-			<input type="checkbox" name='authorized'>  Check here to indicate that you are authorized to view these data
-		</label>
+	<div class="alert alert-danger <?php echo $show_alert;?>" role="alert"><?php echo $display_alert  ?></div>
+	<div id="box">
+		<form id="summ_auth" method="post">
+			<h2>Our Voice: Citizen Science for Health Equity</h2>
+			<h3>Discovery Tool Data Portal</h3>
+			<copyright>© Stanford University 2017</copyright>
+			<disclaim>Please note that Discovery Tool data can be viewed only by signatories to the The Stanford Healthy Neighborhood Discovery Tool Software License Agreement and in accordance with all relevant IRB/Human Subjects requirements.</disclaim>
+			
+			<label class="checkauth">
+				<input type="checkbox" name='authorized'>  Check here to indicate that you are authorized to view these data
+			</label>
 
-		<label><input type="text" name="proj_id" id="proj_id" placeholder="Project Id"/></label>
-		<label><input type="password" name="proj_pw" id="proj_pw" placeholder="Project Password"/></label>
-		<button type="submit" class="btn btn-primary">Go to Project</button>
-	</form>
-</div>
-	<?php
+			<label><input type="text" name="proj_id" id="proj_id" placeholder="Project Id"/></label>
+			<label><input type="password" name="proj_pw" id="proj_pw" placeholder="Project Password"/></label>
+			<button type="submit" class="btn btn-primary">Go to Project</button>
+		</form>
+	</div>
+<?php
 }
 ?>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
