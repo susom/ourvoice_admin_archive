@@ -67,169 +67,203 @@ if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"/>
 <link href="css/dt_summary.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
+<style>
+h4[data-toggle="collapse"]{
+	padding-bottom:5px;
+	margin-bottom:20px;
+	border-bottom:1px solid #666;
+	cursor:pointer;
+}
+</style>
 </head>
 <body id="main">
 <?php
-if( $active_project_id ){
-	// Build query string
-	$partial_id  = "IRV_";
-    $partial_end = $partial_id + "\uffff";
-    $active_pid;
+function printRow($doc){
+	global $active_project_id, $project_meta, $gmaps;
 
-	$qs = http_build_query(array(
-	         'key' 		=> "\"$active_pid\""
-	        ,'include_docs' => 'true'
-	        // ,'startkey'	 	=> $partial_id
-	        // ,'endkey' 		=> $partial_end + '\u9999'
-    ));
-    $couch_url 		= cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/filter_by_projid/_view/all?" .  $qs;
-    $response 		= doCurl($couch_url);
+	$i 			= $doc["_id"];
+	$photos 	= $doc["photos"];
+	$geotags 	= $doc["geotags"];
+	$survey 	= $doc["survey"];
+	$_attach 	= !empty($doc["_attachments"]) ? $doc["_attachments"] : null;
+	$forjsongeo = array();
+	
+	// filter out low accuracy
+	$forjsongeo = array_filter($geotags,function($tag){
+		return $tag["accuracy"] <= 50;
+	});
+	$json_geo 	= json_encode($forjsongeo);
 
-	//TURN IT INTO PHP ARRAY
-	$all_projects 	= json_decode($response,1);
-	// $tot_rows 		= $all_projects["total_rows"];
-	// $tot_pages 		= ceil($tot_rows/$limit); 
+	echo "<div class='user_entry'>";
+	echo "<hgroup>";
+	echo "<h4>(".$doc["lang"] .") : 
+	<b>".date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000))."</b> 
+	<i>".$doc["_id"]."</i></h4>";
+	echo "</hgroup>";
+	echo "<div id='google_map_$i' class='gmap'></div>";
+	
+	echo "<section class='photo_previews'>";
+	echo "<a href='#' class='btn btn-danger deletewalk' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'/>Delete This Walk</a>";
+	echo "<h5>Photo Previews</h5>";
+	echo "<div class='thumbs'>";
+	echo "<ul>";
+	foreach($photos as $n => $photo){
+		if(is_null($photo)){
+			continue;
+		}
+		$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
+		$long 		= $photo["geotag"]["longitude"];
+		$lat 		= $photo["geotag"]["latitude"];
+		$timestamp  = $photo["geotag"]["timestamp"];
 
-	echo "<h1>Discovery Tool Data Summary for $active_project_id</h1>";
-	$gmaps 			= array();
-	$proj 			= array();
-	foreach($ap["project_list"] as $p){
-		$proj[$p["project_id"]] = $p;
+		$goodbad 	= "";
+		if($photo["goodbad"] > 1){
+			$goodbad  .= "<span class='goodbad good'></span>";
+		}
+
+		if($photo["goodbad"] == 1 || $photo["goodbad"] == 3){
+			$goodbad  .= "<span class='goodbad bad'></span>";
+		}
+
+		$rotate 	= isset($photo["rotate"]) ? $photo["rotate"] : 0;
+		$photo_name = "photo_".$n.".jpg";
+
+		// $photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
+		$photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name";
+		$detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
+
+		$attach_url = "#";
+		$audio_attachments = "";
+		if(!empty($photo["audio"])){
+			$num_audios = intval($photo["audio"]);
+			$num 		= $num_audios > 1 ? "<span>x$num_audios</span>" :"";
+			$audio_attachments .= "<a class='audio $hasaudio'></a> $num";
+		}
+		echo "<li id='photo_$n'>
+		<figure>
+		<a href='$detail_url' target='_blank' rel='google_map_$i' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate' rev='$rotate'><img src='$photo_uri' /><span></span><b></b></a>
+		<figcaption>
+			<span class='time'>@".date("g:i a", floor($timestamp/1000))."</span>
+			".$goodbad."
+			".$audio_attachments."
+		</figcaption>
+		</figure></li>";
+	}
+	echo "</ul>";
+	echo "</div>";
+	echo "</section>";
+
+	echo "<section class='survey_response'>";
+	echo "<h5>Survey Responses</h5>";
+	echo "<div class='survey'>";
+	if(empty($survey)){
+		echo "<p><i>No Survey Responses</i></p>";
 	}
 
-	$active_project = array();
-	foreach($all_projects["rows"] as  $i => $row){
-		if(strpos($row["id"],$active_project_id) > -1){
-			$doc 	= $row["doc"];
-			$temp 	= explode("_",$row["doc"]["_id"]);
-			$active_project[array_pop($temp)] = $doc;
+	//WHOOO THIS IS NOT GREAT
+	$tempsurvey = array();
+	foreach($project_meta["surveys"] as $s){
+		$tempoptions = array();
+		if(isset($s["options"])){
+			foreach($s["options"] as $o){
+				$tempoptions[$o["value"]] = $o["en"]; 
+			}
+		}else{
+			$tempoptions = null;
+		}
+		$tempsurvey[$s["name"]] = array(
+				"label" => $s["label"]["en"]
+				,"options" =>  $tempoptions
+			);
+	}
+
+	$unique = array();
+	foreach($survey as $q){
+		$unique[$q["name"]] = $q["value"];
+	}
+	echo "<ul>";
+	foreach($unique as $name => $value){
+		$v = (!empty($tempsurvey[$name]["options"]))  ?  $tempsurvey[$name]["options"][$value] :$value;
+		echo "<li><i>".$tempsurvey[$name]["label"]."</i> : <b>$v</b></li>";
+	}
+	echo "</ul>";
+	echo "</div>";
+	echo "</section>";
+	echo "</div>";
+	// echo "<script>drawGMap($json_geo, $i);\n </script>";
+}
+
+function filter_by_projid($view, $keys_array){
+	$qs 		= http_build_query(array( 'key' => $keys_array ));
+    $couch_url 	= cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/filter_by_projid/_view/".$view."?" .  $qs;
+    $response 	= doCurl($couch_url);
+    return json_decode($response,1);
+}
+// $response = filter_by_projid("all","[\"$active_pid\",\"IRV_1BD92AE2-718C-497E-8B48-47C4B7F3BA39_1_1495147319092\"]");
+
+if( $active_project_id ){
+	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
+    $response 		= filter_by_projid("get_data_ts","[\"$active_pid\"]");
+    
+	//ORDER AND SORT BY DATES
+	$date_headers 	= [];
+	foreach($response["rows"] as $row){
+		$date = $row["value"];
+		if(array_key_exists($date, $date_headers)){
+			$date_headers[$date]++;
+		}else{
+			$date_headers[$date] = 1;
 		}
 	}
-	krsort($active_project);
+	krsort($date_headers);
 
+	//PRINT TO SCREEN
+	echo "<h1>Discovery Tool Data Summary for $active_project_id</h1>";
 	echo "<form id='project_summary' method='post'>";
 	echo "<input type='hidden' name='proj_id' value='".$_POST["proj_id"]."'/>";
 	echo "<input type='hidden' name='proj_pw' value='".$_POST["proj_pw"]."'/>";
+	$gmaps 				= array();
+	$project_meta 		= $ap["project_list"][$active_pid];
 
-	foreach($active_project  as $i =>  $doc){
-		$parent 	= $proj[$active_project_id];
-		$photos 	= $doc["photos"];
-		$geotags 	= $doc["geotags"];
-		$survey 	= $doc["survey"];
-		$_attach 	= !empty($doc["_attachments"]) ? $doc["_attachments"] : null;
-		$forjsongeo = array();
-		
-		// filter low accuracy
-		foreach($geotags as $tag){
-			if($tag["accuracy"] <= 50){
-				array_push($forjsongeo,$tag);
+	$most_recent_date 	= true;
+	foreach($date_headers as $date => $record_count){
+		if($most_recent_date){
+			echo "<section>";
+			echo "<h4 data-toggle='collapse' data-target='#day_$date'>$date</h4>";
+			echo "<div id='day_$date' class='collapse in'>";
+			
+			//AUTOMATICALLY SHOW MOST RECENT DATE's DATA, AJAX THE REST
+			$response 	= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
+			$days_data 	= rsort($response["rows"]); 
+
+			foreach($response["rows"] as $row){
+				$doc = $row["value"];
+				printRow($doc);
 			}
-		}
-		$json_geo 	= json_encode($forjsongeo);
+			echo "</div>";
+			echo "</section>";
 
-		if(empty($photos) || strpos($doc["_id"], "_design") > -1){
+			$most_recent_date = false;
 			continue;
 		}
 
-		echo "<div class='user_entry'>";
-		echo "<hgroup>";
-		echo "<h4>Project ". $active_project_id ." (".$doc["lang"] .") : 
-		<b>".date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000))."</b> 
-		<i>".$doc["_id"]."</i></h4>";
-		echo "</hgroup>";
-		echo "<div id='google_map_$i' class='gmap'></div>";
-		
-		echo "<section class='photo_previews'>";
-		echo "<a href='#' class='btn btn-danger deletewalk' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'/>Delete This Walk</a>";
-		echo "<h5>Photo Previews</h5>";
-		echo "<div class='thumbs'>";
-		echo "<ul>";
-		foreach($photos as $n => $photo){
-			if(is_null($photo)){
-				continue;
-			}
-			$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
-			$long 		= $photo["geotag"]["longitude"];
-			$lat 		= $photo["geotag"]["latitude"];
-			$timestamp  = $photo["geotag"]["timestamp"];
+		//SHOW THE HEADERS OF ALL THE OTHER ONES
+		echo "<section>";
+		echo "<h4 data-toggle='collapse' data-target='#day_$date'>$date</h4>";
+		echo "<div id='day_$date' class='collapse'>";
+		$response 	= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
+		$days_data 	= rsort($response["rows"]); 
 
-			$goodbad 	= "";
-			if($photo["goodbad"] > 1){
-				$goodbad  .= "<span class='goodbad good'></span>";
-			}
-
-			if($photo["goodbad"] == 1 || $photo["goodbad"] == 3){
-				$goodbad  .= "<span class='goodbad bad'></span>";
-			}
-
-			$rotate 	= isset($photo["rotate"]) ? $photo["rotate"] : 0;
-			$photo_name = "photo_".$n.".jpg";
-
-			// $photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
-			$photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name";
-			$detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
-
-			$attach_url = "#";
-			$audio_attachments = "";
-			if(!empty($photo["audio"])){
-				$num_audios = intval($photo["audio"]);
-				$num 		= $num_audios > 1 ? "<span>x$num_audios</span>" :"";
-				$audio_attachments .= "<a class='audio $hasaudio'></a> $num";
-			}
-			echo "<li id='photo_$n'>
-			<figure>
-			<a href='$detail_url' target='_blank' rel='google_map_$i' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate' rev='$rotate'><img src='$photo_uri' /><span></span><b></b></a>
-			<figcaption>
-				<span class='time'>@".date("g:i a", floor($timestamp/1000))."</span>
-				".$goodbad."
-				".$audio_attachments."
-			</figcaption>
-			</figure></li>";
-		// <span class='on_map'>$lat $long</span>
+		foreach($response["rows"] as $row){
+			$doc = $row["value"];
+			printRow($doc);
 		}
-		echo "</ul>";
 		echo "</div>";
 		echo "</section>";
-
-		echo "<section class='survey_response'>";
-		echo "<h5>Survey Responses</h5>";
-		echo "<div class='survey'>";
-		if(empty($survey)){
-			echo "<p><i>No Survey Responses</i></p>";
-		}
-
-		//WHOOO THIS IS NOT GREAT
-		$tempsurvey = array();
-		foreach($parent["surveys"] as $s){
-			$tempoptions = array();
-			if(isset($s["options"])){
-				foreach($s["options"] as $o){
-					$tempoptions[$o["value"]] = $o["en"]; 
-				}
-			}else{
-				$tempoptions = null;
-			}
-			$tempsurvey[$s["name"]] = array(
-					"label" => $s["label"]["en"]
-					,"options" =>  $tempoptions
-				);
-		}
-
-		$unique = array();
-		foreach($survey as $q){
-			$unique[$q["name"]] = $q["value"];
-		}
-		echo "<ul>";
-		foreach($unique as $name => $value){
-			$v = (!empty($tempsurvey[$name]["options"]))  ?  $tempsurvey[$name]["options"][$value] :$value;
-			echo "<li><i>".$tempsurvey[$name]["label"]."</i> : <b>$v</b></li>";
-		}
-		echo "</ul>";
-		echo "</div>";
-		echo "</section>";
-		echo "</div>";
-		$gmaps[] = "drawGMap($json_geo, $i);\n";
 	}
+
+
+		
 	echo "</form>";
 }else{
 	$show_alert 	= "";
@@ -283,8 +317,9 @@ function addmarker(latilongi,map_id) {
 }
 
 $(document).ready(function(){
+	return;
 <?php
-	echo implode($gmaps);
+	// echo implode($gmaps);
 ?>
 	window.current_preview = null;
 	$(".preview").hover(function(){

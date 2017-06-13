@@ -9,6 +9,7 @@
 	box-shadow:0 0 3px #888;
 	overflow:hidden; 
 	position:relative;
+	min-height:430px;
 }
 .user_entry hgroup{
 	overflow:hidden; 
