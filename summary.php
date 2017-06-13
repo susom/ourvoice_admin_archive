@@ -75,8 +75,10 @@ if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
 h4[data-toggle="collapse"]{
 	padding-bottom:5px;
 	margin-bottom:20px;
-	border-bottom:1px solid #666;
+	border-bottom:1px solid #999;
 	cursor:pointer;
+	font-size:250%;
+	font-weight:normal;
 }
 </style>
 </head>
@@ -300,7 +302,6 @@ if( $active_project_id ){
 <?php
 }
 ?>
-
 <script>
 function addmarker(latilongi,map_id) {
     var marker = new google.maps.Marker({
@@ -318,10 +319,6 @@ function addmarker(latilongi,map_id) {
 }
 
 $(document).ready(function(){
-	return;
-<?php
-	// echo implode($gmaps);
-?>
 	window.current_preview = null;
 	$(".preview").hover(function(){
 		var long 	= $(this).data("long");
