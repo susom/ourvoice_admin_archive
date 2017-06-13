@@ -67,6 +67,10 @@ if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"/>
 <link href="css/dt_summary.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>"></script>
+<script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
 <style>
 h4[data-toggle="collapse"]{
 	padding-bottom:5px;
@@ -79,7 +83,7 @@ h4[data-toggle="collapse"]{
 <body id="main">
 <?php
 function printRow($doc){
-	global $active_project_id, $project_meta, $gmaps;
+	global $project_meta;
 
 	$i 			= $doc["_id"];
 	$photos 	= $doc["photos"];
@@ -190,7 +194,7 @@ function printRow($doc){
 	echo "</div>";
 	echo "</section>";
 	echo "</div>";
-	// echo "<script>drawGMap($json_geo, $i);\n </script>";
+	echo "<script>$(document).ready(function(){ drawGMap($json_geo, '$i');\n  });</script>";
 }
 
 function filter_by_projid($view, $keys_array){
@@ -251,6 +255,8 @@ if( $active_project_id ){
 		echo "<section>";
 		echo "<h4 data-toggle='collapse' data-target='#day_$date'>$date</h4>";
 		echo "<div id='day_$date' class='collapse'>";
+		
+		//CHANGE THESE TO AJAX LATER 
 		$response 	= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
 		$days_data 	= rsort($response["rows"]); 
 
@@ -258,12 +264,10 @@ if( $active_project_id ){
 			$doc = $row["value"];
 			printRow($doc);
 		}
+
 		echo "</div>";
 		echo "</section>";
 	}
-
-
-		
 	echo "</form>";
 }else{
 	$show_alert 	= "";
@@ -296,10 +300,7 @@ if( $active_project_id ){
 <?php
 }
 ?>
-<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>"></script>
-<script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
+
 <script>
 function addmarker(latilongi,map_id) {
     var marker = new google.maps.Marker({
