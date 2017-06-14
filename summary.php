@@ -1,7 +1,7 @@
 <?php
 require_once "common.php";
-// session_destroy();
-// exit;
+session_destroy();
+exit;
 function filter_by_projid($view, $keys_array){
 	$qs 		= http_build_query(array( 'key' => $keys_array ));
     $couch_url 	= cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/filter_by_projid/_view/".$view."?" .  $qs;
@@ -139,8 +139,6 @@ $ap 				= $_SESSION["DT"];
 $_id 				= $ap["_id"];
 $_rev 				= $ap["_rev"];
 $projs 				= $ap["project_list"];
-echo "<pre>";
-print_r($projs);
 $active_project_id 	= null;
 $active_pid 		= null;
 $alerts 			= array();
