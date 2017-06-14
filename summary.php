@@ -139,6 +139,8 @@ $ap 				= $_SESSION["DT"];
 $_id 				= $ap["_id"];
 $_rev 				= $ap["_rev"];
 $projs 				= $ap["project_list"];
+echo "<pre>";
+print_r($projs);
 $active_project_id 	= null;
 $active_pid 		= null;
 $alerts 			= array();
