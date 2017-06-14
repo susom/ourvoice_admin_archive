@@ -126,9 +126,6 @@ function printRow($doc){
 	return $codeblock;
 }
 
-
-
-
 if( empty($_SESSION["DT"]) ){
 	// FIRST GET THE PROJECT DATA
 	$response 		= doCurl($couch_url);
