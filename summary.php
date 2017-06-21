@@ -1,6 +1,10 @@
 <?php
 require_once "common.php";
 
+if(isset($_GET["clearsession"])){
+	$_SESSION = null;
+}
+
 function filter_by_projid($view, $keys_array){
 	$qs 		= http_build_query(array( 'key' => $keys_array ));
     $couch_url 	= cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/filter_by_projid/_view/".$view."?" .  $qs;
@@ -226,6 +230,7 @@ h4[data-toggle="collapse"]{
 </style>
 </head>
 <body id="main">
+<a href="summary.php?clearsession=1">Refresh Project Data</a>
 <?php
 // $response = filter_by_projid("all","[\"$active_pid\",\"IRV_1BD92AE2-718C-497E-8B48-47C4B7F3BA39_1_1495147319092\"]");
 
@@ -236,7 +241,7 @@ if( $active_project_id ){
 	//ORDER AND SORT BY DATES
 	$date_headers 	= [];
 	foreach($response["rows"] as $row){
-		$date = $row["value"];
+		$date = Date($row["value"]);
 		if(array_key_exists($date, $date_headers)){
 			$date_headers[$date]++;
 		}else{
@@ -309,7 +314,7 @@ if( $active_project_id ){
 			</label>
 
 			<label><input type="text" name="proj_id" id="proj_id" placeholder="Project Id"/></label>
-			<label><input type="password" name="summ_pw" id="proj_pw" placeholder="Summary Password"/></label>
+			<label><input type="password" name="summ_pw" id="proj_pw" placeholder="Portal Password"/></label>
 			<button type="submit" class="btn btn-primary">Go to Project</button>
 		</form>
 	</div>

@@ -186,7 +186,7 @@ if(!isset($_SESSION["discpw"])) {
 				<label><span>Project Id</span><input type="text" name="project_id" value="<?php echo $pid; ?>"/></label>
 				<label><span>Project Name</span><input type="text" name="project_name" value="<?php echo $pname; ?>"/></label>
 				<label><span>Project Pass</span><input type="text" name="project_pass" value="<?php echo $ppass; ?>"/></label>
-				<label><span>Summary Pass</span><input type="text" name="summ_pass" value="<?php echo $spass; ?>"/></label>
+				<label><span>Portal Pass</span><input type="text" name="summ_pass" value="<?php echo $spass; ?>"/></label>
 				<label><span>Use Smilies</span>
 				<input type="radio" name="thumbs" <?php if($thumbs) echo "checked"; ?> value="2"/> Yes
 				<input type="radio" name="thumbs" <?php if(!$thumbs) echo "checked"; ?> value="1"/> No
