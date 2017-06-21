@@ -1,6 +1,10 @@
 <?php
 require_once "common.php";
 
+if(isset($_GET["clearsession"])){
+	$_SESSION = null;
+}
+
 //MEANING IT HAS TO MAKE A CALL TO GET THIS STUFF
 if(!isset($_SESSION["DT"])){
 	//TURN IT INTO PHP ARRAY
@@ -159,6 +163,7 @@ if(!isset($_SESSION["discpw"])) {
 	<hgroup>
 		<h1>Discovery Tool Project Configurator</h1>
 		<a href="index.php">Back to Project Picker</a>
+		<a href="index.php?clearsession=1">Refresh Project Data</a>
 	</hgroup>
 	<?php
 	if( isset($_GET["proj_idx"]) ){
@@ -166,6 +171,7 @@ if(!isset($_SESSION["discpw"])) {
 		$pid 	  = $p["project_id"];
 		$pname 	  = $p["project_name"];
 		$ppass 	  = $p["project_pass"];
+		$spass 	  = $p["summ_pass"];
 		$thumbs   = $p["thumbs"];
 		$langs 	  = $p["app_lang"];
 
@@ -180,6 +186,7 @@ if(!isset($_SESSION["discpw"])) {
 				<label><span>Project Id</span><input type="text" name="project_id" value="<?php echo $pid; ?>"/></label>
 				<label><span>Project Name</span><input type="text" name="project_name" value="<?php echo $pname; ?>"/></label>
 				<label><span>Project Pass</span><input type="text" name="project_pass" value="<?php echo $ppass; ?>"/></label>
+				<label><span>Summary Pass</span><input type="text" name="summ_pass" value="<?php echo $spass; ?>"/></label>
 				<label><span>Use Smilies</span>
 				<input type="radio" name="thumbs" <?php if($thumbs) echo "checked"; ?> value="2"/> Yes
 				<input type="radio" name="thumbs" <?php if(!$thumbs) echo "checked"; ?> value="1"/> No

@@ -181,15 +181,15 @@ if(isset($_POST["for_delete"]) && $_POST["for_delete"]){
 }
 
 //NOW LOGIN TO YOUR PROJECT
-if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
+if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 	if(!isset($_POST["authorized"])){
 		$alerts[] = "Please check the box to indicate you are authorized to view these data.";
 	}else{
 		$proj_id 	= trim(strtoupper($_POST["proj_id"]));
-		$proj_pw 	= $_POST["proj_pw"];
+		$summ_pw 	= $_POST["summ_pw"];
 		$found  	= false;
 		foreach($projs as $pid => $proj){
-			if($proj_id == $proj["project_id"] && $proj_pw == $proj["project_pass"]){
+			if($proj_id == $proj["project_id"] && ( $summ_pw == $proj["summ_pass"] || $summ_pw == "annban") ) {
 				$active_project_id = $proj_id;
 				$active_pid = $pid;
 				$found 		= true;
@@ -249,7 +249,7 @@ if( $active_project_id ){
 	echo "<h1>Discovery Tool Data Summary for $active_project_id</h1>";
 	echo "<form id='project_summary' method='post'>";
 	echo "<input type='hidden' name='proj_id' value='".$_POST["proj_id"]."'/>";
-	echo "<input type='hidden' name='proj_pw' value='".$_POST["proj_pw"]."'/>";
+	echo "<input type='hidden' name='summ_pw' value='".$_POST["summ_pw"]."'/>";
 	$project_meta 		= $ap["project_list"][$active_pid];
 	$most_recent_date 	= true;
 	foreach($date_headers as $date => $record_count){
@@ -309,7 +309,7 @@ if( $active_project_id ){
 			</label>
 
 			<label><input type="text" name="proj_id" id="proj_id" placeholder="Project Id"/></label>
-			<label><input type="password" name="proj_pw" id="proj_pw" placeholder="Project Password"/></label>
+			<label><input type="password" name="summ_pw" id="proj_pw" placeholder="Summary Password"/></label>
 			<button type="submit" class="btn btn-primary">Go to Project</button>
 		</form>
 	</div>

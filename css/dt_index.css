@@ -100,11 +100,11 @@ hr.answer_div{
 
 hgroup {
 	position:relative;
+	overflow:hidden;
 }
 hgroup a {
-	position:absolute;
-	right:10px;
-	top:10px;
+	float:right;
+	clear:right;
 }
 
 .nlbr {
