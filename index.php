@@ -1,32 +1,9 @@
 <?php
-
 require_once "common.php";
 
-
-$_SESSION 	= null;
-
-$couch_proj     = cfg::$couch_proj_db;
-$couch_db 	    = cfg::$couch_config_db;
-$couch_url 	    = cfg::$couch_url . "/" . $couch_proj . "/" . $couch_db;
-$couch_user 	= cfg::$couch_user;
-$couch_pw 	    = cfg::$couch_pw;
-
+//MEANING IT HAS TO MAKE A CALL TO GET THIS STUFF
 if(!isset($_SESSION["DT"])){
-//	//CURL OPTIONS
-//	$ch 		= curl_init($couch_url);
-//	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-//	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-//		"Content-type: application/json",
-//		"Accept: */*"
-//	));
-//	curl_setopt($ch, CURLOPT_USERPWD, "$couch_user:$couch_pw");
-//	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); //JUST FETCH DATA
-//
-//	$response 	= curl_exec($ch);
-//	curl_close($ch);
-
 	//TURN IT INTO PHP ARRAY
-
     // Query for the all projects document
     $url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
     $response 		= doCurl($url);
@@ -38,10 +15,11 @@ $ap 		= $_SESSION["DT"];
 $_id 		= $ap["_id"];
 $_rev 		= $ap["_rev"];
 $projects 	= [];
+$alerts 	= [];
+
 foreach($ap["project_list"] as $pid => $proj){
 	$projects[$pid] = $proj["project_id"];
 } 
-
 
 // Handle actions on PSOT
 if( isset($_POST["proj_idx"]) ){
@@ -116,14 +94,25 @@ if( isset($_POST["proj_idx"]) ){
 		$pidx 		= $proj_idx;
 		$payload 	= $ap;
 		$payload["project_list"][$pidx] = $updated_project;
-
-//		putDoc($payload);
-        $url = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-        $response = doCurl($url, json_encode($payload), 'PUT');
-
-        $ap = $_SESSION["DT"] = $payload;
+        $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+        $response 	= doCurl($url, json_encode($payload), 'PUT');
+        $ap 		= $_SESSION["DT"] = $payload;
 		if($redi){
 			header("location:index.php?proj_idx=$pidx");
+		}
+	}
+}
+
+//NOW LOGIN TO YOUR PROJECT
+if(isset($_POST["discpw"])){
+	if(!isset($_POST["authorized"])){
+		$alerts[] = "Please check the box to indicate you are authorized to view these data.";
+	}else{
+		$discpw 	= $_POST["discpw"];
+		if(strtolower($discpw) !== "annban"){
+			$alerts[] = "Director Password is incorrect. Please try again.";
+		}else{
+			$_SESSION["discpw"] = $discpw;
 		}
 	}
 }
@@ -133,24 +122,45 @@ if( isset($_POST["proj_idx"]) ){
 <head>
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href="css/dt_common.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
     <link href="css/dt_index.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 </head>
 <body id="main" class="configurator">
-<hgroup>
-	<h1>Discovery Tool Project Configurator</h1>
-	<a href="index.php">Back to Project Picker</a>
-</hgroup>
 <?php
 $projs 	= $ap["project_list"];
-if(!isset($_SESSION["discpw"]) && 1==2) {
+if(!isset($_SESSION["discpw"])) {
+	$show_alert 	= "";
+	$display_alert 	= "";
+	if(count($alerts)){
+		$show_alert 	= "show";
+		$display_alert 	= "<ul>";
+		foreach($alerts as $alert){
+			$display_alert .= "<li>$alert</li>";
+		}
+	}
 	?>
-	<form method='post'>
-		<label>Admin PW</label>
-		<input type="password" name="discpw" value=''/>
-		<input type='submit'/>
-	</form>
+	<div class="alert alert-danger <?php echo $show_alert;?>" role="alert"><?php echo $display_alert  ?></div>
+	<div id="box">
+		<form id="summ_auth" method="post">
+			<h2>Our Voice: Citizen Science for Health Equity</h2>
+			<h3>Discovery Tool Data Configurator</h3>
+			<copyright>© Stanford University 2017</copyright>
+			<disclaim>Please note that Discovery Tool data can be viewed only by signatories to the The Stanford Healthy Neighborhood Discovery Tool Software License Agreement and in accordance with all relevant IRB/Human Subjects requirements.</disclaim>
+			<label class="checkauth">
+				<input type="checkbox" name='authorized'>  Check here to indicate that you are authorized to view these data
+			</label>
+			<label><input type="password" name="discpw" id="proj_pw" placeholder="Admin Password"/></label>
+			<button type="submit" class="btn btn-primary">Go to Configurator</button>
+		</form>
+	</div>
 	<?php
 }else{
+	?>
+	<hgroup>
+		<h1>Discovery Tool Project Configurator</h1>
+		<a href="index.php">Back to Project Picker</a>
+	</hgroup>
+	<?php
 	if( isset($_GET["proj_idx"]) ){
 		$p 		  = $projs[$_GET["proj_idx"]];
 		$pid 	  = $p["project_id"];
