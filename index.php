@@ -88,6 +88,7 @@ if( isset($_POST["proj_idx"]) ){
 			 "project_id" 		=> $_POST["project_id"]
 			,"project_name" 	=> $_POST["project_name"]
 			,"project_pass" 	=> $_POST["project_pass"]
+			,"summ_pass" 		=> $_POST["summ_pass"]
 			,"thumbs"			=> $_POST["thumbs"]
 			,"app_lang" 		=> $app_lang
 			,"app_text" 		=> $app_text

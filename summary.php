@@ -240,6 +240,7 @@ if( $active_project_id ){
     
 	//ORDER AND SORT BY DATES
 	$date_headers 	= [];
+
 	foreach($response["rows"] as $row){
 		$date = Date($row["value"]);
 		if(array_key_exists($date, $date_headers)){
