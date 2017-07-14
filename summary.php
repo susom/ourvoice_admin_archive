@@ -193,7 +193,7 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 		$summ_pw 	= $_POST["summ_pw"];
 		$found  	= false;
 		foreach($projs as $pid => $proj){
-			if($proj_id == $proj["project_id"] && ( $summ_pw == $proj["summ_pass"] || $summ_pw == "annban") ) {
+			if($proj_id == $proj["project_id"] && ( (isset($proj["summ_pass"]) && $summ_pw == $proj["summ_pass"]) || $summ_pw == "annban") ) {
 				$active_project_id = $proj_id;
 				$active_pid = $pid;
 				$found 		= true;
@@ -230,7 +230,8 @@ h4[data-toggle="collapse"]{
 </style>
 </head>
 <body id="main">
-<a href="summary.php?clearsession=1">Refresh Project Data</a>
+<a href="summary.php?clearsession=1">Refresh Project Data</a><br>
+<a href="project_transcriptions.php?active_project_id=<?php echo $active_project_id?>&pid=<?php echo $active_pid?>">Get Project Transcriptions</a>
 <?php
 // $response = filter_by_projid("all","[\"$active_pid\",\"IRV_1BD92AE2-718C-497E-8B48-47C4B7F3BA39_1_1495147319092\"]");
 
