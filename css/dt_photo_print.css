@@ -80,6 +80,18 @@ textarea{
 
 @media print {
 	.page-break	{ display: block; page-break-before: always; }
+	.photo_detail textarea{
+		font-size:115%;
+	}
+	
+	.goodbad{
+		position:absolute;
+		margin-top:-90px;
+		margin-left:10px;
+	}
+	.goodbad h4{
+		display:none;
+	}
 }
 
 @media print and (orientation: portrait) {
