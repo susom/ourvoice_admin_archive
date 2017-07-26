@@ -355,6 +355,11 @@ label span {
 	padding-top:30px;
 }
 
+.forprint{
+	display:none;
+}
+
+
 #delete_all {
 	position:absolute;
 	top:0;

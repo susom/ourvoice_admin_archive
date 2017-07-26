@@ -81,7 +81,7 @@ textarea{
 @media print {
 	.page-break	{ display: block; page-break-before: always; }
 	.photo_detail textarea{
-		font-size:115%;
+		display:none;
 	}
 	
 	.forcommunity{
@@ -91,6 +91,11 @@ textarea{
 	}
 	.forcommunity h4{
 		display:none;
+	}
+
+	.forprint{
+		display:block;
+		font-size:115%;
 	}
 }
 

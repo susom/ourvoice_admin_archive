@@ -129,7 +129,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 					$transcription 	= isset($doc["transcriptions"][$audio_name]) ? $doc["transcriptions"][$audio_name] : "";
 
 					$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$audio_src' title='right click and save as link to download'>&#8676;</a> 
-					<textarea name='transcriptions[$audio_name]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";
+					<div class='forprint'>$transcription</div><textarea name='transcriptions[$audio_name]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";
 				}
 			}
 		}
