@@ -84,12 +84,12 @@ textarea{
 		font-size:115%;
 	}
 	
-	.goodbad{
+	.forcommunity{
 		position:absolute;
 		margin-top:-90px;
 		margin-left:10px;
 	}
-	.goodbad h4{
+	.forcommunity h4{
 		display:none;
 	}
 }

@@ -165,7 +165,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo "<aside>
 			<div id='google_map_0' class='gmap'></div>
 		</aside>";
-	echo "<aside class='goodbad'>
+	echo "<aside class='forcommunity'>
 			<h4>Good or Bad for the community</h4>
 			$goodbad
 		</aside>";
