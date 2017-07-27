@@ -17,7 +17,6 @@
 .user_entry h4{
 	overflow:hidden;
 	padding-bottom:3px; 
-	border-bottom:1px solid #333;
 }
 .user_entry h4 b {
 	font-weight:normal;
@@ -268,7 +267,7 @@ label span {
 	overflow:hidden;
 	clear:right;
 	width:420px;
-	margin-bottom:20px;
+	margin-bottom:12px;
 }
 .photo_detail aside h4{
 	color:#333;
@@ -345,10 +344,22 @@ label span {
 	border-bottom:1px solid #ccc; 
 	/*background:url(../img/icon_listen.png) 0 5px no-repeat;*/
 	background-size:6%;
-	padding-left:15px;
 	-webkit-print-color-adjust: exact;
 }
 
+.photo_detail .forcommunity h4{
+	display:inline-block;
+	vertical-align: middle;
+}
+
+.photo_detail .forcommunity  span{
+	display:inline-block;
+	vertical-align: text-bottom;
+	width:30px;
+	height:30px;
+	margin-left:10px;
+	margin-right:auto;
+}
 
 #project_summary {
 	position:relative;
@@ -403,6 +414,7 @@ label span {
     text-decoration: none;
     transform: rotate(270deg);
     font-size: 180%;
+    display:none;
 }
 
 .print_only{
