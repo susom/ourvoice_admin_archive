@@ -231,7 +231,8 @@ h4[data-toggle="collapse"]{
 </head>
 <body id="main">
 <a href="summary.php?clearsession=1">Refresh Project Data</a><br>
-<a href="project_transcriptions.php?active_project_id=<?php echo $active_project_id?>&pid=<?php echo $active_pid?>">Get Project Transcriptions</a>
+<a href="project_transcriptions.php?active_project_id=<?php echo $active_project_id?>&pid=<?php echo $active_pid?>">Get Project Transcriptions</a><br>
+<a href="project_agg_surveys.php?active_project_id=<?php echo $active_project_id?>&pid=<?php echo $active_pid?>">Get Aggregate Survey Answers</a>
 <?php
 // $response = filter_by_projid("all","[\"$active_pid\",\"IRV_1BD92AE2-718C-497E-8B48-47C4B7F3BA39_1_1495147319092\"]");
 
