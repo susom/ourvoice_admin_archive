@@ -219,6 +219,11 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
 <style>
+h1{
+	padding-top:20px; 
+	clear:both; 
+}
+
 h4[data-toggle="collapse"]{
 	padding-bottom:5px;
 	margin-bottom:20px;
@@ -227,16 +232,22 @@ h4[data-toggle="collapse"]{
 	font-size:250%;
 	font-weight:normal;
 }
+.btn {
+	float:right;
+	margin-left:10px;
+}
 </style>
 </head>
 <body id="main">
-<a href="summary.php?clearsession=1">Refresh Project Data</a><br>
-<a href="project_transcriptions.php?active_project_id=<?php echo $active_project_id?>&pid=<?php echo $active_pid?>">Get Project Transcriptions</a><br>
-<a href="project_agg_surveys.php?active_project_id=<?php echo $active_project_id?>&pid=<?php echo $active_pid?>">Get Aggregate Survey Answers</a>
+<a class='btn btn-default' href="summary.php?clearsession=1">Refresh Project Data</a>
+
 <?php
 // $response = filter_by_projid("all","[\"$active_pid\",\"IRV_1BD92AE2-718C-497E-8B48-47C4B7F3BA39_1_1495147319092\"]");
 
 if( $active_project_id ){
+	echo '<a class="inproject btn btn-info" href="project_transcriptions.php?active_project_id=<?php echo $active_project_id?>&pid=<?php echo $active_pid?>">Get Project Transcriptions</a> ';
+	echo '<a class="inproject btn btn-warning" href="project_agg_surveys.php?active_project_id=<?php echo $active_project_id?>&pid=<?php echo $active_pid?>">Get Aggregate Survey Answers</a>';
+
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
     $response 		= filter_by_projid("get_data_ts","[\"$active_pid\"]");
     
