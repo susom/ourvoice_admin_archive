@@ -84,12 +84,12 @@ textarea{
 		display:none;
 	}
 	
-	.forcommunity{
+	.photo_detail .forcommunity{
 		position:absolute;
-		margin-top:-90px;
+		margin-top:-60px;
 		margin-left:10px;
 	}
-	.forcommunity h4{
+	.photo_detail .forcommunity h4{
 		display:none;
 	}
 
