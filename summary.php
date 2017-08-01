@@ -245,8 +245,8 @@ h4[data-toggle="collapse"]{
 // $response = filter_by_projid("all","[\"$active_pid\",\"IRV_1BD92AE2-718C-497E-8B48-47C4B7F3BA39_1_1495147319092\"]");
 
 if( $active_project_id ){
-	echo '<a target="_blank" class="inproject btn btn-info" href="project_transcriptions.php?active_project_id=<?php echo $active_project_id?>&pid=<?php echo $active_pid?>">Get Project Transcriptions</a> ';
-	echo '<a target="_blank" class="inproject btn btn-warning" href="project_agg_surveys.php?active_project_id=<?php echo $active_project_id?>&pid=<?php echo $active_pid?>">Get Aggregate Survey Answers</a>';
+	echo '<a target="_blank" class="inproject btn btn-info" href="project_transcriptions.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Project Transcriptions</a> ';
+	echo '<a target="_blank" class="inproject btn btn-warning" href="project_agg_surveys.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Aggregate Survey Answers</a>';
 
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
     $response 		= filter_by_projid("get_data_ts","[\"$active_pid\"]");
