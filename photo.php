@@ -43,11 +43,13 @@ if( isset($_POST["doc_id"]) ){
 	}else{
 		//SAVE TRANSCRIPTIONS
 		foreach($_POST["transcriptions"] as $audio_name => $transcription){
-			$payload["transcriptions"][$audio_name] = $transcription;
+			$txns = str_replace('"','&#34;', $transcription);
+			$payload["transcriptions"][$audio_name] = $txns;
 		}
 	}
 	doCurl($url, json_encode($payload),"PUT");
 }
+
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -65,7 +67,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
     $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
     $response   = doCurl($url);
 
-	$doc 		= json_decode(stripslashes($response),1);
+	$doc 		= json_decode(stripslashes($response),1); //wtf this breaking certain ones? 
 	$_rev 		= $doc["_rev"];
 
 	$photos 	= $doc["photos"];
@@ -126,7 +128,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	                $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename";
 					$audio_src 		= getConvertedAudio($attach_url);
 
-					$transcription 	= isset($doc["transcriptions"][$audio_name]) ? $doc["transcriptions"][$audio_name] : "";
+					$transcription 	= isset($doc["transcriptions"][$audio_name]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$audio_name]) : "";
 
 					$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$audio_src' title='right click and save as link to download'>&#8676;</a> 
 					<div class='forprint'>$transcription</div><textarea name='transcriptions[$audio_name]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";

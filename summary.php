@@ -22,7 +22,8 @@ function printRow($doc){
 	$survey 	= $doc["survey"];
 	$_attach 	= !empty($doc["_attachments"]) ? $doc["_attachments"] : null;
 	$forjsongeo = array();
-	
+	$lang 		= is_null($doc["lang"]) ? "EN" : $doc["lang"];
+
 	// filter out low accuracy
 	$forjsongeo = array_filter($geotags,function($tag){
 		return $tag["accuracy"] <= 50;
@@ -31,7 +32,7 @@ function printRow($doc){
 
 	$codeblock[] = "<div class='user_entry'>";
 	$codeblock[] = "<hgroup>";
-	$codeblock[] = "<h4>(".$doc["lang"] .") : 
+	$codeblock[] = "<h4>(". $lang .") : 
 	<b>".date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000))."</b> 
 	<i>".$doc["_id"]."</i></h4>";
 	$codeblock[] = "</hgroup>";
