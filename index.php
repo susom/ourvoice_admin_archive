@@ -82,8 +82,7 @@ if( isset($_POST["proj_idx"]) ){
 			}
 			array_push($surveys, $survey_q);
 		}
-		$consents  = $_POST["consent_trans"];
-
+	
 		$updated_project = array(
 			 "project_id" 		=> $_POST["project_id"]
 			,"project_name" 	=> $_POST["project_name"]
@@ -92,10 +91,11 @@ if( isset($_POST["proj_idx"]) ){
 			,"thumbs"			=> $_POST["thumbs"]
 			,"app_lang" 		=> $app_lang
 			,"app_text" 		=> $app_text
-			,"surveys"	 		=> $surveys
-			,"consent" 			=> $consents
+			,"surveys"	 		=> str_replace("rn*","\r\n*",str_replace("rnrn*","\r\n\r\n*",$surveys))
+			,"consent" 			=> str_replace("rn*","\r\n*",str_replace("rnrn*","\r\n\r\n*",$consents))
 		);
 
+		print_r($updated_project["consent"]);
 		$pidx 		= $proj_idx;
 		$payload 	= $ap;
 		$payload["project_list"][$pidx] = $updated_project;
@@ -103,7 +103,7 @@ if( isset($_POST["proj_idx"]) ){
         $response 	= doCurl($url, json_encode($payload), 'PUT');
         $ap 		= $_SESSION["DT"] = $payload;
 		if($redi){
-			header("location:index.php?proj_idx=$pidx");
+			//header("location:index.php?proj_idx=$pidx");
 		}
 	}
 }
