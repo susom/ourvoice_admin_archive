@@ -84,7 +84,7 @@ if( isset($_POST["proj_idx"]) ){
 		}
 	
 		$updated_project = array(
-			 "project_id" 		=> $_POST["project_id"]
+			 "project_id" 		=> strtoupper($_POST["project_id"])
 			,"project_name" 	=> $_POST["project_name"]
 			,"project_pass" 	=> $_POST["project_pass"]
 			,"summ_pass" 		=> $_POST["summ_pass"]
