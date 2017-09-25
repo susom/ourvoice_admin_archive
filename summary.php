@@ -127,6 +127,7 @@ function printRow($doc){
 	$codeblock[] = "</section>";
 	$codeblock[] = "</div>";
 	$codeblock[] = "<script>$(document).ready(function(){ drawGMap($json_geo, '$i');\n  });</script>";
+	$codeblock[] = "<div class='$i' data-mapgeo='$json_geo'></div>";
 	return $codeblock;
 }
 
@@ -392,11 +393,13 @@ $(document).ready(function(){
 			var lat 	= $(this).data("lat"); 
 			var map_id 	= $(this).attr("rel");
 			var latlng 	= new google.maps.LatLng(lat, long);
-
 			addmarker(latlng,map_id);
 	    },
 	    mouseleave: function () {
-	        current_preview.setMap(null);
+	    	var map 	= $(this).attr("rel");
+	    	var map_geo = $("div."+map.replace("google_map_","")).data("mapgeo");
+	        window.current_preview.setMap(null);
+	        drawGMap(map_geo,map.replace("google_map_",""));
 	    }
 	}, ".preview");
 
