@@ -26,6 +26,10 @@
     font-size: 80%;
     float: right;
 }
+.user_entry h4 i strong{
+	color:#333;
+	font-weight:1000;
+}
 .user_entry h4 i:before{
 	display:inline-block; 
 	content:"_id :";

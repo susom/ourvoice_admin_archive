@@ -30,11 +30,13 @@ function printRow($doc){
 	});
 	$json_geo 	= json_encode($forjsongeo);
 
+	$last4 		 = substr($doc["_id"],-4);
+	$firstpart 	 = substr($doc["_id"],0, strlen($doc["_id"]) - 4);
 	$codeblock[] = "<div class='user_entry'>";
 	$codeblock[] = "<hgroup>";
 	$codeblock[] = "<h4>(". $lang .") : 
 	<b>".date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000))."</b> 
-	<i>".$doc["_id"]."</i></h4>";
+	<i>$firstpart<strong>$last4</strong></i></h4>";
 	$codeblock[] = "</hgroup>";
 	$codeblock[] = "<div id='google_map_$i' class='gmap'></div>";
 	
