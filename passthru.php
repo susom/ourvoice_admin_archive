@@ -9,15 +9,15 @@ require_once "common.php";
 //$id 	= isset($_GET["_id"])	? $_GET["_id"] 		: "GNT_4C01067B-5704-4C7E-A30E-A501C13A19E7_1_1482192593554";
 //$file 	= isset($_GET["_file"]) ? $_GET["_file"] 	: "photo_0.jpg";
 
-$id = isset($_GET["_id"]) ? $_GET["_id"] : NULL;
-$file = isset($_GET["_file"]) ? $_GET["_file"] : NULL;
+$id 	= isset($_GET["_id"]) 	? $_GET["_id"] : NULL;
+$file 	= isset($_GET["_file"]) ? $_GET["_file"] : NULL;
 
 if (empty($id) || empty($file)) {
     exit ("Invalid id or file");
 }
 
 // Do initial query to get metadata from couchdb
-$url 	= cfg::$couch_url . "/".cfg::$couch_users_db."/" . $id;
+$url 	= cfg::$couch_url . "/".cfg::$couch_attach_db."/" . $id;
 $result = doCurl($url);
 $result = json_decode($result,true);
 

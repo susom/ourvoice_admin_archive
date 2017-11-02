@@ -32,7 +32,11 @@ function doCurl($url, $data = null, $method = null, $username = null, $password 
     return $result;
 }
 
-
+function print_rr($ar){
+    echo "<pre>";
+    print_r($ar);
+    echo "</pre>";
+}
 
 
 

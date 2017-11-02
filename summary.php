@@ -157,6 +157,7 @@ if(isset($_POST["active_pid"]) && $_POST["date"]){
 	$date 			= $_POST["date"];
 	$project_meta 	= $ap["project_list"][$active_pid];
 
+	//GET THE DATA FROM disc_users
 	$response 		= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
 	$days_data 		= rsort($response["rows"]); 
 	
@@ -246,8 +247,6 @@ h4[data-toggle="collapse"]{
 <a class='btn btn-default' href="summary.php?clearsession=1">Refresh Project Data</a>
 
 <?php
-// $response = filter_by_projid("all","[\"$active_pid\",\"IRV_1BD92AE2-718C-497E-8B48-47C4B7F3BA39_1_1495147319092\"]");
-
 if( $active_project_id ){
 	echo '<a target="_blank" class="inproject btn btn-info" href="project_transcriptions.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Project Transcriptions</a> ';
 	echo '<a target="_blank" class="inproject btn btn-warning" href="project_agg_surveys.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Aggregate Survey Answers</a>';
