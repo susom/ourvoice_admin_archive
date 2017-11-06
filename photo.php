@@ -72,6 +72,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 
 	$photos 	= $doc["photos"];
 	$device 	= $doc["device"]["platform"];
+	$old 		= isset($doc["_attachments"]) ? "&_old=1" : "";
 	$temp_1 	= explode("_",$_file);
 	$temp_2 	= explode(".",$temp_1[1]);
 	$photo_i 	= $temp_2[0];
@@ -110,7 +111,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$timestamp  = $photo["geotag"]["timestamp"];
 
 		$photo_name = "photo_".$i.".jpg";
-		$photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name";
+		$photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name" . $old;
 		
 		$attach_url = "#";
 		$audio_attachments = "";
@@ -121,7 +122,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				$filename = "audio_".$i."_".$j . "." .$ext;
 
 				//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
-                $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename";
+                $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename" . $old;
 				$audio_src 		= getConvertedAudio($attach_url);
 				$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$audio_name]) : "";
 				$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$audio_src' title='right click and save as link to download'>&#8676;</a> 
