@@ -38,6 +38,7 @@ function printRow($doc){
 	<b>".date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000))."</b> 
 	<i>$firstpart<strong>$last4</strong></i></h4>";
 	$codeblock[] = "</hgroup>";
+	
 	$codeblock[] = "<div id='google_map_$i' class='gmap'></div>";
 	
 	$codeblock[] = "<section class='photo_previews'>";
@@ -128,7 +129,7 @@ function printRow($doc){
 	$codeblock[] = "</div>";
 	$codeblock[] = "</section>";
 	$codeblock[] = "</div>";
-	$codeblock[] = "<script>$(document).ready(function(){ drawGMap($json_geo, '$i');\n  });</script>";
+	$codeblock[] = "<script>$(document).ready(function(){ drawGMap($json_geo, '$i', 16);\n  });</script>";
 	$codeblock[] = "<div class='$i' data-mapgeo='$json_geo'></div>";
 	return $codeblock;
 }
@@ -400,7 +401,7 @@ $(document).ready(function(){
 	    	var map 	= $(this).attr("rel");
 	    	var map_geo = $("div."+map.replace("google_map_","")).data("mapgeo");
 	        window.current_preview.setMap(null);
-	        drawGMap(map_geo,map.replace("google_map_",""));
+	        drawGMap(map_geo,map.replace("google_map_",""),16);
 	    }
 	}, ".preview");
 

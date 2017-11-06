@@ -1,11 +1,10 @@
 function drawGMap(o_geotags, i_uniquemap, zoom_level){
-	var map_id 			= "google_map_" + i_uniquemap;
-	var geotags 		= o_geotags;
-	var walkMap 		= [];
-
-	var latLngBounds    = new google.maps.LatLngBounds();
-	for(var i = 0; i < geotags.length; i++) {
-		var ltlnpt 	= new google.maps.LatLng(geotags[i]["lat"], geotags[i]["lng"]);
+	var map_id         = "google_map_" + i_uniquemap;
+	var geotags        = o_geotags;
+	var walkMap        = [];
+	
+    for(var i in geotags) {
+		var ltlnpt      = new google.maps.LatLng(geotags[i]["lat"], geotags[i]["lng"]);
 		walkMap.push(ltlnpt);
 	}
 
@@ -35,9 +34,10 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level){
         title: "Starting Point"
     });
 
-    if(geotags.length > 1){
-    	for(var i = 1; i < geotags.length; i++) {
-    		latLngBounds.extend(walkMap[i]);
+    var LatLngBounds   = new google.maps.LatLngBounds();
+    if(geotags){
+    	for(var i in geotags) {
+    		LatLngBounds.extend(walkMap[i]);
 
     		new google.maps.Marker({
                 map: window[map_id],
@@ -63,7 +63,7 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level){
           strokeWeight: 1
         });
 
-        window[map_id].fitBounds(latLngBounds); 
+        window[map_id].fitBounds(LatLngBounds); 
     }
     
 	return;
