@@ -20,7 +20,7 @@ function printRow($doc){
 	$photos 	= $doc["photos"];
 	$geotags 	= $doc["geotags"];
 	$survey 	= $doc["survey"];
-	$_attach 	= !empty($doc["_attachments"]) ? $doc["_attachments"] : null;
+	$old 		= !empty($doc["_attachments"]) ? "&_old=1" : "";
 	$forjsongeo = array();
 	$lang 		= is_null($doc["lang"]) ? "EN" : $doc["lang"];
 
@@ -67,7 +67,7 @@ function printRow($doc){
 		$photo_name = "photo_".$n.".jpg";
 
 		// $photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
-		$photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name";
+		$photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name" . $old;
 		$detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 
 		$attach_url = "#";
