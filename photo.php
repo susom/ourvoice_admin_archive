@@ -71,8 +71,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	$_rev 		= $doc["_rev"];
 
 	$photos 	= $doc["photos"];
-	$_attach 	= !empty($doc["_attachments"]) ? $doc["_attachments"] : null;
-
+	$device 	= $doc["device"]["platform"];
 	$temp_1 	= explode("_",$_file);
 	$temp_2 	= explode(".",$temp_1[1]);
 	$photo_i 	= $temp_2[0];
@@ -117,22 +116,17 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$audio_attachments = "";
 		
 		if(!empty($photo["audio"])){
-			foreach($doc["_attachments"] as $filename => $file){
-				$audio_name = "audio_".$i."_";
-				if(strpos($filename,$audio_name) > -1){
-					$sub_i 			= substr($filename, strlen($audio_name),  strpos($filename,".") - strlen($audio_name));
-					$audio_name 	= $audio_name . $sub_i;
-					$audio_src 		= $attach_url;
+			$ext   = "iOS" ? "wav" : "amr";
+			for($j = 1 ; $j <= $photo["audio"]; $j++ ){
+				$filename = "audio_".$i."_".$j . "." .$ext;
 
-					//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
-	                $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename";
-					$audio_src 		= getConvertedAudio($attach_url);
-
-					$transcription 	= isset($doc["transcriptions"][$audio_name]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$audio_name]) : "";
-
-					$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$audio_src' title='right click and save as link to download'>&#8676;</a> 
-					<div class='forprint'>$transcription</div><textarea name='transcriptions[$audio_name]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";
-				}
+				//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
+                $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename";
+				$audio_src 		= getConvertedAudio($attach_url);
+				$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$audio_name]) : "";
+				$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$audio_src' title='right click and save as link to download'>&#8676;</a> 
+				<div class='forprint'>$transcription</div><textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";
+	
 			}
 		}
 		break;
