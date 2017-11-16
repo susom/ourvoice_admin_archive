@@ -117,7 +117,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$audio_attachments = "";
 		
 		if(!empty($photo["audio"])){
-			$ext   = "iOS" ? "wav" : "mp3";
+			$ext   = "iOS" ? "wav" : "wav";
 			for($j = 1 ; $j <= $photo["audio"]; $j++ ){
 				$filename = "audio_".$i."_".$j . "." .$ext;
 
