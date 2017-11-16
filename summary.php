@@ -249,7 +249,7 @@ h4[data-toggle="collapse"]{
 
 <?php
 if( $active_project_id ){
-	echo '<a target="_blank" class="inproject btn btn-success" href="project_map_csv.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Project Maps</a> ';
+	echo '<a target="_blank" class="inproject btn btn-success" href="project_map_csv.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Project Maps Data (.csv)</a> ';
 	echo '<a target="_blank" class="inproject btn btn-info" href="project_transcriptions.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Project Transcriptions</a> ';
 	echo '<a target="_blank" class="inproject btn btn-warning" href="project_agg_surveys.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Aggregate Survey Answers</a>';
 
