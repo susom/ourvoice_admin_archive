@@ -37,21 +37,23 @@ $active_pid 		= $_GET["pid"];
 
 if( $active_project_id ){
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
-    $response 		= filter_by_projid("transcriptions","[\"$active_pid\"]");
+    $response 		= filter_by_projid("single","[\"$active_pid\"]");
 	$project_meta 	= $ap["project_list"][$active_pid];
 
 	//PRINT TO SCREEN
 	foreach($response["rows"] as $sesh){
+		$sesh_id = substr($sesh['id'], -4);
+
 		foreach($sesh["value"]["geotags"] as $tag){
 			if($tag["accuracy"] <= 50 ){
-				fputcsv($output, array($sesh['id'], 'walk', $tag['lat'], $tag['lng'], $tag['timestamp']));
+				fputcsv($output, array($sesh_id, 'walk', $tag['lat'], $tag['lng'], $tag['timestamp']));
 			}
 
 		}
 		
 		foreach($sesh["value"]["photos"] as $photo){
 			$tag = $photo["geotag"];
-			fputcsv($output, array($sesh['id'], 'photo', $tag['latitude'], $tag['longitude'], $tag['timestamp']));
+			fputcsv($output, array($sesh_id, 'photo', $tag['latitude'], $tag['longitude'], $tag['timestamp']));
 		}
 	}
 }
