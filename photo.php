@@ -117,15 +117,17 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$audio_attachments = "";
 		
 		if(!empty($photo["audio"])){
-			$ext   = "iOS" ? "wav" : "amr";
+			$ext   = $device == "iOS" ? "wav" : "amr";
 			for($j = 1 ; $j <= $photo["audio"]; $j++ ){
 				$filename = "audio_".$i."_".$j . "." .$ext;
 
 				//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
                 $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename" . $old;
 				$audio_src 		= getConvertedAudio($attach_url);
+
+				$download 		= cfg::$couch_url . "/".cfg::$couch_attach_db."/" . $doc["_id"] . "/". $filename;
 				$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$audio_name]) : "";
-				$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$audio_src' title='right click and save as link to download'>&#8676;</a> 
+				$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
 				<div class='forprint'>$transcription</div><textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";
 	
 			}
