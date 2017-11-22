@@ -418,7 +418,6 @@ label span {
     text-decoration: none;
     transform: rotate(270deg);
     font-size: 180%;
-    display:none;
 }
 
 .print_only{
