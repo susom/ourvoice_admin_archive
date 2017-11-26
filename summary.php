@@ -46,10 +46,14 @@ function printRow($doc){
 	$codeblock[] = "<h5>Photo Previews</h5>";
 	$codeblock[] = "<div class='thumbs'>";
 	$codeblock[] = "<ul>";
+
 	foreach($photos as $n => $photo){
 		if(is_null($photo)){
 			continue;
 		}
+		$filename 	= $photo["name"];
+		$ph_id 		= $i . "_" .$filename;
+		
 		$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
 		$long 		= $photo["geotag"]["longitude"];
 		$lat 		= $photo["geotag"]["latitude"];
@@ -68,7 +72,8 @@ function printRow($doc){
 		$photo_name = "photo_".$n.".jpg";
 
 		// $photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
-		$photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name" . $old;
+		// $photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name" . $old;
+		$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
 		$detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 
 		$attach_url = "#";
