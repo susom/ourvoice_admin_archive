@@ -2,6 +2,7 @@
 require_once "common.php";
 $gmaps_key 					= cfg::$gmaps_key;
 $projects 					= [];
+$couch_attach_db 			= "disc_attachment";
 
 if( isset($_POST["doc_id"]) ){
 	$_id  	= $_POST["doc_id"];
@@ -124,7 +125,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
                 $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename" . $old;
 				$audio_src 		= getConvertedAudio($attach_url);
 
-				$download 		= cfg::$couch_url . "/".cfg::$couch_attach_db."/" . $aud_id . "/". $filename;
+				$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
 				$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$audio_name]) : "";
 				$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
 				<div class='forprint'>$transcription</div><textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";
@@ -140,7 +141,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	                $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename" . $old;
 					$audio_src 		= getConvertedAudio($attach_url);
 
-					$download 		= cfg::$couch_url . "/".cfg::$couch_attach_db."/" . $doc["_id"] . "/". $filename;
+					$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $doc["_id"] . "/". $filename;
 					$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$audio_name]) : "";
 					$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
 					<div class='forprint'>$transcription</div><textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";
