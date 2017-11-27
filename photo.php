@@ -2,7 +2,6 @@
 require_once "common.php";
 $gmaps_key 					= cfg::$gmaps_key;
 $projects 					= [];
-$couch_attach_db 			= "disc_attachment";
 
 if( isset($_POST["doc_id"]) ){
 	$_id  	= $_POST["doc_id"];

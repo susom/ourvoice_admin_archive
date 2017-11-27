@@ -5,6 +5,9 @@ if (!file_exists("_config.php")) {
 // Load the configuration
 require_once "_config.php";
 
+//TODO REMOVE AFTER UPDATE THE SERVER _config.php
+$couch_attach_db = "disc_attachment";
+
 date_default_timezone_set('America/Los_Angeles');
 session_start();
 
