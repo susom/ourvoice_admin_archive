@@ -74,6 +74,7 @@ function printRow($doc){
 		// $photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
 		// $photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name" . $old;
 		$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+		
 		$detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 
 		$attach_url = "#";
