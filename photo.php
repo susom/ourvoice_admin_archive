@@ -121,7 +121,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			foreach($photo["audios"] as $filename){
 				//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
 				$aud_id			= $doc["_id"] . "_" . $filename;
-                $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename" . $old;
+                $attach_url 	= "passthru.php?_id=".$aud_id."&_file=$filename" . $old;
 				$audio_src 		= getConvertedAudio($attach_url);
 
 				$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
