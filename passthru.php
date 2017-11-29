@@ -19,7 +19,16 @@ if (empty($id) || empty($file)) {
 }
 
 // Do initial query to get metadata from couchdb
-$url 	= $old ? cfg::$couch_url . "/".cfg::$couch_users_db."/" . $id : cfg::$couch_url . "/". $couch_attach_db."/" . $id;
+if($old){
+	if($_GET["_old"] == 2){
+		$url = cfg::$couch_url . "/".cfg::$couch_attach_db."/" . $id;
+	}else{
+		$url = cfg::$couch_url . "/".cfg::$couch_users_db."/" . $id;
+	}
+}else{
+	$url = cfg::$couch_url . "/". $couch_attach_db."/" . $id;
+}
+ 
 $result = doCurl($url);
 $result = json_decode($result,true);
 

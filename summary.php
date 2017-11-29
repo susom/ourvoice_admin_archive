@@ -20,7 +20,21 @@ function printRow($doc){
 	$photos 	= $doc["photos"];
 	$geotags 	= $doc["geotags"];
 	$survey 	= $doc["survey"];
-	$old 		= !empty($doc["_attachments"]) ? "&_old=1" : "";
+
+	//TODO THIS IS FOR THE 3 VERSIONS OF ATTACHMENT STORAGE AND RETRIEVAL
+	if(!empty($doc["_attachments"])){
+		//original attachments stored with walk sessions
+		$old = "&_old=1";
+	}else{
+		if(array_key_exists("name",$doc["photos"][0])){
+			//newest and "final" method atomic attachment storage
+			$old = "";
+		}else{
+			//all attachments in seperate data entry
+			$old = "&_old=2";
+		}
+	}
+
 	$forjsongeo = array();
 	$lang 		= is_null($doc["lang"]) ? "EN" : $doc["lang"];
 
@@ -51,9 +65,7 @@ function printRow($doc){
 		if(is_null($photo)){
 			continue;
 		}
-		$filename 	= $photo["name"];
-		$ph_id 		= $i . "_" .$filename;
-		
+
 		$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
 		$long 		= $photo["geotag"]["longitude"];
 		$lat 		= $photo["geotag"]["latitude"];
@@ -71,10 +83,15 @@ function printRow($doc){
 		$rotate 	= isset($photo["rotate"]) ? $photo["rotate"] : 0;
 		$photo_name = "photo_".$n.".jpg";
 
-		// $photo_uri 	= $couch_base . "/" . $couch_proj . "/" . $doc["_id"] . "/" . $photo_name;
-		// $photo_uri 	= "passthru.php?_id=".$doc["_id"]."&_file=$photo_name" . $old;
+		//TODO FOR MULTIPLE VERSIONS OF ATTACHMENT STORAGE
+		if(array_key_exists("name",$photo)){
+			$filename 	= $photo["name"];
+			$ph_id 		= $i . "_" .$filename;
+		}else{
+			$filename 	= $photo_name;
+			$ph_id 		= $doc["_id"];
+		}
 		$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
-		
 		$detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 
 		$attach_url = "#";
