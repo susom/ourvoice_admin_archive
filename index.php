@@ -35,6 +35,8 @@ if( isset($_POST["proj_idx"]) ){
 		$payload 	= $ap;
 		unset($payload["project_list"][$pidx]);
 
+		$_SESSION["DT"] = $payload;
+
         //putDoc($payload);
         $url = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
         $response = doCurl($url, json_encode($payload), 'PUT');
@@ -87,6 +89,7 @@ if( isset($_POST["proj_idx"]) ){
 		foreach($_POST["consent_trans"] as $consent){
 			foreach($consent["text"] as $lang => $trans){
 				$consent["text"][$lang] = str_replace("<br />\r\n","\r\n",nl2br($trans));//preg_replace("/<br\W*?\/>/", "\r", nl2br($trans));
+				$consent["text"][$lang] = str_replace("/r/n","\r\n",$consent["text"][$lang]);
 			}
 			$fixed_consents[] = $consent;
 		}
