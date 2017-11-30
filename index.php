@@ -82,7 +82,15 @@ if( isset($_POST["proj_idx"]) ){
 			}
 			array_push($surveys, $survey_q);
 		}
-	
+
+		$fixed_consents = array();
+		foreach($_POST["consent_trans"] as $consent){
+			foreach($consent["text"] as $lang => $trans){
+				$consent["text"][$lang] = str_replace("<br />\r\n","\r\n",nl2br($trans));//preg_replace("/<br\W*?\/>/", "\r", nl2br($trans));
+			}
+			$fixed_consents[] = $consent;
+		}
+
 		$updated_project = array(
 			 "project_id" 		=> strtoupper($_POST["project_id"])
 			,"project_name" 	=> $_POST["project_name"]
@@ -91,19 +99,19 @@ if( isset($_POST["proj_idx"]) ){
 			,"thumbs"			=> $_POST["thumbs"]
 			,"app_lang" 		=> $app_lang
 			,"app_text" 		=> $app_text
-			,"surveys"	 		=> str_replace("rn*","\r\n*",str_replace("rnrn*","\r\n\r\n*",$surveys))
-			,"consent" 			=> str_replace("rn*","\r\n*",str_replace("rnrn*","\r\n\r\n*",$consents))
+			,"surveys"	 		=> $surveys
+			,"consent" 			=> $fixed_consents
 		);
 
-		print_r($updated_project["consent"]);
 		$pidx 		= $proj_idx;
 		$payload 	= $ap;
 		$payload["project_list"][$pidx] = $updated_project;
+
         $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
         $response 	= doCurl($url, json_encode($payload), 'PUT');
         $ap 		= $_SESSION["DT"] = $payload;
 		if($redi){
-			//header("location:index.php?proj_idx=$pidx");
+			header("location:index.php?proj_idx=$pidx");
 		}
 	}
 }
