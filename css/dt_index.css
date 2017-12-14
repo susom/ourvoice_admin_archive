@@ -1,5 +1,4 @@
 fieldset {
-	border:1px solid #888;
 	margin-bottom:30px; 
 	font-size:108%;
 	font-family:arial;
@@ -123,7 +122,7 @@ hgroup a {
 	border:1px solid #888;
 	padding:12px 15px;
 	position:absolute;
-	top:30px;
+	top:50px;
 	right:30px;
 	border-radius:5px;
 	background:red;

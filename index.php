@@ -54,6 +54,9 @@ if( isset($_POST["proj_idx"]) ){
 			$temp 		= array_keys($projects);
 			$last_key 	= array_pop($temp);
 			$last_key++;
+			while($last_key > 98 && $last_key < 101){
+				$last_key++;
+			}
 			$proj_idx 	= $last_key;
 			$redi 		= true;
 		}
@@ -142,6 +145,7 @@ if(isset($_POST["discpw"])){
     <link href="css/dt_index.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 </head>
 <body id="main" class="configurator">
+<div id="box">
 <?php
 $projs 	= $ap["project_list"];
 if(!isset($_SESSION["discpw"])) {
@@ -179,6 +183,7 @@ if(!isset($_SESSION["discpw"])) {
 	</hgroup>
 	<?php
 	if( isset($_GET["proj_idx"]) ){
+		$proj_ids = array_column($projs, 'project_id');
 		$p 		  = $projs[$_GET["proj_idx"]];
 		$pid 	  = $p["project_id"];
 		$pname 	  = $p["project_name"];
@@ -187,32 +192,42 @@ if(!isset($_SESSION["discpw"])) {
 		$thumbs   = $p["thumbs"];
 		$langs 	  = $p["app_lang"];
 
+		$template_instructions = "";
+		$template = false;
+		if($_GET["proj_idx"] == 99 || $_GET["proj_idx"] == 100){
+			$template = true;
+			$template_instructions = "<strong class='tpl_instructions'>*Input a new Project ID & Name to create a new project</strong>";
+		}
+
 		$app_text = $p["app_text"];
 		$app_surv = !empty($p["surveys"]) ? $p["surveys"] : array();
 		$app_cons = !empty($p["consent"]) ? $p["consent"] : array();
 		?>
-		<form id="project_config" method="post">
+		<form id="project_config" method="post" class='<?php echo $template ? "template" : ""?>'>
 			<fieldset class="app_meta">
 				<legend>Project Meta</legend>
 				<input type="hidden" name="proj_idx" value="<?php echo $_GET["proj_idx"]; ?>"/>
-				<label><span>Project Id</span><input type="text" name="project_id" value="<?php echo $pid; ?>"/></label>
-				<label><span>Project Name</span><input type="text" name="project_name" value="<?php echo $pname; ?>"/></label>
+				<label><span>Project Id</span><input <?php echo $template ? "" : "readonly"; ?>  type="text" name="project_id" value="<?php echo !$template ? $pid : ""; ?>"/><?php echo $template_instructions ?></label>
+				<label><span>Project Name</span><input  type="text" name="project_name" value="<?php echo !$template ? $pname : ""; ?>"/></label>
 				<label><span>Project Pass</span><input type="text" name="project_pass" value="<?php echo $ppass; ?>"/></label>
 				<label><span>Portal Pass</span><input type="text" name="summ_pass" value="<?php echo $spass; ?>"/></label>
 				<label><span>Use Smilies</span>
 				<input type="radio" name="thumbs" <?php if($thumbs) echo "checked"; ?> value="2"/> Yes
 				<input type="radio" name="thumbs" <?php if(!$thumbs) echo "checked"; ?> value="1"/> No
 				</label>
-				<label class="languages"><p><span>Languages</span> <a href='#' class='add_language'>+ Add Language</a></p>
+				<label class="languages"><p><span>Languages</span> 
+					<!-- <a href='#' class='add_language'>+ Add Language</a> -->
+				</p>
 				<?php
 				$lang_codes = array();
 				foreach($langs as $lang){
 					array_push($lang_codes,$lang["lang"]);
-					echo "<div class='one_unit'><span class='code'>Code</span><input type='text' name='lang_code[]' value='".$lang["lang"]."'/> <span class='full'>Language</span> <input type='text' name='lang_full[]' value='".$lang["language"]."'/><a href='#' class='delete_parent'>- Delete Language</a></div>";
+					$readonly = "readonly";
+					$delete_button = $lang["lang"] !==  "en" ? "<a href='#' class='delete_parent'>- Delete Language</a>" : "";
+					echo "<div class='one_unit'><span class='code'>Code</span><input type='text' name='lang_code[]' value='".$lang["lang"]."' $readonly/> <span class='full'>Language</span> <input type='text' name='lang_full[]' value='".$lang["language"]."' $readonly/>" . $delete_button . "</div>";
 				}
 				?>
 				</label>
-
 				<a href="#" id="delete_project">Delete This Project</a>
 			</fieldset>
 			<fieldset class="app_trans">
@@ -321,10 +336,14 @@ if(!isset($_SESSION["discpw"])) {
 	}else{
 		$opts 	= array();
 		foreach($projs as $idx => $proj){
+			if($idx == 99 || $idx == 100){
+				// these will be the immutable templates
+				continue;
+			}
 			$opts[] = "<option value='$idx'>".$proj["project_name"]."</option>";
 		}
 		?>
-		<form method="get">
+		<form id="project_config" method="get">
 			<h3>Chose project to edit*:</h3>
 			<select name="proj_idx">
 			<?php 
@@ -332,13 +351,18 @@ if(!isset($_SESSION["discpw"])) {
 			?>
 			</select>
 			<input type="submit"/>
+			
+			<br><br>
+			<p>
+				<p><strong><em>* To Configure New Project: <br> Choose a template below and add a ProjectID and Name!</em></strong></p>
+				<a href="?proj_idx=99" class="tpl btn btn-info" data-tpl="99">Short Template</a> <a href="?proj_idx=100" class="tpl btn btn-success" tata-tpl="100">Full Template</a>
+			</p>
 		</form>
-		<p><strong><em>* To Configure New Project: <br> Simply choose an existing project (as a template) and change the Project ID!</em></strong></p>
 		<?php
 	}
 }
 ?>
-
+</div>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script>
@@ -350,11 +374,28 @@ $(document).ready(function(){
 		if(isset($_GET["msg"])){
 			echo "alert('" . $_GET["msg"] . "');\n";
 		}
+
+		if(isset($proj_ids)){
+			echo "var proj_ids = ['".implode("','",$proj_ids)."'];";
+		}
 	?>
+	$("#project_config").submit(function(){
+		if($("input[name='project_id']").val() == ""){
+			alert("A Project ID is required!");
+			$("input[name='project_id']").focus();
+			return false;
+		}
+		return true;
+	});
 
 	$("input[name='project_id']").change(function(){
-		var newpid = $(this).val();
-		alert("By changing the Project ID value, when you click 'Submit' you will be creating a new Project with the ID : " + newpid );
+		var newpid 	= $(this).val();
+		newpid 		= newpid.toUpperCase();
+		if(proj_ids.indexOf(newpid) > -1){
+			alert( "'"+newpid+"' is already being used."  );
+			$(this).val("");
+			$(this).focus();
+		}
 		return false;
 	});
 
@@ -394,5 +435,30 @@ $(document).ready(function(){
 </script>	
 </body>
 </html>
+<style>
+#box {
+	margin:20px;
+}
 
+form.template #delete_project,
+.consent_trans,
+.survey_trans,
+.app_trans{
+	opacity:0;
+	position:absolute;
+	z-index:-1000;
+}
 
+.tpl_instructions {
+	color: red;
+    display: inline-block;
+    margin: 0 10px;
+    font-style: italic;
+    font-size: 130%;
+}
+
+input[readonly]{ 
+	background:#efefef;
+	color:#999;
+}
+</style>
