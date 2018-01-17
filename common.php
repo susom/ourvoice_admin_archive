@@ -41,6 +41,16 @@ function print_rr($ar){
     echo "</pre>";
 }
 
+function cmp_date($a, $b)
+{
+    $a = str_replace('-', '/', $a); //have to convert to american time because of the strtotime func
+    $b = str_replace('-', '/', $b);
+    $c = strtotime($a)- strtotime($b);
+        return (strtotime($a) < strtotime($b)) ? 1 : -1;
+
+}
+
+
 
 
 

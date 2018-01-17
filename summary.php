@@ -282,15 +282,20 @@ if( $active_project_id ){
 	//ORDER AND SORT BY DATES
 	$date_headers 	= [];
 
+
+
 	foreach($response["rows"] as $row){
 		$date = Date($row["value"]);
-		if(array_key_exists($date, $date_headers)){
-			$date_headers[$date]++;
+
+		if(array_key_exists($date, $date_headers)){ //if the date already exists in dateheaders
+			$date_headers[$date]++;					// increment the counter
 		}else{
-			$date_headers[$date] = 1;
+			$date_headers[$date] = 1;				//otherwise create an element [date -> #occurrences]
 		}
 	}
-	krsort($date_headers);
+	
+	uksort($date_headers, "cmp_date"); //sorts date headers in reverse order starting with date
+
 
 	//PRINT TO SCREEN
 	echo "<h1>Discovery Tool Data Summary for $active_project_id</h1>";
