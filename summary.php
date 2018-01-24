@@ -25,7 +25,6 @@ $alerts 			= array();
 
 //AJAX GETTING DAY'S DATA
 if(isset($_POST["active_pid"]) && $_POST["date"]){
-	print_rr("Reached inside");
 	$active_pid 	= $_POST["active_pid"];
 	$date 			= $_POST["date"];
 	$project_meta 	= $ap["project_list"][$active_pid];
