@@ -103,6 +103,7 @@ if( isset($_POST["proj_idx"]) ){
 			,"project_pass" 	=> $_POST["project_pass"]
 			,"summ_pass" 		=> $_POST["summ_pass"]
 			,"thumbs"			=> $_POST["thumbs"]
+			,"template_type"	=> $_POST["template_type"]
 			,"app_lang" 		=> $app_lang
 			,"app_text" 		=> $app_text
 			,"surveys"	 		=> $surveys
@@ -188,9 +189,10 @@ if(!isset($_SESSION["discpw"])) {
 		$pid 	  = $p["project_id"];
 		$pname 	  = $p["project_name"];
 		$ppass 	  = $p["project_pass"];
-		$spass 	  = $p["summ_pass"];
+		$spass 	  = isset($p["summ_pass"]) ? $p["summ_pass"] : "";
 		$thumbs   = $p["thumbs"];
 		$langs 	  = $p["app_lang"];
+		$template_type = isset($p["template_type"]) ? $p["template_type"] : "1";
 
 		$template_instructions = "";
 		$template = false;
@@ -211,9 +213,13 @@ if(!isset($_SESSION["discpw"])) {
 				<label><span>Project Name</span><input  type="text" name="project_name" value="<?php echo !$template ? $pname : ""; ?>"/></label>
 				<label><span>Project Pass</span><input type="text" name="project_pass" value="<?php echo $ppass; ?>"/></label>
 				<label><span>Portal Pass</span><input type="text" name="summ_pass" value="<?php echo $spass; ?>"/></label>
+				<label><span>Template Type</span>
+					<input type="radio" name="template_type" <?php if(!$template_type) echo "checked"; ?> value="0"/> Short Template 
+					<input type="radio" name="template_type" <?php if($template_type) echo "checked"; ?> value="1"/> Full Template
+				</label>
 				<label><span>Use Smilies</span>
-				<input type="radio" name="thumbs" <?php if($thumbs) echo "checked"; ?> value="2"/> Yes
-				<input type="radio" name="thumbs" <?php if(!$thumbs) echo "checked"; ?> value="1"/> No
+					<input type="radio" name="thumbs" <?php if($thumbs) echo "checked"; ?> value="2"/> Yes 
+					<input type="radio" name="thumbs" <?php if(!$thumbs) echo "checked"; ?> value="1"/> No
 				</label>
 				<label class="languages"><p><span>Languages</span> 
 					<!-- <a href='#' class='add_language'>+ Add Language</a> -->
