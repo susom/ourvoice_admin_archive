@@ -5,158 +5,6 @@ if(isset($_GET["clearsession"])){
 	$_SESSION = null;
 }
 
-function filter_by_projid($view, $keys_array){
-	$qs 		= http_build_query(array( 'key' => $keys_array ));
-    $couch_url 	= cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/filter_by_projid/_view/".$view."?" .  $qs;
-    $response 	= doCurl($couch_url);
-    return json_decode($response,1);
-}
-
-function printRow($doc){
-	global $project_meta;
-
-	$codeblock 	= array();
-	$i 			= $doc["_id"];
-	$photos 	= $doc["photos"];
-	$geotags 	= $doc["geotags"];
-	$survey 	= $doc["survey"];
-
-	//TODO THIS IS FOR THE 3 VERSIONS OF ATTACHMENT STORAGE AND RETRIEVAL
-	if(!empty($doc["_attachments"])){
-		//original attachments stored with walk sessions
-		$old = "&_old=1";
-	}else{
-		if(array_key_exists("name",$doc["photos"][0])){
-			//newest and "final" method atomic attachment storage
-			$old = "";
-		}else{
-			//all attachments in seperate data entry
-			$old = "&_old=2";
-		}
-	}
-
-	$forjsongeo = array();
-	$lang 		= is_null($doc["lang"]) ? "EN" : $doc["lang"];
-
-	// filter out low accuracy
-	$forjsongeo = array_filter($geotags,function($tag){
-		return $tag["accuracy"] <= 50;
-	});
-	$json_geo 	= json_encode($forjsongeo);
-
-	$last4 		 = substr($doc["_id"],-4);
-	$firstpart 	 = substr($doc["_id"],0, strlen($doc["_id"]) - 4);
-	$codeblock[] = "<div class='user_entry'>";
-	$codeblock[] = "<hgroup>";
-	$codeblock[] = "<h4>(". $lang .") : 
-	<b>".date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000))."</b> 
-	<i>$firstpart<strong>$last4</strong></i></h4>";
-	$codeblock[] = "</hgroup>";
-	
-	$codeblock[] = "<div id='google_map_$i' class='gmap'></div>";
-	
-	$codeblock[] = "<section class='photo_previews'>";
-	$codeblock[] = "<a href='#' class='btn btn-danger deletewalk' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'>Delete This Walk</a>";
-	$codeblock[] = "<h5>Photo Previews</h5>";
-	$codeblock[] = "<div class='thumbs'>";
-	$codeblock[] = "<ul>";
-
-	foreach($photos as $n => $photo){
-		if(is_null($photo)){
-			continue;
-		}
-
-		$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
-		$long 		= $photo["geotag"]["longitude"];
-		$lat 		= $photo["geotag"]["latitude"];
-		$timestamp  = $photo["geotag"]["timestamp"];
-
-		$goodbad 	= "";
-		if($photo["goodbad"] > 1){
-			$goodbad  .= "<span class='goodbad good'></span>";
-		}
-
-		if($photo["goodbad"] == 1 || $photo["goodbad"] == 3){
-			$goodbad  .= "<span class='goodbad bad'></span>";
-		}
-
-		$rotate 	= isset($photo["rotate"]) ? $photo["rotate"] : 0;
-		$photo_name = "photo_".$n.".jpg";
-
-		//TODO FOR MULTIPLE VERSIONS OF ATTACHMENT STORAGE
-		if(array_key_exists("name",$photo)){
-			$filename 	= $photo["name"];
-			$ph_id 		= $i . "_" .$filename;
-		}else{
-			$filename 	= $photo_name;
-			$ph_id 		= $doc["_id"];
-		}
-		$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
-		$detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
-
-		$attach_url = "#";
-		$audio_attachments = "";
-		if(!empty($photo["audio"])){
-			$num_audios = intval($photo["audio"]);
-			$num 		= $num_audios > 1 ? "<span>x$num_audios</span>" :"";
-			$audio_attachments .= "<a class='audio $hasaudio'></a> $num";
-		}
-		$codeblock[] = "<li id='photo_$n'>
-		<figure>
-		<a href='$detail_url' target='_blank' rel='google_map_$i' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate' rev='$rotate'><img src='$photo_uri' /><span></span><b></b></a>
-		<figcaption>
-			<span class='time'>@".date("g:i a", floor($timestamp/1000))."</span>
-			".$goodbad."
-			".$audio_attachments."
-		</figcaption>
-		</figure></li>";
-	}
-	$codeblock[] = "</ul>";
-	$codeblock[] = "</div>";
-	$codeblock[] = "</section>";
-
-	$codeblock[] = "<section class='survey_response'>";
-	$codeblock[] = "<h5>Survey Responses</h5>";
-	$codeblock[] = "<div class='survey'>";
-	if(empty($survey)){
-		$codeblock[] = "<p><i>No Survey Responses</i></p>";
-	}
-
-	//WHOOO THIS IS NOT GREAT
-	$tempsurvey = array();
-	foreach($project_meta["surveys"] as $s){
-		$tempoptions = array();
-		if(isset($s["options"])){
-			foreach($s["options"] as $o){
-				$tempoptions[$o["value"]] = $o["en"]; 
-			}
-		}else{
-			$tempoptions = null;
-		}
-		$tempsurvey[$s["name"]] = array(
-				"label" => $s["label"]["en"]
-				,"options" =>  $tempoptions
-			);
-	}
-
-	$unique = array();
-	foreach($survey as $q){
-		$unique[$q["name"]] = $q["value"];
-	}
-	$codeblock[] = "<ul>";
-	foreach($unique as $name => $value){
-		$v = (!empty($tempsurvey[$name]["options"]))  ?  $tempsurvey[$name]["options"][$value] :$value;
-		$codeblock[] = "<li><i>".$tempsurvey[$name]["label"]."</i> : <b>$v</b></li>";
-	}
-	$codeblock[] = "</ul>";
-	$codeblock[] = "</div>";
-	$codeblock[] = "</section>";
-	$codeblock[] = "</div>";
-	$codeblock[] = "<script>$(document).ready(function(){ drawGMap($json_geo, '$i', 16);\n  });</script>";
-	$codeblock[] = "<div class='$i' data-mapgeo='$json_geo'></div>";
-	return $codeblock;
-}
-
 if( empty($_SESSION["DT"]) ){
 	// FIRST GET THE PROJECT DATA
 	$couch_url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
@@ -177,6 +25,7 @@ $alerts 			= array();
 
 //AJAX GETTING DAY'S DATA
 if(isset($_POST["active_pid"]) && $_POST["date"]){
+	print_rr("Reached inside");
 	$active_pid 	= $_POST["active_pid"];
 	$date 			= $_POST["date"];
 	$project_meta 	= $ap["project_list"][$active_pid];
@@ -281,9 +130,7 @@ if( $active_project_id ){
     
 	//ORDER AND SORT BY DATES
 	$date_headers 	= [];
-
-
-
+	
 	foreach($response["rows"] as $row){
 		$date = Date($row["value"]);
 
