@@ -49,6 +49,21 @@ function cmp_date($a, $b){
         return (strtotime($a) < strtotime($b)) ? 1 : -1;
 }
 
+function urlToJson($url){
+    if($url){
+        $temp = doCurl($url);
+        $temp = json_decode(stripslashes($temp),1);
+        return $temp;
+    }
+}
+
+function getFullName($data, $abv){
+    foreach($data["project_list"] as $in){
+        if($in["project_id"] == $abv)
+            return $in["project_name"];
+    }
+}
+
 function printRow($doc){
     global $project_meta;
 
