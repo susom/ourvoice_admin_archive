@@ -1,10 +1,12 @@
 <?php
 require_once "common.php";
 
+// FOR DIRECT LINKING TO SUMMARY PAGE FROM INDEX PAGES
 if(isset($_GET["id"])){
-	$_POST["proj_id"] = $_GET["id"];
-	$_POST["summ_pw"] = "annban";
-	$_POST["authorized"] = "on";
+	//TODO: GET LOGIN CREDS "annban" INTO SESSION AND CHECK THAT INSTEAD OF HARDCODING
+	$_POST["proj_id"] 		= $_GET["id"];
+	$_POST["summ_pw"] 		= "annban";
+	$_POST["authorized"] 	= "on";
 }
 
 if(isset($_GET["clearsession"])){
@@ -19,8 +21,6 @@ if( empty($_SESSION["DT"]) ){
 	//TURN IT INTO PHP ARRAY
 	$_SESSION["DT"] = json_decode(stripslashes($response),1);
 }
-
-
 
 // NEXT GET SPECIFIC PROJECT DATA
 $ap 				= $_SESSION["DT"];
@@ -70,8 +70,6 @@ if(isset($_POST["for_delete"]) && $_POST["for_delete"]){
 }
 
 //NOW LOGIN TO YOUR PROJECT
-
-
 if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 	if(!isset($_POST["authorized"])){
 		$alerts[] = "Please check the box to indicate you are authorized to view these data.";
@@ -129,8 +127,6 @@ h4[data-toggle="collapse"]{
 <a class='btn btn-default' href="summary.php?clearsession=1">Refresh Project Data</a>
 
 <?php
-
-
 if( $active_project_id ){
 	echo '<a target="_blank" class="inproject btn btn-success" href="project_map_csv.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Project Maps Data (.csv)</a> ';
 	echo '<a target="_blank" class="inproject btn btn-info" href="project_transcriptions.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Project Transcriptions</a> ';

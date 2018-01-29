@@ -11,7 +11,6 @@ $couch_attach_db = "disc_attachment";
 date_default_timezone_set('America/Los_Angeles');
 session_start(); //begins session
 
-
 function doCurl($url, $data = null, $method = null, $username = null, $password = null) {
     if (empty($username)) $username = cfg::$couch_user;
     if (empty($password)) $password = cfg::$couch_pw;
@@ -65,7 +64,7 @@ function getFullName($data, $abv){
 }
 
 function printRow($doc){
-    global $project_meta;
+    global $project_meta, $ap;
 
     $codeblock  = array();
     $i          = $doc["_id"];
@@ -175,8 +174,10 @@ function printRow($doc){
     }
 
     //WHOOO THIS IS NOT GREAT
-    $tempsurvey = array();
-    foreach($project_meta["surveys"] as $s){
+    $template_type  = $project_meta["template_type"];
+    $survey_text    = $ap["survey_text"][$template_type];
+    $tempsurvey     = array();
+    foreach($survey_text as $s){
         $tempoptions = array();
         if(isset($s["options"])){
             foreach($s["options"] as $o){
