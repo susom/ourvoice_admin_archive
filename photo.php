@@ -5,7 +5,6 @@ $projects 					= [];
 
 if( isset($_POST["doc_id"]) ){
 	$_id  	= $_POST["doc_id"];
-
     $url = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
 	$response = doCurl($url);
 
@@ -47,9 +46,15 @@ if( isset($_POST["doc_id"]) ){
 			$payload["transcriptions"][$audio_name] = $txns;
 		}
 	}
-	doCurl($url, json_encode($payload),"PUT");
+	$response 	= doCurl($url, json_encode($payload),"PUT");
+	$resp 		= json_decode($response,1);
+	if(isset($resp["ok"])){
+		$payload["_rev"] = $resp["rev"];
+	}else{
+		echo "something went wrong:";
+		print_rr($resp);
+	}
 }
-
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -125,10 +130,9 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				$audio_src 		= getConvertedAudio($attach_url);
 
 				$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
-				$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$audio_name]) : "";
+				$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]) : "";
 				$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
 				<div class='forprint'>$transcription</div><textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";
-	
 			}
 		}else{
 			if(!empty($photo["audio"])){
@@ -270,7 +274,7 @@ $(document).ready(function(){
 </body>
 </html>
 <?php 
-// //GET FILE
+//GET FILE
 $filename = "android_test_2.wav";
 
 function convertAudio($filename){
