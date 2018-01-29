@@ -5,7 +5,6 @@ $projects 					= [];
 
 if( isset($_POST["doc_id"]) ){
 	$_id  	= $_POST["doc_id"];
-
     $url = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
 	$response = doCurl($url);
 
@@ -47,7 +46,14 @@ if( isset($_POST["doc_id"]) ){
 			$payload["transcriptions"][$audio_name] = $txns;
 		}
 	}
-	doCurl($url, json_encode($payload),"PUT");
+	$response 	= doCurl($url, json_encode($payload),"PUT");
+	$resp 		= json_decode($response,1);
+	if(isset($resp["ok"])){
+		$payload["_rev"] = $resp["rev"];
+	}else{
+		echo "something went wrong:";
+		print_rr($resp);
+	}
 }
 
 ?>
@@ -270,7 +276,7 @@ $(document).ready(function(){
 </body>
 </html>
 <?php 
-// //GET FILE
+//GET FILE
 $filename = "android_test_2.wav";
 
 function convertAudio($filename){
