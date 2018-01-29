@@ -116,10 +116,20 @@ if( isset($_POST["proj_idx"]) ){
 
         $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
         $response 	= doCurl($url, json_encode($payload), 'PUT');
-        $ap 		= $_SESSION["DT"] = $payload;
-		if($redi){
-			header("location:index.php?proj_idx=$pidx");
-		}
+        $resp 		= json_decode($response,1);
+
+        if(isset($resp["ok"])){
+        	$payload["_rev"] = $resp["rev"];
+        	$ap = $_SESSION["DT"] = $payload;
+        	
+        	if($redi){
+				header("location:index.php?proj_idx=$pidx");
+			}
+        }else{
+        	echo "something went wrong:";
+        	print_rr($resp);
+        	print_rr($payload);
+        }
 	}
 }
 
