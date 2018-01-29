@@ -132,7 +132,6 @@ if( isset($_POST["proj_idx"]) ){
         }
 	}
 }
-
 //NOW LOGIN TO YOUR PROJECT
 if(isset($_POST["discpw"])){
 	if(!isset($_POST["authorized"])){
@@ -374,6 +373,10 @@ if(!isset($_SESSION["discpw"])) {
 			<p>
 				<p><strong><em>* To Configure New Project: <br> Choose a template below and add a ProjectID and Name!</em></strong></p>
 				<a href="?proj_idx=99" class="tpl btn btn-info" data-tpl="99">Short Template</a> <a href="?proj_idx=100" class="tpl btn btn-success" tata-tpl="100">Full Template</a>
+				<?php echo '</form>'.'<form action="recent_activity.php" form id="route_summary" method="get">';	?>
+				<br><button type="submit" class ="btn btn-warning" >Recent Activity</button>
+
+
 			</p>
 		</form>
 		<?php
