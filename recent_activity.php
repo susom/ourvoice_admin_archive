@@ -2,12 +2,10 @@
 //link this page to the summary page with all the information.
 require_once "common.php";
 
-$turl 		   = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
+$turl  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
 $pdurl = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
 
-
 $ALL_PROJ_DATA = urlToJson($pdurl);
-//print_rr($ALL_PROJ_DATA); 
 $tm = urlToJson($turl);
 $stor = array(); //house information from couch 
 $listid = array(); //1D array with all proj names
@@ -17,10 +15,9 @@ $checkWeek = strtotime("-1 Week"); //for recent activities
 
 
 //Parse & consolidate info here
-//echo '<p>Summary</p>';
-
 
 echo "<h1>Recent Activity</h1>";
+
 if($tm["rows"] == null)
 	echo "<h2>No updates</h2>";
 else

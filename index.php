@@ -347,6 +347,8 @@ if(!isset($_SESSION["discpw"])) {
 				</div>
 			</fieldset>
 			<button type="submit" class="btn btn-primary">Save Project</button>
+			<?php echo '</form>'.'<br>'.'<form action="summary.php" form id="route_summary" method="get">';	?>
+			<button type="submit" class ="btn btn-info" name = "id" value = <?php echo $pid?> >Summary</button>
 		</form>
 		<?php
 	}else{
