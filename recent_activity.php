@@ -1,9 +1,9 @@
 <?php //ensure this is at the top always
+//link this page to the summary page with all the information.
 require_once "common.php";
 
 $turl 		   = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
 $pdurl = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-
 
 
 $ALL_PROJ_DATA = urlToJson($pdurl);
@@ -16,6 +16,9 @@ $ful = ""; //full name
 
 
 //Parse & consolidate info here
+//echo '<p>Summary</p>';
+
+
 echo "<h1>Recent Activity</h1>";
 if($tm["rows"] == null)
 	echo "<h2>No updates</h2>";
@@ -36,13 +39,6 @@ else
 	echo '<h4>'."Timestamps are displayed earliest to latest per project" .'</h4>';
 	sort($listid);
 	ksort($stor);
-	
-
-//	foreach($ALL_PROJ_DATA["project_list"] as $in){
-//	print_rr($in["project_name"]);
-	//$listid = $in["project_name"];
-//	}
-
 
 
 	for($i = 0 ; $i < count($stor) ; $i++){
@@ -61,10 +57,13 @@ else
 		rsort($stor[$listid[$i]]); //sort corresponding timestamps
 		$ful = getFullName($ALL_PROJ_DATA,$listid[$i]);
 		echo '<h4>'. "(".$listid[$i]. ") " . $ful . '</h4>';
+		echo '<form action="summary.php" form id="route_summary" method="get">';	
+		echo '<button type="submit" class="submitbutton" name = "id" value="'.$listid[$i].'">Go</button>';
+		echo '</form>';
 
 		$iter = 0;
 			echo '<ul>';
-			while(!empty($stor[$listid[$i]][$iter]) && $iter < 3) //display 3 
+			while(!empty($stor[$listid[$i]][$iter]) && $iter < 1) //display 3 
 			{
 				echo '<li>'.gmdate("Y-m-d", $stor[$listid[$i]][$iter]/1000).'</li>';
 				$iter++;
@@ -78,6 +77,8 @@ else
 
 ?>
 
+
+
 <style>
 h1{
 	padding-top:20px; 
@@ -86,7 +87,8 @@ h1{
 }
 
 li{
-	color: black;
+	color: red;
+	list-style-type:none;
 }
 .column{
 	width: 33%;
@@ -95,3 +97,7 @@ li{
 h4{
 	text-align: left;
 }
+.submitbutton{
+	float: left;
+}
+</style>
