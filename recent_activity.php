@@ -13,6 +13,7 @@ $stor = array(); //house information from couch
 $listid = array(); //1D array with all proj names
 $iter = 0; //number of results to display'
 $ful = ""; //full name
+$checkWeek = strtotime("-1 Week"); //for recent activities
 
 
 //Parse & consolidate info here
@@ -60,12 +61,17 @@ else
 		echo '<form action="summary.php" form id="route_summary" method="get">';	
 		echo '<button type="submit" class="submitbutton" name = "id" value="'.$listid[$i].'">Go</button>';
 		echo '</form>';
+				
 
 		$iter = 0;
 			echo '<ul>';
 			while(!empty($stor[$listid[$i]][$iter]) && $iter < 1) //display 3 
 			{
-				echo '<li>'.gmdate("Y-m-d", $stor[$listid[$i]][$iter]/1000).'</li>';
+				if(($stor[$listid[$i]][$iter]/1000) > $checkWeek)
+					echo '<li class = "recent">'.gmdate("Y-m-d", $stor[$listid[$i]][$iter]/1000).'</li>';
+				else
+					echo '<li>'.gmdate("Y-m-d", $stor[$listid[$i]][$iter]/1000).'</li>';
+
 				$iter++;
 			}
 			echo '</ul>';
@@ -86,9 +92,16 @@ h1{
 	color:black;
 }
 
-li{
-	color: red;
+.recent{
 	list-style-type:none;
+    background-image: linear-gradient(to right, yellow, transparent 50%);
+
+)
+
+}
+li{
+	color:black;
+	list-style-type: none;
 }
 .column{
 	width: 33%;
