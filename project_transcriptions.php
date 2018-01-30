@@ -1,13 +1,6 @@
 <?php
 require_once "common.php";
 
-function filter_by_projid($view, $keys_array){
-	$qs 		= http_build_query(array( 'key' => $keys_array ));
-    $couch_url 	= cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/filter_by_projid/_view/".$view."?" .  $qs;
-    $response 	= doCurl($couch_url);
-    return json_decode($response,1);
-}
-
 if( empty($_SESSION["DT"]) ){
 	// FIRST GET THE PROJECT DATA
 	$couch_url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;

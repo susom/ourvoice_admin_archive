@@ -336,17 +336,22 @@ function getConvertedAudio($attach_url){
 	$errors 	= curl_error($ch);
 	curl_close ($ch);
 
-	//THEN EXTRACT THE FILE NAME
-	$split 		= explode("=",$attach_url);
-	$filename 	= $split[count($split) -1];
+	$newAudioPath = "";
+	if(empty($errors)){
+		//THEN EXTRACT THE FILE NAME
+		$split 		= explode("=",$attach_url);
+		$filename 	= $split[count($split) -1];
 
-	$localfile 	= "./temp/$filename";
-	$file 		= fopen($localfile, "w+");
-	fputs($file, $data);
-	fclose($file);
+		$localfile 	= "./temp/$filename";
+		$file 		= fopen($localfile, "w+");
+		
+		fputs($file, $data);
+		fclose($file);
 
-	//THEN CONVERT THE AUDIO
-	$newAudioPath = convertAudio($filename);
+		//THEN CONVERT THE AUDIO
+		$newAudioPath = convertAudio($filename);
+	}
+	
 	return $newAudioPath;
 }
 ?>
