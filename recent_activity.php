@@ -2,6 +2,7 @@
 //link this page to the summary page with all the information.
 require_once "common.php";
 
+if(isset($_SESSION["discpw"])){ 
 $turl  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
 $pdurl = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
 
@@ -12,11 +13,11 @@ $listid = array(); //1D array with all proj names
 $iter = 0; //number of results to display'
 $ful = ""; //full name
 $checkWeek = strtotime("-1 Week"); //for recent activities
-
+$counter = 0;
 
 //Parse & consolidate info here
-
-echo "<h1>Recent Activity</h1>";
+echo '<a href="index.php">Back to Project Picker</a>';
+echo '<h1 id = "title">Recent Activity</h1>';
 
 if($tm["rows"] == null)
 	echo "<h2>No updates</h2>";
@@ -37,7 +38,6 @@ else
 	echo '<h4>'."Timestamps are displayed earliest to latest per project" .'</h4>';
 	sort($listid);
 	ksort($stor);
-
 
 	for($i = 0 ; $i < count($stor) ; $i++){
 		if($i == 0)
@@ -64,24 +64,35 @@ else
 			echo '<ul>';
 			while(!empty($stor[$listid[$i]][$iter]) && $iter < 1) //display 3 
 			{
-				if(($stor[$listid[$i]][$iter]/1000) > $checkWeek)
+				if(($stor[$listid[$i]][$iter]/1000) > $checkWeek){
+					$counter++;
 					echo '<li class = "recent">'.gmdate("Y-m-d", $stor[$listid[$i]][$iter]/1000).'</li>';
-				else
+				
+				}else
 					echo '<li>'.gmdate("Y-m-d", $stor[$listid[$i]][$iter]/1000).'</li>';
 
 				$iter++;
 			}
 			echo '</ul>';
+
 	}
-
 	echo '</div>';
-
-
-
+}//if
+else{
+	header('Location: index.php');	 //re route to the 
+}
 ?>
 
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script>
+$(document).ready(function(){
+	let counter = '<?php echo " ($counter)"?>';
+	console.log($("#title").append(counter));
+	return false;
+	});
 
-
+</script>
 <style>
 h1{
 	padding-top:20px; 

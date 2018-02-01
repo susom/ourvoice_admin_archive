@@ -2,11 +2,11 @@
 require_once "common.php";
 
 // FOR DIRECT LINKING TO SUMMARY PAGE FROM INDEX PAGES
+
 if(isset($_GET["id"])){
-	//TODO: GET LOGIN CREDS "annban" INTO SESSION AND CHECK THAT INSTEAD OF HARDCODING
 	$_POST["proj_id"] 		= $_GET["id"];
-	$_POST["summ_pw"] 		= "annban";
-	$_POST["authorized"] 	= "on";
+	$_POST["summ_pw"] 		= $_SESSION["discpw"];
+	$_POST["authorized"] 	= $_SESSION["authorized"];
 }
 
 if(isset($_GET["clearsession"])){
@@ -131,6 +131,8 @@ if( $active_project_id ){
 	echo '<a target="_blank" class="inproject btn btn-success" href="project_map_csv.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Project Maps Data (.csv)</a> ';
 	echo '<a target="_blank" class="inproject btn btn-info" href="project_transcriptions.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Project Transcriptions</a> ';
 	echo '<a target="_blank" class="inproject btn btn-warning" href="project_agg_surveys.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Aggregate Survey Answers</a>';
+	echo '<a class="inproject btn btn-default" href="index.php">Back to project overview</a>';
+
 
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
     $response 		= filter_by_projid("get_data_ts","[\"$active_pid\"]");

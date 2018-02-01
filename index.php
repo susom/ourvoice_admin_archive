@@ -5,6 +5,7 @@ if(isset($_GET["clearsession"])){
 	$_SESSION = null;
 }
 
+
 //MEANING IT HAS TO MAKE A CALL TO GET THIS STUFF
 if(!isset($_SESSION["DT"])){
 	//TURN IT INTO PHP ARRAY
@@ -142,9 +143,11 @@ if(isset($_POST["discpw"])){
 			$alerts[] = "Director Password is incorrect. Please try again.";
 		}else{
 			$_SESSION["discpw"] = $discpw;
+			$_SESSION["authorized"] = $_POST["authorized"];
 		}
 	}
 }
+
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -156,7 +159,9 @@ if(isset($_POST["discpw"])){
 </head>
 <body id="main" class="configurator">
 <div id="box">
+
 <?php
+
 $projs 	= $ap["project_list"];
 if(!isset($_SESSION["discpw"])) {
 	$show_alert 	= "";
@@ -168,7 +173,8 @@ if(!isset($_SESSION["discpw"])) {
 			$display_alert .= "<li>$alert</li>";
 		}
 	}
-	?>
+?>
+
 	<div class="alert alert-danger <?php echo $show_alert;?>" role="alert"><?php echo $display_alert  ?></div>
 	<div id="box">
 		<form id="summ_auth" method="post">
@@ -179,12 +185,13 @@ if(!isset($_SESSION["discpw"])) {
 			<label class="checkauth">
 				<input type="checkbox" name='authorized'>  Check here to indicate that you are authorized to view these data
 			</label>
-			<label><input type="password" name="discpw" id="proj_pw" placeholder="Admin Password"/></label>
+			<label><input type="password" name="discpw" id="proj_pw" placeholder="Admin Password"/></label> 
+			<!--Sends entered text in as "discpw"= and authorized as on/empty-->
 			<button type="submit" class="btn btn-primary">Go to Configurator</button>
 		</form>
 	</div>
-	<?php
-}else{
+<?php
+}else{ //if password is actually set, display the project configurator
 	?>
 	<hgroup>
 		<h1>Discovery Tool Project Configurator</h1>
@@ -373,8 +380,8 @@ if(!isset($_SESSION["discpw"])) {
 			<p>
 				<p><strong><em>* To Configure New Project: <br> Choose a template below and add a ProjectID and Name!</em></strong></p>
 				<a href="?proj_idx=99" class="tpl btn btn-info" data-tpl="99">Short Template</a> <a href="?proj_idx=100" class="tpl btn btn-success" tata-tpl="100">Full Template</a>
-				<?php echo '</form>'.'<form action="recent_activity.php" form id="route_summary" method="get">';	?>
-				<br><button type="submit" class ="btn btn-warning" >Recent Activity</button>
+	  				</button>
+					   <button type ="submit" class="btn btn-default jump" name = "destination" value = "recent">Recent Activities</button>	
 
 
 			</p>
@@ -388,7 +395,26 @@ if(!isset($_SESSION["discpw"])) {
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script>
 $(document).ready(function(){
+	$(".jump").click(function(){
+
+		if($(this).attr("value") == "config")
+			//redirect there remember to change the JUMP tag above for confign
+			window.location.assign("summary.php");
+		else if($(this).attr("value") == "summary")
+			window.location.assign("summary.php");
+		else if($(this).attr("value") == "recent"){
+			window.location.assign("recent_activity.php");
+			console.log("recent");
+		}
+		return false;
+	});
+	$('form').submit(function(){
+
+
+	})
 	<?php
+
+
 		if(isset($pname)){
 			echo "var current_project_id = '".$pid. "';\n";
 		}
@@ -460,7 +486,10 @@ $(document).ready(function(){
 #box {
 	margin:20px;
 }
-
+.btn-default{
+	
+	background-color:orange;
+}
 form.template #delete_project,
 .consent_trans,
 .survey_trans,
