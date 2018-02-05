@@ -216,5 +216,50 @@ function filter_by_projid($view, $keys_array){ //keys array is the # integer of 
     return json_decode($response,1);
 }
 
+function parseTime($data, $storage)
+{
+    if($data["rows"] == null)
+        return false;
+    else
+        for($i = 0 ; $i < count($data["rows"]) ; $i++){         
+            $temp = explode('_', $data["rows"][$i]["id"]); // index zero is the 4 char PID key, index 3 is the time
+            $simp_PID = $temp[0];
+            $ts = $temp[3];
+            
+            if(array_key_exists($simp_PID, $storage)) //if ID is already inside
+                array_push($storage[$simp_PID], $ts);
+            else
+                $storage[$simp_PID] = array($ts);
+        }
+        ksort($storage);
+        return $storage;
 
+}
+
+function populateRecent($ALL_PROJ_DATA, $stor, $listid){
+    $checkWeek = strtotime("-1 Week");
+    $counter = 0;
+
+    for($i = 0 ; $i < count($stor) ; $i++){
+        $iter = 0;
+        $ful = getFullName($ALL_PROJ_DATA,$listid[$i]);
+        rsort($stor[$listid[$i]]); //sort each element's timestamps
+        
+    
+        while(!empty($stor[$listid[$i]][$iter]) && $iter < 1) //display only the most recent update per proj 
+        {
+            if(($stor[$listid[$i]][$iter]/1000) > $checkWeek){
+                $counter++;
+                echo '<tr>';
+                echo '<th>'. "(".$listid[$i]. ") " . $ful . '</th>';
+                echo '<th>'.gmdate("Y-m-d", $stor[$listid[$i]][$iter]/1000).'</th>';
+                echo '<tr>';
+            }
+
+            $iter++;
+        }
+        
+    }//for
+
+}
 

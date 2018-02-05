@@ -379,10 +379,30 @@ if(!isset($_SESSION["discpw"])) {
 			<br><br>
 			<p>
 				<p><strong><em>* To Configure New Project: <br> Choose a template below and add a ProjectID and Name!</em></strong></p>
-				<a href="?proj_idx=99" class="tpl btn btn-info" data-tpl="99">Short Template</a> <a href="?proj_idx=100" class="tpl btn btn-success" tata-tpl="100">Full Template</a>
-	  				</button>
-					   <button type ="submit" class="btn btn-default jump" name = "destination" value = "recent">Recent Activities</button>	
+				<a href="?proj_idx=99" class="tpl btn btn-info" data-tpl="99">Short Template</a> 
+				<a href="?proj_idx=100" class="tpl btn btn-success" tata-tpl="100">Full Template</a>
+				<button type ="submit" class="btn btn-default jump" name = "destination" value = "recent">Recent Activities</button>	
+				<table>
+					
+					<tr>
+						<th>Project ID</th>
+						<th>Last Updated</th>
+					</tr>
+				<?php 
+				$turl  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
+				$pdurl = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+				$ALL_PROJ_DATA = urlToJson($pdurl);
+				$tm = urlToJson($turl);
+				$stor = $listid = array();
+				$stor = parseTime($tm,$stor);
+				
+				foreach ($stor as $key => $value)
+					array_push($listid, $key);
 
+				populateRecent($ALL_PROJ_DATA,$stor,$listid);
+
+				?>	
+				</table>
 
 			</p>
 		</form>
@@ -505,6 +525,19 @@ form.template #delete_project,
     margin: 0 10px;
     font-style: italic;
     font-size: 130%;
+}
+
+table {
+	border-collapse: collapse;
+	width:40%;
+	float:right;
+	margin:30px;
+}
+
+th{
+	border: 1px solid #dddddd;
+	text-align: left;
+	padding:8px;
 }
 
 input[readonly]{ 
