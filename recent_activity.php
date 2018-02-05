@@ -12,7 +12,7 @@ $stor = array(); //house information from couch
 $listid = array(); //1D array with all proj names
 $iter = 0; //number of results to display'
 $ful = ""; //full name
-$checkWeek = strtotime("-1 Week"); //for recent activities
+$checkWeek = strtotime("-2 Week"); //for recent activities
 $counter = 0;
 
 //Parse & consolidate info here

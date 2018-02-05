@@ -237,7 +237,7 @@ function parseTime($data, $storage)
 }
 
 function populateRecent($ALL_PROJ_DATA, $stor, $listid){
-    $checkWeek = strtotime("-1 Week");
+    $checkWeek = strtotime("-2 Week");
     $counter = 0;
 
     for($i = 0 ; $i < count($stor) ; $i++){
@@ -251,9 +251,9 @@ function populateRecent($ALL_PROJ_DATA, $stor, $listid){
             if(($stor[$listid[$i]][$iter]/1000) > $checkWeek){
                 $counter++;
                 echo '<tr>';
-                echo '<th>'. "(".$listid[$i]. ") " . $ful . '</th>';
-                echo '<th>'.gmdate("Y-m-d", $stor[$listid[$i]][$iter]/1000).'</th>';
-                echo '<tr>';
+                echo '<th style = "font-weight: normal">'. "<strong>(".$listid[$i]. ")</strong> " . $ful . '</th>';
+                echo '<th style = "font-weight: normal">'.gmdate("Y-m-d", $stor[$listid[$i]][$iter]/1000).'</th>';
+                echo '</tr>';
             }
 
             $iter++;

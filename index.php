@@ -368,7 +368,7 @@ if(!isset($_SESSION["discpw"])) {
 		}
 		?>
 		<form id="project_config" method="get">
-			<h3>Chose project to edit*:</h3>
+			<h3>Choose project to edit:</h3>
 			<select name="proj_idx">
 			<?php 
 				echo implode("",$opts);
@@ -381,12 +381,11 @@ if(!isset($_SESSION["discpw"])) {
 				<p><strong><em>* To Configure New Project: <br> Choose a template below and add a ProjectID and Name!</em></strong></p>
 				<a href="?proj_idx=99" class="tpl btn btn-info" data-tpl="99">Short Template</a> 
 				<a href="?proj_idx=100" class="tpl btn btn-success" tata-tpl="100">Full Template</a>
-				<button type ="submit" class="btn btn-default jump" name = "destination" value = "recent">Recent Activities</button>	
-				<table>
-					
+				<button type ="submit" class="btn btn-default jump" name = "destination" value = "recent">Recent Project Data </button>	
+				<table id = "rec-table">
 					<tr>
-						<th>Project ID</th>
-						<th>Last Updated</th>
+						<th onclick="sortTable(0)" class = "tablehead" >Project ID <?php echo '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp'; ?>(Click to sort)</th>
+						<th onclick="sortTable(1)" class = "tablehead">Last Updated</th>
 					</tr>
 				<?php 
 				$turl  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
@@ -414,6 +413,65 @@ if(!isset($_SESSION["discpw"])) {
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script>
+function sortTable(n){
+		var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+	  	table = document.getElementById("rec-table");
+	  	console.log(table);
+	  	switching = true;
+	  // Set the sorting direction to ascending:
+	  	dir = "asc"; 
+	  /* Make a loop that will continue until
+	  no switching has been done: */
+	 	 while (switching) {
+	    // Start by saying: no switching is done:
+		    switching = false;
+		    rows = table.getElementsByTagName("TR");
+		    console.log(rows);
+		    /* Loop through all table rows (except the
+		    first, which contains table headers): */
+		    for (i = 1; i < (rows.length - 1); i++) {
+		      // Start by saying there should be no switching:
+		      shouldSwitch = false;
+		      /* Get the two elements you want to compare,
+		      one from current row and one from the next: */
+		      x = rows[i].getElementsByTagName("TH")[n];
+		      y = rows[i + 1].getElementsByTagName("TH")[n];
+		      //console.log(rows[i].getElementsByTagName("TH")[n]);
+		      //console.log(rows[i+1]);
+		      /* Check if the two rows should switch place,
+		      based on the direction, asc or desc: */
+		      if (dir == "asc") {
+		        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+		          // If so, mark as a switch and break the loop:
+		          shouldSwitch= true;
+		          break;
+		        }
+		      } else if (dir == "desc") {
+		        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+		          // If so, mark as a switch and break the loop:
+		          shouldSwitch= true;
+		          break;
+		        }
+		      }
+		    }
+		    if (shouldSwitch) {
+		      /* If a switch has been marked, make the switch
+		      and mark that a switch has been done: */
+		      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+		      switching = true;
+		      // Each time a switch is done, increase this count by 1:
+		      switchcount ++; 
+		    } else {
+		      /* If no switching has been done AND the direction is "asc",
+		      set the direction to "desc" and run the while loop again. */
+		      if (switchcount == 0 && dir == "asc") {
+		        dir = "desc";
+		        switching = true;
+		      }
+		    }
+		}
+}
+
 $(document).ready(function(){
 	$(".jump").click(function(){
 
@@ -428,10 +486,8 @@ $(document).ready(function(){
 		}
 		return false;
 	});
-	$('form').submit(function(){
 
 
-	})
 	<?php
 
 
@@ -528,12 +584,17 @@ form.template #delete_project,
 }
 
 table {
+
 	border-collapse: collapse;
+	position:relative;
 	width:40%;
 	float:right;
 	margin:30px;
+	top:-160px;
 }
-
+.tablehead{
+	cursor:pointer;
+}
 th{
 	border: 1px solid #dddddd;
 	text-align: left;
