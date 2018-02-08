@@ -173,42 +173,67 @@ function printRow($doc){
     }
 
     //WHOOO THIS IS NOT GREAT
-    $template_type  = $project_meta["template_type"];
-    $survey_text    = $ap["survey_text"][$template_type];
+    if(isset($project_meta["template_type"]))
+        $template_type = $project_meta["template_type"];
+    else
+        $template_type = 1;
+   // $template_type  = $project_meta["template_type"];
+    $survey_text    = $ap["survey_text"][$template_type]; //available 
     $tempsurvey     = array();
-    foreach($survey_text as $s){
+    foreach($survey_text as $s){ //loop through all the survey questions
+        
         $tempoptions = array();
         if(isset($s["options"])){
-            foreach($s["options"] as $o){
-                $tempoptions[$o["value"]] = $o["en"]; 
+            foreach($s["options"] as $o){ //loop through each of the answer options
+                $tempoptions[$o["value"]] = $o["en"]; //tempoptions["m"] => 'What is your sex'
             }
         }else{
             $tempoptions = null;
         }
-        $tempsurvey[$s["name"]] = array(
-                "label" => $s["label"]["en"]
+        $tempsurvey[$s["name"]] = array(        //"gender" = [0] => "label" => "what is your sex"
+                "label" => $s["label"]["en"]    //                  "options" => ""
                 ,"options" =>  $tempoptions
             );
+       
     }
-
+ //print_rr($survey); //survey corresponds to the answered questions per project
     $unique = array();
     foreach($survey as $q){
         $unique[$q["name"]] = $q["value"];
     }
     $codeblock[] = "<ul>";
-    foreach($unique as $name => $value){
-        $v = (!empty($tempsurvey[$name]["options"]))  ?  $tempsurvey[$name]["options"][$value] :$value;
-        $codeblock[] = "<li><i>".$tempsurvey[$name]["label"]."</i> : <b>$v</b></li>";
-    }
-    $codeblock[] = "</ul>";
-    $codeblock[] = "</div>";
-    $codeblock[] = "</section>";
-    $codeblock[] = "</div>";
-    $codeblock[] = "<script>$(document).ready(function(){ drawGMap($json_geo, '$i', 16);\n  });</script>";
-    $codeblock[] = "<div class='$i' data-mapgeo='$json_geo'></div>";
-    return $codeblock;
-}
 
+
+    if(array_key_exists("app_rating", $unique ) && count($unique) == 1){ //unique case is hardcoded (short template)
+        foreach($unique as $name => $value)
+            $v = (!empty($tempsurvey[$name]["options"]))  ?  $tempsurvey[$name]["options"][$value] :$value;
+        
+        $oldname = $ap["survey_text"][0][0]["label"]["en"];
+       // print_rr($oldname);
+        $codeblock[] = "<li><i>".$oldname."</i> : <b>$v</b></li>";
+        $codeblock[] = "</ul>";
+        $codeblock[] = "</div>";
+        $codeblock[] = "</section>";
+        $codeblock[] = "</div>";
+        $codeblock[] = "<script>$(document).ready(function(){ drawGMap($json_geo, '$i', 16);\n  });</script>";
+        $codeblock[] = "<div class='$i' data-mapgeo='$json_geo'></div>";
+        
+        return $codeblock;
+    }else{
+        foreach($unique as $name => $value){
+         
+            $v = (!empty($tempsurvey[$name]["options"]))  ?  $tempsurvey[$name]["options"][$value] :$value;
+            $codeblock[] = "<li><i>".$tempsurvey[$name]["label"]."</i> : <b>$v</b></li>";
+        }
+        $codeblock[] = "</ul>";
+        $codeblock[] = "</div>";
+        $codeblock[] = "</section>";
+        $codeblock[] = "</div>";
+        $codeblock[] = "<script>$(document).ready(function(){ drawGMap($json_geo, '$i', 16);\n  });</script>";
+        $codeblock[] = "<div class='$i' data-mapgeo='$json_geo'></div>";
+        return $codeblock;
+    }
+}
 function filter_by_projid($view, $keys_array){ //keys array is the # integer of the PrID
     $qs         = http_build_query(array( 'key' => $keys_array ));
     $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/filter_by_projid/_view/".$view."?" .  $qs;
