@@ -288,3 +288,18 @@ function populateRecent($ALL_PROJ_DATA, $stor, $listid){
 
 }
 
+function getAllData(){
+    $url            = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+    $response       = doCurl($url);
+    return json_decode($response,1);
+}
+
+
+function parseProjectInfo($ALL_PROJ_DATA){
+    $return_array = array();
+    foreach ($ALL_PROJ_DATA["project_list"] as $project) {
+        array_push($return_array,$project);
+    }
+    return $return_array;
+}
+

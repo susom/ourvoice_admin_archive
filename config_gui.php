@@ -2,12 +2,11 @@
 require_once "common.php";
 
 
-
-
 $turl  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
 $pdurl = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
 
 $ALL_PROJ_DATA = urlToJson($pdurl); //might have to store this in a session variable
+$_SESSION["DT"] = $ALL_PROJ_DATA;
 //print_rr($ALL_PROJ_DATA);
 $tm = urlToJson($turl); //Just for times + project abv
 $stor = $listid = array();
@@ -16,10 +15,9 @@ $stor = parseTime($tm, $stor, $listid);
 foreach ($stor as $key => $value)
   array_push($listid, $key);
 
+//print_rr($listid);
+
 //if(!storedSession)
-for($i = 0 ; $i < count($listid) ; $i++){
-  echo '<div class="ui-widget-drag"><p>'.$listid[$i].'</p></div>';
-}
 
 
 ?>
@@ -37,19 +35,30 @@ for($i = 0 ; $i < count($listid) ; $i++){
 
   <script> 
     $( function() { //shorthand for onReady()
-    $( ".ui-widget-drag").draggable();
+      clearData();
+      BindProperties();
+  });//onReady
+
+  function BindProperties(){
+    $( ".ui-widget-drag").draggable({
+      cursor: "move",
+      drag: function(event,ui){
+      //  ui.css("z-index", "-1"); //fix frontal input
+      }
+
+    });
+
     $( ".ui-widget-drop" ).droppable({
       drop: function( event, ui ) {
-        //$( this ).addClass( "ui-state-highlight" ).find( "p" ).html( "Yay!" );
+        //var pdata = <?php echo json_encode($ALL_PROJ_DATA);?>;
         var dropBox_name = this.innerText;
         var dragBox_name = ui.draggable[0].innerText;
-       // console.log(dropBox_name); //current dropbox instance
-       // console.log(dragBox_name); //current draggable instance
+        var key = $(ui.draggable[0]).data("key");
         
         $.ajax({
           url:  "config_gui_post.php",
           type:'POST',
-          data: "&drop=" + dropBox_name + "&drag=" + dragBox_name, 
+          data: "&dropTag=" + dropBox_name + "&dragTag=" + dragBox_name + "&datakey=" + key,
           success:function(result){
             console.log(result);
           }        
@@ -58,42 +67,113 @@ for($i = 0 ; $i < count($listid) ; $i++){
           console.log("ERRROR");
           console.log(err);
         });
+        ui.draggable.hide(350);
+      }//drop
 
-        ui.draggable.hide(800);
+    }); //ui-widget-drop
+    $(".ui-widget-drop").draggable();
+    $(".ui-widget-drop").dblclick(function(event,ui){
+      if($('#'+this.innerText+':visible').length == 0)
+        $('#'+this.innerText).css('display','block');
+      else
+        $('#'+this.innerText).css('display','none');
+
+    });
+    $('.ui-widget-drop').mousedown(function(event,ui) {
+      if (event.which == 3){        
+        console.log(this);
+        console.log(this.parentNode);
+        if(deleteprompt())
+          workingspace.removeChild(this);
       }
     });
 
-  });
+  }//bind properties
 
-  function CreateFolder(){
-    var div = document.createElement('div');
-    div.appendChild(document.createTextNode("Hi"));
-    document.body.appendChild(div);
+  function deleteprompt(){
+      var value = confirm("Are you sure you want to delete this folder?");
+      return value;
 
   }
+  function CreateFolder(name){
+    if(name)
+    {
+      $("<div class ='ui-widget-drop'<p>"+name+"</p></div>").appendTo("body");
+      BindProperties();
+      $.ajax({
+        url:"config_gui_post.php",
+        type: 'POST',
+        data: "&folders=" + name,
+        success:function(result){
+          console.log(result);
+        }
+        
+        },function(err){
+          console.log("ERROR");
+          console.log(err);
+        
+      });
+    }//if
+    else
+      alert("Please enter a name for your folder");
+  }//CreateFolder
 
+  function clearData(){
+    <?php session_unset();?>
+  }
   </script>
 </head>
-<body>
- 
-<div id="droppable1" class="ui-widget-drop">
-  <p>Recent Projects</p>
-</div>
+  <body>
+    <input type ="text" id = "foldername">
+    <button type ="button" onclick="CreateFolder(document.getElementById('foldername').value)">Create Folder</button>
+    <div id = "folderspace">
+      <?php 
+        foreach ($ALL_PROJ_DATA["folders"] as $key => $value) { //populate folders inside working space
+          echo "<div class ='ui-widget-drop'<p>".$value." </p></div>";
+          echo "<div class ='hidden' id ='".$value."'>";
+            foreach ($ALL_PROJ_DATA["project_list"] as $k => $v) {
+              if(isset($v["dropTag"]) && $v["dropTag"] ==$value){
+               // echo '<div class="foldercontents" data-key = "'.$k.'" ><p>'.$v["project_id"] .'</p></div>';
+                echo '<div class="foldercontents" data-key = "'.$k.'" ><p><a href="index.php?proj_idx="'.$k.'>'.$v["project_id"] .'</a></p></div>';
+                  
 
-<div id="droppable2" class="ui-widget-drop">
-  <p>TESTBOX</p>
-</div>
+              }
+            }
 
+          echo "</div>";
+        }
 
-<button onclick="CreateFolder">Try Me</button>
- 
- 
-</body>
+      ?>    
+    </div>
+   
+     
+  </body>
+    <div id = workingspace>
+      <?php
+      foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects) { //populate projects on base page
+          if(isset($ALL_PROJ_DATA["project_list"][$key]["dropTag"]))
+          {
+            //if droptag is set we want to store things in the individual folders.
+          }else
+            //echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p>'.$projects["project_id"] .'</p></div>';
+            echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p><a href="index.php?proj_idx="'.$key.'>'.$projects["project_id"] .'</a></p></div>';
+        }
+        ?>
+    </div>
 
 <style>
-  .ui-widget-drop{
+  .hidden{
+    display: none;
 
-    width: 150px; height: 150px; padding: 0.5em; 
+  }
+  .folderspace{
+    margin:300px;
+  }
+  .workingspace{
+    margin: 300px;
+  }
+  .ui-widget-drop{
+    width: 100; height: 100px; padding: 0.5em; 
     float: left;
     margin: 10px; text-align: center; 
     background-image: url('img/FolderClose.svg');
@@ -102,6 +182,7 @@ for($i = 0 ; $i < count($listid) ; $i++){
     background-size: 100%;
     line-height: 600%;
     background-repeat: no-repeat;
+    font-size: 14;
 
   }
   .ui-widget-drag{
@@ -109,17 +190,40 @@ for($i = 0 ; $i < count($listid) ; $i++){
     float: left; 
     margin: 5px 5px 10px 0; 
     text-align: center;
-    background-image: url('img/FolderClose.svg');
+    background-image: url('img/icons8-star-26.png');
+    background-repeat: no-repeat;
     border: transparent;
-    height: 100px;
-    width: 100px;
+    height: 30px;
+    width: 125px;
     text-align: center;
-    font-size: 14;
+    font-size: 11;
     font-weight: bold;
-    padding-top:10px;
-    background-color: transparent;
-    line-height: 316%;
+    line-height: 45%;
+    border:ridge;
+    border-color: blue;
+    border-width: 2px;
+    background-color: azure;
   } 
+  .foldercontents{
+    padding: 0.1em; 
+    float: left; 
+    margin: 5px 5px 10px 0; 
+    text-align: center;
+    background-image: url('img/icons8-star-26.png');
+    background-repeat: no-repeat;
+    border: transparent;
+    height: 30px;
+    width: 125px;
+    text-align: center;
+    font-size: 11;
+    font-weight: bold;
+    line-height: 45%;
+    border:ridge;
+    border-color: blue;
+    border-width: 2px;
+    background-color: lightgreen;
+  } 
+
   .ui-state-highlight{
     background: transparent;
   }
