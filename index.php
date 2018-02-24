@@ -108,6 +108,7 @@ if( isset($_POST["proj_idx"]) ){
         }
 	}
 }
+
 //NOW LOGIN TO YOUR PROJECT
 if(isset($_POST["discpw"])){
 	if(!isset($_POST["authorized"])){
@@ -122,7 +123,6 @@ if(isset($_POST["discpw"])){
 		}
 	}
 }
-
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -226,106 +226,6 @@ if(!isset($_SESSION["discpw"])) {
 				?>
 				</label>
 				<a href="#" id="delete_project">Delete This Project</a>
-			</fieldset>
-			<fieldset class="app_trans">
-				<legend>App Translations</legend>
-				<div class="fieldbody">
-				<a href='#' class='add_trans'>+ Add Translation Key</a>
-				<?php 
-				foreach($app_text as $ldx => $text){
-					$key 		= $text["key"];
-					$val 	 	= $text["val"];
-
-					echo "<div class='one_unit'>";
-					echo "<label class='text_key'><span>Translation Key</span> <input type='text' name='app_text_key[$ldx]' value=\"$key\"/></label>";
-					foreach($val as $tkey => $trans){
-						echo  "<label><span class='key'>Code</span> <i>$tkey</i>
-						<span class='val'>Value</span><input type='text' name='app_text_trans[$ldx][$tkey]' value=\"$trans\"/></label>";
-					}
-					echo "<a href='#' class='delete_parent'>- Delete Key</a><hr></div>";
-					
-				}
-				?>
-				</div>
-			</fieldset>
-			<fieldset class="consent_trans">
-				<legend>Consent Translations</legend>
-				<div class="fieldbody">
-				<?php 
-				foreach($app_cons as $cdx => $page){
-					$title 	= $page["title"];
-					$text 	= $page["text"];
-					$button = $page["button"]; 
-					echo "<div class='one_unit'>";
-					echo "<div><h3>Title</h3>";
-					foreach($title as $lkey => $trans){
-						echo  "<label><span class='key'>Code</span> <i>$lkey</i>
-						<span class='val'>Value</span><input type='text' name='consent_trans[$cdx][title][$lkey]' value=\"$trans\"/></label>";
-					}
-					echo "</div>";	
-					echo "<div><h3>Text</h3>";
-					foreach($text as $lkey => $trans){
-						$input = "<textarea class='nlbr' name='consent_trans[$cdx][text][$lkey]'>".$trans."</textarea>" ;
-						echo  "<label><span class='key'>Code</span> <i>$lkey</i>
-						<span class='val'>Value</span>$input</label>";
-					}
-					echo "</div>";	
-					echo "<div><h3>Button</h3>";
-					foreach($button as $lkey => $trans){
-						echo  "<label><span class='key'>Code</span> <i>$lkey</i>
-						<span class='val'>Value</span><input type='text' name='consent_trans[$cdx][button][$lkey]' value=\"$trans\"/></label>";
-					}
-					echo "</div>";	
-					echo "<a href='#' class='delete_parent'>- Delete Consent Page</a><hr>";
-					echo "</div>";
-				}
-				?>
-				</div>
-			</fieldset>
-			<fieldset class="survey_trans">
-				<legend>Survey Translations</legend>
-				<div class="fieldbody">
-				<?php 
-				foreach($app_surv as $sdx => $question){
-					$type 	= $question["type"];
-					$name 	= $question["name"];
-					$label 	= $question["label"];
-					$opts 	= isset($question["options"]) ? $question["options"] : null;
-					
-					echo "<div class='one_unit'>";
-					echo "<label class='text_key'><span>Survey Key</span> <input type='text' name='survey_key[$sdx]' value=\"$name\"/></label>";
-					echo "<label class='text_key'><span>Question Type</span> <input type='text' name='survey_type[$sdx]' value=\"$type\"></label>";
-					
-					echo "<h4>Question Label</h4>";
-					foreach($label as $lang_code => $trans){
-						echo  "<label><span class='key'>Code</span> <i>$lang_code</i>
-						<span class='val'>Text</span><input type='text' name='survey_label[$sdx][$lang_code]' value=\"$trans\"/></label>";
-					}
-
-					if($opts){
-						echo "<h4>Answer Options <a href='#' class='add_option'>+ Add Option</a></h4>";
-						foreach($opts as $odx => $opt){
-							$val 	= $opt["value"];
-							echo "<div class='one_unit'>";
-							echo "<label class='text_key'><span>Option Value</span><input type='text' name='option_value[$sdx][$odx][value]' value=\"$val\"/></label>";
-							foreach($opt as $lang_code => $trans){
-								if(in_array($lang_code,$lang_codes)){
-									echo  "<label><span class='key'>Code</span> <i>$lang_code</i>
-									<span class='val'>Text</span><input type='text' name='option_value[$sdx][$odx][$lang_code]' value=\"$trans\"/></label>";								
-								}
-							}
-							echo "<a href='#' class='delete_parent'>- Delete Answer Option</a>";
-
-							if(isset($opts[$odx+1])){
-								echo "<hr class='answer_div'>";
-							}
-							echo "</div>";
-						}
-					}
-					echo "<a href='#' class='delete_parent'>- Delete Survey Question</a><hr></div>";
-				}
-				?>
-				</div>
 			</fieldset>
 			<button type="submit" class="btn btn-primary">Save Project</button>
 			<?php echo '</form>'.'<br>'.'<form action="summary.php" form id="route_summary" method="get">';	?>
