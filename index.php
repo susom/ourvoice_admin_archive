@@ -38,10 +38,10 @@ if( isset($_POST["proj_idx"]) ){
 		$_SESSION["DT"] = $payload;
 
         //putDoc($payload);
-        $url = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-        $response = doCurl($url, json_encode($payload), 'PUT');
-        
-        if(isset($resp["ok"])){
+        $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+        $response 	= doCurl($url, json_encode($payload), 'PUT');
+        $resp 		= json_decode($response,1);
+        if(isset($resp["rev"])){
         	$payload["_rev"] = $resp["rev"];
         	$ap = $_SESSION["DT"] = $payload;
         }else{
@@ -49,6 +49,7 @@ if( isset($_POST["proj_idx"]) ){
         	print_rr($resp);
         	print_rr($payload);
         }
+
         $msg = "Project " . $projects[$pidx] . " has been deleted";
 		header("location:index.php?msg=$msg");
 		exit;
@@ -91,8 +92,7 @@ if( isset($_POST["proj_idx"]) ){
         $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
         $response 	= doCurl($url, json_encode($payload), 'PUT');
         $resp 		= json_decode($response,1);
-
-        if(isset($resp["ok"])){
+        if(isset($resp["rev"])){
         	$payload["_rev"] = $resp["rev"];
         	$ap = $_SESSION["DT"] = $payload;
         	
