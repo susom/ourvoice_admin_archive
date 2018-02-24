@@ -41,8 +41,16 @@ if( isset($_POST["proj_idx"]) ){
         //putDoc($payload);
         $url = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
         $response = doCurl($url, json_encode($payload), 'PUT');
+        
         // TODO: Check for success
-
+        if(isset($resp["ok"])){
+        	$payload["_rev"] = $resp["rev"];
+        	$ap = $_SESSION["DT"] = $payload;
+        }else{
+        	echo "something went wrong:";
+        	print_rr($resp);
+        	print_rr($payload);
+        }
         $msg = "Project " . $projects[$pidx] . " has been deleted";
 		header("location:index.php?msg=$msg");
 		exit;
@@ -68,47 +76,14 @@ if( isset($_POST["proj_idx"]) ){
 			array_push($app_lang, array("lang" => $code , "language" => $_POST["lang_full"][$ldx]));
 		}
 
-		$app_text = array();
-		foreach($_POST["app_text_key"] as $tdx => $key){
-			array_push($app_text, array(
-				 "key" => $key
-				,"val" => $_POST["app_text_trans"][$tdx]
-			));
-		}
-
-		$surveys  = array();
-		foreach($_POST["survey_key"] as $sdx => $name){
-			$survey_q = array(
-				 "name" 	=> $name
-				,"type" 	=> $_POST["survey_type"][$sdx]
-				,"label" 	=> $_POST["survey_label"][$sdx]
-			);
-			if(isset($_POST["option_value"][$sdx])){
-				$survey_q["options"] = $_POST["option_value"][$sdx];
-			}
-			array_push($surveys, $survey_q);
-		}
-
-		$fixed_consents = array();
-		foreach($_POST["consent_trans"] as $consent){
-			foreach($consent["text"] as $lang => $trans){
-				$consent["text"][$lang] = str_replace("<br />\r\n","\r\n",nl2br($trans));//preg_replace("/<br\W*?\/>/", "\r", nl2br($trans));
-				$consent["text"][$lang] = str_replace("/r/n","\r\n",$consent["text"][$lang]);
-			}
-			$fixed_consents[] = $consent;
-		}
-
 		$updated_project = array(
 			 "project_id" 		=> strtoupper($_POST["project_id"])
 			,"project_name" 	=> $_POST["project_name"]
 			,"project_pass" 	=> $_POST["project_pass"]
 			,"summ_pass" 		=> $_POST["summ_pass"]
-			,"thumbs"			=> $_POST["thumbs"]
 			,"template_type"	=> $_POST["template_type"]
+			,"thumbs"			=> $_POST["thumbs"]
 			,"app_lang" 		=> $app_lang
-			,"app_text" 		=> $app_text
-			,"surveys"	 		=> $surveys
-			,"consent" 			=> $fixed_consents
 		);
 
 		$pidx 		= $proj_idx;
