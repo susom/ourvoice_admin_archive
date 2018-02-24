@@ -5,7 +5,6 @@ if(isset($_GET["clearsession"])){
 	$_SESSION = null;
 }
 
-
 //MEANING IT HAS TO MAKE A CALL TO GET THIS STUFF
 if(!isset($_SESSION["DT"])){
 	//TURN IT INTO PHP ARRAY
@@ -42,7 +41,6 @@ if( isset($_POST["proj_idx"]) ){
         $url = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
         $response = doCurl($url, json_encode($payload), 'PUT');
         
-        // TODO: Check for success
         if(isset($resp["ok"])){
         	$payload["_rev"] = $resp["rev"];
         	$ap = $_SESSION["DT"] = $payload;
@@ -191,10 +189,6 @@ if(!isset($_SESSION["discpw"])) {
 			$template = true;
 			$template_instructions = "<strong class='tpl_instructions'>*Input a new Project ID & Name to create a new project</strong>";
 		}
-
-		$app_text = $p["app_text"];
-		$app_surv = !empty($p["surveys"]) ? $p["surveys"] : array();
-		$app_cons = !empty($p["consent"]) ? $p["consent"] : array();
 		?>
 		<form id="project_config" method="post" class='<?php echo $template ? "template" : ""?>'>
 			<fieldset class="app_meta">
