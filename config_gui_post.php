@@ -39,9 +39,9 @@ if(isset($_POST["dropTag"]) && isset($_POST["dragTag"]) && isset($_POST["datakey
   			print_r("SUCCESS");
   			print_r("$drop_tag");
   			$_SESSION["DT"] = $storage;
-  	       // $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-		   // $response 	= doCurl($url, json_encode($storage), 'PUT');
-           // $resp 		= json_decode($response,1);
+  	      //  $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+		  //  $response 	= doCurl($url, json_encode($storage), 'PUT');
+          //  $resp 		= json_decode($response,1);
 
 		}else{
 			//shouldn't happen

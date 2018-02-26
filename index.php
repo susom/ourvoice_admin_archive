@@ -410,6 +410,12 @@ if(!isset($_SESSION["discpw"])) {
 }
 ?>
 </div>
+
+<div id = "FolderArea">
+	<iframe src="config_gui.php" width = 55% height = 500></iframe>
+</div>
+
+
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script>
@@ -473,6 +479,8 @@ function sortTable(n){
 }
 
 $(document).ready(function(){
+	sortTable(1);
+	sortTable(1); //default to Last updated Time
 	$(".jump").click(function(){
 
 		if($(this).attr("value") == "config")
