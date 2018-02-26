@@ -60,11 +60,11 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level){
           path: walkMap,
           strokeColor: '#0000FF',
           strokeOpacity: 0.7,
-          strokeWeight: 1
+          strokeWeight: 0
         });
 
         window[map_id].fitBounds(LatLngBounds); 
     }
-    
+    console.log("da fuq");
 	return;
 }
