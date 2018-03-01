@@ -274,21 +274,21 @@ $(document).ready(function(){
 	});
 
 	//HOVER ON MAP SPOT
-	$(document).on({
-	    mouseenter: function () {
-	        var long 	= $(this).data("long");
-			var lat 	= $(this).data("lat"); 
-			var map_id 	= $(this).attr("rel");
-			var latlng 	= new google.maps.LatLng(lat, long);
-			addmarker(latlng,map_id);
-	    },
-	    mouseleave: function () {
-	    	var map 	= $(this).attr("rel");
-	    	var map_geo = $("div."+map.replace("google_map_","")).data("mapgeo");
-	        window.current_preview.setMap(null);
-	        drawGMap(map_geo,map.replace("google_map_",""),16);
-	    }
-	}, ".preview");
+	// $(document).on({
+	//     mouseenter: function () {
+	//         var long 	= $(this).data("long");
+	// 		var lat 	= $(this).data("lat"); 
+	// 		var map_id 	= $(this).attr("rel");
+	// 		var latlng 	= new google.maps.LatLng(lat, long);
+	// 		addmarker(latlng,map_id);
+	//     },
+	//     mouseleave: function () {
+	//     	var map 	= $(this).attr("rel");
+	//     	var map_geo = $("div."+map.replace("google_map_","")).data("mapgeo");
+	//         window.current_preview.setMap(null);
+	//         drawGMap(map_geo,map.replace("google_map_",""),16);
+	//     }
+	// }, ".preview");
 
 	//ROTATE
 	$(".collapse").on("click",".preview span",function(){
