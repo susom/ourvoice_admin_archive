@@ -76,6 +76,9 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 	}else{
 		$proj_id 	= trim(strtoupper($_POST["proj_id"]));
 		$summ_pw 	= $_POST["summ_pw"];
+		$_SESSION["proj_id"]  = $proj_id;
+		$_SESSION["summ_pw"]  = $summ_pw;
+
 		$found  	= false;
 		foreach($projs as $pid => $proj){
 			if($proj_id == $proj["project_id"] && ( (isset($proj["summ_pass"]) && $summ_pw == $proj["summ_pass"]) || $summ_pw == "annban") ) {
@@ -119,21 +122,45 @@ h4[data-toggle="collapse"]{
 }
 .btn {
 	float:right;
-	margin-left:10px;
+	margin-right:10px;
+}
+
+nav {
+	overflow:hidden;
+}
+nav ul {
+	margin:0;
+	padding:0;
 }
 </style>
 </head>
 <body id="main">
-<a class='btn btn-default' href="summary.php?clearsession=1">Refresh Project Data</a>
+	<nav>
+		<ul>
+			<li class="pull-left"><a class='btn btn-default' href="summary.php?clearsession=1">Refresh Project Data</a></li>
+			<li class="pull-left"><a class="inproject btn btn-default" href="index.php">Back to project overview</a></li>
+		</ul>
+
+		<!-- <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Aggregate Project Data<span class="caret"></span></button> -->
+		<ul>
+			<?php
+			if( $active_project_id ){
+				echo '<li><a target="_blank" class="inproject btn btn-success" href="project_map_csv.php?i='.$active_project_id.'&pid='.$active_pid.'">Download Maps Data (.csv)</a></li>';
+				echo '<li><a target="_blank" class="inproject btn btn-info" href="project_transcriptions.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">All Transcriptions</a></li>';
+				echo '<li><a target="_blank" class="inproject btn btn-warning" href="project_agg_surveys.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">All Survey Answers</a></li>';
+				echo '<li><a target="_blank" class="inproject btn btn-danger" href="project_agg_photos.php?id='.$active_project_id.'">All Walk Photos</a></li>';
+			}
+			?>
+		</ul>
+	</nav>
+
+	
+
+
 
 <?php
 if( $active_project_id ){
-	echo '<a target="_blank" class="inproject btn btn-success" href="project_map_csv.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Project Maps Data (.csv)</a> ';
-	echo '<a target="_blank" class="inproject btn btn-info" href="project_transcriptions.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Project Transcriptions</a> ';
-	echo '<a target="_blank" class="inproject btn btn-warning" href="project_agg_surveys.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Get Aggregate Survey Answers</a>';
-	echo '<a class="inproject btn btn-default" href="index.php">Back to project overview</a>';
-
-
+	
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
     $response 		= filter_by_projid("get_data_ts","[\"$active_pid\"]");
     
