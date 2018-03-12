@@ -188,6 +188,7 @@ if(!isset($_SESSION["discpw"])) {
 			<button type="submit" class="btn btn-primary">Go to Configurator</button>
 		</form>
 	</div>
+
 <?php
 }else{ //if password is actually set, display the project configurator
 	?>
@@ -195,6 +196,7 @@ if(!isset($_SESSION["discpw"])) {
 		<h1>Discovery Tool Project Configurator</h1>
 		<a href="index.php">Back to Project Picker</a>
 		<a href="index.php?clearsession=1">Refresh Project Data</a>
+		<a href="recent_activity.php">All Recent Project Data</a>
 	</hgroup>
 	<?php
 	if( isset($_GET["proj_idx"]) ){
@@ -275,7 +277,7 @@ if(!isset($_SESSION["discpw"])) {
 				<p><strong><em>* To Configure New Project: <br> Choose a template below and add a ProjectID and Name!</em></strong></p>
 				<a href="?proj_idx=99" class="tpl btn btn-info" data-tpl="99">Short Template</a> 
 				<a href="?proj_idx=100" class="tpl btn btn-success" tata-tpl="100">Full Template</a>
-				<button type ="submit" class="btn btn-default jump" name = "destination" value = "recent">Recent Project Data </button>	
+	
 				<table id = "rec-table">
 					<tr>
 						<th onclick="sortTable(0)" class = "tablehead" >Project ID <?php echo '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp'; ?>(Click to sort)</th>
@@ -299,11 +301,7 @@ if(!isset($_SESSION["discpw"])) {
 
 			</p>
 		</form>
-		<?php
-	}
-}
-?>
-</div>
+		</div>
 <!-- 
 <div id = "FolderArea">
 	<iframe src="config_gui.php" width = 55% height = 500></iframe>
@@ -311,40 +309,53 @@ if(!isset($_SESSION["discpw"])) {
 
 
 </body>
-<input type ="text" id = "foldername" style = "margin-left:20px;">
-    <button type ="button" onclick="CreateFolder(document.getElementById('foldername').value)">Create Folder</button>
-    <div id = "folderspace">
+<div class = "folderbar">
+	<input type ="text" id = "foldername">
+	<button type ="button" onclick="CreateFolder(document.getElementById('foldername').value)">Create Folder</button>
+	<input type ="text" id = "d_foldername">
+	<button type ="button" onclick="DeleteFolder(document.getElementById('d_foldername').value)">Delete Folder</button>
 
-      <?php
-        foreach ($ALL_PROJ_DATA["folders"] as $key => $value) { //populate folders inside working space
-          echo "<div class ='ui-widget-drop'><p>".$value." </p></div>";
-          echo "<div class ='hiddenFolders' id ='".$value."'>";
-            foreach ($ALL_PROJ_DATA["project_list"] as $k => $v) {
-              if(isset($v["dropTag"]) && $v["dropTag"] ==$value){
-               // echo '<div class="foldercontents" data-key = "'.$k.'" ><p>'.$v["project_id"] .'</p></div>';
-                echo '<div class="foldercontents" data-key = "'.$k.'" ><p><a href="index.php?proj_idx='.$k.'"'.'>'.$v["project_id"] .'</a></p></div>';
-                  
+</div>
+<div id = "organization_sector">
+		<div id = "workingspace">
+	      <?php
+	      foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects) { //populate projects on base page
+	          if(isset($ALL_PROJ_DATA["project_list"][$key]["dropTag"]))
+	          {
+	            //if droptag is set we want to store things in the individual folders.
+	          }else
+	            //echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p>'.$projects["project_id"] .'</p></div>';
+	            echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p><a href="index.php?proj_idx='.$key.'"'.'>'.$projects["project_id"] .'</a></p></div>';
+	        }
+	        ?>
+	    </div>
+		
+	    <div id = "folderspace">
+	      	<?php
+	        foreach ($ALL_PROJ_DATA["folders"] as $key => $value) { //populate folders inside working space
+	        	echo "<div class = individual_sector_".$value.">";
+	        	echo "<div class ='ui-widget-drop'><p>".$value." </p></div>";
+	          	echo "<div class ='hiddenFolders' id ='".$value."'>";
+	            	foreach ($ALL_PROJ_DATA["project_list"] as $k => $v) {
+	              		if(isset($v["dropTag"]) && $v["dropTag"] ==$value){
+	               		// echo '<div class="foldercontents" data-key = "'.$k.'" ><p>'.$v["project_id"] .'</p></div>';
+	                	echo '<div class="foldercontents" data-key = "'.$k.'" ><p><a href="index.php?proj_idx='.$k.'"'.'>'.$v["project_id"] .'</a></p></div>';
+	                  
 
-              }
-            }
+	              }
+	            }
 
-          echo "</div>";
-        }
+	          echo "</div>"; //hiddenfolders
+	          echo "</div>"; //individual_sector
+	        }
 
-      ?>    
-    </div>
-<div id = workingspace>
-      <?php
-      foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects) { //populate projects on base page
-          if(isset($ALL_PROJ_DATA["project_list"][$key]["dropTag"]))
-          {
-            //if droptag is set we want to store things in the individual folders.
-          }else
-            //echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p>'.$projects["project_id"] .'</p></div>';
-            echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p><a href="index.php?proj_idx='.$key.'"'.'>'.$projects["project_id"] .'</a></p></div>';
-        }
-        ?>
-    </div>
+	      	?>    
+	    </div>
+	</div>
+		<?php
+	}
+}
+?>
 
 
 <script>
@@ -416,28 +427,13 @@ $(document).ready(function(){
 	$(document).on("dblclick",".ui-widget-drop",function(event,ui){
 	  	console.log(this.innerText);
 	  	if($('#'+this.innerText+':visible').length == 0)
-	    	$('#'+this.innerText).css('display','block');
+	    	$('#'+this.innerText).css('display','inline-block');
 		else{
     	 	$('#'+this.innerText).css('display','none');
         	console.log(this.innerText);
 		}
 	});
 
-
-
-	$(".jump").click(function(){
-
-		if($(this).attr("value") == "config")
-			//redirect there remember to change the JUMP tag above for confign
-			window.location.assign("summary.php");
-		else if($(this).attr("value") == "summary")
-			window.location.assign("summary.php");
-		else if($(this).attr("value") == "recent"){
-			window.location.assign("recent_activity.php");
-			console.log("recent");
-		}
-		return false;
-	});
 
 
 	<?php
@@ -551,29 +547,118 @@ $(document).ready(function(){
   function CreateFolder(name){
     if(name)
     {
-      $("<div class ='ui-widget-drop'><p>"+name+"</p></div>").appendTo("#folderspace");
-      let hiddennode = $("<div class = 'hiddenFolders' id ='"+name+"'></div");
-      $("#folderspace").append(hiddennode);
-      bindProperties();
-      $.ajax({
-        url:"config_gui_post.php",
-        type: 'POST',
-        data: "&folders=" + name,
-        success:function(result){
-          console.log(result);
-        }
-        
-        },function(err){
-          console.log("ERROR");
-          console.log(err);
-        
-      });
-    }//if
+    	if(!isValidElement(name,"ui-widget-drop","class")){
+	    	$("<div class ='ui-widget-drop'><p>"+name+"</p></div>").appendTo("#folderspace");
+	     	let hiddennode = $("<div class = 'hiddenFolders' id ='"+name+"'></div");
+	      	$("#folderspace").append(hiddennode);
+	      	bindProperties();
+	      	$.ajax({
+	        url:"config_gui_post.php",
+	        type: 'POST',
+	        data: "&folders=" + name,
+	        success:function(result){
+	          console.log(result);
+	        }
+	        
+	        },function(err){
+	          console.log("ERROR");
+	          console.log(err);
+	      });
+	 	}//if
+	 	else
+	 		alert("Folder already created, please enter a different name");
+    }//if name
     else
       alert("Please enter a name for your folder");
   }//CreateFolder
-
   
+  function DeleteFolder(name){
+  	if(name && isValidElement(name,"ui-widget-drop","class")){
+  		//if(deleteprompt()){
+	  		let d_folder = selectFolder(name);
+	  		let d_folder_contents = $("#"+name); //selects hidden folder class
+	  		let d_folder_parent = $("."+"individual_sector_"+name);
+	  		repopulateProjects(d_folder_contents);	
+	      	bindProperties();
+
+	  		d_folder.remove();
+	  		d_folder_contents.remove();
+	  		d_folder_parent.remove();
+ 		//}
+  	}else{
+  		alert("Please enter a valid name for a folder you wish to delete");
+  	}
+  }
+  function removeFromDB(project){
+  	 $.ajax({
+          url:  "config_gui_post.php",
+          type:'POST',
+          data: "&deleteTag=" + project,
+          success:function(result){
+            console.log(result);
+          }        
+            //THIS JUST STORES IS 
+          },function(err){
+          console.log("ERRROR");
+          console.log(err);
+        });
+
+
+  }
+  function repopulateProjects(hiddenfolder){
+  	let proj_list = (hiddenfolder[0].childNodes);
+  	let workingspace = $("#workingspace");
+  	var deletion_data = {keys:[],names:[],folder:[]};
+ 	
+  	for(var i = 0 ; i < proj_list.length ;i++){
+  		let key = proj_list[i].getAttribute("data-key");
+  		let proj_name = proj_list[i].textContent;
+  		let div = createNode(key,"ui-widget-drag",proj_name)
+    	$(workingspace).append(div); //repopulate projects
+    	deletion_data.keys.push(key);
+    	deletion_data.names.push(proj_name);
+  	}
+  		deletion_data.folder.push(hiddenfolder[0].id);
+
+	removeFromDB(JSON.stringify(deletion_data));
+
+  }
+
+  function createNode(data_key,class_name,text){
+  	let div = document.createElement("div");
+  	let p = document.createElement("p");
+    let a = document.createElement("a");
+	div.className = class_name;
+    div.setAttribute("data-key",data_key);
+    a.href = "index.php?proj_idx="+data_key;
+    a.textContent = text;
+	$(p).append(a);
+    $(div).append(p);
+    return div; 
+  }
+
+
+  function isValidElement(name,location,type){
+  	let selection = (type=="class") ? "." : "#";
+  	console.log(selection);
+  	let folders = $(selection+location);
+  	// ".ui-widget-drop"
+  	console.log(folders);
+  	for(var i = 0 ; i < folders.length ; i++){
+  		if(folders[i].textContent.trim() == name) //trim to ensure no whitespace errors
+  			return true;
+  	}
+  	return false;
+  }//isValid
+
+  function selectFolder(name){
+  	let folders = $(".ui-widget-drop");
+  	for(var i = 0 ; i < folders.length ; i++){
+  		if(folders[i].textContent.trim() == name) //trim to ensure no whitespace errors
+  			return folders[i];
+  	}
+  	return false;
+  }
   
   function addProject(key,dragBox_name,dropBox_name){
     let div = document.createElement("div");
@@ -643,71 +728,67 @@ input[readonly]{
 }
 
 
-  .hiddenFolders{
-    display: none;
+.hiddenFolders{
+	display: none;
 
-  }
-  #folderspace{
-    height:170px;
-    display:block;
-  }
-  #workingspace{
-    height:300px;
-    margin:20px;
-  }
-  .ui-widget-drop{
-    width: 122px; height: 115px; padding: 0.5em; 
-    float: left;
-    margin: 10px; text-align: center; 
-    background-image: url('img/FolderClose.svg');
-    border: 1px solid red;
-    background-color: transparent;
-    background-size: 100%;
-    line-height: 600%;
-    background-repeat: no-repeat;
-    font-size: 14;
-    margin:20px;
 
-  }
-  .ui-widget-drag{
-    padding: 0.1em; 
-    float: left; 
-    margin: 5px 5px 10px 0; 
-    text-align: center;
-    background-image: url('img/icons8-star-26.png');
-    background-repeat: no-repeat;
-    border: transparent;
-    height: 30px;
-    width: 125px;
-    font-size: 11px;
-    font-weight: bold;
-    line-height: 180%;
-    border:ridge;
-    border-color: blue;
-    border-width: 2px;
-    background-color: azure;
-  } 
-  .foldercontents{
-    padding: 0.1em; 
-    float: left; 
-    margin: 5px 5px 10px 0; 
-    text-align: center;
-    background-image: url('img/icons8-star-26.png');
-    background-repeat: no-repeat;
-    border: transparent;
-    height: 30px;
-    width: 125px;
-    text-align: center;
-    font-size: 11px;
-    font-weight: bold;
-    line-height: 180%;
-    border:ridge;
-    border-color: blue;
-    border-width: 2px;
-    background-color: lightgreen;
-  } 
+}
+.folderbar{
+	display:block;
+	margin:10px;
+}
+#folderspace{
+	display:inline-block;
+	float:left;
+	width:54%;
+}
+#workingspace{
+	margin:20px;
+	display:inline-block;
+	float:right;
+	width:40%;
+}
+.ui-widget-drop{
+	width: 111px; height: 96px; padding: 0.5em; 
+	margin: 10px;
+	margin-left: 20px; 
+	text-align: center; 
+	background-image: url('img/FolderClose.svg');
+	background-color: transparent;
+	background-size: 100%;
+	line-height: 600%;
+	background-repeat: no-repeat;
+	font-size: 14px;
+	display:block;
 
-  .ui-state-highlight{
-    background: transparent;
-  }
+
+}
+.ui-widget-drag, .foldercontents{
+	padding: 0.1em; 
+	float: left; 
+	margin: 0px 4px 2px; 
+	text-align: center;
+	border: transparent;
+	height: 30px;
+	width: 90px;
+	font-size: 11px;
+	font-weight: bold;
+	line-height: 180%;
+	border:ridge;
+	border-color: blue;
+	border-width: 2px;
+	background-color: azure;
+	display:inline-block;
+} 
+
+#organization_sector{
+	float:left;
+	width:55%;
+
+}
+
+.ui-state-highlight{
+	background: transparent;
+}
+
 </style>
