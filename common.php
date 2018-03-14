@@ -329,7 +329,7 @@ function parseTime($data, $storage)
 }
 
 function populateRecent($ALL_PROJ_DATA, $stor, $listid){
-    $checkWeek = strtotime("-2 Week");
+    $checkWeek = strtotime("-4 Week");
     $counter = 0;
 
     for($i = 0 ; $i < count($stor) ; $i++){

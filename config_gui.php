@@ -36,11 +36,46 @@ foreach ($stor as $key => $value)
   <script> 
     $( function() { //shorthand for onReady()
       clearData();
-      BindProperties();
+      bindProperties();
+    
+    $(document).on("dblclick",".ui-widget-drop",function(event,ui){
+      console.log(this.innerText);
+      if($('#'+this.innerText+':visible').length == 0)
+        $('#'+this.innerText).css('display','block');
+      else{
+        $('#'+this.innerText).css('display','none');
+        console.log(this.innerText);
+      }
+
+    });
+    $('.ui-widget-drop').mousedown(function(event,ui) {
+      /*if (event.which == 3){        
+        console.log(this);
+        console.log(this.parentNode);
+        if(deleteprompt())
+          workingspace.removeChild(this);
+      }*/
+    });
+
+
   });//onReady
 
-  function BindProperties(){
-    $( ".ui-widget-drag").draggable({
+/*  function appendProjCount(){
+    var folders = document.getElementsByClassName("ui-widget-drop");
+      for(i = 0 ; i < folders.length; i++){
+
+          let projCount = $("#"+folders[i].innerText)[0].children.length;
+          //var temp = $(folders[i]).find("p");
+          let p = document.createElement("pCount");
+          p.innerText = projCount;
+          console.log(folders[i]);
+          
+      }
+  }
+*/
+    
+  function bindProperties(){
+      $( ".ui-widget-drag").draggable({
       cursor: "move",
       drag: function(event,ui){
       //  ui.css("z-index", "-1"); //fix frontal input
@@ -51,10 +86,11 @@ foreach ($stor as $key => $value)
     $( ".ui-widget-drop" ).droppable({
       drop: function( event, ui ) {
         //var pdata = <?php echo json_encode($ALL_PROJ_DATA);?>;
-        var dropBox_name = this.innerText;
-        var dragBox_name = ui.draggable[0].innerText;
+        var dropBox_name = $.trim(this.innerText);
+        var dragBox_name = $.trim(ui.draggable[0].innerText);
         var key = $(ui.draggable[0]).data("key");
-        
+        //if does not exist within folder then render it
+        addProject(key,dragBox_name,dropBox_name);
         $.ajax({
           url:  "config_gui_post.php",
           type:'POST',
@@ -71,24 +107,7 @@ foreach ($stor as $key => $value)
       }//drop
 
     }); //ui-widget-drop
-    $(".ui-widget-drop").draggable();
-    $(".ui-widget-drop").dblclick(function(event,ui){
-      if($('#'+this.innerText+':visible').length == 0)
-        $('#'+this.innerText).css('display','block');
-      else
-        $('#'+this.innerText).css('display','none');
-
-    });
-    $('.ui-widget-drop').mousedown(function(event,ui) {
-      if (event.which == 3){        
-        console.log(this);
-        console.log(this.parentNode);
-        if(deleteprompt())
-          workingspace.removeChild(this);
-      }
-    });
-
-  }//bind properties
+  }
 
   function deleteprompt(){
       var value = confirm("Are you sure you want to delete this folder?");
@@ -98,8 +117,10 @@ foreach ($stor as $key => $value)
   function CreateFolder(name){
     if(name)
     {
-      $("<div class ='ui-widget-drop'<p>"+name+"</p></div>").appendTo("body");
-      BindProperties();
+      $("<div class ='ui-widget-drop'><p>"+name+"</p></div>").appendTo("#folderspace");
+      let hiddennode = $("<div class = 'hidden' id ='"+name+"'></div");
+      $("#folderspace").append(hiddennode);
+      bindProperties();
       $.ajax({
         url:"config_gui_post.php",
         type: 'POST',
@@ -121,6 +142,22 @@ foreach ($stor as $key => $value)
   function clearData(){
     <?php session_unset();?>
   }
+  function addProject(key,dragBox_name,dropBox_name){
+    let div = document.createElement("div");
+    
+    let p = document.createElement("p");
+    let a = document.createElement("a");
+    a.href = "index.php?proj_idx="+key;
+    a.textContent = dragBox_name;
+    $(p).append(a);
+    
+    div.className = "foldercontents";
+    div.setAttribute("data-key",key);
+    $(div).append(p);
+    let search = document.getElementById(dropBox_name);
+    $(search).append(div);
+  }
+
   </script>
 </head>
   <body>
@@ -129,12 +166,12 @@ foreach ($stor as $key => $value)
     <div id = "folderspace">
       <?php 
         foreach ($ALL_PROJ_DATA["folders"] as $key => $value) { //populate folders inside working space
-          echo "<div class ='ui-widget-drop'<p>".$value." </p></div>";
+          echo "<div class ='ui-widget-drop'><p>".$value." </p></div>";
           echo "<div class ='hidden' id ='".$value."'>";
             foreach ($ALL_PROJ_DATA["project_list"] as $k => $v) {
               if(isset($v["dropTag"]) && $v["dropTag"] ==$value){
                // echo '<div class="foldercontents" data-key = "'.$k.'" ><p>'.$v["project_id"] .'</p></div>';
-                echo '<div class="foldercontents" data-key = "'.$k.'" ><p><a href="index.php?proj_idx="'.$k.'>'.$v["project_id"] .'</a></p></div>';
+                echo '<div class="foldercontents" data-key = "'.$k.'" ><p><a href="index.php?proj_idx='.$k.'"'.'>'.$v["project_id"] .'</a></p></div>';
                   
 
               }
@@ -156,21 +193,24 @@ foreach ($stor as $key => $value)
             //if droptag is set we want to store things in the individual folders.
           }else
             //echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p>'.$projects["project_id"] .'</p></div>';
-            echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p><a href="index.php?proj_idx="'.$key.'>'.$projects["project_id"] .'</a></p></div>';
+            echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p><a href="index.php?proj_idx='.$key.'"'.'>'.$projects["project_id"] .'</a></p></div>';
         }
         ?>
     </div>
 
 <style>
+  
+
   .hidden{
     display: none;
 
   }
-  .folderspace{
-    margin:300px;
+  #folderspace{
+    height:170px;
+    display:block;
   }
-  .workingspace{
-    margin: 300px;
+  #workingspace{
+    height:300px;
   }
   .ui-widget-drop{
     width: 100; height: 100px; padding: 0.5em; 

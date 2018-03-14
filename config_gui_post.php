@@ -19,8 +19,8 @@ if(isset($_POST["folders"])){
 		$_SESSION["DT"] = $storage;
 		print_r("pushing to folders");
 	 	$url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-		//$response 	= doCurl($url, json_encode($storage), 'PUT');
-        //$resp 		= json_decode($response,1);
+		$response 	= doCurl($url, json_encode($storage), 'PUT');
+        $resp 		= json_decode($response,1);
 	}
 
 }
@@ -39,9 +39,9 @@ if(isset($_POST["dropTag"]) && isset($_POST["dragTag"]) && isset($_POST["datakey
   			print_r("SUCCESS");
   			print_r("$drop_tag");
   			$_SESSION["DT"] = $storage;
-  	       // $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-		   // $response 	= doCurl($url, json_encode($storage), 'PUT');
-           // $resp 		= json_decode($response,1);
+  	        $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+		    $response 	= doCurl($url, json_encode($storage), 'PUT');
+            $resp 		= json_decode($response,1);
 
 		}else{
 			//shouldn't happen
@@ -52,6 +52,31 @@ if(isset($_POST["dropTag"]) && isset($_POST["dragTag"]) && isset($_POST["datakey
 
 	}
 
+if(isset($_POST["deleteTag"])){	
+	$deletion_list = json_decode($_POST["deleteTag"],1);
+	$folder_name = $deletion_list["folder"][0];
+	//print_r($deletion_list);
+	for($i = 0 ; $i < sizeof($deletion_list["keys"]) ; $i++){
+		//print_r($deletion_list["keys"]["$i"]);
+		$pid = $deletion_list["keys"]["$i"];
+		//var_dump(isset($storage["project_list"][$pid]["dropTag"]));
+
+		//print_r($storage["project_list"][$pid]["dropTag"]);
+		unset($storage["project_list"][$pid]["dropTag"]);
+		//print_r($storage["project_list"][$pid]]);
+	}	
+	print_r($storage["folders"]);
+	foreach($storage["folders"] as $key => $value)
+	{
+		 if($value == $folder_name)
+		 	unset($storage["folders"][$key]);
+	}
+
+
+	$url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+	$response 	= doCurl($url, json_encode($storage), 'PUT');
+    $resp 		= json_decode($response,1);
+}
 
 exit;
 
