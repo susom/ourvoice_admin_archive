@@ -273,10 +273,10 @@ if(!isset($_SESSION["discpw"])) {
 				</div>
 				<div id = "organization_sector">
 					<div id = "workingspace">
+						<h4>Projects <em>* Drag projects into folders</em></h4>
 				      <?php
 				      foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects) { //populate projects on base page
-				          if(isset($ALL_PROJ_DATA["project_list"][$key]["dropTag"]))
-				          {
+				          if(isset($ALL_PROJ_DATA["project_list"][$key]["dropTag"])){
 				            //if droptag is set we want to store things in the individual folders.
 				          }else
 				            //echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p>'.$projects["project_id"] .'</p></div>';
@@ -286,6 +286,7 @@ if(!isset($_SESSION["discpw"])) {
 				    </div>
 						
 				    <div id = "folderspace">
+				    	<h4>Folders</h4>
 				      	<?php
 				        foreach ($ALL_PROJ_DATA["folders"] as $key => $value) { //populate folders inside working space
 				        	echo "<div class = individual_sector_".$value.">";
@@ -761,15 +762,24 @@ input[readonly]{
 	padding:20px 0;
 	overflow:hidden;
 }
-
+#organization_sector h4 {
+	margin:0 0 10px;
+}
+#organization_sector h4 em {
+	font-size:70%;
+}
 .folderbar{
 	display:block;
 	overflow:hidden;
 }
 #folderspace{
+	padding:20px;
 	display:inline-block;
 	float:left;
 	width:49%;
+	background: #efefef;
+    border-radius: 5px;
+    min-height:600px;
 }
 #workingspace{
 	padding:20px;
@@ -778,6 +788,7 @@ input[readonly]{
 	width:49%;
 	background:#efefef;
 	border-radius:5px;
+    min-height:600px;
 }
 .ui-widget-drop{
 	width: 111px; height: 96px; padding: 0.5em; 
