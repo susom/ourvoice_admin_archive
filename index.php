@@ -53,10 +53,10 @@ if( isset($_POST["proj_idx"]) ){
 		$_SESSION["DT"] = $payload;
 
         //putDoc($payload);
-        $url = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-        $response = doCurl($url, json_encode($payload), 'PUT');
-        
-        if(isset($resp["ok"])){
+        $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+        $response 	= doCurl($url, json_encode($payload), 'PUT');
+        $resp 		= json_decode($response,1);
+        if(isset($resp["rev"])){
         	$payload["_rev"] = $resp["rev"];
         	$ap = $_SESSION["DT"] = $payload;
         }else{
@@ -64,6 +64,7 @@ if( isset($_POST["proj_idx"]) ){
         	print_rr($resp);
         	print_rr($payload);
         }
+
         $msg = "Project " . $projects[$pidx] . " has been deleted";
 		header("location:index.php?msg=$msg");
 		exit;
@@ -106,8 +107,7 @@ if( isset($_POST["proj_idx"]) ){
         $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
         $response 	= doCurl($url, json_encode($payload), 'PUT');
         $resp 		= json_decode($response,1);
-
-        if(isset($resp["ok"])){
+        if(isset($resp["rev"])){
         	$payload["_rev"] = $resp["rev"];
         	$ap = $_SESSION["DT"] = $payload;
         	
@@ -196,7 +196,6 @@ if(!isset($_SESSION["discpw"])) {
 		<h1>Discovery Tool Project Configurator</h1>
 		<a href="index.php">Back to Project Picker</a>
 		<a href="index.php?clearsession=1">Refresh Project Data</a>
-		<a href="recent_activity.php">All Recent Project Data</a>
 	</hgroup>
 	<?php
 	if( isset($_GET["proj_idx"]) ){
@@ -254,35 +253,69 @@ if(!isset($_SESSION["discpw"])) {
 		</form>
 		<?php
 	}else{
-		$opts 	= array();
-		foreach($projs as $idx => $proj){
-			if($idx == 99 || $idx == 100){
-				// these will be the immutable templates
-				continue;
-			}
-			$opts[] = "<option value='$idx'>".$proj["project_name"]."</option>";
-		}
 		?>
 		<form id="project_config" method="get">
-			<h3>Choose project to edit:</h3>
-			<select name="proj_idx">
-			<?php 
-				echo implode("",$opts);
-			?>
-			</select>
-			<input type="submit"/>
+			<div id="project_folders">
+				<h3>Choose project to edit:</h3>
+				<div class = "folderbar">
+					<div class="pull-left">
+						<p><input type ="text" id = "foldername">
+						<button type ="button" onclick="CreateFolder(document.getElementById('foldername').value)">Create Folder</button></p>
+						
+						<p><input type ="text" id = "d_foldername">
+						<button type ="button" onclick="DeleteFolder(document.getElementById('d_foldername').value)">Delete Folder</button></p>
+					</div>
+					<div class="pull-right">
+						<p><strong><em>* To Configure New Project: Choose a template below and add a ProjectID and Name!</em></strong></p>
+						<a href="?proj_idx=99" class="tpl btn btn-info" data-tpl="99">Short Template</a> 
+						<a href="?proj_idx=100" class="tpl btn btn-success" tata-tpl="100">Full Template</a>
+					</div>
+				</div>
+				<div id = "organization_sector">
+					<div id = "workingspace">
+						<h4>Projects <em>* Drag projects into folders</em></h4>
+				      <?php
+				      foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects) { //populate projects on base page
+				          if(isset($ALL_PROJ_DATA["project_list"][$key]["dropTag"])){
+				            //if droptag is set we want to store things in the individual folders.
+				          }else
+				            //echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p>'.$projects["project_id"] .'</p></div>';
+				            echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p><a href="index.php?proj_idx='.$key.'"'.'>'.$projects["project_id"] .'</a></p></div>';
+				        }
+				        ?>
+				    </div>
+						
+				    <div id = "folderspace">
+				    	<h4>Folders</h4>
+				      	<?php
+				        foreach ($ALL_PROJ_DATA["folders"] as $key => $value) { //populate folders inside working space
+				        	echo "<div class = individual_sector_".$value.">";
+				        	echo "<div class ='ui-widget-drop'><p>".$value." </p></div>";
+				          	echo "<div class ='hiddenFolders' id ='".$value."'>";
+				            	foreach ($ALL_PROJ_DATA["project_list"] as $k => $v) {
+				              		if(isset($v["dropTag"]) && $v["dropTag"] ==$value){
+				               		// echo '<div class="foldercontents" data-key = "'.$k.'" ><p>'.$v["project_id"] .'</p></div>';
+				                	echo '<div class="foldercontents" data-key = "'.$k.'" ><p><a href="index.php?proj_idx='.$k.'"'.'>'.$v["project_id"] .'</a></p></div>';
+				              }
+				            }
+				          echo "</div>"; //hiddenfolders
+				          echo "</div>"; //individual_sector
+				        }
+
+				      	?>    
+				    </div>
+				</div>
+			</div>
 			
-			<br><br>
-			<p>
-				<p><strong><em>* To Configure New Project: <br> Choose a template below and add a ProjectID and Name!</em></strong></p>
-				<a href="?proj_idx=99" class="tpl btn btn-info" data-tpl="99">Short Template</a> 
-				<a href="?proj_idx=100" class="tpl btn btn-success" tata-tpl="100">Full Template</a>
-	
-				<table id = "rec-table">
-					<tr>
-						<th onclick="sortTable(0)" class = "tablehead" >Project ID <?php echo '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp'; ?>(Click to sort)</th>
-						<th onclick="sortTable(1)" class = "tablehead">Last Updated</th>
-					</tr>
+			<table id = "rec-table">
+				<tr>
+					<td ><h3>Recent Activity</h3></td>
+					<td><a href="recent_activity.php" class='btn btn-warning'>All Recent Project Data</a></td>
+				</tr>
+				<tr>
+					<th onclick="sortTable(0)" class = "tablehead" >Project ID <?php echo '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp'; ?>(Click to sort)</th>
+					<th onclick="sortTable(1)" class = "tablehead">Last Updated</th>
+				</tr>
 				<?php 
 				$turl  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
 				$pdurl = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
@@ -297,9 +330,7 @@ if(!isset($_SESSION["discpw"])) {
 				populateRecent($ALL_PROJ_DATA,$stor,$listid);
 
 				?>	
-				</table>
-
-			</p>
+			</table>
 		</form>
 		</div>
 <!-- 
@@ -309,49 +340,7 @@ if(!isset($_SESSION["discpw"])) {
 
 
 </body>
-<div class = "folderbar">
-	<input type ="text" id = "foldername">
-	<button type ="button" onclick="CreateFolder(document.getElementById('foldername').value)">Create Folder</button>
-	<input type ="text" id = "d_foldername">
-	<button type ="button" onclick="DeleteFolder(document.getElementById('d_foldername').value)">Delete Folder</button>
 
-</div>
-<div id = "organization_sector">
-		<div id = "workingspace">
-	      <?php
-	      foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects) { //populate projects on base page
-	          if(isset($ALL_PROJ_DATA["project_list"][$key]["dropTag"]))
-	          {
-	            //if droptag is set we want to store things in the individual folders.
-	          }else
-	            //echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p>'.$projects["project_id"] .'</p></div>';
-	            echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p><a href="index.php?proj_idx='.$key.'"'.'>'.$projects["project_id"] .'</a></p></div>';
-	        }
-	        ?>
-	    </div>
-		
-	    <div id = "folderspace">
-	      	<?php
-	        foreach ($ALL_PROJ_DATA["folders"] as $key => $value) { //populate folders inside working space
-	        	echo "<div class = individual_sector_".$value.">";
-	        	echo "<div class ='ui-widget-drop'><p>".$value." </p></div>";
-	          	echo "<div class ='hiddenFolders' id ='".$value."'>";
-	            	foreach ($ALL_PROJ_DATA["project_list"] as $k => $v) {
-	              		if(isset($v["dropTag"]) && $v["dropTag"] ==$value){
-	               		// echo '<div class="foldercontents" data-key = "'.$k.'" ><p>'.$v["project_id"] .'</p></div>';
-	                	echo '<div class="foldercontents" data-key = "'.$k.'" ><p><a href="index.php?proj_idx='.$k.'"'.'>'.$v["project_id"] .'</a></p></div>';
-	                  
-
-	              }
-	            }
-
-	          echo "</div>"; //hiddenfolders
-	          echo "</div>"; //individual_sector
-	        }
-
-	      	?>    
-	    </div>
-	</div>
 		<?php
 	}
 }
@@ -680,8 +669,23 @@ $(document).ready(function(){
 </script>	
 </html>
 <style>
+hgroup{
+	border-bottom:1px solid #999;
+	padding:0 20px 10px;
+	overflow:hidden;
+}
+hgroup h1{
+	float:left; 
+	margin:0;
+}
+
+#project_config{
+	overflow:hidden;
+	padding:20px;
+}
+
 #box {
-	margin:20px;
+	padding:20px 0;
 }
 .btn-default{
 	
@@ -704,14 +708,33 @@ form.template #delete_project,
     font-size: 130%;
 }
 
-table {
+#project_folders{
+	float:left;
+	width:58%;
+}
 
+.folderbar .pull-left,
+.folderbar .pull-right{
+	width:49%;
+}
+.folderbar .pull-left{
+	margin-top:20px;
+}
+#rec-table {
 	border-collapse: collapse;
 	position:relative;
 	width:40%;
 	float:right;
-	margin:30px;
-	top:-160px;
+	margin:30px 0;
+	top:0;
+}
+
+#rec-table h3 {
+	margin:0 0 10px;
+}
+#rec-table .btn {
+	 float:right;
+	 margin-bottom:10px;
 }
 .tablehead{
 	cursor:pointer;
@@ -733,20 +756,39 @@ input[readonly]{
 
 
 }
+
+#organization_sector{
+	width:100%;
+	padding:20px 0;
+	overflow:hidden;
+}
+#organization_sector h4 {
+	margin:0 0 10px;
+}
+#organization_sector h4 em {
+	font-size:70%;
+}
 .folderbar{
 	display:block;
-	margin:10px;
+	overflow:hidden;
 }
 #folderspace{
+	padding:20px;
 	display:inline-block;
 	float:left;
-	width:54%;
+	width:49%;
+	background: #efefef;
+    border-radius: 5px;
+    min-height:600px;
 }
 #workingspace{
-	margin:20px;
+	padding:20px;
 	display:inline-block;
 	float:right;
-	width:40%;
+	width:49%;
+	background:#efefef;
+	border-radius:5px;
+    min-height:600px;
 }
 .ui-widget-drop{
 	width: 111px; height: 96px; padding: 0.5em; 
@@ -763,29 +805,26 @@ input[readonly]{
 
 
 }
+
 .ui-widget-drag, .foldercontents{
-	padding: 0.1em; 
+	padding: 5px; 
 	float: left; 
-	margin: 0px 4px 2px; 
+	margin: 0px 4px 4px; 
 	text-align: center;
 	border: transparent;
-	height: 30px;
-	width: 90px;
+	width: 80px;
 	font-size: 11px;
 	font-weight: bold;
-	line-height: 180%;
-	border:ridge;
-	border-color: blue;
-	border-width: 2px;
+	border:1px solid cornflowerblue;
+	border-radius:3px;
 	background-color: azure;
 	display:inline-block;
+	cursor:pointer;
 } 
-
-#organization_sector{
-	float:left;
-	width:55%;
-
+.ui-widget-drag p{
+	margin:0;
 }
+
 
 .ui-state-highlight{
 	background: transparent;

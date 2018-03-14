@@ -92,14 +92,17 @@ function printRow($doc){
     $forjsongeo = array_filter($geotags,function($tag){
         return $tag["accuracy"] <= 50;
     });
-    $json_geo   = json_encode($forjsongeo);
 
+    $json_geo    = json_encode($forjsongeo);
     $last4       = substr($doc["_id"],-4);
     $firstpart   = substr($doc["_id"],0, strlen($doc["_id"]) - 4);
+    $walk_ts_sub = substr($doc["_id"],-13);
+    $date_ts     = date("F j, Y", floor($walk_ts_sub/1000)) ;
+
     $codeblock[] = "<div class='user_entry'>";
     $codeblock[] = "<hgroup>";
     $codeblock[] = "<h4>(". $lang .") : 
-    <b>".date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000))."</b> 
+    <b>".$date_ts."</b> 
     <i>$firstpart<strong>$last4</strong></i></h4>";
     $codeblock[] = "</hgroup>";
     
@@ -120,7 +123,6 @@ function printRow($doc){
         $long       = $photo["geotag"]["longitude"];
         $lat        = $photo["geotag"]["latitude"];
         $timestamp  = $photo["geotag"]["timestamp"];
-
         $goodbad    = "";
         if($photo["goodbad"] > 1){
             $goodbad  .= "<span class='goodbad good'></span>";
@@ -203,7 +205,6 @@ function printRow($doc){
     }
     $codeblock[] = "<ul>";
 
-
     if(array_key_exists("app_rating", $unique ) && count($unique) == 1){ //unique case is hardcoded (short template)
         foreach($unique as $name => $value)
             $v = (!empty($tempsurvey[$name]["options"]))  ?  $tempsurvey[$name]["options"][$value] :$value;
@@ -217,7 +218,6 @@ function printRow($doc){
         $codeblock[] = "</div>";
         $codeblock[] = "<script>$(document).ready(function(){ drawGMap($json_geo, '$i', 16);\n  });</script>";
         $codeblock[] = "<div class='$i' data-mapgeo='$json_geo'></div>";
-        
         return $codeblock;
     }else{
         foreach($unique as $name => $value){
@@ -234,6 +234,73 @@ function printRow($doc){
         return $codeblock;
     }
 }
+
+function printPhotos($doc){
+    global $project_meta, $ap;
+
+    $codeblock  = array();
+    $i          = $doc["_id"];
+    $photos     = $doc["photos"];
+
+    //TODO THIS IS FOR THE 3 VERSIONS OF ATTACHMENT STORAGE AND RETRIEVAL
+    if(!empty($doc["_attachments"])){
+        //original attachments stored with walk sessions
+        $old = "&_old=1";
+    }else{
+        if(array_key_exists("name",$doc["photos"][0])){
+            //newest and "final" method atomic attachment storage
+            $old = "";
+        }else{
+            //all attachments in seperate data entry
+            $old = "&_old=2";
+        }
+    }
+
+    $forjsongeo = array();
+    $lang       = is_null($doc["lang"]) ? "EN" : $doc["lang"];
+
+    // filter out low accuracy
+    $last4       = substr($doc["_id"],-4);
+    $firstpart   = substr($doc["_id"],0, strlen($doc["_id"]) - 4);
+    $walk_ts_sub = substr($doc["_id"],-13);
+    
+    $date_ts     = date("F j, Y", floor($walk_ts_sub/1000)) ;
+    foreach($photos as $n => $photo){
+        if(is_null($photo)){
+            continue;
+        }
+
+        $nogeo      = empty($photo["geotag"]) ? "nogeo" : "";
+        $long       = $photo["geotag"]["longitude"];
+        $lat        = $photo["geotag"]["latitude"];
+        $timestamp  = $photo["geotag"]["timestamp"];
+
+        $rotate     = isset($photo["rotate"]) ? $photo["rotate"] : 0;
+        $photo_name = "photo_".$n.".jpg";
+
+        //TODO FOR MULTIPLE VERSIONS OF ATTACHMENT STORAGE
+        if(array_key_exists("name",$photo)){
+            $filename   = $photo["name"];
+            $ph_id      = $i . "_" .$filename;
+        }else{
+            $filename   = $photo_name;
+            $ph_id      = $doc["_id"];
+        }
+        $photo_uri      = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+        $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
+        $attach_url     = "#";
+        $pic_time       = date("g:i a", floor($timestamp/1000));
+
+        $codeblock[]    = "<li id='".$doc["_id"]."_"."photo_".$n."'>
+                            <figure>
+                            <a href='$detail_url' target='_blank'  data-time='".$pic_time."' data-date='".$date_ts."' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate walk_photo $nogeo' data-imgsrc='$photo_uri' rev='$rotate'><img src='$photo_uri' /><span></span><b></b></a>
+                            </figure></li>";
+    }
+
+    return $codeblock;
+}
+
+
 function filter_by_projid($view, $keys_array){ //keys array is the # integer of the PrID
     $qs         = http_build_query(array( 'key' => $keys_array ));
     $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/filter_by_projid/_view/".$view."?" .  $qs;
