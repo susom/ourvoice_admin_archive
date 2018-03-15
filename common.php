@@ -143,7 +143,9 @@ function printRow($doc){
             $filename   = $photo_name;
             $ph_id      = $doc["_id"];
         }
-        $photo_uri  = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+
+        $file_uri   = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+        $photo_uri  = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
         $detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 
         $attach_url = "#";
@@ -286,7 +288,9 @@ function printPhotos($doc){
             $filename   = $photo_name;
             $ph_id      = $doc["_id"];
         }
-        $photo_uri      = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+        $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+        $photo_uri      = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+
         $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
         $attach_url     = "#";
         $pic_time       = date("g:i a", floor($timestamp/1000));

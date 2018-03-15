@@ -216,7 +216,8 @@ if( $active_project_id ){
 			            $filename   = $photo_name;
 			            $ph_id      = $doc["_id"];
 			        }
-			        $photo_uri      = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+			        $file_uri   	= "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+			        $photo_uri  	= "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
 			        $photo["geotag"]["photo_src"] = $photo_uri;
 			        $photo["geotag"]["photo_id"]  = $doc["_id"]. "_" . "photo_".$n;
 					
