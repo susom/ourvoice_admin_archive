@@ -40,7 +40,7 @@ foreach($ap["project_list"] as $pid => $proj){
 	$projects[$pid] = $proj["project_id"];
 } 
 
-// Handle actions on PSOT
+// AJAX HANDLER 
 if( isset($_POST["proj_idx"]) ){
 	$proj_idx  	= $_POST["proj_idx"];
 

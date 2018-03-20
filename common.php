@@ -304,7 +304,6 @@ function printPhotos($doc){
     return $codeblock;
 }
 
-
 function filter_by_projid($view, $keys_array){ //keys array is the # integer of the PrID
     $qs         = http_build_query(array( 'key' => $keys_array ));
     $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/filter_by_projid/_view/".$view."?" .  $qs;
@@ -312,8 +311,7 @@ function filter_by_projid($view, $keys_array){ //keys array is the # integer of 
     return json_decode($response,1);
 }
 
-function parseTime($data, $storage)
-{
+function parseTime($data, $storage){
     if($data["rows"] == null)
         return false;
     else

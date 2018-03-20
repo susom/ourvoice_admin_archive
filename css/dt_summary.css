@@ -427,4 +427,130 @@ label span {
 	display:none;
 }
 
+/*tags*/
+#tags{
+	overflow:hidden;
+}
+#tags h4{
+	display:inline-block;
+	margin:0 10px 0 0; padding:0;
+	vertical-align:top;
+	font-size:150%;
+	float:left;
+}
+#tags ul {
+	float: right;
+    width: 600px;
+}
+#tags ul,
+#tags li{
+	vertical-align:top;
+	margin:0; padding:0;
+	list-style:none;
+	display:inline-block;
+}
+#tags li {
+	margin:0 5px 10px;
+	padding:5px 28px 5px 12px;
+	background:#ccc; 
+	border-radius:10px;
+	position:relative;
+}
+.deletetag:hover{
+	background:red;
+	color:#fff;
+}
+.deletetag{
+	font-family:arial;
+	font-size:77%;
+	position:absolute;
+	top:6px;
+	right:5px;
+	text-decoration:none;
+	color:#333;
+	display:inline-block;
+	background:#fff;
+	padding:1px 5px;
+	border-radius:10px;
+}
+.opentag {
+	color:#333;
+	text-decoration:none;
+	display:inline-block;
+}
+.noback{
+	background:none !important;
+}
 
+#newtag{
+	position:absolute;
+	top:50%;
+	left:50%;
+	transform : translate(-50%,-50%);
+	font-family:arial;
+	width:280px; 
+	background:#efefef;
+	border:1px solid #333; 
+	border-radius:10px;
+	box-shadow:0 0 3px 3px #333;
+	display:none;
+}
+#newtag  h4{
+	margin:0; padding:20px 0 10px;
+	text-align:center;
+	font-weight:normal;
+}
+#newtag  h5 {
+	text-align:center;
+	font-size:140%;
+	font-weight:normal;
+	margin:0; padding:10px 0;
+}
+#newtag ul,
+#newtag li {
+	list-style:none;
+	margin:0; padding:0;
+}
+#newtag ul{
+	overflow-y: scroll;
+	height:200px;
+	border-top:1px solid #333;
+}
+#newtag li:not(:last-child) {
+	border-bottom:1px solid #333;
+}
+#newtag li:last-child .tagphoto{
+	border-radius:0 0 10px 10px;
+}
+#newtag form {
+	display:block;
+	text-align:center;
+	margin:0 auto;
+}
+#newtag input{
+	display:inline-block;
+	padding:5px 8px;
+	border-radius:5px;
+	border:1px solid #333;
+}
+#newtag .tagphoto {
+	display:block;
+	padding:10px 15px;
+	color:#333;
+	text-decoration:none;
+}
+#newtag .tagphoto:hover{
+	background:#fff;
+	position:relative;
+}
+#newtag .tagphoto:hover:after{
+	content:"+";
+	font-size:150%;
+	position:absolute;
+	line-height:80%;
+	right:22px;
+}
+.notags{
+	padding: 10px;
+    font-style: italic;
+}
