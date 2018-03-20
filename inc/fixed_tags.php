@@ -1,4 +1,5 @@
-<div id='addtags'>
+<div id='addtags' >
+	<a href="#" id='close_addtags'></a>
 	<h5>Add New Tag to Project</h5>
 	<form name="newtag" method='post'>
 		<input type='text' id='newtag_txt' data-proj_idx='<?php echo $active_pid; ?>'> <input type='submit' value='Save'/>

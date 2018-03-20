@@ -358,6 +358,17 @@ $(document).ready(function(){
 		return false;
 	});
 
+	//OPEN CLOSE TAG MENU
+	$("#close_addtags").click(function(){
+		if($("#addtags.closed").length){
+			$("#addtags").removeClass("closed");
+		}else{
+			$("#addtags").addClass("closed");
+		}
+		return false;
+	});
+
+	//DELETE PHOTO TAG
 	$("#tags").on("click",".deletetag",function(){
 		// get the tag index/photo index
 		var doc_id 	= $(this).data("doc_id");
@@ -377,6 +388,7 @@ $(document).ready(function(){
 		return false;
 	});
 
+	//DELETE PROJECT TAG
 	$("#addtags").on("click",".tagphoto b", function(){
 		//TODO
 		//DELETE TAG FROM BOTH disc_projects and each individual photo that is tagged with it disc_users
@@ -384,6 +396,7 @@ $(document).ready(function(){
 		return false;
 	});
 	
+	//ADD PHOTO TAG
 	$("#addtags").on("click",".tagphoto", function(){
 		//TODO
 		// ADD DRAG AND DROP TO ADD TAG TO PHOTOs THUMBNAILS
@@ -391,6 +404,7 @@ $(document).ready(function(){
 		return false;
 	});
 
+	//ADD PROJECT TAG
 	$("#addtags form").submit(function(){
 		var proj_idx 	= $("#newtag_txt").data("proj_idx");
 		var tagtxt 		= $("#newtag_txt").val();

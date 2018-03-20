@@ -603,7 +603,7 @@ label span {
 #addtags{
 	position:fixed;
 	left:0;
-	top:150px;
+	bottom:150px;
 	width:190px;
 	overflow:hidden;
 	background:#efefef;
@@ -612,7 +612,24 @@ label span {
 	border-radius:0 10px 10px 0;
 	box-shadow:0 0 3px 3px #333;
 	padding-left:5px;
+	z-index:6;
+	transition: .5s left ease-in-out;
 }
+
+#addtags.closed {
+	left:-180px;
+}
+#addtags.closed #close_addtags{
+	height:100%;
+	background:darkseagreen;
+}
+#addtags.closed #close_addtags:hover{
+	background:greenyellow;
+}
+#addtags.closed #close_addtags:before{
+	content:"";
+}
+
 #addtags input[type='text'] {
 	width:65%;
 	border-radius:5px;
@@ -623,7 +640,7 @@ label span {
 	text-align:center;
 } 
 #addtags ul{
-	margin:10px 0 20px;
+	margin:10px 10px 20px 0;
 	padding:0;
 	overflow:scroll;
 	height:300px;
@@ -662,4 +679,23 @@ label span {
 	box-shadow:1px 1px 1px #333;
 	cursor:pointer;
 	z-index:1;
+}
+#close_addtags{
+    position: absolute;
+    width: 20px;
+    height: 35px;
+    top: 0;
+    right: 0;
+    color:#333;
+	font-weight:bold;
+
+}
+#close_addtags:before{
+	content: '\02190';
+	position:absolute;
+	width:20px;
+	height:35px;
+	line-height: 220%;
+	top:0;
+	left:0;
 }
