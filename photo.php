@@ -1,15 +1,17 @@
 <?php
 require_once "common.php";
-$gmaps_key 					= cfg::$gmaps_key;
-$projects 					= [];
+$gmaps_key 	= cfg::$gmaps_key;
+$projlist 	= $_SESSION["DT"]["project_list"]; 
 
+// AJAX HANDLING
 if( isset($_POST["doc_id"]) ){
-	$_id  	= $_POST["doc_id"];
-    $url = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
-	$response = doCurl($url);
+	// FOR PHOTOS
+	$_id  		= $_POST["doc_id"];
+    $url 		= cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
+	$response 	= doCurl($url);
 
-	$doc 	 = json_decode(stripslashes($response),1);
-	$payload = $doc;
+	$doc 	 	= json_decode(stripslashes($response),1);
+	$payload 	= $doc;
 
 	if(isset($_POST["photo_i"])){
 		$photo_i = $_POST["photo_i"];
@@ -17,9 +19,7 @@ if( isset($_POST["doc_id"]) ){
 			//SAVE ROTATION
 			$rotate = $_POST["rotate"]; 
 			$payload["photos"][$photo_i]["rotate"] = $rotate;
-		}
-		
-		if(isset($_POST["delete"])){
+		}elseif(isset($_POST["delete"])){
 			unset($payload["photos"][$photo_i]);
 			$photo_name 	= "photo_".$photo_i.".jpg";
 			$audio_match 	= "audio_".$photo_i."_";
@@ -34,6 +34,45 @@ if( isset($_POST["doc_id"]) ){
 			foreach($payload["transcriptions"] as $name => $val){
 				if(strpos($name,$audio_match) > -1){
 					unset($payload["transcriptions"][$name]);
+				}
+			}
+		}elseif(isset($_POST["tag_text"])){
+			//SAVE TAG
+			$photo_tag 		= $_POST["tag_text"];
+			$json_response 	= array("new_photo_tag" => false, "new_project_tag" => false);
+			if(!isset($payload["photos"][$photo_i]["tags"])){
+				$payload["photos"][$photo_i]["tags"] = array();
+			}
+			if(!in_array($photo_tag,$payload["photos"][$photo_i]["tags"])){
+				array_push($payload["photos"][$photo_i]["tags"], $photo_tag);
+				$json_response["new_photo_tag"] = true;
+			}
+
+			if(isset($_POST["proj_idx"])){
+				//POSSIBLE NEW PROJECT TAG, SAVE TO disc_projects
+				$proj_idx 		= $_POST["proj_idx"];
+				$p_url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+				$p_response 	= doCurl($p_url);
+				$p_doc 	 		= json_decode(stripslashes($p_response),1);
+				$p_payload 		= $p_doc;
+
+				if(!isset($p_payload["project_list"][$proj_idx]["tags"])){
+					$p_payload["project_list"][$proj_idx]["tags"] = array();
+				}
+				if(!in_array($photo_tag,$p_payload["project_list"][$proj_idx]["tags"])){
+					array_push($p_payload["project_list"][$proj_idx]["tags"], $photo_tag);
+					$json_response["new_project_tag"] = true;
+					$_SESSION["DT"]["project_list"][$proj_idx] = $p_payload["project_list"][$proj_idx]; 
+				}
+				doCurl($p_url, json_encode($p_payload), "PUT");
+			}
+			echo json_encode($json_response);
+		}elseif(isset($_POST["delete_tag_text"])){
+			//SAVE TAG
+			$photo_tag = $_POST["delete_tag_text"];
+			if(isset($payload["photos"][$photo_i]["tags"])){
+				if (($key = array_search($photo_tag, $payload["photos"][$photo_i]["tags"])) !== false) {
+				    unset($payload["photos"][$photo_i]["tags"][$key]);
 				}
 			}
 		}
@@ -52,7 +91,6 @@ if( isset($_POST["doc_id"]) ){
 		$payload["_rev"] = $resp["rev"];
 	}else{
 		echo "something went wrong:";
-		print_rr($resp);
 	}
 }
 ?>
@@ -74,6 +112,11 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 
 	$doc 		= json_decode(stripslashes($response),1); //wtf this breaking certain ones? 
 	$_rev 		= $doc["_rev"];
+	$proj_idx 	= $doc["project_id"];
+
+	if(!isset($_SESSION["DT"]["project_list"][$proj_idx]["tags"])){
+		$_SESSION["DT"]["project_list"][$proj_idx]["tags"] = array();
+	}
 
 	$photos 	= $doc["photos"];
 	$device 	= $doc["device"]["platform"];
@@ -122,6 +165,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$attach_url = "#";
 		$audio_attachments = "";
 		
+		$photo_tags = isset($photo["tags"]) ? $photo["tags"] : array();
 		if(isset($photo["audios"])){
 			foreach($photo["audios"] as $filename){
 				//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
@@ -164,8 +208,8 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo "</hgroup>";
 
 	echo "<div class='photobox'>";
-	echo "<section class='photo_previews'>";
-	echo "<div>";	
+	echo 	"<section class='photo_previews'>";
+	echo 		"<div>";	
 	echo "
 		<figure>
 		<a class='preview rotate' rev='$hasrotate' data-photo_i=$photo_i data-doc_id='".$doc["_id"]."' rel='google_map_0' data-long='$long' data-lat='$lat'><img src='$photo_uri' /><span></span></a>
@@ -176,8 +220,18 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$json_geo  = json_encode($geotags);
 		$gmaps[]   = "drawGMap($json_geo, 0, 16);\n";
 
-	echo "</div>";
-	echo "</section>";
+	echo 		"</div>";
+	
+	echo 		"<div id='tags'>";
+	echo 			"<h4>Photo Tags:</h4>";
+	echo 			"<ul class='photopage'>";
+					foreach($photo_tags as $idx => $tag){
+						echo "<li>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='$_id' data-photo_i='$photo_i'>x</a></li>";
+					}
+					echo "<li class='noback'><a href='#' class='opentag' data-photo_i='$photo_i'>+ Add New Tag</a></li>";
+	echo 			"</ul>";
+	echo		"</div>";
+	echo 	"</section>";
 
 	echo "<section class='side'>";
 	echo "<aside>
@@ -211,6 +265,9 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo "</div>";
 	echo "</form>";
 }
+
+$project_tags = $_SESSION["DT"]["project_list"][$proj_idx]["tags"];
+include("inc/modal_tag.php");
 ?>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/autosize.js/3.0.20/autosize.js"></script>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
@@ -231,7 +288,43 @@ function addmarker(latilongi,map_id) {
     window[map_id].setCenter(marker.getPosition());
     window.current_preview = marker;
 }
+function saveTag(doc_id,photo_i,tagtxt,proj_idx){
+	var data = { doc_id: doc_id, photo_i: photo_i, tag_text: tagtxt};
+	if(proj_idx){
+		data["proj_idx"] = proj_idx
+	}
 
+	$.ajax({
+		method: "POST",
+		url: "photo.php",
+		data: data,
+		dataType : "JSON",
+		success: function(response){
+			if(response["new_photo_tag"]){
+				//ADD to UI
+				var anewtag = $("<li>").text(tagtxt);
+				var deletex = $("<a href='#'>").attr("data-deletetag",tagtxt).attr("data-doc_id",doc_id).attr("data-photo_i",photo_i).text("x").addClass("deletetag");
+				anewtag.append(deletex);
+				$("#tags ul").prepend(anewtag);
+			}
+
+			if(response["new_project_tag"]){
+				//ADD TAG to modal tags list
+				var newli 	= $("<li>");
+				var newa 	= $("<a href='#'>").attr("data-doc_id",doc_id).attr("data-photo_i",photo_i).text(tagtxt).addClass("tagphoto");
+				newli.append(newa);
+				$("#newtag ul").prepend(newli);
+				$("#newtag .notags").remove();
+			}
+		},
+		error: function(){
+			console.log("error");
+		}
+	}).done(function( msg ) {
+		// no need here
+	});
+	return;
+}
 $(document).ready(function(){
 	<?php
 		echo implode($gmaps);
@@ -269,6 +362,72 @@ $(document).ready(function(){
 	});
 
 	autosize($('textarea'));
+
+	$("#tags").on("click",".deletetag",function(){
+		// get the tag index/photo index
+		var doc_id 	= $(this).data("doc_id");
+		var photo_i = $(this).data("photo_i");
+		var tagtxt 	= $(this).data("deletetag");
+		
+		var _this 	= $(this);
+		$.ajax({
+			method: "POST",
+			url: "photo.php",
+			data: { doc_id: doc_id, photo_i: photo_i, delete_tag_text: tagtxt}
+		}).done(function( msg ) {
+			_this.parent("li").fadeOut("medium",function(){
+				_this.remove();
+			});
+		});
+		return false;
+	});
+	
+	$("#newtag").on("click",".tagphoto",function(){
+		// get the tag index/photo index
+		var doc_id 	= $(this).data("doc_id");
+		var photo_i = $(this).data("photo_i");
+		var tagtxt	= $(this).text();
+
+		saveTag(doc_id,photo_i,tagtxt);
+
+		//close tag picker
+		$(document).click();
+		return false;
+	});
+
+	$("#newtag form").submit(function(){
+		var doc_id 		= $("#newtag_txt").data("doc_id");
+		var photo_i 	= $("#newtag_txt").data("photo_i");
+		var proj_idx 	= $("#newtag_txt").data("proj_idx");
+		var tagtxt 		= $("#newtag_txt").val();
+
+		if(tagtxt){
+			$("#newtag_txt").val("");
+			
+			// add tag to project's tags and update disc_project
+			// ADD new tag to UI
+			saveTag(doc_id,photo_i,tagtxt,proj_idx);
+
+			//close tag picker?
+			setTimeout(function(){
+				$(document).click();
+			},750);
+		}
+		return false
+	});
+
+	$(".opentag").click(function(){
+		//opens up the tag picker modal
+		$("#newtag").fadeIn("fast");
+	
+		return false;
+	});
+});
+
+$(document).on('click', function(event) {
+	if (!$(event.target).closest('#newtag').length ) {
+		$("#newtag").fadeOut("fast",function(){});
+	}
 });
 </script>
 </body>
@@ -276,7 +435,6 @@ $(document).ready(function(){
 <?php 
 //GET FILE
 $filename = "android_test_2.wav";
-
 function convertAudio($filename){
 	$split = explode("." , $filename);
 	$noext = $split[0];

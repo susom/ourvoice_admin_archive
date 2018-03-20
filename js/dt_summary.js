@@ -43,7 +43,7 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level){
     		LatLngBounds.extend(walkMap[i]);
 
             if(map_id == "google_map_photos"){
-                var icon    = "http://icons.veryicon.com/48/System/Kameleon/Polaroid.png";
+                var icon    = "http://icons.iconarchive.com/icons/webalys/kameleon.pics/24/Polaroid-icon.png";
                 var scale   = 5;
             }else{
                 var scale   = 1

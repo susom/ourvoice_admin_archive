@@ -143,7 +143,9 @@ function printRow($doc){
             $filename   = $photo_name;
             $ph_id      = $doc["_id"];
         }
-        $photo_uri  = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+
+        $file_uri   = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+        $photo_uri  = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
         $detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 
         $attach_url = "#";
@@ -286,20 +288,26 @@ function printPhotos($doc){
             $filename   = $photo_name;
             $ph_id      = $doc["_id"];
         }
-        $photo_uri      = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+        $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+        $photo_uri      = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+
         $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
         $attach_url     = "#";
         $pic_time       = date("g:i a", floor($timestamp/1000));
-
-        $codeblock[]    = "<li id='".$doc["_id"]."_"."photo_".$n."'>
-                            <figure>
-                            <a href='$detail_url' target='_blank'  data-time='".$pic_time."' data-date='".$date_ts."' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate walk_photo $nogeo' data-imgsrc='$photo_uri' rev='$rotate'><img src='$photo_uri' /><span></span><b></b></a>
-                            </figure></li>";
+        
+        $photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
+        $codeblock[]    = "<li id='".$doc["_id"]."_"."photo_".$n."'><figure>";
+        $codeblock[]    = "<ul>";
+        foreach($photo_tags as $idx => $tag){
+            $codeblock[]    = "<li>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='".$doc["_id"]."' data-photo_i='$n'>x</a></li>";
+        }
+        $codeblock[]    = "</ul>";
+        $codeblock[]    = "<a href='$detail_url' target='_blank'  data-time='".$pic_time."' data-date='".$date_ts."' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate walk_photo $nogeo' data-imgsrc='$photo_uri' rev='$rotate'><img src='$photo_uri' /><span></span><b></b><i></i></a>";
+        
+        $codeblock[]    = "</figure></li>";
     }
-
     return $codeblock;
 }
-
 
 function filter_by_projid($view, $keys_array){ //keys array is the # integer of the PrID
     $qs         = http_build_query(array( 'key' => $keys_array ));
@@ -308,8 +316,7 @@ function filter_by_projid($view, $keys_array){ //keys array is the # integer of 
     return json_decode($response,1);
 }
 
-function parseTime($data, $storage)
-{
+function parseTime($data, $storage){
     if($data["rows"] == null)
         return false;
     else
