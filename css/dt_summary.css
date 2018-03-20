@@ -91,7 +91,8 @@ a.preview{
 	position:relative;
 }
 a.preview span,
-a.preview b{
+a.preview b,
+a.preview i{
 	position:absolute;
 	top:0;
 	right:0;
@@ -104,13 +105,19 @@ a.preview b{
 	border-radius:3px;
 	box-shadow:1px 1px 1px #333;
 	cursor:pointer;
+	z-index:1;
 }
 a.preview b{
 	background:#fff url(../img/icon_trash.png) 50% no-repeat;
 	top:25px;
 	background-size:contain;
 	transform: rotate(0);
-
+}
+a.preview i{
+	background:#fff url(../img/icon_tag.png) 50% no-repeat;
+	top:50px;
+	background-size:contain;
+	transform: rotate(0);
 }
 .thumbs .rotate img {
 	max-width:140px;
@@ -438,18 +445,18 @@ label span {
 	font-size:150%;
 	float:left;
 }
-#tags ul {
+#tags ul.photopage {
 	float: right;
     width: 600px;
 }
 #tags ul,
-#tags li{
+#tags ul li{
 	vertical-align:top;
 	margin:0; padding:0;
 	list-style:none;
 	display:inline-block;
 }
-#tags li {
+#tags ul li {
 	margin:0 5px 10px;
 	padding:5px 28px 5px 12px;
 	background:#ccc; 
@@ -553,4 +560,106 @@ label span {
 .notags{
 	padding: 10px;
     font-style: italic;
+}
+
+
+
+
+/*agg photos */
+.thumbs{
+    margin: 0 10px;
+    text-align: center;
+}
+.collapse {
+	width:1000px;
+	margin:20px auto;
+}
+
+.nogeo{
+	position:relative;
+}
+.nogeo:before {
+	content:"Geo Data N/A";
+	text-align:center;
+	line-height:150px;
+	position:absolute; 
+	top:0; left:0; 
+	width:142px; 
+	height:150px;
+	color:#fff;
+	text-shadow:0px 0px 3px #333;
+	/*background:#ccc; */
+	z-index:1;
+	/*opacity:.7;*/
+}
+.photoOn{
+	border:5px solid green;
+}
+
+.collapse figure {
+	position:relative;
+}
+
+#addtags{
+	position:fixed;
+	left:0;
+	top:150px;
+	width:190px;
+	overflow:hidden;
+	background:#efefef;
+	border:1px solid #333; 
+	border-left:none;
+	border-radius:0 10px 10px 0;
+	box-shadow:0 0 3px 3px #333;
+	padding-left:5px;
+}
+#addtags input[type='text'] {
+	width:65%;
+	border-radius:5px;
+}
+#addtags h4{
+	font-size:88%;
+	padding:10px 0 0;
+	text-align:center;
+} 
+#addtags ul{
+	margin:10px 0 20px;
+	padding:0;
+	overflow:scroll;
+	height:300px;
+}
+#addtags li{
+	margin: 10px;
+    border: 1px solid #333;
+    border-radius: 5px;
+    box-shadow: 0px 0px 3px 0px #000;
+}
+#addtags li a {
+	display:block;
+    text-align: center;
+    padding: 8px 0;
+    border-radius: 5px;
+    text-decoration:none;
+    position:relative;
+}
+#addtags li a:hover{
+	background: #fff url(../img/icon_drag.png) 93% no-repeat;
+    background-size: 10%;
+}
+#addtags p {
+	padding: 0;
+}
+#addtags li a:hover b{
+	position:absolute;
+	top: 8px;
+    left: 5px;
+	width:20px;
+	height:20px;
+	background:#fff url(../img/icon_trash.png) 50% no-repeat;
+	background-size:contain;
+	border:1px solid #999;
+	border-radius:3px;
+	box-shadow:1px 1px 1px #333;
+	cursor:pointer;
+	z-index:1;
 }

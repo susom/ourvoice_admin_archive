@@ -224,7 +224,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	
 	echo 		"<div id='tags'>";
 	echo 			"<h4>Photo Tags:</h4>";
-	echo 			"<ul>";
+	echo 			"<ul class='photopage'>";
 					foreach($photo_tags as $idx => $tag){
 						echo "<li>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='$_id' data-photo_i='$photo_i'>x</a></li>";
 					}

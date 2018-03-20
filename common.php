@@ -294,13 +294,18 @@ function printPhotos($doc){
         $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
         $attach_url     = "#";
         $pic_time       = date("g:i a", floor($timestamp/1000));
-
-        $codeblock[]    = "<li id='".$doc["_id"]."_"."photo_".$n."'>
-                            <figure>
-                            <a href='$detail_url' target='_blank'  data-time='".$pic_time."' data-date='".$date_ts."' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate walk_photo $nogeo' data-imgsrc='$photo_uri' rev='$rotate'><img src='$photo_uri' /><span></span><b></b></a>
-                            </figure></li>";
+        
+        $photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
+        $codeblock[]    = "<li id='".$doc["_id"]."_"."photo_".$n."'><figure>";
+        $codeblock[]    = "<ul>";
+        foreach($photo_tags as $idx => $tag){
+            $codeblock[]    = "<li>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='".$doc["_id"]."' data-photo_i='$n'>x</a></li>";
+        }
+        $codeblock[]    = "</ul>";
+        $codeblock[]    = "<a href='$detail_url' target='_blank'  data-time='".$pic_time."' data-date='".$date_ts."' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate walk_photo $nogeo' data-imgsrc='$photo_uri' rev='$rotate'><img src='$photo_uri' /><span></span><b></b><i></i></a>";
+        
+        $codeblock[]    = "</figure></li>";
     }
-
     return $codeblock;
 }
 
