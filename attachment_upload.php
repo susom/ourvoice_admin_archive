@@ -1,4 +1,9 @@
 <?php
+// http://ourvoice-projects.med.stanford.edu/attachment_upload.php
 
 
-echo "make handler here";
+print_r( $_POST );
+
+
+echo "RECEIVE THE POST THEN RECREATE A PUT TO DATABASE CURL";
+exit;
