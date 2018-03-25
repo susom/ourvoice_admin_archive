@@ -22,7 +22,7 @@ if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
 }
 
 if($url != "n/a"){
-	$result = doCurl($url,json_encode($doc));
+	$result = doCurl($url,json_encode($doc), "PUT");
 	print_r($result);
 }
 exit;
