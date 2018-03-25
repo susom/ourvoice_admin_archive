@@ -28,5 +28,5 @@ if($url != "n/a"){
 	// $response["result"] = doCurl($url);
 }
 
-print_rr("\r",implode($response));
+print_rr(implode("\r",$response));
 exit;
