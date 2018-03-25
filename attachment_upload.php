@@ -20,6 +20,8 @@ if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
 	$doc = "n/a";
 	$url = "n/a";
 }
+echo "anything in doc?";
+print_r($doc);
 $response["_id"] = $_id;
 $response["doc"] = $doc;
 $response["url"] = $url;
@@ -27,6 +29,4 @@ $response["url"] = $url;
 if($url != "n/a"){
 	// $response["result"] = doCurl($url);
 }
-
-print_rr(implode("\r",$response));
 exit;
