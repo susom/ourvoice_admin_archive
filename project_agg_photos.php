@@ -68,11 +68,15 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"/>
 <link href="css/dt_common.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 <link href="css/dt_summary.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
-<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="
+sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"/>
+
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
 </head>
@@ -263,7 +267,8 @@ function highlightedIcon() {
 }
 $(document).ready(function(){
 	window.current_preview = null;
-
+	//$("#addtags").addClass("closed"); //default closed
+	bindProperties();
 	var gmarkers = drawGMap(<?php echo json_encode($photo_geos) ?>, 'photos', 16);
 	
 	$.each(gmarkers, function(){
@@ -382,7 +387,7 @@ $(document).ready(function(){
 			data: { doc_id: doc_id, photo_i: photo_i, delete_tag_text: tagtxt}
 		}).done(function( msg ) {
 			_this.parent("li").fadeOut("medium",function(){
-				_this.remove();
+				_this.parent("li").remove();
 			});
 		});
 		return false;
@@ -392,12 +397,35 @@ $(document).ready(function(){
 	$("#addtags").on("click",".tagphoto b", function(){
 		//TODO
 		//DELETE TAG FROM BOTH disc_projects and each individual photo that is tagged with it disc_users
+		var ele = $(this).closest("li");
+		var tag = ($(this).attr("datakey"));
+		var pics = $(".ui-widget-drop");
+		var p_data = [];
+		for(var i = 0 ; i < pics.length ; i++ )
+		{
+			p_data.push(pics[i].id)
+		}
+		$.ajax({
+          url:  "aggregate_post.php",
+          type:'POST',
+          data: { deleteTag: tag, pictures: p_data },
+          success:function(result){
+            //remove dom elements here
+            
+          }
+       });  
+		ele.remove();
 		console.log("clicking on the trashcan");
 		return false;
 	});
 	
 	//ADD PHOTO TAG
 	$("#addtags").on("click",".tagphoto", function(){
+		// $(".ui-widget-drag").draggable({
+  //    	 	cursor: "move",
+  //     		drag: function(event,ui){}
+  //     	});
+
 		//TODO
 		// ADD DRAG AND DROP TO ADD TAG TO PHOTOs THUMBNAILS
 		console.log("clicking on the link");
@@ -421,11 +449,15 @@ $(document).ready(function(){
 				success: function(response){
 					if(response["new_project_tag"]){
 						//ADD TAG to modal tags list
-						var newli 	= $("<li>");
+						var newli 	= $("<li>").addClass("ui-widget-drag");
+						var newb 	= $("<b>").attr("datakey",tagtxt);
 						var newa 	= $("<a href='#'>").text(tagtxt).addClass("tagphoto");
+						newa.append(newb);
 						newli.append(newa);
 						$("#addtags ul").prepend(newli);
 						$("#addtags .notags").remove();
+						bindProperties();
+
 					}
 				},
 				error: function(){
@@ -438,7 +470,73 @@ $(document).ready(function(){
 		return false;
 	});
 });
-</script>
 
+function bindProperties(){
+      $( ".ui-widget-drag").draggable({
+      cursor: "move",
+      //containment:$('#addtags'),
+      helper: 'clone',
+      start: function(event,ui){
+      	$(ui.helper).addClass("ui-draggable-helper");
+      },
+      //helper: function(event,ui){return($("<p>").text("DRAG"));}
+      drag: function(event,ui){
+
+      //  ui.css("z-index", "-1"); //fix frontal input
+      }
+
+    });
+
+    $( ".ui-widget-drop" ).droppable({
+      drop: function( event, ui ) {
+      	var drag = (ui.draggable[0].innerText);
+      	var drop = event.target.id;
+      	var temp = drop.split("_");
+      	var proj = temp[0];
+      	var p_ref = temp[0] +"_"+ temp[1] +"_"+ temp[2] +"_"+ temp[3];
+      	var exists = false;
+      	var temp = ($(".btn-danger").attr('href')).split("=");
+      	var datakey = temp[(temp.length-1)];
+         $.ajax({
+          url:  "aggregate_post.php",
+          type:'POST',
+          data: { DragTag: drag, DropTag: drop, Project: proj, Key: datakey },
+          success:function(result){
+          	var appendloc = $("#"+drop).find("ul");
+          	for(var i = 0 ; i < appendloc[0].childNodes.length; i++){
+          		//console.log(appendloc[0].childNodes[i].childNodes);
+          		if(appendloc[0].childNodes[i].childNodes[0].data == drag) //X is appended had to find a work around to get name
+          			exists = true;
+          	}
+          	if(!exists){
+	            var newli 	= $("<li>").text(drag);
+	            var newa 	= $("<a href='#'>").attr("data-deletetag",drag).attr("data-doc_id",p_ref).attr("data-photo_i",datakey).text("x").addClass("deletetag");
+				newli.append(newa);
+	            appendloc.prepend(newli);
+          	}
+          }        
+            //THIS JUST STORES IS 
+          },function(err){
+          console.log("ERRROR");
+          console.log(err);
+          });
+       // ui.draggable.hide(350);
+
+		}
+    }); //ui-widget-drop
+  
+}
+</script>
+<style>
+.ui-widget-drag{
+	overflow: visible;
+}
+#addtags{
+	overflow: visible;
+}
+.ui-draggable-helper{
+    width:150px;
+}
+</style>
 
 

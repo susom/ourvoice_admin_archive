@@ -296,7 +296,7 @@ function printPhotos($doc){
         $pic_time       = date("g:i a", floor($timestamp/1000));
         
         $photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
-        $codeblock[]    = "<li id='".$doc["_id"]."_"."photo_".$n."'><figure>";
+        $codeblock[]    = "<li id='".$doc["_id"]."_"."photo_".$n."' class = 'ui-widget-drop'><figure>";
         $codeblock[]    = "<ul>";
         foreach($photo_tags as $idx => $tag){
             $codeblock[]    = "<li>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='".$doc["_id"]."' data-photo_i='$n'>x</a></li>";
@@ -368,7 +368,10 @@ function getAllData(){
     return json_decode($response,1);
 }
 
-
+function push_data($url, $data){
+    $response   = doCurl($url, json_encode($data), 'PUT');
+    return json_decode($response,1);
+}
 function parseProjectInfo($ALL_PROJ_DATA){
     $return_array = array();
     foreach ($ALL_PROJ_DATA["project_list"] as $project) {

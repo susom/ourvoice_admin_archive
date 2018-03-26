@@ -12,7 +12,7 @@
 			echo "<p class='noback notags'>There are currently no tags in this project.</p>";
 		}
 		foreach($project_tags as $idx => $tag){
-			echo "<li ><a href='#' class='tagphoto'><b></b>$tag</a></li>";
+			echo "<li class = 'ui-widget-drag'><a href='#' class='tagphoto'><b datakey = '$tag'></b>$tag</a></li>";
 		}
 		?>
 	</ul>
