@@ -1,21 +1,6 @@
 <?php
 require_once "common.php";
 
-if(!isset($ALL_PROJ_DATA)){
-	$turl  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
-	$pdurl = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-
-	$ALL_PROJ_DATA = urlToJson($pdurl); //might have to store this in a session variable
-	$_SESSION["DT"] = $ALL_PROJ_DATA;
-	//print_rr($ALL_PROJ_DATA);
-	$tm = urlToJson($turl); //Just for times + project abv
-	$stor = $listid = array();
-	$stor = parseTime($tm, $stor, $listid);
-
-	foreach ($stor as $key => $value)
-	  array_push($listid, $key);
-}
-
 if(isset($_GET["clearsession"])){
 	$_SESSION = null;
 }
@@ -30,14 +15,17 @@ if(!isset($_SESSION["DT"])){
 }
 
 // Loop through all projects
-$ap 		= $_SESSION["DT"];
+$ap 			= $_SESSION["DT"];
+$ALL_PROJ_DATA 	= $ap;
 $_id 		= $ap["_id"];
 $_rev 		= $ap["_rev"];
 $projects 	= [];
 $alerts 	= [];
 
 foreach($ap["project_list"] as $pid => $proj){
-	$projects[$pid] = $proj["project_id"];
+	if(isset($proj["project_id"])){
+		$projects[$pid] = $proj["project_id"];
+	}
 } 
 
 // AJAX HANDLER 
@@ -146,20 +134,15 @@ if(isset($_POST["discpw"])){
 	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-<!-- SCRIPTS HAVE TO BE IN -->
     <link href="css/dt_common.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
     <link href="css/dt_index.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
   
-
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-
 </head>
 <body id="main" class="configurator">
 <div id="box">
-
 <?php
-
 $projs 	= $ap["project_list"];
 if(!isset($_SESSION["discpw"])) {
 	$show_alert 	= "";
@@ -172,7 +155,6 @@ if(!isset($_SESSION["discpw"])) {
 		}
 	}
 ?>
-
 	<div class="alert alert-danger <?php echo $show_alert;?>" role="alert"><?php echo $display_alert  ?></div>
 	<div id="box">
 		<form id="summ_auth" method="post">
@@ -188,7 +170,6 @@ if(!isset($_SESSION["discpw"])) {
 			<button type="submit" class="btn btn-primary">Go to Configurator</button>
 		</form>
 	</div>
-
 <?php
 }else{ //if password is actually set, display the project configurator
 	?>
@@ -253,7 +234,15 @@ if(!isset($_SESSION["discpw"])) {
 		</form>
 		<?php
 	}else{
-		?>
+	$turl  	= cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
+	$tm 	= urlToJson($turl); //Just for times + project abv
+	$stor 	= $listid = array();
+	$stor 	= parseTime($tm, $stor, $listid);
+
+	foreach ($stor as $key => $value){
+	  array_push($listid, $key);
+	}
+	?>
 		<form id="project_config" method="get">
 			<div id="project_folders">
 				<h3>Choose project to edit:</h3>
@@ -274,17 +263,17 @@ if(!isset($_SESSION["discpw"])) {
 				<div id = "organization_sector">
 					<div id = "workingspace">
 						<h4>Projects <em>* Drag projects into folders</em></h4>
-				      <?php
-				      foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects) { //populate projects on base page
-				      	//print_rr($projects);
-				        if(isset($ALL_PROJ_DATA["project_list"][$key]["dropTag"])){
-				            //if droptag is set do not show in the project list, but rather under hidden folders
-				        }else{
-				          	if(isset($ALL_PROJ_DATA["project_list"][$key]["project_id"])) //make sure format is same.
-				            	echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p><a href="index.php?proj_idx='.$key.'"'.'>'.$projects["project_id"] .'</a></p></div>';
-				        }
-				      }
-				        ?>
+				      	<?php
+					      foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects) { //populate projects on base page
+					        if(isset($ALL_PROJ_DATA["project_list"][$key]["dropTag"])){
+					            //if droptag is set do not show in the project list, but rather under hidden folders
+					        }else{
+					          	if(isset($ALL_PROJ_DATA["project_list"][$key]["project_id"])){
+					            	echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p><a href="index.php?proj_idx='.$key.'"'.'>'.$projects["project_id"] .'</a></p></div>';
+					          	}
+					        }
+					      }
+				    	?>
 				    </div>
 						
 				    <div id = "folderspace">
@@ -304,7 +293,6 @@ if(!isset($_SESSION["discpw"])) {
 				          echo "</div>"; //hiddenfolders
 				          echo "</div>"; //individual_sector
 				        }
-
 				      	?>    
 				    </div>
 				</div>
@@ -327,29 +315,20 @@ if(!isset($_SESSION["discpw"])) {
 				$stor = $listid = array();
 				$stor = parseTime($tm,$stor);
 				
-				foreach ($stor as $key => $value)
+				foreach ($stor as $key => $value){
 					array_push($listid, $key);
+				}
 
 				populateRecent($ALL_PROJ_DATA,$stor,$listid);
-
 				?>	
 			</table>
 		</form>
-		</div>
-<!-- 
-<div id = "FolderArea">
-	<iframe src="config_gui.php" width = 55% height = 500></iframe>
-</div> -->
-
-
-</body>
-
 		<?php
 	}
 }
 ?>
-
-
+</div>
+</body>
 <script>
 function sortTable(n){
 		var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
