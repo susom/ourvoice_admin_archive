@@ -276,17 +276,20 @@ if(!isset($_SESSION["discpw"])) {
 						<h4>Projects <em>* Drag projects into folders</em></h4>
 				      <?php
 				      foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects) { //populate projects on base page
-				          if(isset($ALL_PROJ_DATA["project_list"][$key]["dropTag"])){
-				            //if droptag is set we want to store things in the individual folders.
-				          }else
-				            //echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p>'.$projects["project_id"] .'</p></div>';
-				            echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p><a href="index.php?proj_idx='.$key.'"'.'>'.$projects["project_id"] .'</a></p></div>';
+				      	//print_rr($projects);
+				        if(isset($ALL_PROJ_DATA["project_list"][$key]["dropTag"])){
+				            //if droptag is set do not show in the project list, but rather under hidden folders
+				        }else{
+				          	if(isset($ALL_PROJ_DATA["project_list"][$key]["project_id"])) //make sure format is same.
+				            	echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p><a href="index.php?proj_idx='.$key.'"'.'>'.$projects["project_id"] .'</a></p></div>';
 				        }
+				      }
 				        ?>
 				    </div>
 						
 				    <div id = "folderspace">
-				    	<h4>Folders</h4>
+				    	<h4>Folders <em>*Drag projects to trash to remove</em></h4>
+				    	<img class = "deleteArea trash-drop" src = "img/icon_trash.png">
 				      	<?php
 				        foreach ($ALL_PROJ_DATA["folders"] as $key => $value) { //populate folders inside working space
 				        	echo "<div class = individual_sector_".$value.">";
@@ -295,7 +298,7 @@ if(!isset($_SESSION["discpw"])) {
 				            	foreach ($ALL_PROJ_DATA["project_list"] as $k => $v) {
 				              		if(isset($v["dropTag"]) && $v["dropTag"] ==$value){
 				               		// echo '<div class="foldercontents" data-key = "'.$k.'" ><p>'.$v["project_id"] .'</p></div>';
-				                	echo '<div class="foldercontents" data-key = "'.$k.'" ><p><a href="index.php?proj_idx='.$k.'"'.'>'.$v["project_id"] .'</a></p></div>';
+				                	echo '<div class="foldercontents drag-from-folder" data-key = "'.$k.'" ><p><a href="index.php?proj_idx='.$k.'"'.'>'.$v["project_id"] .'</a></p></div>';
 				              }
 				            }
 				          echo "</div>"; //hiddenfolders
@@ -361,7 +364,6 @@ function sortTable(n){
 	    // Start by saying: no switching is done:
 		    switching = false;
 		    rows = table.getElementsByTagName("TR");
-		    console.log(rows);
 		    /* Loop through all table rows (except the
 		    first, which contains table headers): */
 		    for (i = 1; i < (rows.length - 1); i++) {
@@ -494,14 +496,43 @@ $(document).ready(function(){
 });
 
   function bindProperties(){
-      $( ".ui-widget-drag").draggable({
+    $( ".ui-widget-drag").draggable({
       cursor: "move",
+      containment: $("#organization_sector"),
+      start: function(event,ui){
+      		$(".trash-drop").droppable("option", "disabled",true);
+      },
+      stop: function(event,ui){
+    		$(".trash-drop").droppable("option", "disabled",false);
+      },
       drag: function(event,ui){
       //  ui.css("z-index", "-1"); //fix frontal input
       }
 
     });
+    $(".drag-from-folder").draggable({
+    	cursor: "move",
+    	containment: $("#folderspace"),
+    	start: function(event,ui){
+    		$(".ui-widget-drop").droppable("option", "disabled",true);
+    	},
+    	stop: function(event,ui){
+    		$(".ui-widget-drop").droppable("option", "disabled",false);
+    	}
+    })
+    $(".trash-drop").droppable({
+    	hoverClass: "trash-hover" ,
+    	drop: function( event, ui ) {
+    		var rm_project = event.originalEvent.target;
+    		console.log(rm_project);
+    		console.log(rm_project.parentNode)
+    		repopulateProjects(rm_project.parentNode,rm_project.getAttribute("data-key"));
+    	  	bindProperties();
 
+    		rm_project.remove();
+    	}
+
+    })  
     $( ".ui-widget-drop" ).droppable({
       drop: function( event, ui ) {
         //var pdata = <?php echo json_encode($ALL_PROJ_DATA);?>;
@@ -510,6 +541,7 @@ $(document).ready(function(){
         var key = $(ui.draggable[0]).data("key");
         //if does not exist within folder then render it
         addProject(key,dragBox_name,dropBox_name);
+        bindProperties();
         $.ajax({
           url:  "config_gui_post.php",
           type:'POST',
@@ -534,8 +566,10 @@ $(document).ready(function(){
 
   }
   function CreateFolder(name){
+  	name = name.replace(/ /g, "_");
     if(name)
     {
+    	
     	if(!isValidElement(name,"ui-widget-drop","class")){
 	    	$("<div class ='ui-widget-drop'><p>"+name+"</p></div>").appendTo("#folderspace");
 	     	let hiddennode = $("<div class = 'hiddenFolders' id ='"+name+"'></div");
@@ -560,10 +594,9 @@ $(document).ready(function(){
     else
       alert("Please enter a name for your folder");
   }//CreateFolder
-  
   function DeleteFolder(name){
   	if(name && isValidElement(name,"ui-widget-drop","class")){
-  		//if(deleteprompt()){
+  		if(deleteprompt()){
 	  		let d_folder = selectFolder(name);
 	  		let d_folder_contents = $("#"+name); //selects hidden folder class
 	  		let d_folder_parent = $("."+"individual_sector_"+name);
@@ -573,7 +606,7 @@ $(document).ready(function(){
 	  		d_folder.remove();
 	  		d_folder_contents.remove();
 	  		d_folder_parent.remove();
- 		//}
+ 		}
   	}else{
   		alert("Please enter a valid name for a folder you wish to delete");
   	}
@@ -594,24 +627,43 @@ $(document).ready(function(){
 
 
   }
-  function repopulateProjects(hiddenfolder){
-  	let proj_list = (hiddenfolder[0].childNodes);
+  function repopulateProjects(hiddenfolder, spc_id = -1){
   	let workingspace = $("#workingspace");
   	var deletion_data = {keys:[],names:[],folder:[]};
  	
-  	for(var i = 0 ; i < proj_list.length ;i++){
-  		let key = proj_list[i].getAttribute("data-key");
-  		let proj_name = proj_list[i].textContent;
-  		let div = createNode(key,"ui-widget-drag",proj_name)
-    	$(workingspace).append(div); //repopulate projects
-    	deletion_data.keys.push(key);
-    	deletion_data.names.push(proj_name);
-  	}
-  		deletion_data.folder.push(hiddenfolder[0].id);
+ 	if(spc_id == -1){
+ 		let proj_list = (hiddenfolder[0].childNodes);
+	  	for(var i = 0 ; i < proj_list.length ;i++){
+	  		let key = proj_list[i].getAttribute("data-key");
+	  		let proj_name = proj_list[i].textContent;
+	  		let div = createNode(key,"ui-widget-drag",proj_name)
+	    	$(workingspace).append(div); //repopulate projects
+	    	deletion_data.keys.push(key);
+	    	deletion_data.names.push(proj_name);
+	  	}
+	  	deletion_data.folder.push(hiddenfolder[0].id);
 
+	}//if
+	else{
+		let proj_list = hiddenfolder.childNodes;
+		for(var i = 0 ; i < proj_list.length ;i++){
+	  		let key = proj_list[i].getAttribute("data-key");
+	  		if(key == spc_id){
+		  		let proj_name = proj_list[i].textContent;
+		  		let div = createNode(key,"ui-widget-drag",proj_name)
+		    	$(workingspace).append(div); //repopulate projects
+		    	deletion_data.keys.push(key);
+		    	deletion_data.names.push(proj_name);
+
+	  		}
+	  		
+		}
+		deletion_data.folder.push("-1");
+
+	}
+	console.log(deletion_data);
 	removeFromDB(JSON.stringify(deletion_data));
-
-  }
+  }	
 
   function createNode(data_key,class_name,text){
   	let div = document.createElement("div");
@@ -623,6 +675,7 @@ $(document).ready(function(){
     a.textContent = text;
 	$(p).append(a);
     $(div).append(p);
+    bindProperties();
     return div; 
   }
 
@@ -658,7 +711,7 @@ $(document).ready(function(){
     a.textContent = dragBox_name;
     $(p).append(a);
     
-    div.className = "foldercontents";
+    div.className = "foldercontents drag-from-folder";
     div.setAttribute("data-key",key);
     $(div).append(p);
     let search = document.getElementById(dropBox_name);
@@ -748,6 +801,16 @@ th{
 input[readonly]{ 
 	background:#efefef;
 	color:#999;
+}
+.deleteArea{
+	max-width: 70px;
+	max-height: 70px;
+	float: right;
+
+
+}
+.trash-hover{
+	background-color: red;
 }
 
 

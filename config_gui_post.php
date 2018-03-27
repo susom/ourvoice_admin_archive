@@ -66,12 +66,14 @@ if(isset($_POST["deleteTag"])){
 		//print_r($storage["project_list"][$pid]]);
 	}	
 	print_r($storage["folders"]);
-	foreach($storage["folders"] as $key => $value)
-	{
-		 if($value == $folder_name)
-		 	unset($storage["folders"][$key]);
-	}
 
+	if($folder_name != "-1"){ //no folder provided to delete, just project
+		foreach($storage["folders"] as $key => $value)
+		{
+			 if($value == $folder_name)
+			 	unset($storage["folders"][$key]);
+		}
+	}//if 
 
 	$url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
 	$response 	= doCurl($url, json_encode($storage), 'PUT');
