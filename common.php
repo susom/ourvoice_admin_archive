@@ -57,8 +57,9 @@ function urlToJson($url){
 
 function getFullName($data, $abv){
     foreach($data["project_list"] as $in){
-        if($in["project_id"] == $abv)
+        if(isset($in["project_id"]) && $in["project_id"] == $abv){
             return $in["project_name"];
+        }
     }
 }
 
