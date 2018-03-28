@@ -81,7 +81,7 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 
 		$found  	= false;
 		foreach($projs as $pid => $proj){
-			if($proj_id == $proj["project_id"] && ( (isset($proj["summ_pass"]) && $summ_pw == $proj["summ_pass"]) || $summ_pw == "annban") ) {
+			if(isset($proj["project_id"]) && $proj_id == $proj["project_id"] && ( (isset($proj["summ_pass"]) && $summ_pw == $proj["summ_pass"]) || $summ_pw == "annban") ) {
 				$active_project_id = $proj_id;
 				$active_pid = $pid;
 				$found 		= true;

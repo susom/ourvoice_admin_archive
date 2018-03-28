@@ -121,8 +121,8 @@ function printRow($doc){
         }
 
         $hasaudio   = !empty($photo["audio"]) ? "has" : "";
-        $long       = $photo["geotag"]["longitude"];
-        $lat        = $photo["geotag"]["latitude"];
+        $long       = isset($photo["geotag"]["longitude"]) ? $photo["geotag"]["longitude"]: 0;
+        $lat        = isset($photo["geotag"]["latitude"])  ? $photo["geotag"]["latitude"] : 0;
         $timestamp  = $photo["geotag"]["timestamp"];
         $goodbad    = "";
         if($photo["goodbad"] > 1){
