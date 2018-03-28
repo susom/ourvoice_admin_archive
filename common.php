@@ -147,6 +147,7 @@ function printRow($doc){
 
         $file_uri   = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
         $photo_uri  = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+        $photo_uri  = $file_uri;
         $detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 
         $attach_url = "#";
@@ -291,6 +292,7 @@ function printPhotos($doc){
         }
         $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
         $photo_uri      = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+        $photo_uri      = $file_uri;
 
         $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
         $attach_url     = "#";
