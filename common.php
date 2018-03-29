@@ -390,7 +390,12 @@ function parseProjectInfo($ALL_PROJ_DATA){
 
 function cacheThumb($ph_id,$thumb_uri){
     $localthumb = "img/thumbs/$ph_id";
-    if(!file_exists($localthumb)){
+    
+    if( (file_exists($localthumb) && filesize($localthumb) < 1000) ){
+        unlink($localthumb);
+    }
+
+    if(!file_exists($localthumb) && 1==2){
         $ch         = curl_init($thumb_uri);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
