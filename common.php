@@ -151,7 +151,7 @@ function printRow($doc){
         $thumb_uri  = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
 
         // $photo_uri  = $file_uri;
-        $photo_uri  = cacheThumb($ph_id,$thumb_uri);
+        $photo_uri  = getThumb($ph_id,$thumb_uri);
         $detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 
         $attach_url = "#";
@@ -298,7 +298,7 @@ function printPhotos($doc){
         $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
         $thumb_uri      = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
         // $photo_uri  = $file_uri;
-        $photo_uri      = cacheThumb($ph_id,$thumb_uri);
+        $photo_uri      = getThumb($ph_id,$thumb_uri);
 
         $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
         $attach_url     = "#";
@@ -391,11 +391,13 @@ function parseProjectInfo($ALL_PROJ_DATA){
 function cacheThumb($ph_id,$thumb_uri){
     $localthumb = "img/thumbs/$ph_id";
     
+    // IT MIGHT EXIST BUT IT MIGHT BE GARBAGE
     if( (file_exists($localthumb) && filesize($localthumb) < 1000) ){
         unlink($localthumb);
     }
 
-    if(!file_exists($localthumb) && 1==2){
+    // NOW IT DOESNT EXIST SO CREATE IT
+    if(!file_exists($localthumb)){
         $ch         = curl_init($thumb_uri);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -409,5 +411,25 @@ function cacheThumb($ph_id,$thumb_uri){
         fwrite($fp, $raw);
         fclose($fp);
     }
+
+    // IT MIGHT HAVE CREATED GARBAGE SHOULD I TEST AGAIN?
+    
+    return;
+}
+
+function getThumb($ph_id, $thumb_uri){
+    $localthumb = "img/thumbs/$ph_id";
+
+    // IF IT EXISTS AND ISNT GARBAGE
+    if( file_exists($localthumb) ){
+        if(filesize($localthumb) < 1000)){
+            //DELETE IT , ITS GARBAGE
+            unlink($localthumb);
+        }else{
+            //ITS GOOD , USE IT
+            $thumb_uri = $localthumb;
+        }
+    }
+
     return $thumb_uri;
 }

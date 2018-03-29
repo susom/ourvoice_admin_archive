@@ -3,19 +3,17 @@ require_once("common.php");
 
 
 
+// make design doc, to get all photos attachments that were uploaded
+// now create thumbnails for them
 
-
-
-
-
-
-
-
-
-
-
-
-
+$url_path = $_SERVER['HTTP_ORIGIN'].dirname($_SERVER['PHP_SELF'])."/";
+foreach($photos as $photo){
+	$filename 	= $photo["name"];
+	$ph_id    	= $i . "_" .$filename;
+	$file_uri  	= "passthru.php?_id=".$ph_id."&_file=$filename" ;
+	$thumb_uri 	= $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+	cacheThumb($ph_id,$thumb_uri);
+}
 
 
 
