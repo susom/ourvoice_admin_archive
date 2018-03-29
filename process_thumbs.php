@@ -17,14 +17,17 @@ $response 	= getPhotos("all", []);
 
 // now loop and create thumbnails for them
 $url_path 	= (isset($_SERVER['HTTPS']) ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'].dirname($_SERVER['PHP_SELF'])."/";
+print_rr($_SERVER);
 $photos 	= $response["rows"];
-foreach($photos as $photo){
-	$ph_id 	= $photo["id"];
-	$temp 		= explode("_photo_",$ph_id);
+if(!empty($photos)){
+	foreach($photos as $photo){
+		$ph_id 	= $photo["id"];
+		$temp 		= explode("_photo_",$ph_id);
 
-	$filename 		= "photo_" . $temp[count($temp)-1];
-	$file_uri  	= "passthru.php?_id=".$ph_id."&_file=$filename" ;
-	$thumb_uri 	= $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-	cacheThumb($ph_id,$thumb_uri);
+		$filename 		= "photo_" . $temp[count($temp)-1];
+		$file_uri  	= "passthru.php?_id=".$ph_id."&_file=$filename" ;
+		$thumb_uri 	= $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+		cacheThumb($ph_id,$thumb_uri);
+	}
 }
 exit;
