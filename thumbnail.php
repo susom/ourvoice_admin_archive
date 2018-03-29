@@ -71,9 +71,7 @@ if ($sExtension == 'jpg' || $sExtension == 'jpeg') {
 // to the next step
  
 if ($img) {
- 
     // We now need to decide how to resize the image
- 
     // If we chose to scale down the image, we will
     // need to get the original image propertions
  
@@ -248,7 +246,5 @@ if ($img) {
  
     header("Content-type: image/jpeg");
     imagejpeg($img);
- 
 }
- 
 ?>

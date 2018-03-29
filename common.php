@@ -115,6 +115,8 @@ function printRow($doc){
     $codeblock[] = "<div class='thumbs'>";
     $codeblock[] = "<ul>";
 
+    $url_path    = $_SERVER['HTTP_ORIGIN'].dirname($_SERVER['PHP_SELF'])."/";
+
     foreach($photos as $n => $photo){
         if(is_null($photo)){
             continue;
@@ -146,8 +148,10 @@ function printRow($doc){
         }
 
         $file_uri   = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
-        $photo_uri  = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-        $photo_uri  = $file_uri;
+        $thumb_uri  = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+
+        // $photo_uri  = $file_uri;
+        $photo_uri  = cacheThumb($ph_id,$thumb_uri);
         $detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 
         $attach_url = "#";
@@ -269,6 +273,7 @@ function printPhotos($doc){
     $walk_ts_sub = substr($doc["_id"],-13);
     
     $date_ts     = date("F j, Y", floor($walk_ts_sub/1000)) ;
+    $url_path    = $_SERVER['HTTP_ORIGIN'].dirname($_SERVER['PHP_SELF'])."/";
     foreach($photos as $n => $photo){
         if(is_null($photo)){
             continue;
@@ -291,8 +296,9 @@ function printPhotos($doc){
             $ph_id      = $doc["_id"];
         }
         $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
-        $photo_uri      = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-        $photo_uri      = $file_uri;
+        $thumb_uri      = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+        // $photo_uri  = $file_uri;
+        $photo_uri      = cacheThumb($ph_id,$thumb_uri);
 
         $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
         $attach_url     = "#";
@@ -335,7 +341,6 @@ function parseTime($data, $storage){
         }
         ksort($storage);
         return $storage;
-
 }
 
 function populateRecent($ALL_PROJ_DATA, $stor, $listid){
@@ -362,7 +367,6 @@ function populateRecent($ALL_PROJ_DATA, $stor, $listid){
         }
         
     }//for
-
 }
 
 function getAllData(){
@@ -375,6 +379,7 @@ function push_data($url, $data){
     $response   = doCurl($url, json_encode($data), 'PUT');
     return json_decode($response,1);
 }
+
 function parseProjectInfo($ALL_PROJ_DATA){
     $return_array = array();
     foreach ($ALL_PROJ_DATA["project_list"] as $project) {
@@ -383,42 +388,23 @@ function parseProjectInfo($ALL_PROJ_DATA){
     return $return_array;
 }
 
-function scaleImage($path, $width, $height){
-    $url = $_GET['url'];
-    //$maxWidth = $_GET['mwidth'];
-    //$maxHeight = $_GET['mheight'];
-    $maxWidth = $width;
-    $maxHeight = $height;
+function cacheThumb($ph_id,$thumb_uri){
+    $localthumb = "img/thumbs/$ph_id";
+    if(!file_exists($localthumb)){
+        $ch         = curl_init($thumb_uri);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+        $raw        = curl_exec($ch);
+        // $errornum   = curl_errno($ch);
+        // $info       = curl_getinfo($ch);
+        curl_close($ch);
 
-    $tmpExt = end(explode('/', $url));
-    $tmpExt = end(explode('/', $url));
-    $image = @file_get_contents($url);
-    if($image) {
-        $im = new Imagick();
-        $im->readImageBlob($image);
-        $im->setImageFormat("png24");
-        $geo = $im->getImageGeometry();
-        $width=$geo['width'];
-        $height=$geo['height'];
-        if($width > $height)
-        {
-            $scale = ($width > $maxWidth) ? $maxWidth/$width : 1;
-        }
-        else
-        {
-            $scale = ($height > $maxHeight) ? $maxHeight/$height : 1;
-        }
-        $newWidth = $scale*$width;
-        $newHeight = $scale*$height;
-        $im->setImageCompressionQuality(85);
-        $im->resizeImage($newWidth,$newHeight,Imagick::FILTER_LANCZOS,1.1);
-        header("Content-type: image/png");
- 
-        return $im;
-        echo $im;
-        $im->clear();
-        $im->destroy();
+        $fp         = fopen($localthumb,'x');
+        fwrite($fp, $raw);
+        fclose($fp);
+    }else{
+        echo "using cache!!";
     }
-
+    return $localthumb;
 }
-
