@@ -2,49 +2,29 @@
 require_once("common.php");
 
 
-
 // make design doc, to get all photos attachments that were uploaded
-// now create thumbnails for them
+function getPhotos($view, $keys_array){ //keys array is the # integer of the PrID
+    $qs         = !empty($keys_array) ? "?" . http_build_query(array( 'key' => $keys_array )) : "";
+    $couch_url  = cfg::$couch_url . "/" . cfg::$couch_attach_db . "/" . "_design/get_photos/_view/".$view.$qs;
+    $response   = doCurl($couch_url);
+    return json_decode($response,1);
+}
 
-$url_path = $_SERVER['HTTP_ORIGIN'].dirname($_SERVER['PHP_SELF'])."/";
+// GET ALL PHOTOS FOR NOW ONE TIME HIT
+// $response 		= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
+// $days_data 		= rsort($response["rows"]); 
+$response 	= getPhotos("all", []);
+
+// now loop and create thumbnails for them
+$url_path 	= (isset($_SERVER['HTTPS']) ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'].dirname($_SERVER['PHP_SELF'])."/";
+$photos 	= $response["rows"];
 foreach($photos as $photo){
-	$filename 	= $photo["name"];
-	$ph_id    	= $i . "_" .$filename;
+	$ph_id 	= $photo["id"];
+	$temp 		= explode("_photo_",$ph_id);
+
+	$filename 		= "photo_" . $temp[count($temp)-1];
 	$file_uri  	= "passthru.php?_id=".$ph_id."&_file=$filename" ;
 	$thumb_uri 	= $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
 	cacheThumb($ph_id,$thumb_uri);
-}
-
-
-
-exit;
-$response = array();
-if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
-	$_id = $_POST["doc_id"];
-	$doc = json_decode($_POST["doc"],1);
-	$url = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
-
-}elseif(isset($_POST["pdoc"]) && isset($_POST["ph_id"])){
-	$_id = $_POST["ph_id"];
-	$doc = json_decode($_POST["pdoc"],1);
-	$url = cfg::$couch_url . "/" . cfg::$couch_attach_db . "/" . $_id;
-
-}elseif(isset($_POST["adoc"]) && isset($_POST["au_id"])){
-	$_id = $_POST["au_id"];
-	$doc = json_decode($_POST["adoc"],1);
-	$url = cfg::$couch_url . "/" . cfg::$couch_attach_db . "/" . $_id;
-	
-}else{
-	$response["result"] = "error";
-	$_id = "n/a";
-	$doc = "n/a";
-	$url = "n/a";
-}
-
-print_r($doc);
-
-if($url != "n/a"){
-	// $result = doCurl($url,json_encode($doc), "PUT");
-	// print_r($result);
 }
 exit;
