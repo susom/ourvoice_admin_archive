@@ -403,8 +403,6 @@ function cacheThumb($ph_id,$thumb_uri){
         $fp         = fopen($localthumb,'x');
         fwrite($fp, $raw);
         fclose($fp);
-    }else{
-        echo "using cache!!";
     }
     return $localthumb;
 }
