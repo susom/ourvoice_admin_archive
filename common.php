@@ -404,5 +404,5 @@ function cacheThumb($ph_id,$thumb_uri){
         fwrite($fp, $raw);
         fclose($fp);
     }
-    return $localthumb;
+    return $thumb_uri;
 }
