@@ -18,7 +18,7 @@ $response 	= getPhotos("all", []);
 
 // now loop and create thumbnails for them
 // $url_path 	= (isset($_SERVER['HTTPS']) ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'].dirname($_SERVER['PHP_SELF'])."/";
-$url_path 	= "https://ourvoice-projects-dev.med.stanford.edu/";
+$url_path 	= "https://ourvoice-projects.med.stanford.edu/";
 $photos 	= $response["rows"];
 if(!empty($photos)){
 	foreach($photos as $photo){
