@@ -149,7 +149,7 @@ function printRow($doc){
         $file_uri   = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
         $thumb_uri  = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
         // $photo_uri  = $file_uri;
-        $photo_uri  = getThumb($ph_id,$thumb_uri);
+        $photo_uri  = getThumb($ph_id,$thumb_uri,$file_uri);
         $detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 
         $attach_url = "#";
@@ -296,7 +296,7 @@ function printPhotos($doc){
         $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
         $thumb_uri      = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
         // $photo_uri  = $file_uri;
-        $photo_uri      = getThumb($ph_id,$thumb_uri);
+        $photo_uri      = getThumb($ph_id,$thumb_uri,$file_uri);
 
         $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
         $attach_url     = "#";
@@ -390,9 +390,11 @@ function cacheThumb($ph_id,$thumb_uri){
     $localthumb = "img/thumbs/$ph_id";
     
     // IT MIGHT EXIST BUT IT MIGHT BE GARBAGE
-    if( (file_exists($localthumb) && filesize($localthumb) < 1000) ){
+    if( (file_exists($localthumb) && filesize($localthumb) < 1200) ){
         unlink($localthumb);
     }
+
+    $haslocal = false;
 
     // NOW IT DOESNT EXIST SO CREATE IT
     if(!file_exists($localthumb)){
@@ -408,14 +410,15 @@ function cacheThumb($ph_id,$thumb_uri){
         $fp         = fopen($localthumb,'x');
         fwrite($fp, $raw);
         fclose($fp);
+        $haslocal = true;
     }
 
     // IT MIGHT HAVE CREATED GARBAGE SHOULD I TEST AGAIN?
     
-    return;
+    return $haslocal ? $ph_id : false; 
 }
 
-function getThumb($ph_id, $thumb_uri){
+function getThumb($ph_id, $thumb_uri, $fileurl){
     $localthumb = "img/thumbs/$ph_id";
 
     // IF IT EXISTS AND ISNT GARBAGE
