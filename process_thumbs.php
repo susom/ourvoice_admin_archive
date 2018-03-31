@@ -11,7 +11,8 @@ function getPhotos($view, $keys_array){ //keys array is the # integer of the PrI
 
 $webhook_from_app 	= false;
 if(isset($_POST["ph_ids"])){
-	$photos 		= json_decode($_POST["ph_ids"],1);
+	// GET THE SPECIFIC FILES TO MAKE THUMBNAILS FOR
+	$photos 		= $_POST["ph_ids"];
 	$webhook_from_app = true;
 }else{
 	// GET ALL PHOTOS FOR NOW ONE TIME HIT
@@ -24,8 +25,7 @@ $url_path 	= "https://ourvoice-projects.med.stanford.edu/";
 
 // now loop and create thumbnails for them
 $filescreated = array();
-$filescreated[] = "come the hell on";
-$filescreated[] = $photos;
+$filescreated[] = "following are list of fotos that thumbnails were created for";
 if(!empty($photos)){
 	foreach($photos as $photo){
 		$ph_id 			= $webhook_from_app ?  $photo : $photo["id"];
@@ -36,5 +36,6 @@ if(!empty($photos)){
 		$filescreated[] = cacheThumb($ph_id,$thumb_uri);
 	}
 }
+$filescreated = array_filter($filescreated);
 echo json_encode($filescreated);
 exit;
