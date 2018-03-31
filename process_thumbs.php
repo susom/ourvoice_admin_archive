@@ -9,30 +9,30 @@ function getPhotos($view, $keys_array){ //keys array is the # integer of the PrI
     return json_decode($response,1);
 }
 
-// GET ALL PHOTOS FOR NOW ONE TIME HIT
-// $response 		= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
-// $days_data 		= rsort($response["rows"]); 
-$response 	= getPhotos("all", []);
+$webhook_from_app 	= false;
+if(isset($_REQUEST["ph_ids"])){
+	$photos 		= json_decode($_REQUEST["foo"],1);
+	$webhook_from_app = true;
+}else{
+	// GET ALL PHOTOS FOR NOW ONE TIME HIT
+	$response 	= getPhotos("all", []);
+	$photos 	= $response["rows"];
+}
 
-// now loop and create thumbnails for them
 // $url_path 	= (isset($_SERVER['HTTPS']) ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'].dirname($_SERVER['PHP_SELF'])."/";
 $url_path 	= "https://ourvoice-projects.med.stanford.edu/";
-$photos 	= $response["rows"];
+
+// now loop and create thumbnails for them
 if(!empty($photos)){
 	$filescreated = array();
 	foreach($photos as $photo){
-		$ph_id 	= $photo["id"];
-		$temp 		= explode("_photo_",$ph_id);
+		$ph_id 			= $webhook_from_app ?  $photo : $photo["id"];
+		$temp 			= explode("_photo_",$ph_id);
 		$filename 		= "photo_" . $temp[count($temp)-1];
-		$file_uri  	= "passthru.php?_id=".$ph_id."&_file=$filename" ;
-		$thumb_uri 	= $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+		$file_uri  		= "passthru.php?_id=".$ph_id."&_file=$filename" ;
+		$thumb_uri 		= $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
 		$filescreated[] = cacheThumb($ph_id,$thumb_uri);
 	}
 }
-
-if(isset($_REQUEST["foo"])){
-	$filescreated["foo"]  = $_REQUEST["foo"];
-	$filescreated = array_filter($filescreated);
-	echo json_encode($filescreated);
-}
+echo json_encode($filescreated);
 exit;

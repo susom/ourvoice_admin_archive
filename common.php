@@ -395,7 +395,6 @@ function cacheThumb($ph_id,$thumb_uri){
     }
 
     $haslocal = false;
-
     // NOW IT DOESNT EXIST SO CREATE IT
     if(!file_exists($localthumb)){
         $ch         = curl_init($thumb_uri);
@@ -415,7 +414,7 @@ function cacheThumb($ph_id,$thumb_uri){
 
     // IT MIGHT HAVE CREATED GARBAGE SHOULD I TEST AGAIN?
     
-    return $haslocal ? $ph_id : false; 
+    return $haslocal ? $ph_id : ""; 
 }
 
 function getThumb($ph_id, $thumb_uri, $fileurl){
