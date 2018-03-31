@@ -11,7 +11,7 @@ function getPhotos($view, $keys_array){ //keys array is the # integer of the PrI
 
 $webhook_from_app 	= false;
 if(isset($_REQUEST["ph_ids"])){
-	$photos 		= json_decode($_REQUEST["foo"],1);
+	$photos 		= json_decode($_REQUEST["ph_ids"],1);
 	$webhook_from_app = true;
 }else{
 	// GET ALL PHOTOS FOR NOW ONE TIME HIT
