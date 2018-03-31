@@ -25,6 +25,9 @@ $url_path 	= "https://ourvoice-projects.med.stanford.edu/";
 // now loop and create thumbnails for them
 if(!empty($photos)){
 	$filescreated = array();
+	$filescreated[] = "come the hell on";
+	$filescreated[] = $photos;
+	
 	foreach($photos as $photo){
 		$ph_id 			= $webhook_from_app ?  $photo : $photo["id"];
 		$temp 			= explode("_photo_",$ph_id);
