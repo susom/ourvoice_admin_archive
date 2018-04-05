@@ -115,14 +115,15 @@ function printRow($doc){
     $codeblock[] = "<div class='thumbs'>";
     $codeblock[] = "<ul>";
 
+    $url_path    = $_SERVER['HTTP_ORIGIN'].dirname($_SERVER['PHP_SELF'])."/";
     foreach($photos as $n => $photo){
         if(is_null($photo)){
             continue;
         }
 
         $hasaudio   = !empty($photo["audio"]) ? "has" : "";
-        $long       = $photo["geotag"]["longitude"];
-        $lat        = $photo["geotag"]["latitude"];
+        $long       = isset($photo["geotag"]["longitude"]) ? $photo["geotag"]["longitude"]: 0;
+        $lat        = isset($photo["geotag"]["latitude"])  ? $photo["geotag"]["latitude"] : 0;
         $timestamp  = $photo["geotag"]["timestamp"];
         $goodbad    = "";
         if($photo["goodbad"] > 1){
@@ -146,7 +147,9 @@ function printRow($doc){
         }
 
         $file_uri   = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
-        $photo_uri  = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+        $thumb_uri  = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+        // $photo_uri  = $file_uri;
+        $photo_uri  = getThumb($ph_id,$thumb_uri);
         $detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 
         $attach_url = "#";
@@ -268,6 +271,7 @@ function printPhotos($doc){
     $walk_ts_sub = substr($doc["_id"],-13);
     
     $date_ts     = date("F j, Y", floor($walk_ts_sub/1000)) ;
+    $url_path    = $_SERVER['HTTP_ORIGIN'].dirname($_SERVER['PHP_SELF'])."/";
     foreach($photos as $n => $photo){
         if(is_null($photo)){
             continue;
@@ -290,7 +294,9 @@ function printPhotos($doc){
             $ph_id      = $doc["_id"];
         }
         $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
-        $photo_uri      = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+        $thumb_uri      = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+        // $photo_uri  = $file_uri;
+        $photo_uri      = getThumb($ph_id,$thumb_uri);
 
         $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
         $attach_url     = "#";
@@ -333,7 +339,6 @@ function parseTime($data, $storage){
         }
         ksort($storage);
         return $storage;
-
 }
 
 function populateRecent($ALL_PROJ_DATA, $stor, $listid){
@@ -360,7 +365,6 @@ function populateRecent($ALL_PROJ_DATA, $stor, $listid){
         }
         
     }//for
-
 }
 
 function getAllData(){
@@ -373,6 +377,7 @@ function push_data($url, $data){
     $response   = doCurl($url, json_encode($data), 'PUT');
     return json_decode($response,1);
 }
+
 function parseProjectInfo($ALL_PROJ_DATA){
     $return_array = array();
     foreach ($ALL_PROJ_DATA["project_list"] as $project) {
@@ -381,42 +386,48 @@ function parseProjectInfo($ALL_PROJ_DATA){
     return $return_array;
 }
 
-function scaleImage($path, $width, $height){
-    $url = $_GET['url'];
-    //$maxWidth = $_GET['mwidth'];
-    //$maxHeight = $_GET['mheight'];
-    $maxWidth = $width;
-    $maxHeight = $height;
-
-    $tmpExt = end(explode('/', $url));
-    $tmpExt = end(explode('/', $url));
-    $image = @file_get_contents($url);
-    if($image) {
-        $im = new Imagick();
-        $im->readImageBlob($image);
-        $im->setImageFormat("png24");
-        $geo = $im->getImageGeometry();
-        $width=$geo['width'];
-        $height=$geo['height'];
-        if($width > $height)
-        {
-            $scale = ($width > $maxWidth) ? $maxWidth/$width : 1;
-        }
-        else
-        {
-            $scale = ($height > $maxHeight) ? $maxHeight/$height : 1;
-        }
-        $newWidth = $scale*$width;
-        $newHeight = $scale*$height;
-        $im->setImageCompressionQuality(85);
-        $im->resizeImage($newWidth,$newHeight,Imagick::FILTER_LANCZOS,1.1);
-        header("Content-type: image/png");
- 
-        return $im;
-        echo $im;
-        $im->clear();
-        $im->destroy();
+function cacheThumb($ph_id,$thumb_uri){
+    $localthumb = "img/thumbs/$ph_id";
+    
+    // IT MIGHT EXIST BUT IT MIGHT BE GARBAGE
+    if( (file_exists($localthumb) && filesize($localthumb) < 1000) ){
+        unlink($localthumb);
     }
 
+    // NOW IT DOESNT EXIST SO CREATE IT
+    if(!file_exists($localthumb)){
+        $ch         = curl_init($thumb_uri);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+        $raw        = curl_exec($ch);
+        // $errornum   = curl_errno($ch);
+        // $info       = curl_getinfo($ch);
+        curl_close($ch);
+
+        $fp         = fopen($localthumb,'x');
+        fwrite($fp, $raw);
+        fclose($fp);
+    }
+
+    // IT MIGHT HAVE CREATED GARBAGE SHOULD I TEST AGAIN?
+    
+    return;
 }
 
+function getThumb($ph_id, $thumb_uri){
+    $localthumb = "img/thumbs/$ph_id";
+
+    // IF IT EXISTS AND ISNT GARBAGE
+    if( file_exists($localthumb) ){
+        if( filesize($localthumb) < 1000 ){
+            //DELETE IT , ITS GARBAGE
+            unlink($localthumb);
+        }else{
+            //ITS GOOD , USE IT
+            $thumb_uri = $localthumb;
+        }
+    }
+
+    return $thumb_uri;
+}

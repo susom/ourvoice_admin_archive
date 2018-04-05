@@ -1,6 +1,25 @@
 <?php
 require_once("common.php");
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+exit;
 $response = array();
 if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
 	$_id = $_POST["doc_id"];
