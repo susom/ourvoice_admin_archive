@@ -25,37 +25,38 @@ if(isset($_POST["ph_ids"])){
 	$photos 	= $response["rows"];
 
 	// GET OLD PHOTOS in disc_users FOR NOW ONE TIME HIT
-	// $response 		= filter_by_projid("get_old_photos",[]);
-	// $old_photos 	= array();
-	// foreach($response["rows"] as $_ => $walk){
-	// 	$photos = $walk["value"];
-	// 	for($i = 0; $i < count($photos); $i++){
-	// 		$ph_id			= $walk["id"]."_photo_$i.jpg";
-	// 		$_id 			= $walk["id"];
-	// 		$filename 		= "photo_$i.jpg";
-	// 		$file_uri  		= "passthru.php?_id=".$_id."&_file=$filename&_old=1" ;
-	// 		$thumb_uri 		= $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-	// 		$filescreated[] = cacheThumb($ph_id,$thumb_uri);
-	// 	};
-	// }
+	$response 		= filter_by_projid("get_old_photos",[]);
+	foreach($response["rows"] as $_ => $walk){
+		$photos = $walk["value"];
+		for($i = 0; $i < count($photos); $i++){
+			$ph_id			= $walk["id"]."_photo_$i.jpg";
+			$_id 			= $walk["id"];
+			$filename 		= "photo_$i.jpg";
+			$file_uri  		= "passthru.php?_id=".$_id."&_file=$filename&_old=1" ;
+			$thumb_uri 		= $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+			$filescreated[] = cacheThumb($ph_id,$thumb_uri);
+			sleep(.5);
+		};
+	}
 	
 	// GET OLD PHOTOS IN disc_attachments PHOTOS FOR NOW ONE TIME HIT
-	// $couch_url  = cfg::$couch_url . "/disc_attachments/_all_docs?include_docs=true";
-	// $response   = json_decode(doCurl($couch_url),1);
-	// foreach($response["rows"] as $walk){
-	// 	$doc 	= $walk["doc"];
-	// 	$_id 	= $doc["_id"];
-	// 	$att 	= !empty($doc["_attachments"]) ? array_keys($doc["_attachments"]) : array();
-	// 	foreach($att as $filename){
-	// 		if(strpos($filename,"audio") > -1){
-	// 			continue;
-	// 		}
-	// 		$ph_id			= $_id."_".$filename;
-	// 		$file_uri  		= "passthru.php?_id=".$_id."&_file=$filename&_old=2" ;
-	// 		$thumb_uri 		= $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-	// 		$filescreated[] = cacheThumb($ph_id,$thumb_uri);
-	// 	}
-	// }
+	$couch_url  = cfg::$couch_url . "/disc_attachments/_all_docs?include_docs=true";
+	$response   = json_decode(doCurl($couch_url),1);
+	foreach($response["rows"] as $walk){
+		$doc 	= $walk["doc"];
+		$_id 	= $doc["_id"];
+		$att 	= !empty($doc["_attachments"]) ? array_keys($doc["_attachments"]) : array();
+		foreach($att as $filename){
+			if(strpos($filename,"audio") > -1){
+				continue;
+			}
+			$ph_id			= $_id."_".$filename;
+			$file_uri  		= "passthru.php?_id=".$_id."&_file=$filename&_old=2" ;
+			$thumb_uri 		= $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+			$filescreated[] = cacheThumb($ph_id,$thumb_uri);
+			sleep(.5);
+		}
+	}
 }
 
 // now loop and create thumbnails for them
