@@ -10,6 +10,11 @@ function getPhotos($view, $keys_array){ //keys array is the # integer of the PrI
 }
 
 $webhook_from_app 	= false;
+$filescreated 		= array();
+$filescreated[] 	= "following are list of fotos that thumbnails were created for";
+
+$url_path 			= "https://ourvoice-projects.med.stanford.edu/";
+// $url_path 			= (isset($_SERVER['HTTPS']) ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'].dirname($_SERVER['PHP_SELF'])."/";
 if(isset($_POST["ph_ids"])){
 	// GET THE SPECIFIC FILES TO MAKE THUMBNAILS FOR
 	$photos 		= $_POST["ph_ids"];
@@ -18,14 +23,24 @@ if(isset($_POST["ph_ids"])){
 	// GET ALL PHOTOS FOR NOW ONE TIME HIT
 	$response 	= getPhotos("all", []);
 	$photos 	= $response["rows"];
+
+	// GET ALL (OLD AND NEW, NOT THE middle one though yet) PHOTOS FOR NOW ONE TIME HIT
+	$response 		= filter_by_projid("get_old_photos",[]);
+	$old_photos 	= array();
+	foreach($response["rows"] as $_ => $walk){
+		$photos = $walk["value"];
+		for($i = 0; $i < count($photos); $i++){
+			$ph_id			= $walk["id"]."_photo_$i.jpg";
+			$_id 			= $walk["id"];
+			$filename 		= "photo_$i.jpg";
+			$file_uri  		= "passthru.php?_id=".$_id."&_file=$filename&_old=1" ;
+			$thumb_uri 		= $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+			$filescreated[] = cacheThumb($ph_id,$thumb_uri);
+		};
+	}
 }
 
-// $url_path 	= (isset($_SERVER['HTTPS']) ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'].dirname($_SERVER['PHP_SELF'])."/";
-$url_path 	= "https://ourvoice-projects.med.stanford.edu/";
-
 // now loop and create thumbnails for them
-$filescreated = array();
-$filescreated[] = "following are list of fotos that thumbnails were created for";
 if(!empty($photos)){
 	foreach($photos as $photo){
 		$ph_id 			= $webhook_from_app ?  $photo : $photo["id"];
@@ -36,6 +51,7 @@ if(!empty($photos)){
 		$filescreated[] = cacheThumb($ph_id,$thumb_uri);
 	}
 }
+
 $filescreated = array_filter($filescreated);
 echo json_encode($filescreated);
 exit;

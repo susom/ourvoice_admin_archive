@@ -405,7 +405,8 @@ function cacheThumb($ph_id,$thumb_uri){
         // $errornum   = curl_errno($ch);
         // $info       = curl_getinfo($ch);
         curl_close($ch);
-
+        // print_rr($errornum);
+        // print_rr($info);
         $fp         = fopen($localthumb,'x');
         fwrite($fp, $raw);
         fclose($fp);
