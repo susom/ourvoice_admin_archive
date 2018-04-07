@@ -20,11 +20,11 @@ if(isset($_POST["ph_ids"])){
 	$photos 		= $_POST["ph_ids"];
 	$webhook_from_app = true;
 }else{
-	// GET ALL PHOTOS FOR NOW ONE TIME HIT
+	// GET ALL PHOTOS (new style from disc_attachment) FOR NOW ONE TIME HIT
 	$response 	= getPhotos("all", []);
 	$photos 	= $response["rows"];
 
-	// GET ALL (OLD AND NEW, NOT THE middle one though yet) PHOTOS FOR NOW ONE TIME HIT
+	// GET OLD PHOTOS in disc_users FOR NOW ONE TIME HIT
 	// $response 		= filter_by_projid("get_old_photos",[]);
 	// $old_photos 	= array();
 	// foreach($response["rows"] as $_ => $walk){
@@ -39,22 +39,23 @@ if(isset($_POST["ph_ids"])){
 	// 	};
 	// }
 	
-	$couch_url  = cfg::$couch_url . "/disc_attachments/_all_docs?include_docs=true";
-    $response   = json_decode(doCurl($couch_url),1);
-    foreach($response["rows"] as $walk){
-		$doc 	= $walk["doc"];
-		$_id 	= $doc["_id"];
-		$att 	= !empty($doc["_attachments"]) ? array_keys($doc["_attachments"]) : array();
-		foreach($att as $filename){
-			if(strpos($filename,"audio") > -1){
-				continue;
-			}
-			$ph_id			= $_id."_".$filename;
-			$file_uri  		= "passthru.php?_id=".$_id."&_file=$filename&_old=2" ;
-			$thumb_uri 		= $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-			$filescreated[] = cacheThumb($ph_id,$thumb_uri);
-		}
-	}
+	// GET OLD PHOTOS IN disc_attachments PHOTOS FOR NOW ONE TIME HIT
+	// $couch_url  = cfg::$couch_url . "/disc_attachments/_all_docs?include_docs=true";
+	// $response   = json_decode(doCurl($couch_url),1);
+	// foreach($response["rows"] as $walk){
+	// 	$doc 	= $walk["doc"];
+	// 	$_id 	= $doc["_id"];
+	// 	$att 	= !empty($doc["_attachments"]) ? array_keys($doc["_attachments"]) : array();
+	// 	foreach($att as $filename){
+	// 		if(strpos($filename,"audio") > -1){
+	// 			continue;
+	// 		}
+	// 		$ph_id			= $_id."_".$filename;
+	// 		$file_uri  		= "passthru.php?_id=".$_id."&_file=$filename&_old=2" ;
+	// 		$thumb_uri 		= $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+	// 		$filescreated[] = cacheThumb($ph_id,$thumb_uri);
+	// 	}
+	// }
 }
 
 // now loop and create thumbnails for them
