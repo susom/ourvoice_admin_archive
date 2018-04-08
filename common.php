@@ -424,7 +424,6 @@ function getThumb($ph_id, $thumb_uri, $fileurl){
 
     // IF IT EXISTS AND ISNT GARBAGE
     if( file_exists($localthumb) ){
-        print_rr(filesize($localthumb));
         if( filesize($localthumb) < 1000 ){
             //DELETE IT , ITS GARBAGE
             unlink($localthumb);
