@@ -12,6 +12,7 @@
 $image_path     = urldecode($_GET["file"]);
 $current_dir    = $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
 $sImagePath     = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://" . $current_dir ."/".  $image_path;
+
 // If you want exact dimensions, you
 // will pass 'width' and 'height'
  
@@ -51,6 +52,7 @@ $img = NULL;
 // - imagecreatefromgif
 
 $sExtension = strtolower(end(explode('.', $sImagePath)));
+$sExtension = str_replace("&_old=1","",$sExtension);
 if ($sExtension == 'jpg' || $sExtension == 'jpeg') {
     $img = @imagecreatefromjpeg($sImagePath)
         or die("Cannot create new JPEG image");
