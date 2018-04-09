@@ -40,8 +40,13 @@ foreach($ALL_PROJ_DATA["project_list"] as $key => $value){
 		array_push($retvar["list_full"], $value["project_name"]);
 		array_push($retvar["list_abv"], $value["project_id"]);
 	}
-}		
+}
+
+// $hello = array();
+// array_push($hello, "H");
+// echo json_encode($hello);
+// exit;
  //echo (json_encode($ALL_PROJ_DATA));
 // echo json_encode($list_projects);
-echo json_encode($retvar);
+ echo json_encode($retvar);
 //return (json_encode($listid));

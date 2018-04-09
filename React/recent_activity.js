@@ -29,6 +29,7 @@ class Header extends React.Component{
           url:  "React/getData.php",
           dataType:"JSON",
           success:function(result){
+            console.log(result);
             obj.setState({
               isLoaded: true,
               data: result
