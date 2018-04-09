@@ -347,28 +347,40 @@ function parseTime($data, $storage){
 
 function populateRecent($ALL_PROJ_DATA, $stor, $listid){
     $checkWeek = strtotime("-4 Week");
-    $counter = 0;
-
+    $abvStorage = array();
     for($i = 0 ; $i < count($stor) ; $i++){
         $iter = 0;
-        $ful = getFullName($ALL_PROJ_DATA,$listid[$i]);
         rsort($stor[$listid[$i]]); //sort each element's timestamps
-        
+                $ful = getFullName($ALL_PROJ_DATA,$listid[$i]);
+
     
         while(!empty($stor[$listid[$i]][$iter]) && $iter < 1) //display only the most recent update per proj 
         {
             if(($stor[$listid[$i]][$iter]/1000) > $checkWeek){
-                $counter++;
                 echo '<tr>';
-                echo '<th style = "font-weight: normal">'. "<strong>(".$listid[$i]. ")</strong> " . $ful . '</th>';
-                echo '<th style = "font-weight: normal">'.gmdate("Y-m-d", $stor[$listid[$i]][$iter]/1000).'</th>';
+                echo '<th style = "font-weight: normal">'. "<strong>(".$listid[$i]. ")</strong> " . 
+                '<a href="summary.php?id='.$listid[$i].'"'.'>'.$ful .'</a></th>';
+                echo '<th style = "font-weight: normal">'.gmdate("Y-m-d", $stor[$listid[$i]][0]/1000).'</th>';
                 echo '</tr>';
             }
-
             $iter++;
         }
         
     }//for
+}
+
+function fetchKeys($abvList, $ALL_PROJ_DATA){
+    $keyList = array();
+    if(isset($abvList)){
+        foreach($abvList as $entry)
+            foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects)
+                if($projects["project_id"] == $entry)
+                    array_push($keyList, $key);
+
+
+    }
+    return $keyList;
+
 }
 
 function getAllData(){
