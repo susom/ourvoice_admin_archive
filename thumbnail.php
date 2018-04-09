@@ -53,6 +53,7 @@ $img = NULL;
 
 $sExtension = strtolower(end(explode('.', $sImagePath)));
 $sExtension = str_replace("&_old=1","",$sExtension);
+$sExtension = str_replace("&_old=2","",$sExtension);
 if ($sExtension == 'jpg' || $sExtension == 'jpeg') {
     $img = @imagecreatefromjpeg($sImagePath)
         or die("Cannot create new JPEG image");

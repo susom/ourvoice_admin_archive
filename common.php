@@ -145,11 +145,12 @@ function printRow($doc){
             $filename   = $photo_name;
             $ph_id      = $doc["_id"];
         }
+        $img_id         = $doc["_id"]."_".$photo_name;
 
         $file_uri   = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
         $thumb_uri  = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
         // $photo_uri  = $file_uri;
-        $photo_uri  = getThumb($ph_id,$thumb_uri,$file_uri);
+        $photo_uri  = getThumb($img_id,$thumb_uri,$file_uri);
         $detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 
         $attach_url = "#";
@@ -293,10 +294,13 @@ function printPhotos($doc){
             $filename   = $photo_name;
             $ph_id      = $doc["_id"];
         }
+
+        $img_id         = $doc["_id"]."_".$photo_name;
+        
         $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
         $thumb_uri      = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
         // $photo_uri  = $file_uri;
-        $photo_uri      = getThumb($ph_id,$thumb_uri,$file_uri);
+        $photo_uri      = getThumb($img_id,$thumb_uri,$file_uri);
 
         $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
         $attach_url     = "#";
