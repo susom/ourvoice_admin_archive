@@ -229,7 +229,7 @@ if(!isset($_SESSION["discpw"])) {
 				<a href="#" id="delete_project">Delete This Project</a>
 			</fieldset>
 			<button type="submit" class="btn btn-primary">Save Project</button>
-			<?php echo '</form>'.'<br>'.'<form action="summary.php" form id="route_summary" method="get">';	?>
+			<?php echo '</form>'.'<form action="summary.php" form id="route_summary" method="get">';	?>
 			<button type="submit" class ="btn btn-info" name = "id" value = <?php echo $pid?> >Summary</button>
 		</form>
 		<?php
@@ -304,7 +304,7 @@ if(!isset($_SESSION["discpw"])) {
 					<td><a href="recent_activity.php" class='btn btn-warning'>All Recent Project Data</a></td>
 				</tr>
 				<tr>
-					<th onclick="sortTable(0)" class = "tablehead" >Project ID <?php echo '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp'; ?>(Click to sort)</th>
+					<th onclick="sortTable(0)" class = "tablehead" >Project ID -<em> (Click to sort)</em></th>
 					<th onclick="sortTable(1)" class = "tablehead">Last Updated</th>
 				</tr>
 				<?php 
@@ -345,7 +345,7 @@ function sortTable(n){
 		    rows = table.getElementsByTagName("TR");
 		    /* Loop through all table rows (except the
 		    first, which contains table headers): */
-		    for (i = 1; i < (rows.length - 1); i++) {
+		    for (i = 2; i < (rows.length - 1); i++) {
 		      // Start by saying there should be no switching:
 		      shouldSwitch = false;
 		      /* Get the two elements you want to compare,
@@ -701,6 +701,14 @@ $(document).ready(function(){
 </script>	
 </html>
 <style>
+
+label{
+	display:block;
+	max-width: 100%;
+	margin-bottom: 5px;
+	font-weight: 700;
+}
+
 hgroup{
 	border-bottom:1px solid #999;
 	padding:0 20px 10px;
@@ -757,7 +765,7 @@ form.template #delete_project,
 	position:relative;
 	width:40%;
 	float:right;
-	margin:30px 0;
+	margin:20px 0;
 	top:0;
 }
 
@@ -844,6 +852,7 @@ input[readonly]{
 	background-repeat: no-repeat;
 	font-size: 14px;
 	display:block;
+	-webkit-user-select:none;
 
 
 }
