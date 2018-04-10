@@ -1,9 +1,9 @@
 <?php
-if (!file_exists("_config.php")) {
+if (!file_exists(__DIR__ . "/_config.php")) {
     exit("You must create a _config.php file from the template before this application can run properly");
 }
 // Load the configuration
-require_once "_config.php";
+require_once __DIR__ . "/_config.php";
 
 //TODO REMOVE AFTER UPDATE THE SERVER _config.php
 $couch_attach_db = "disc_attachment";
