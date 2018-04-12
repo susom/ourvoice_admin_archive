@@ -154,8 +154,9 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			$goodbad = "N/A";
 		}
 
-		$long 		= $photo["geotag"]["longitude"];
-		$lat 		= $photo["geotag"]["latitude"];
+		$long 		= isset($photo["geotag"]["lng"]) ? $photo["geotag"]["lng"] : $photo["geotag"]["longitude"];
+		$lat 		= isset($photo["geotag"]["lat"]) ? $photo["geotag"]["lat"] : $photo["geotag"]["latitude"];
+
 		$timestamp  = $photo["geotag"]["timestamp"];
 
 		$photo_name = $photo["name"];
