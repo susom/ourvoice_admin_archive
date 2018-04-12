@@ -280,19 +280,22 @@ if(!isset($_SESSION["discpw"])) {
 				    	<h4>Folders <em>*Drag projects to trash to remove</em></h4>
 				    	<img class = "deleteArea trash-drop" src = "img/icon_trash.png">
 				      	<?php
-				        foreach ($ALL_PROJ_DATA["folders"] as $key => $value) { //populate folders inside working space
-				        	echo "<div class = individual_sector_".$value.">";
-				        	echo "<div class ='ui-widget-drop'><p>".$value." </p></div>";
-				          	echo "<div class ='hiddenFolders' id ='".$value."'>";
-				            	foreach ($ALL_PROJ_DATA["project_list"] as $k => $v) {
-				              		if(isset($v["dropTag"]) && $v["dropTag"] ==$value){
-				               		// echo '<div class="foldercontents" data-key = "'.$k.'" ><p>'.$v["project_id"] .'</p></div>';
-				                	echo '<div class="foldercontents drag-from-folder" data-key = "'.$k.'" ><p><a href="index.php?proj_idx='.$k.'"'.'>'.$v["project_id"] .'</a></p></div>';
-				              }
-				            }
-				          echo "</div>"; //hiddenfolders
-				          echo "</div>"; //individual_sector
-				        }
+				      		$pCount = array();
+				        	foreach ($ALL_PROJ_DATA["folders"] as $key => $value) { //populate folders inside working
+					        	$counter = 0;
+					        	echo "<div class = individual_sector_".$value.">";
+					        	echo "<div class ='ui-widget-drop'><p>".$value." </p></div>";
+					          	echo "<div class ='hiddenFolders' id ='".$value."'>";
+					            	foreach ($ALL_PROJ_DATA["project_list"] as $k => $v) {
+					              		if(isset($v["dropTag"]) && $v["dropTag"] ==$value){
+					               			$counter++;
+					                	echo '<div class="foldercontents drag-from-folder" data-key = "'.$k.'" ><p><a href="index.php?proj_idx='.$k.'"'.'>'.$v["project_id"] .'</a></p></div>';
+					              }
+					            }
+					            $pCount[$value] = $counter;
+					            echo "</div>"; //hiddenfolders
+					            echo "</div>"; //individual_sector
+					        }
 				      	?>    
 				    </div>
 				</div>
@@ -308,18 +311,16 @@ if(!isset($_SESSION["discpw"])) {
 					<th onclick="sortTable(1)" class = "tablehead">Last Updated</th>
 				</tr>
 				<?php 
-				$turl  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
-				$pdurl = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-				$ALL_PROJ_DATA = urlToJson($pdurl);
-				$tm = urlToJson($turl);
-				$stor = $listid = array();
-				$stor = parseTime($tm,$stor);
-				
-				foreach ($stor as $key => $value){
-					array_push($listid, $key);
-				}
+					$turl  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
+					$tm = urlToJson($turl);
+					$stor = $listid = array();
+					$stor = parseTime($tm,$stor);
+					
+					foreach ($stor as $key => $value){
+						array_push($listid, $key);
+					}
 
-				populateRecent($ALL_PROJ_DATA,$stor,$listid);
+					populateRecent($ALL_PROJ_DATA,$stor,$listid);
 				?>	
 			</table>
 		</form>
@@ -391,7 +392,7 @@ function sortTable(n){
 $(document).ready(function(){
 	sortTable(1);
 	sortTable(1); //default to Last updated Time
-
+	//appendProjectCounter();
     bindProperties();
     
 	$(document).on("dblclick",".ui-widget-drop",function(event,ui){
@@ -537,7 +538,24 @@ $(document).ready(function(){
       }//drop
 
     }); //ui-widget-drop
+  }//bindProperties
+
+  function appendProjectCounter(){
+  	var pCounters = <?php echo json_encode($pCount); ?>;
+  	for(var proj in pCounters){
+  		var appendLoc = $(".individual_sector_"+proj).children(".ui-widget-drop")[0];
+  		appendLoc.textContent += (pCounters[proj]);
+  	}
   }
+  
+  // function updateProjectCounter(num, folder){
+  // 	if(num == 1){ //increase
+  // 		$("#"+folder).parent
+  // 	}else{			//decrease
+
+  // 	}
+  
+  // }
 
   function deleteprompt(){
       var value = confirm("Are you sure you want to delete this folder?");
@@ -695,6 +713,7 @@ $(document).ready(function(){
     $(div).append(p);
     let search = document.getElementById(dropBox_name);
     $(search).append(div);
+    updateProjectCounter(1,dropBox_name);
   }
 
 
@@ -747,6 +766,7 @@ form.template #delete_project,
     font-style: italic;
     font-size: 130%;
 }
+
 
 #project_folders{
 	float:left;

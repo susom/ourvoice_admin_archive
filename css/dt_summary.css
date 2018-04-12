@@ -77,6 +77,7 @@ section h5{
 	display:inline-block;
 	margin:0 10px 20px 0; 
     vertical-align: top;
+
 }
 .thumbs figure {
 	margin:0; 
@@ -566,12 +567,23 @@ label span {
 
 
 /*agg photos */
+.all-photos{
+    top:18px;
+    border:solid;
+    border-width: 2px;
+    overflow: scroll;
+    max-width: 333px;
+    float:right;
+    max-height: 690px;
+    position: relative;
+}
+
 .thumbs{
-    margin: 0 10px;
+	 margin: 0 10px;
     text-align: center;
 }
+
 .collapse {
-	width:1000px;
 	margin:20px auto;
 }
 

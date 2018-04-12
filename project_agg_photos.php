@@ -166,7 +166,7 @@ if( $active_project_id ){
 			$code_block = array_merge($code_block,printPhotos($doc));
 		}
 	}
-	echo "<div class='thumbs'><ul class='collapse' id='tags'>";
+	echo "<div class='thumbs all-photos'><ul class='collapse' id='tags'>";
 	echo implode("",$code_block);
 	echo "</ul></div>";
 
@@ -204,10 +204,11 @@ nav ul {
 }
 #google_map_photos {
 	box-shadow:0 0 3px  #888; 
-	width:1024px;
-	height:800px;
-	float:initial;
+	width:930px;
+	height:670px;
+	float:left;
 	margin:20px auto;
+	right:10px;
 }
 #tags ul {
 	width: 85%;
