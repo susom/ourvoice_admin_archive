@@ -58,7 +58,7 @@ if( isset($_POST["proj_idx"]) ){
 		exit;
 	}else{
 	    // REDIRECT IF NO OTHER ACTION
-		$redi 		= false;
+		$redi = false;
 		if( $projects[$proj_idx] !==  $_POST["project_id"]){
 			//MEANS THIS IS A NEW PROJECT
 			//NEED A NEW PROJECT ID!
@@ -89,10 +89,11 @@ if( isset($_POST["proj_idx"]) ){
 		);
 
 		$pidx 		= $proj_idx;
-		$payload 	= $ap;
-		$payload["project_list"][$pidx] = $updated_project;
-
         $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+        $response 		= doCurl($url);
+		$payload 	= $ap = $_SESSION["DT"] = json_decode($response,1);
+		$payload["project_list"][$pidx] = $updated_project;
+		
         $response 	= doCurl($url, json_encode($payload), 'PUT');
         $resp 		= json_decode($response,1);
         if(isset($resp["rev"])){
@@ -105,7 +106,7 @@ if( isset($_POST["proj_idx"]) ){
         }else{
         	echo "something went wrong:";
         	print_rr($resp);
-        	print_rr($payload);
+        	// print_rr($payload);
         }
 	}
 }
