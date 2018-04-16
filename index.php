@@ -58,7 +58,7 @@ if( isset($_POST["proj_idx"]) ){
 		exit;
 	}else{
 	    // REDIRECT IF NO OTHER ACTION
-		$redi 		= false;
+		$redi = false;
 		if( $projects[$proj_idx] !==  $_POST["project_id"]){
 			//MEANS THIS IS A NEW PROJECT
 			//NEED A NEW PROJECT ID!
@@ -89,10 +89,11 @@ if( isset($_POST["proj_idx"]) ){
 		);
 
 		$pidx 		= $proj_idx;
-		$payload 	= $ap;
-		$payload["project_list"][$pidx] = $updated_project;
-
         $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+        $response 		= doCurl($url);
+		$payload 	= $ap = $_SESSION["DT"] = json_decode($response,1);
+		$payload["project_list"][$pidx] = $updated_project;
+		
         $response 	= doCurl($url, json_encode($payload), 'PUT');
         $resp 		= json_decode($response,1);
         if(isset($resp["rev"])){
@@ -105,7 +106,7 @@ if( isset($_POST["proj_idx"]) ){
         }else{
         	echo "something went wrong:";
         	print_rr($resp);
-        	print_rr($payload);
+        	// print_rr($payload);
         }
 	}
 }
@@ -130,13 +131,11 @@ if(isset($_POST["discpw"])){
 <head>
 	<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
   	<meta charset="utf-8">
-
 	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <link href="css/dt_common.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
     <link href="css/dt_index.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
-  
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 </head>
@@ -390,11 +389,12 @@ function sortTable(n){
 }
 
 $(document).ready(function(){
-	sortTable(1);
-	sortTable(1); //default to Last updated Time
-	//appendProjectCounter();
-    bindProperties();
-    
+	if($("#rec-table").length){
+		sortTable(1);
+		sortTable(1); //default to Last updated Time
+	    bindProperties();
+	}    
+
 	$(document).on("dblclick",".ui-widget-drop",function(event,ui){
 	  	console.log(this.innerText);
 	  	if($('#'+this.innerText+':visible').length == 0)
@@ -404,12 +404,7 @@ $(document).ready(function(){
         	console.log(this.innerText);
 		}
 	});
-
-
-
 	<?php
-
-
 		if(isset($pname)){
 			echo "var current_project_id = '".$pid. "';\n";
 		}
@@ -421,6 +416,7 @@ $(document).ready(function(){
 			echo "var proj_ids = ['".implode("','",$proj_ids)."'];";
 		}
 	?>
+
 	$("#project_config").submit(function(){
 		if($("input[name='project_id']").val() == ""){
 			alert("A Project ID is required!");
@@ -475,99 +471,87 @@ $(document).ready(function(){
 	});
 });
 
-  function bindProperties(){
-    $( ".ui-widget-drag").draggable({
-      cursor: "move",
-      containment: $("#organization_sector"),
-      start: function(event,ui){
-      		$(".trash-drop").droppable("option", "disabled",true);
-      },
-      stop: function(event,ui){
-    		$(".trash-drop").droppable("option", "disabled",false);
-      },
-      drag: function(event,ui){
-      //  ui.css("z-index", "-1"); //fix frontal input
-      }
+function bindProperties(){
+	$( ".ui-widget-drag").draggable({
+	  cursor: "move",
+	  containment: $("#organization_sector"),
+	  start: function(event,ui){
+	  		$(".trash-drop").droppable("option", "disabled",true);
+	  },
+	  stop: function(event,ui){
+			$(".trash-drop").droppable("option", "disabled",false);
+	  },
+	  drag: function(event,ui){
+	  //  ui.css("z-index", "-1"); //fix frontal input
+	  }
+	});
 
-    });
-    $(".drag-from-folder").draggable({
-    	cursor: "move",
-    	containment: $("#folderspace"),
-    	start: function(event,ui){
-    		$(".ui-widget-drop").droppable("option", "disabled",true);
-    	},
-    	stop: function(event,ui){
-    		$(".ui-widget-drop").droppable("option", "disabled",false);
-    	}
-    })
-    $(".trash-drop").droppable({
-    	hoverClass: "trash-hover" ,
-    	drop: function( event, ui ) {
-    		var rm_project = event.originalEvent.target;
-    		console.log(rm_project);
-    		console.log(rm_project.parentNode)
-    		repopulateProjects(rm_project.parentNode,rm_project.getAttribute("data-key"));
-    	  	bindProperties();
+	$(".drag-from-folder").draggable({
+		cursor: "move",
+		containment: $("#folderspace"),
+		start: function(event,ui){
+			$(".ui-widget-drop").droppable("option", "disabled",true);
+		},
+		stop: function(event,ui){
+			$(".ui-widget-drop").droppable("option", "disabled",false);
+		}
+	})
 
-    		rm_project.remove();
-    	}
+	$(".trash-drop").droppable({
+		hoverClass: "trash-hover" ,
+		drop: function( event, ui ) {
+			var rm_project = event.originalEvent.target;
+			console.log(rm_project);
+			console.log(rm_project.parentNode)
+			repopulateProjects(rm_project.parentNode,rm_project.getAttribute("data-key"));
+		  	bindProperties();
+			rm_project.remove();
+		}
+	}) 
 
-    })  
-    $( ".ui-widget-drop" ).droppable({
-      drop: function( event, ui ) {
-        //var pdata = <?php echo json_encode($ALL_PROJ_DATA);?>;
-        var dropBox_name = $.trim(this.innerText);
-        var dragBox_name = $.trim(ui.draggable[0].innerText);
-        var key = $(ui.draggable[0]).data("key");
-        //if does not exist within folder then render it
-        addProject(key,dragBox_name,dropBox_name);
-        bindProperties();
-        $.ajax({
-          url:  "config_gui_post.php",
-          type:'POST',
-          data: "&dropTag=" + dropBox_name + "&dragTag=" + dragBox_name + "&datakey=" + key,
-          success:function(result){
-            console.log(result);
-          }        
-            //THIS JUST STORES IS 
-          },function(err){
-          console.log("ERRROR");
-          console.log(err);
-        });
-        ui.draggable.hide(350);
-      }//drop
+	$( ".ui-widget-drop" ).droppable({
+	  drop: function( event, ui ) {
+	    //var pdata = <?php echo json_encode($ALL_PROJ_DATA);?>;
+	    var dropBox_name = $.trim(this.innerText);
+	    var dragBox_name = $.trim(ui.draggable[0].innerText);
+	    var key = $(ui.draggable[0]).data("key");
+	    //if does not exist within folder then render it
+	    addProject(key,dragBox_name,dropBox_name);
+	    bindProperties();
+	    $.ajax({
+	      url:  "config_gui_post.php",
+	      type:'POST',
+	      data: "&dropTag=" + dropBox_name + "&dragTag=" + dragBox_name + "&datakey=" + key,
+	      success:function(result){
+	        console.log(result);
+	      }        
+	        //THIS JUST STORES IS 
+	      },function(err){
+	      console.log("ERRROR");
+	      console.log(err);
+	    });
+	    ui.draggable.hide(350);
+	  }//drop
+	}); //ui-widget-drop
+}
 
-    }); //ui-widget-drop
-  }//bindProperties
+function deleteprompt(){
+  var value = confirm("Are you sure you want to delete this folder?");
+  return value;
+}
 
-  function appendProjectCounter(){
-  	var pCounters = <?php echo json_encode($pCount); ?>;
-  	for(var proj in pCounters){
-  		var appendLoc = $(".individual_sector_"+proj).children(".ui-widget-drop")[0];
-  		appendLoc.textContent += (pCounters[proj]);
-  	}
-  }
-  
-  // function updateProjectCounter(num, folder){
-  // 	if(num == 1){ //increase
-  // 		$("#"+folder).parent
-  // 	}else{			//decrease
+function appendProjectCounter(){
+	var pCounters = <?php echo json_encode($pCount); ?>;
+	for(var proj in pCounters){
+		var appendLoc = $(".individual_sector_"+proj).children(".ui-widget-drop")[0];
+		appendLoc.textContent += (pCounters[proj]);
+	}
+}
 
-  // 	}
-  
-  // }
-
-  function deleteprompt(){
-      var value = confirm("Are you sure you want to delete this folder?");
-      return value;
-
-  }
-  function CreateFolder(name){
-  	name = name.replace(/ /g, "_");
-    if(name)
-    {
-    	
-    	if(!isValidElement(name,"ui-widget-drop","class")){
+function CreateFolder(name){
+	name = name.replace(/ /g, "_");
+	if(name){
+		if(!isValidElement(name,"ui-widget-drop","class")){
 	    	$("<div class ='ui-widget-drop'><p>"+name+"</p></div>").appendTo("#folderspace");
 	     	let hiddennode = $("<div class = 'hiddenFolders' id ='"+name+"'></div");
 	      	$("#folderspace").append(hiddennode);
@@ -584,16 +568,17 @@ $(document).ready(function(){
 	          console.log("ERROR");
 	          console.log(err);
 	      });
-	 	}//if
-	 	else
+	 	}else{
 	 		alert("Folder already created, please enter a different name");
-    }//if name
-    else
-      alert("Please enter a name for your folder");
-  }//CreateFolder
-  function DeleteFolder(name){
-  	if(name && isValidElement(name,"ui-widget-drop","class")){
-  		if(deleteprompt()){
+	 	}
+	}else{
+	  alert("Please enter a name for your folder");
+	}
+}//CreateFolder
+
+function DeleteFolder(name){
+	if(name && isValidElement(name,"ui-widget-drop","class")){
+		if(deleteprompt()){
 	  		let d_folder = selectFolder(name);
 	  		let d_folder_contents = $("#"+name); //selects hidden folder class
 	  		let d_folder_parent = $("."+"individual_sector_"+name);
@@ -603,33 +588,34 @@ $(document).ready(function(){
 	  		d_folder.remove();
 	  		d_folder_contents.remove();
 	  		d_folder_parent.remove();
- 		}
-  	}else{
-  		alert("Please enter a valid name for a folder you wish to delete");
-  	}
-  }
-  function removeFromDB(project){
-  	 $.ajax({
-          url:  "config_gui_post.php",
-          type:'POST',
-          data: "&deleteTag=" + project,
-          success:function(result){
-            console.log(result);
-          }        
-            //THIS JUST STORES IS 
-          },function(err){
-          console.log("ERRROR");
-          console.log(err);
-        });
+		}
+	}else{
+		alert("Please enter a valid name for a folder you wish to delete");
+	}
+}
 
+function removeFromDB(project){
+	$.ajax({
+	      url:  "config_gui_post.php",
+	      type:'POST',
+	      data: "&deleteTag=" + project,
+	      success:function(result){
+	        console.log(result);
+	      }        
+	        //THIS JUST STORES IS 
+	      },function(err){
+	      console.log("ERRROR");
+	      console.log(err);
 
-  }
-  function repopulateProjects(hiddenfolder, spc_id = -1){
-  	let workingspace = $("#workingspace");
-  	var deletion_data = {keys:[],names:[],folder:[]};
- 	
- 	if(spc_id == -1){
- 		let proj_list = (hiddenfolder[0].childNodes);
+	});
+}
+
+function repopulateProjects(hiddenfolder, spc_id = -1){
+	let workingspace = $("#workingspace");
+	var deletion_data = {keys:[],names:[],folder:[]};
+	
+	if(spc_id == -1){
+		let proj_list = (hiddenfolder[0].childNodes);
 	  	for(var i = 0 ; i < proj_list.length ;i++){
 	  		let key = proj_list[i].getAttribute("data-key");
 	  		let proj_name = proj_list[i].textContent;
@@ -640,8 +626,7 @@ $(document).ready(function(){
 	  	}
 	  	deletion_data.folder.push(hiddenfolder[0].id);
 
-	}//if
-	else{
+	}else{
 		let proj_list = hiddenfolder.childNodes;
 		for(var i = 0 ; i < proj_list.length ;i++){
 	  		let key = proj_list[i].getAttribute("data-key");
@@ -651,72 +636,64 @@ $(document).ready(function(){
 		    	$(workingspace).append(div); //repopulate projects
 		    	deletion_data.keys.push(key);
 		    	deletion_data.names.push(proj_name);
-
 	  		}
-	  		
 		}
 		deletion_data.folder.push("-1");
-
 	}
 	console.log(deletion_data);
 	removeFromDB(JSON.stringify(deletion_data));
-  }	
+}	
 
-  function createNode(data_key,class_name,text){
-  	let div = document.createElement("div");
-  	let p = document.createElement("p");
-    let a = document.createElement("a");
+function createNode(data_key,class_name,text){
+	let div = document.createElement("div");
+	let p = document.createElement("p");
+	let a = document.createElement("a");
 	div.className = class_name;
-    div.setAttribute("data-key",data_key);
-    a.href = "index.php?proj_idx="+data_key;
-    a.textContent = text;
+	div.setAttribute("data-key",data_key);
+	a.href = "index.php?proj_idx="+data_key;
+	a.textContent = text;
 	$(p).append(a);
-    $(div).append(p);
-    bindProperties();
-    return div; 
-  }
+	$(div).append(p);
+	bindProperties();
+	return div; 
+}
 
+function isValidElement(name,location,type){
+	let selection = (type=="class") ? "." : "#";
+	console.log(selection);
+	let folders = $(selection+location);
+	// ".ui-widget-drop"
+	console.log(folders);
+	for(var i = 0 ; i < folders.length ; i++){
+		if(folders[i].textContent.trim() == name) //trim to ensure no whitespace errors
+			return true;
+	}
+	return false;
+}//isValid
 
-  function isValidElement(name,location,type){
-  	let selection = (type=="class") ? "." : "#";
-  	console.log(selection);
-  	let folders = $(selection+location);
-  	// ".ui-widget-drop"
-  	console.log(folders);
-  	for(var i = 0 ; i < folders.length ; i++){
-  		if(folders[i].textContent.trim() == name) //trim to ensure no whitespace errors
-  			return true;
-  	}
-  	return false;
-  }//isValid
-
-  function selectFolder(name){
-  	let folders = $(".ui-widget-drop");
-  	for(var i = 0 ; i < folders.length ; i++){
-  		if(folders[i].textContent.trim() == name) //trim to ensure no whitespace errors
-  			return folders[i];
-  	}
-  	return false;
-  }
+function selectFolder(name){
+	let folders = $(".ui-widget-drop");
+	for(var i = 0 ; i < folders.length ; i++){
+		if(folders[i].textContent.trim() == name) //trim to ensure no whitespace errors
+			return folders[i];
+	}
+	return false;
+}
   
-  function addProject(key,dragBox_name,dropBox_name){
-    let div = document.createElement("div");
-    
-    let p = document.createElement("p");
-    let a = document.createElement("a");
-    a.href = "index.php?proj_idx="+key;
-    a.textContent = dragBox_name;
-    $(p).append(a);
-    
-    div.className = "foldercontents drag-from-folder";
-    div.setAttribute("data-key",key);
-    $(div).append(p);
-    let search = document.getElementById(dropBox_name);
-    $(search).append(div);
-    updateProjectCounter(1,dropBox_name);
-  }
+function addProject(key,dragBox_name,dropBox_name){
+	let div = document.createElement("div");
+	let p 	= document.createElement("p");
+	let a 	= document.createElement("a");
+	a.href 	= "index.php?proj_idx="+key;
+	a.textContent = dragBox_name;
+	$(p).append(a);
 
-
+	div.className = "foldercontents drag-from-folder";
+	div.setAttribute("data-key",key);
+	$(div).append(p);
+	let search = document.getElementById(dropBox_name);
+	$(search).append(div);
+}
 </script>	
 </html>
 <style>

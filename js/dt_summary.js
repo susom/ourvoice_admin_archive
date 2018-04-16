@@ -1,11 +1,11 @@
-function drawGMap(o_geotags, i_uniquemap, zoom_level){
+function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
 	var map_id         = "google_map_" + i_uniquemap;
 	var geotags        = o_geotags;
 	var walkMap        = [];
 
     for(var i in geotags) {
-		var ltlnpt      = new google.maps.LatLng(geotags[i]["lat"], geotags[i]["lng"]);
-		walkMap.push(ltlnpt);
+    	var ltlnpt     = new google.maps.LatLng(geotags[i]["lat"], geotags[i]["lng"]);
+    	walkMap.push(ltlnpt);
 	}
 
     if(!zoom_level){
@@ -36,12 +36,9 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level){
         });
     }
 
-    var LatLngBounds   = new google.maps.LatLngBounds();
     var gmarkers       = [];
     if(geotags){
     	for(var i in geotags) {
-    		LatLngBounds.extend(walkMap[i]);
-
             if(map_id == "google_map_photos"){
                 var icon    = "http://icons.iconarchive.com/icons/webalys/kameleon.pics/24/Polaroid-icon.png";
                 var scale   = 5;
@@ -91,8 +88,20 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level){
           strokeOpacity: 0.7,
           strokeWeight: 0
         });
-
-        window[map_id].fitBounds(LatLngBounds); 
     }
+
+    var LatLngBounds = new google.maps.LatLngBounds();
+    if(o_walk_geos){
+        for(var i in o_walk_geos) {
+            var ltlnpt = new google.maps.LatLng(o_walk_geos[i]["lat"], o_walk_geos[i]["lng"]);
+            LatLngBounds.extend(ltlnpt);
+        }
+    }else{
+        for(var i in geotags) {
+            LatLngBounds.extend(walkMap[i]);
+        }
+    }
+    
+    window[map_id].fitBounds(LatLngBounds); 
 	return gmarkers;
 }
