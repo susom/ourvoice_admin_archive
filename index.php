@@ -194,8 +194,12 @@ if(!isset($_SESSION["discpw"])) {
 		if($_GET["proj_idx"] == 99 || $_GET["proj_idx"] == 100){
 			$template = true;
 			$template_instructions = "<strong class='tpl_instructions'>*Input a new Project ID & Name to create a new project</strong>";
-		}
+		}else{		
 		?>
+		<form action="summary.php" id="route_summary" method="get">
+			<button type="submit" class ="btn btn-info" name = "id" value = <?php echo $pid?> >Summary</button>
+		</form>
+		<?php } ?>
 		<form id="project_config" method="post" class='<?php echo $template ? "template" : ""?>'>
 			<fieldset class="app_meta">
 				<legend>Project Meta</legend>
@@ -208,9 +212,9 @@ if(!isset($_SESSION["discpw"])) {
 					<input type="radio" name="template_type" <?php if(!$template_type) echo "checked"; ?> value="0"/> Short Template 
 					<input type="radio" name="template_type" <?php if($template_type) echo "checked"; ?> value="1"/> Full Template
 				</label>
-				<label><span>Use Smilies</span>
-					<input type="radio" name="thumbs" <?php if($thumbs) echo "checked"; ?> value="2"/> Yes 
-					<input type="radio" name="thumbs" <?php if(!$thumbs) echo "checked"; ?> value="1"/> No
+				<label><span>Good/Bad Icons</span>
+					<input type="radio" name="thumbs" <?php if($thumbs) echo "checked"; ?> value="2"/> Smilies 
+					<input type="radio" name="thumbs" <?php if(!$thumbs) echo "checked"; ?> value="1"/> Thumbs
 				</label>
 				<label class="languages"><p><span>Languages</span> 
 					<!-- <a href='#' class='add_language'>+ Add Language</a> -->
@@ -228,8 +232,6 @@ if(!isset($_SESSION["discpw"])) {
 				<a href="#" id="delete_project">Delete This Project</a>
 			</fieldset>
 			<button type="submit" class="btn btn-primary">Save Project</button>
-			<?php echo '</form>'.'<form action="summary.php" form id="route_summary" method="get">';	?>
-			<button type="submit" class ="btn btn-info" name = "id" value = <?php echo $pid?> >Summary</button>
 		</form>
 		<?php
 	}else{
@@ -255,8 +257,8 @@ if(!isset($_SESSION["discpw"])) {
 					</div>
 					<div class="pull-right">
 						<p><strong><em>* To Configure New Project: Choose a template below and add a ProjectID and Name!</em></strong></p>
-						<a href="?proj_idx=99" class="tpl btn btn-info" data-tpl="99">Short Template</a> 
-						<a href="?proj_idx=100" class="tpl btn btn-success" tata-tpl="100">Full Template</a>
+						<a href="?proj_idx=99" class="tpl btn btn-info" data-tpl="99">Template to Create a New Project</a> 
+						<!-- <a href="?proj_idx=100" class="tpl btn btn-success" tata-tpl="100">Full Template</a> -->
 					</div>
 				</div>
 				<div id = "organization_sector">
@@ -878,4 +880,9 @@ input[readonly]{
 	background: transparent;
 }
 
+#route_summary {
+	display:inline-block;
+	float:right;
+	margin:20px;
+}
 </style>
