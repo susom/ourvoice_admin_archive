@@ -118,6 +118,12 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$_SESSION["DT"]["project_list"][$proj_idx]["tags"] = array();
 	}
 
+	// filter out low accuracy
+    $forjsongeo = array_filter($doc["geotags"],function($tag){
+        return $tag["accuracy"] <= 50;
+    });
+    $walk_geo 	= json_encode($forjsongeo);
+
 	$photos 	= $doc["photos"];
 	$device 	= $doc["device"]["platform"];
 	$old 		= isset($doc["_attachments"]) ? "&_old=1" : "";
@@ -219,7 +225,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$geotags   = array();
 		$geotags[] = array("lat" => $lat, "lng" => $long);
 		$json_geo  = json_encode($geotags);
-		$gmaps[]   = "drawGMap($json_geo, 0, 16);\n";
+		$gmaps[]   = "drawGMap($json_geo, 0, 16, $walk_geo);\n";
 
 	echo 		"</div>";
 	

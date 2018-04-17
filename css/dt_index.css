@@ -116,6 +116,7 @@ hgroup a {
 
 .app_meta{
 	position:relative;
+	margin:15px 0;
 }
 #delete_project{
 	display:block;
