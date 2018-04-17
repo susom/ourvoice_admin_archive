@@ -153,9 +153,7 @@ hgroup h1{
 	padding:20px;
 }
 
-#box {
-	padding:20px 0;
-}
+
 .btn-default{
 	
 	background-color:orange;
@@ -308,3 +306,28 @@ input[readonly]{
 .ui-state-highlight{
 	background: transparent;
 }
+
+#nav ul{
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	background-color: #333;
+}
+
+#nav li{
+	float:left;
+}
+#nav li a{
+	display:block;
+	color:white;
+	text-align: center;
+	padding:14px 16px;
+	text-decoration: none;
+}
+
+#nav li a:hover{
+	background-color: #111;
+}
+
+

@@ -1,0 +1,32 @@
+.entry{
+	display:inline-block;
+	margin:15px;
+	border:solid;
+	width:280px;
+	height:120px;
+	text-align: center;
+	background-color: #efefef;
+}
+
+.proj{
+	column-count: 2;
+}
+
+a{
+	color:white;
+	font-size: 18px;
+}
+
+#header{
+	font-size: 24px;
+}
+
+.abv{
+	background-color: black;
+	top:-17px;
+	position: relative;
+}
+
+.highlight{
+	background-color: #B5F4B3;
+}

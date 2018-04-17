@@ -1,0 +1,134 @@
+.folderbar .pull-left,
+.folderbar .pull-right{
+	width:49%;
+}
+.folderbar .pull-left{
+	margin-top:20px;
+}
+#rec-table {
+	border-collapse: collapse;
+	position:relative;
+	width:40%;
+	float:right;
+	margin:20px 0;
+	top:0;
+}
+
+#rec-table h3 {
+	margin:0 0 10px;
+}
+#rec-table .btn {
+	 float:right;
+	 margin-bottom:10px;
+}
+.tablehead{
+	cursor:pointer;
+}
+th{
+	border: 1px solid #dddddd;
+	text-align: left;
+	padding:8px;
+}
+
+input[readonly]{ 
+	background:#efefef;
+	color:#999;
+}
+.deleteArea{
+	max-width: 70px;
+	max-height: 70px;
+	float: right;
+
+
+}
+.trash-hover{
+	background-color: red;
+}
+
+
+.hiddenFolders{
+	display: none;
+
+
+}
+
+#organization_sector{
+	width:100%;
+	padding:20px 0;
+	overflow:hidden;
+}
+#organization_sector h4 {
+	margin:0 0 10px;
+}
+#organization_sector h4 em {
+	font-size:70%;
+}
+.folderbar{
+	display:block;
+	overflow:hidden;
+}
+#folderspace{
+	padding:20px;
+	display:inline-block;
+	float:left;
+	width:49%;
+	background: #efefef;
+    border-radius: 5px;
+    min-height:600px;
+}
+#workingspace{
+	padding:20px;
+	display:inline-block;
+	float:right;
+	width:49%;
+	background:#efefef;
+	border-radius:5px;
+    min-height:600px;
+}
+.ui-widget-drop{
+	width: 111px; height: 96px; padding: 0.5em; 
+	margin: 10px;
+	margin-left: 20px; 
+	text-align: center; 
+	background-image: url('../img/FolderClose.svg');
+	background-color: transparent;
+	background-size: 100%;
+	line-height: 600%;
+	background-repeat: no-repeat;
+	font-size: 14px;
+	display:block;
+	-webkit-user-select:none;
+
+
+}
+
+.ui-widget-drag, .foldercontents{
+	padding: 5px; 
+	float: left; 
+	margin: 0px 4px 4px; 
+	text-align: center;
+	border: transparent;
+	width: 113px;
+	font-size: 13px;
+	font-weight: bold;
+	border:1px solid cornflowerblue;
+	border-radius:3px;
+	background-color: azure;
+	display:inline-block;
+	cursor:pointer;
+} 
+.ui-widget-drag p{
+	margin:0;
+}
+
+
+.ui-state-highlight{
+	background: transparent;
+}
+#project_folders{
+	width: 100%;
+}
+
+.create_delete{
+	display:inline-block;
+}

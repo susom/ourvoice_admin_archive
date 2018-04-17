@@ -348,6 +348,7 @@ function parseTime($data, $storage){
 function populateRecent($ALL_PROJ_DATA, $stor, $listid){
     $checkWeek = strtotime("-4 Week");
     $abvStorage = array();
+    $cache_data = array();
     for($i = 0 ; $i < count($stor) ; $i++){
         $iter = 0;
         rsort($stor[$listid[$i]]); //sort each element's timestamps
@@ -363,10 +364,14 @@ function populateRecent($ALL_PROJ_DATA, $stor, $listid){
                 echo '<th style = "font-weight: normal">'.gmdate("Y-m-d", $stor[$listid[$i]][0]/1000).'</th>';
                 echo '</tr>';
             }
+            $cache_data[$listid[$i]] = array();
+            $cache_data[$listid[$i]]["full"] = $ful;
+            $cache_data[$listid[$i]]["rec_date"] = $stor[$listid[$i]][0]/1000;
             $iter++;
         }
         
     }//for
+    $_SESSION["rec_times"] = $cache_data;
 }
 
 function fetchKeys($abvList, $ALL_PROJ_DATA){

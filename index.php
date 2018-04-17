@@ -173,11 +173,15 @@ if(!isset($_SESSION["discpw"])) {
 <?php
 }else{ //if password is actually set, display the project configurator
 	?>
-	<hgroup>
-		<h1>Discovery Tool Project Configurator</h1>
-		<a href="index.php">Back to Project Picker</a>
-		<a href="index.php?clearsession=1">Refresh Project Data</a>
-	</hgroup>
+	<div id = "nav">
+		<ul>
+			<li><a href = "index.php">Home</a></li>
+			<li><a href = "project_configuration.php">Project Configuration</a></li>
+			<li><a href = "organization.php">Organization</a></li>
+			<li><a href = "recent_activity.php">All Data</a></li>
+			<li style="float:right"><a href="index.php?clearsession=1">Refresh Project Data</a></li>
+		</ul>
+	</div>
 	<?php
 	if( isset($_GET["proj_idx"]) ){
 		$proj_ids = array_column($projs, 'project_id');
@@ -244,46 +248,12 @@ if(!isset($_SESSION["discpw"])) {
 	}
 	?>
 		<form id="project_config" method="get">
-			<div id="project_folders">
-				<h3>Choose project to edit:</h3>
-				<div class = "folderbar">
-					<div class="pull-left">
-						<p><input type ="text" id = "foldername">
-						<button type ="button" onclick="CreateFolder(document.getElementById('foldername').value)">Create Folder</button></p>
-						
-						<p><input type ="text" id = "d_foldername">
-						<button type ="button" onclick="DeleteFolder(document.getElementById('d_foldername').value)">Delete Folder</button></p>
-					</div>
-					<div class="pull-right">
-						<p><strong><em>* To Configure New Project: Choose a template below and add a ProjectID and Name!</em></strong></p>
-						<a href="?proj_idx=99" class="tpl btn btn-info" data-tpl="99">Short Template</a> 
-						<a href="?proj_idx=100" class="tpl btn btn-success" tata-tpl="100">Full Template</a>
-					</div>
-				</div>
-				<div id = "organization_sector">
-					<div id = "workingspace">
-						<h4>Projects <em>* Drag projects into folders</em></h4>
-				      	<?php
-					      foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects) { //populate projects on base page
-					        if(isset($ALL_PROJ_DATA["project_list"][$key]["dropTag"])){
-					            //if droptag is set do not show in the project list, but rather under hidden folders
-					        }else{
-					          	if(isset($ALL_PROJ_DATA["project_list"][$key]["project_id"])){
-					            	echo '<div class="ui-widget-drag" data-key = "'.$key.'" ><p><a href="index.php?proj_idx='.$key.'"'.'>'.$projects["project_id"] .'</a></p></div>';
-					          	}
-					        }
-					      }
-				    	?>
-				    </div>
-						
 				    <div id = "folderspace">
-				    	<h4>Folders <em>*Drag projects to trash to remove</em></h4>
-				    	<img class = "deleteArea trash-drop" src = "img/icon_trash.png">
 				      	<?php
 				      		$pCount = array();
 				        	foreach ($ALL_PROJ_DATA["folders"] as $key => $value) { //populate folders inside working
 					        	$counter = 0;
-					        	echo "<div class = individual_sector_".$value.">";
+					        	echo "<div class = 'folder_entry'>";
 					        	echo "<div class ='ui-widget-drop'><p>".$value." </p></div>";
 					          	echo "<div class ='hiddenFolders' id ='".$value."'>";
 					            	foreach ($ALL_PROJ_DATA["project_list"] as $k => $v) {
@@ -298,13 +268,10 @@ if(!isset($_SESSION["discpw"])) {
 					        }
 				      	?>    
 				    </div>
-				</div>
-			</div>
 			
 			<table id = "rec-table">
 				<tr>
 					<td ><h3>Recent Activity</h3></td>
-					<td><a href="recent_activity.php" class='btn btn-warning'>All Recent Project Data</a></td>
 				</tr>
 				<tr>
 					<th onclick="sortTable(0)" class = "tablehead" >Project ID -<em> (Click to sort)</em></th>
@@ -396,14 +363,42 @@ $(document).ready(function(){
     bindProperties();
     
 	$(document).on("dblclick",".ui-widget-drop",function(event,ui){
-	  	console.log(this.innerText);
-	  	if($('#'+this.innerText+':visible').length == 0)
-	    	$('#'+this.innerText).css('display','inline-block');
-		else{
-    	 	$('#'+this.innerText).css('display','none');
-        	console.log(this.innerText);
-		}
+	  	var package = {};
+	  	var folder_content = $('#'+this.innerText);
+	  	for(var i = 0 ; i < folder_content[0].childNodes.length ; i++){
+	  		var abv = (folder_content[0].childNodes[i].innerText);
+	  		var key = (folder_content[0].childNodes[i].attributes[1].value);
+	  		package[abv] = key;
+	  	}
+	  	console.log(package);
+	  	$.ajax({
+	        url:"popup_folders.php",
+	        type: 'POST',
+	        data: "&folder_data=" + JSON.stringify(package)+ "&folder_name="+this.innerText,
+	        success:function(result){
+	          console.log(result);
+	          var win = window.open('popup_folders.php');
+	  			if(win){
+	  				win.focus();
+	  			}else{
+	  				alert("please allow popups for this functionality");
+	  			}
+	        }
+	        
+	        },function(err){
+	          console.log("ERROR");
+	          console.log(err);
+	    });
+
+	 //  	if($('#'+this.innerText+':visible').length == 0)
+	 //    	$('#'+this.innerText).css('display','inline-block');
+		// else{
+  //   	 	$('#'+this.innerText).css('display','none');
+  //       	console.log(this.innerText);
+		// }
+
 	});
+
 
 
 
@@ -547,15 +542,7 @@ $(document).ready(function(){
   		appendLoc.textContent += (pCounters[proj]);
   	}
   }
-  
-  // function updateProjectCounter(num, folder){
-  // 	if(num == 1){ //increase
-  // 		$("#"+folder).parent
-  // 	}else{			//decrease
 
-  // 	}
-  
-  // }
 
   function deleteprompt(){
       var value = confirm("Are you sure you want to delete this folder?");
@@ -713,7 +700,6 @@ $(document).ready(function(){
     $(div).append(p);
     let search = document.getElementById(dropBox_name);
     $(search).append(div);
-    updateProjectCounter(1,dropBox_name);
   }
 
 
@@ -743,9 +729,6 @@ hgroup h1{
 	padding:20px;
 }
 
-#box {
-	padding:20px 0;
-}
 .btn-default{
 	
 	background-color:orange;
@@ -758,7 +741,9 @@ form.template #delete_project,
 	position:absolute;
 	z-index:-1000;
 }
-
+.folder_entry{
+	display:inline-block;
+}
 .tpl_instructions {
 	color: red;
     display: inline-block;
@@ -768,24 +753,14 @@ form.template #delete_project,
 }
 
 
-#project_folders{
-	float:left;
-	width:58%;
-}
 
-.folderbar .pull-left,
-.folderbar .pull-right{
-	width:49%;
-}
-.folderbar .pull-left{
-	margin-top:20px;
-}
+
 #rec-table {
 	border-collapse: collapse;
 	position:relative;
-	width:40%;
+	width:49%;
 	float:right;
-	margin:20px 0;
+	margin:0 0;
 	top:0;
 }
 
@@ -816,9 +791,7 @@ input[readonly]{
 
 
 }
-.trash-hover{
-	background-color: red;
-}
+
 
 
 .hiddenFolders{
@@ -827,39 +800,17 @@ input[readonly]{
 
 }
 
-#organization_sector{
-	width:100%;
-	padding:20px 0;
-	overflow:hidden;
-}
-#organization_sector h4 {
-	margin:0 0 10px;
-}
-#organization_sector h4 em {
-	font-size:70%;
-}
-.folderbar{
-	display:block;
-	overflow:hidden;
-}
+
 #folderspace{
 	padding:20px;
 	display:inline-block;
 	float:left;
-	width:49%;
+	width:50%;
 	background: #efefef;
     border-radius: 5px;
     min-height:600px;
 }
-#workingspace{
-	padding:20px;
-	display:inline-block;
-	float:right;
-	width:49%;
-	background:#efefef;
-	border-radius:5px;
-    min-height:600px;
-}
+
 .ui-widget-drop{
 	width: 111px; height: 96px; padding: 0.5em; 
 	margin: 10px;

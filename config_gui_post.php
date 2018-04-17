@@ -74,6 +74,7 @@ if(isset($_POST["deleteTag"])){
 			 	unset($storage["folders"][$key]);
 		}
 	}//if 
+	$_SESSION["DT"] = $storage;
 
 	$url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
 	$response 	= doCurl($url, json_encode($storage), 'PUT');
