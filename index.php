@@ -360,11 +360,11 @@ function sortTable(n){
 }
 
 $(document).ready(function(){
-	sortTable(1);
-	sortTable(1); //default to Last updated Time
-	//appendProjectCounter();
-    bindProperties();
-    
+	if($("#folderspace").length){
+		sortTable(1);
+		sortTable(1); //default to Last updated Time
+	    bindProperties();
+    }
 	$(document).on("dblclick",".ui-widget-drop",function(event,ui){
 	  	var package = {};
 	  	var folder_content = $('#'+this.innerText);
