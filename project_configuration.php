@@ -30,8 +30,7 @@ require_once("common.php");
 	</div>
 	<div id = "main">
 		<p><strong><em>* To Configure a New Project: Choose a template below and add a ProjectID and Name!</em></strong></p>
-			<a href="index.php?proj_idx=99" class="tpl btn btn-info" data-tpl="99">Short Template</a> 
-			<a href="index.php?proj_idx=100" class="tpl btn btn-success" data-tpl="100">Full Template</a>
+			<a href="index.php?proj_idx=100" class="tpl btn btn-success" data-tpl="100">Create new Project from Template</a>
 		<p><strong><em>* To Make Changes to an Existing Project: Click on a project Below</em></strong></p>
 	</div>
 

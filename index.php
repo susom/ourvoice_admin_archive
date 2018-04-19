@@ -78,13 +78,16 @@ if( isset($_POST["proj_idx"]) ){
 			array_push($app_lang, array("lang" => $code , "language" => $_POST["lang_full"][$ldx]));
 		}
 
+		if(isset($_POST["thumbs"]) && is_array($_POST["thumbs"])){
+			$_POST["thumbs"] = $_POST["thumbs"][1];
+		}
 		$updated_project = array(
 			 "project_id" 		=> strtoupper($_POST["project_id"])
 			,"project_name" 	=> $_POST["project_name"]
 			,"project_pass" 	=> $_POST["project_pass"]
 			,"summ_pass" 		=> $_POST["summ_pass"]
 			,"template_type"	=> $_POST["template_type"]
-			,"thumbs"			=> $_POST["thumbs"]
+			,"thumbs"			=> isset($_POST["thumbs"]) ? $_POST["thumbs"] : 0
 			,"app_lang" 		=> $app_lang
 		);
 
@@ -213,9 +216,9 @@ if(!isset($_SESSION["discpw"])) {
 					<input type="radio" name="template_type" <?php if(!$template_type) echo "checked"; ?> value="0"/> Short Template 
 					<input type="radio" name="template_type" <?php if($template_type) echo "checked"; ?> value="1"/> Full Template
 				</label>
-				<label><span>Use Smilies</span>
-					<input type="radio" name="thumbs" <?php if($thumbs) echo "checked"; ?> value="2"/> Yes 
-					<input type="radio" name="thumbs" <?php if(!$thumbs) echo "checked"; ?> value="1"/> No
+				<label><span>Good or Bad Icons</span>
+					<input type="checkbox" name="thumbs" <?php if($thumbs) echo "checked"; ?> value="2"/> Smilies 
+					<input type="checkbox" name="thumbs" <?php if(!$thumbs) echo "checked"; ?> value="1"/> Thumbs
 				</label>
 				<label class="languages"><p><span>Languages</span> 
 					<!-- <a href='#' class='add_language'>+ Add Language</a> -->
