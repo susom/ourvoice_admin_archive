@@ -79,6 +79,7 @@ section h5{
     vertical-align: top;
 
 }
+.thumbs
 .thumbs figure {
 	margin:0; 
 }
@@ -573,7 +574,9 @@ label span {
     border-width: 2px;
     overflow: scroll;
     max-width: 333px;
+    min-width:333px;
     float:right;
+    min-height: 690px;
     max-height: 690px;
     position: relative;
 }

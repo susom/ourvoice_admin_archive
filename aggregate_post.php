@@ -24,15 +24,15 @@ if(isset($_POST["DragTag"])) //assign picture a tag
 	 	if(!$present_flag){ //if name isn't already defined within the list of tags
 	 		echo "not present in list";
 	 		array_push($storage["project_list"][$datakey]["tags"], $drag_tag);
-	 		$resp = push_data(cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db, $storage);
+	 		//$resp = push_data(cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db, $storage);
 
 	 	}
 	 }else{ //if the tags category does not exist
 	 	 echo "not exist";
 	 	 $storage["project_list"][$datakey]["tags"] = array();
 	 	 array_push($storage["project_list"][$datakey]["tags"], $drag_tag);
-	 	 $resp = push_data(cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db, $storage);
-
+	 	 //$resp = push_data(cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db, $storage);
+	 	 //COMMENT THIS RESP PUSH OUT BECAUSE IT WAS UPDATING DATABASE MULTIPLE TIMES PER DRAG
 	 }
 	 //add tag to individual photo in disc_users 
 	 $url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $pic_reference;
@@ -56,15 +56,16 @@ if(isset($_POST["DragTag"])) //assign picture a tag
 	 	}
 	 	if(!$present_flag){
 	 		array_push($storage["photos"][$pic_number]["tags"],$drag_tag);
-	 		$resp = push_data(cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $pic_reference, $storage);
+	 		//$resp = push_data(cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $pic_reference, $storage);
 	 	}
 	 }else{
 	 	$storage["photos"][$pic_number]["tags"] = array();
 	 	array_push($storage["photos"][$pic_number]["tags"],$drag_tag);
-	 	$resp = push_data(cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $pic_reference, $storage);
+	 	//$resp = push_data(cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $pic_reference, $storage);
 	 }
 
-	 
+	$resp = push_data(cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $pic_reference, $storage);
+
 }	
 
 if(isset($_POST["deleteTag"])){

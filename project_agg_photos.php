@@ -356,6 +356,7 @@ $(document).ready(function(){
 	$(".collapse").on("click", ".preview i", function(){
 		var doc_id 	= $(this).parent().data("doc_id");
 		var photo_i = $(this).parent().data("photo_i"); 
+		console.log(doc_id);
 		
 		if($(this).parent().prev("ul.tagon").length){
 			$(this).parent().prev("ul.tagon").removeClass("tagon");
@@ -381,12 +382,16 @@ $(document).ready(function(){
 		var doc_id 	= $(this).data("doc_id");
 		var photo_i = $(this).data("photo_i");
 		var tagtxt 	= $(this).data("deletetag");
-		
+		console.log(tagtxt);
 		var _this 	= $(this);
 		$.ajax({
 			method: "POST",
 			url: "photo.php",
-			data: { doc_id: doc_id, photo_i: photo_i, delete_tag_text: tagtxt}
+			data: { doc_id: doc_id, photo_i: photo_i, delete_tag_text: tagtxt},
+			success:function(result){
+				console.log(result);
+			}
+
 		}).done(function( msg ) {
 			_this.parent("li").fadeOut("medium",function(){
 				_this.parent("li").remove();
@@ -403,19 +408,19 @@ $(document).ready(function(){
 		var tag = ($(this).attr("datakey"));
 		var pics = $(".ui-widget-drop");
 		var p_data = [];
-		for(var i = 0 ; i < pics.length ; i++ )
-		{
+		for(var i = 0 ; i < pics.length ; i++ ){
 			p_data.push(pics[i].id)
 		}
+
 		$.ajax({
           url:  "aggregate_post.php",
           type:'POST',
           data: { deleteTag: tag, pictures: p_data },
           success:function(result){
             //remove dom elements here
-            
+             $("."+tag).remove();
           }
-       });  
+        });  
 		ele.remove();
 		console.log("clicking on the trashcan");
 		return false;
@@ -423,14 +428,55 @@ $(document).ready(function(){
 	
 	//ADD PHOTO TAG
 	$("#addtags").on("click",".tagphoto", function(){
-		// $(".ui-widget-drag").draggable({
-  //    	 	cursor: "move",
-  //     		drag: function(event,ui){}
-  //     	});
+		console.log(this.childNodes[0].attributes[0].value);
+		var tag = this.childNodes[0].attributes[0].value;
+		var photo_selection = $("."+tag);
+		var all_photos = $(".ui-widget-drop");
+		var selected_tag = false;
+			// console.log($(".tagphoto").children("b"));
+		$(".tagphoto").each(function(index){ //for the tag boxes on the left side of the screen
+			if($(this).children("b").attr("datakey") == tag){
+				if($(this).parent().hasClass("selected")){
+					$(this).parent().removeClass("selected");
+					selected_tag = false;
+				}else{
+					$(this).parent().addClass("selected");
+					selected_tag = true;
+				}
+			}
+		});
+		if(selected_tag){ //if trying to hide pictures
+			photo_selection.each(function(index){
+				$(this).closest(".ui-widget-drop").addClass(tag+"_photo"); //add display to each of the matching tag pics
+			});
 
-		//TODO
-		// ADD DRAG AND DROP TO ADD TAG TO PHOTOs THUMBNAILS
-		console.log("clicking on the link");
+			all_photos.each(function(index){ //add hide to each of the others
+				if($(this).hasClass(tag+"_photo"))
+					console.log("nothing");
+				else
+					$(this).addClass("hide_"+tag);
+			});
+
+		}else{	//trying to reveal pictures
+			console.log(photo_selection);
+			// photo_selection.each(function(index){
+			// if($(this).closest(".ui-widget-drop").hasClass(tag+"_photo")){
+			// 	$(this).closest(".ui-widget-drop").removeClass(tag+"_photo");
+			// 	if($(this).closest(".ui-widget-drop").hasClass("hide"))
+			// 		console.log("hidden");
+			// }
+
+			// });
+		
+			all_photos.each(function(index){
+				if($(this).hasClass(tag+"_photo"))
+					$(this).removeClass(tag+"_photo");
+				
+				if($(this).hasClass("hide_"+tag))
+					$(this).removeClass("hide_"+tag);
+			});
+
+		}
 		return false;
 	});
 
@@ -491,19 +537,19 @@ function bindProperties(){
 
     $( ".ui-widget-drop" ).droppable({
       drop: function( event, ui ) {
-      	var drag = (ui.draggable[0].innerText);
+      	var drag = (ui.draggable[0].innerText.trim());
       	var drop = event.target.id;
       	var temp = drop.split("_");
       	var proj = temp[0];
       	var p_ref = temp[0] +"_"+ temp[1] +"_"+ temp[2] +"_"+ temp[3];
       	var exists = false;
-      	var temp = ($(".btn-danger").attr('href')).split("=");
       	var datakey = temp[(temp.length-1)];
          $.ajax({
           url:  "aggregate_post.php",
           type:'POST',
           data: { DragTag: drag, DropTag: drop, Project: proj, Key: datakey },
           success:function(result){
+          	console.log(result);
           	var appendloc = $("#"+drop).find("ul");
           	for(var i = 0 ; i < appendloc[0].childNodes.length; i++){
           		//console.log(appendloc[0].childNodes[i].childNodes);
@@ -511,7 +557,7 @@ function bindProperties(){
           			exists = true;
           	}
           	if(!exists){
-	            var newli 	= $("<li>").text(drag);
+	            var newli 	= $("<li>").text(drag).addClass(drag);
 	            var newa 	= $("<a href='#'>").attr("data-deletetag",drag).attr("data-doc_id",p_ref).attr("data-photo_i",datakey).text("x").addClass("deletetag");
 				newli.append(newa);
 	            appendloc.prepend(newli);
@@ -538,6 +584,14 @@ function bindProperties(){
 }
 .ui-draggable-helper{
     width:150px;
+}
+
+li[class*="hide_"]{
+	display: none;
+}
+
+.selected{
+	background-color: azure;
 }
 </style>
 

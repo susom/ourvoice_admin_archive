@@ -69,14 +69,19 @@ if( isset($_POST["doc_id"]) ){
 			echo json_encode($json_response);
 		}elseif(isset($_POST["delete_tag_text"])){
 			//SAVE TAG
+
 			$photo_tag = $_POST["delete_tag_text"];
+
+			print_r($payload["photos"][$photo_i]["tags"]);
 			if(isset($payload["photos"][$photo_i]["tags"])){
 				if (($key = array_search($photo_tag, $payload["photos"][$photo_i]["tags"])) !== false) {
+				    // print_r($payload["photos"][$photo_i]["tags"]);
 				    unset($payload["photos"][$photo_i]["tags"][$key]);
+					// print_r($payload["photos"][$photo_i]["tags"]);				
 				}
 			}
 		}
-        doCurl($url, json_encode($payload),"PUT");
+        $tes = doCurl($url, json_encode($payload),"PUT");
 		exit;
 	}else{
 		//SAVE TRANSCRIPTIONS
