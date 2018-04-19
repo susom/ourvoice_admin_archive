@@ -70,10 +70,8 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
 <link href="css/dt_common.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 <link href="css/dt_summary.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
-<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="
-sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-
+<script src="js/jquery-3.3.1.min.js"></script>
+<script src="js/jquery-ui.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"/>
 
@@ -119,7 +117,7 @@ if( $active_project_id ){
 
 
 	//PRINT TO SCREEN
-	echo "<h1>Discovery Tool Data Summary for $active_project_id</h1>";
+	echo "<h1 class = 'title'>Discovery Tool Data Summary for $active_project_id</h1>";
 	echo "<div id='google_map_photos' class='gmap'></div>";
 	$project_meta 	= $ap["project_list"][$active_pid];
 	$photo_geos 	= array();
@@ -271,6 +269,7 @@ $(document).ready(function(){
 	window.current_preview = null;
 	//$("#addtags").addClass("closed"); //default closed
 	bindProperties();
+	appendProjectCount();
 	var gmarkers = drawGMap(<?php echo json_encode($photo_geos) ?>, 'photos', 16);
 	
 	$.each(gmarkers, function(){
@@ -573,6 +572,10 @@ function bindProperties(){
 		}
     }); //ui-widget-drop
   
+}
+function appendProjectCount(){
+	$(".title").append(" ("+$("#tags").children().length+")");
+	console.log($("#tags").children().length);
 }
 </script>
 <style>
