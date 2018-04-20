@@ -47,23 +47,23 @@ h4[data-toggle="collapse"]{
 if( $active_project_id ){
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
     $response 		= filter_by_projid("surveys","[\"$active_pid\"]");
-	$project_meta 	= $ap["project_list"][$active_pid];
-
-	$survey_data 	= $project_meta["surveys"];
+	$survey_data 	= $ap["survey_text"];
 	$lang 			= "en";
 	$survey_qa 		= array();
 
 	$headers 		= array();
-	foreach($survey_data as $q){
-		$headers[] 	= $q["label"][$lang];
-		$survey_qa[$q["name"]] = array("label" => $q["label"][$lang], "type" => $q["type"] );
-		if(isset($q["options"])){
-			$options = array();
-			foreach($q["options"] as $option){
-				$options[$option["value"]] = $option[$lang];
+	foreach($survey_data as $short_or_full){
+		foreach($short_or_full as $q){
+			$headers[] 	= $q["label"][$lang];
+			$survey_qa[$q["name"]] = array("label" => $q["label"][$lang], "type" => $q["type"] );
+			if(isset($q["options"])){
+				$options = array();
+				foreach($q["options"] as $option){
+					$options[$option["value"]] = $option[$lang];
+				}
+				$survey_qa[$q["name"]]["options"]	= $options;
+				$survey_qa[$q["name"]]["answers"] 	= array();
 			}
-			$survey_qa[$q["name"]]["options"]	= $options;
-			$survey_qa[$q["name"]]["answers"] 	= array();
 		}
 	}
 
