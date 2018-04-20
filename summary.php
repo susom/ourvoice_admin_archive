@@ -216,8 +216,7 @@ if( $active_project_id ){
 		echo "<aside>";
 		echo "<h4 class='day' rel='false' rev='$active_pid' data-toggle='collapse' data-target='#day_$date'>$date</h4>";
 		echo "<div id='day_$date' class='collapse'>";
-		
-		echo "<img class='loading' style='margin:0 auto; display:block;' src='https://s-media-cache-ak0.pinimg.com/originals/e0/f5/a5/e0f5a5f8c2e378df4fddd75e26e9a5a3.gif'/>";
+		echo "<div class='loading'></div>";
 		echo "</div>";
 		echo "</aside>";
 	}

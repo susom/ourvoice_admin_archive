@@ -4,7 +4,10 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
 	var walkMap        = [];
 
     for(var i in geotags) {
-    	var ltlnpt     = new google.maps.LatLng(geotags[i]["lat"], geotags[i]["lng"]);
+        var lat = geotags[i].hasOwnProperty("lat") ? geotags[i]["lat"] : geotags[i]["latitude"];
+        var lng = geotags[i].hasOwnProperty("lng") ? geotags[i]["lng"] : geotags[i]["longitude"];
+
+    	var ltlnpt     = new google.maps.LatLng(lat, lng);
     	walkMap.push(ltlnpt);
 	}
 
@@ -40,7 +43,7 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
     if(geotags){
     	for(var i in geotags) {
             if(map_id == "google_map_photos"){
-                var icon    = "http://icons.iconarchive.com/icons/webalys/kameleon.pics/24/Polaroid-icon.png";
+                var icon    = "img/marker_blue.png";
                 var scale   = 5;
             }else{
                 var scale   = 1
@@ -64,20 +67,6 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
                 ,"photo_src"    : geotags[i]["photo_src"]
             };
             gmarkers.push(marker);
-
-            if(map_id == "google_map_photos") {
-                // google.maps.event.addListener(marker, 'mouseover', function(event) {
-                //   var photo_id = geotags[i]["photo_id"];
-                //   console.log($("#" + photo_id).length);
-                //   console.log(photo_id);
-                //   $("#" + photo_id).addClass("photoOn");
-                // });
-                // google.maps.event.addListener(marker, 'mouseout', function(event) {
-                //   var photo_id = geotags[i]["photo_id"];
-                //   $("#" + photo_id).removeClass("photoOn");
-                //   // this.setIcon(icon);
-                // });
-            }
     	}
 
     	// Creates the polyline object (connecting the dots)
