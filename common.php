@@ -155,15 +155,32 @@ function printRow($doc){
 
         $attach_url = "#";
         $audio_attachments = "";
+
         if(!empty($photo["audio"])){
             $num_audios = intval($photo["audio"]);
             $num        = $num_audios > 1 ? "<span>x$num_audios</span>" :"";
             $audio_attachments .= "<a class='audio $hasaudio'></a> $num";
         }
+        //date_default_timezone_set('America/New_York'); am-us/ny
+        
+        if($lat != 0 | $long != 0){
+            $time = time();
+            $url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$long&timestamp=$time&key=AIzaSyDCH4l8Q6dVpYgCUyO_LROnCuSE1W9cwak";
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $responseJson = curl_exec($ch);
+            curl_close($ch);
+             
+            $response = json_decode($responseJson);
+            date_default_timezone_set($response->timeZoneId); 
+        }
         $codeblock[] = "<li id='photo_$n'>
+
         <figure>
         <a href='$detail_url' target='_blank' rel='google_map_$i' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate' rev='$rotate'><img src='$photo_uri' /><span></span><b></b></a>
         <figcaption>
+
             <span class='time'>@".date("g:i a", floor($timestamp/1000))."</span>
             ".$goodbad."
             ".$audio_attachments."
@@ -293,6 +310,18 @@ function printPhotos($doc){
         }else{
             $filename   = $photo_name;
             $ph_id      = $doc["_id"];
+        }
+        if($lat != 0 | $long != 0){
+            $time = time();
+            $url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$long&timestamp=$time&key=AIzaSyDCH4l8Q6dVpYgCUyO_LROnCuSE1W9cwak";
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $responseJson = curl_exec($ch);
+            curl_close($ch);
+             
+            $response = json_decode($responseJson);
+            date_default_timezone_set($response->timeZoneId); 
         }
 
         $img_id         = $doc["_id"]."_".$photo_name;

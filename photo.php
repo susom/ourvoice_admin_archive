@@ -169,7 +169,18 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$lat 		= isset($photo["geotag"]["lat"]) ? $photo["geotag"]["lat"] : $photo["geotag"]["latitude"];
 
 		$timestamp  = $photo["geotag"]["timestamp"];
-
+		if($lat != 0 | $long != 0){
+            $time = time();
+            $url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$long&timestamp=$time&key=AIzaSyDCH4l8Q6dVpYgCUyO_LROnCuSE1W9cwak";
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $responseJson = curl_exec($ch);
+            curl_close($ch);
+             
+            $response = json_decode($responseJson);
+            date_default_timezone_set($response->timeZoneId); 
+        }
 		$photo_name = $photo["name"];
 		$ph_id 		= $_id . "_" . $photo_name;
 		$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$photo_name" . $old;
