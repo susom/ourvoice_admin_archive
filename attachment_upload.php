@@ -47,7 +47,10 @@ if( isset($_REQUEST["walk_id"]) ){
     if ($_FILES["attachment"]["error"] == UPLOAD_ERR_OK){
         // CHECK IF WALK DATA ALREADY EXISTS, NEED TO DELETE IT TO WRITE IT AGAIN, NO OVERWRITE FEATURE?
         $file       = $_FILES["attachment"]["tmp_name"];
-        $name       = "fuckoff.jpg";
+
+        // how the fuck do i get this name properly? 
+        $name       = $_FILES["attachment"]["name"];
+        
         $attachment = $local_folder."/".$name ;
         if( file_exists($attachment) ){
             unlink($attachment);
