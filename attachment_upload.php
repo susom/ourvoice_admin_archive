@@ -40,9 +40,9 @@ if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
     exit;
 }
 
-if( isset($_REQUEST["attach_id"]) && isset($_REQUEST["attach_name"])){
-    $_id    = $_REQUEST["attach_id"];
-    $name   = $_REQUEST["attach_name"];
+if( isset($_POST["attach_id"]) && isset($_POST["attach_name"])){
+    $_id    = $_POST["attach_id"];
+    $name   = $_POST["attach_name"];
 
     $split      = strpos($_id, "_photo_") > -1 ? "_photo_" : "_audio_";
     $temp       = explode($split, $_id);
@@ -52,9 +52,7 @@ if( isset($_REQUEST["attach_id"]) && isset($_REQUEST["attach_name"])){
     if ($_FILES["attachment"]["error"] == UPLOAD_ERR_OK){
         // CHECK IF WALK DATA ALREADY EXISTS, NEED TO DELETE IT TO WRITE IT AGAIN, NO OVERWRITE FEATURE?
         $file       = $_FILES["attachment"]["tmp_name"];
-        $fd_id      = $_FILES["_id"];
-        $fd_name    = $_FILES["_name"];
-        $attachment = $local_folder."/".$fd_id;
+        $attachment = $local_folder."/".$_id;
         if( file_exists($attachment) ){
             unlink($attachment);
         }
@@ -62,9 +60,9 @@ if( isset($_REQUEST["attach_id"]) && isset($_REQUEST["attach_name"])){
         // now you have access to the file being uploaded
         //perform the upload operation.
         move_uploaded_file( $file, $attachment );
-        print_r(json_encode(array($fd_id . " $fd_name saved to disk?!!!")));
+        print_r(json_encode(array("$attachment saved to disk?!!!")));
     }else{
-        print_r(json_encode(array($attachment . "upload failed")));
+        print_r(json_encode(array($attachment . " upload failed")));
     }
     exit;
 }
