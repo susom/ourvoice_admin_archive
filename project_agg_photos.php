@@ -256,13 +256,12 @@ function addmarker(latilongi,map_id) {
 }
 function normalIcon() {
   return {
-  	// url: 'http://icons.veryicon.com/48/System/Kameleon/Polaroid.png'
-    url: 'http://icons.iconarchive.com/icons/webalys/kameleon.pics/24/Polaroid-icon.png'
+    url: 'img/marker_blue.png'
   };
 }
 function highlightedIcon() {
   return {
-    url: 'http://1.bp.blogspot.com/_GZzKwf6g1o8/S6xwK6CSghI/AAAAAAAAA98/_iA3r4Ehclk/s1600/marker-green.png'
+    url: 'img/marker_purple.png'
   };
 }
 $(document).ready(function(){
@@ -285,10 +284,16 @@ $(document).ready(function(){
 		// add event to the images
 		google.maps.event.addListener(gmarkers[i], 'mouseover', function(event) {
 			var photo_id = this.extras["photo_id"];
+			var icon = {
+			    url: this.extras["photo_src"], // url
+			    scaledSize: new google.maps.Size(100, 100), // scaled size
+			};
+			this.setIcon(icon);
           	$("#" + photo_id).addClass("photoOn");
         });
         google.maps.event.addListener(gmarkers[i], 'mouseout', function(event) {
 			var photo_id = this.extras["photo_id"];
+			this.setIcon(normalIcon());
 			$("#" + photo_id).removeClass("photoOn");
         });
 	}

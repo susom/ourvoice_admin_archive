@@ -111,7 +111,7 @@ function printRow($doc){
     
     $codeblock[] = "<section class='photo_previews'>";
     $codeblock[] = "<a href='#' class='btn btn-danger deletewalk' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'>Delete This Walk</a>";
-    $codeblock[] = "<h5>Photo Previews</h5>";
+    $codeblock[] = "<h5>Photo Previews (".count($photos).")</h5>";
     $codeblock[] = "<div class='thumbs'>";
     $codeblock[] = "<ul>";
 
@@ -289,16 +289,18 @@ function printPhotos($doc){
     $walk_ts_sub = substr($doc["_id"],-13);
     
     $date_ts     = date("F j, Y", floor($walk_ts_sub/1000)) ;
-    $url_path    = $_SERVER['HTTP_ORIGIN'].dirname($_SERVER['PHP_SELF'])."/";
+    $host        = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : "";
+    $url_path    = $host .dirname($_SERVER['PHP_SELF'])."/";
+
     foreach($photos as $n => $photo){
         if(is_null($photo)){
             continue;
         }
 
         $nogeo      = empty($photo["geotag"]) ? "nogeo" : "";
-        $long       = $photo["geotag"]["longitude"];
-        $lat        = $photo["geotag"]["latitude"];
-        $timestamp  = $photo["geotag"]["timestamp"];
+        $long       = isset($photo["geotag"]["longitude"]) ? $photo["geotag"]["longitude"] : null;
+        $lat        = isset($photo["geotag"]["latitude"])  ? $photo["geotag"]["latitude"]  : null;
+        $timestamp  = isset($photo["geotag"]["timestamp"]) ? $photo["geotag"]["timestamp"] : null;
 
         $rotate     = isset($photo["rotate"]) ? $photo["rotate"] : 0;
         $photo_name = "photo_".$n.".jpg";
