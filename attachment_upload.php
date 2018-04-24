@@ -40,19 +40,15 @@ if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
     exit;
 }
 
-if( isset($_POST["attach_id"]) && isset($_POST["attach_name"])){
-    $_id    = $_POST["attach_id"];
-    $name   = $_POST["attach_name"];
-
-    $split      = strpos($_id, "_photo_") > -1 ? "_photo_" : "_audio_";
-    $temp       = explode($split, $_id);
-    $walk_id    = $temp[0]; 
+if( isset($_REQUEST["walk_id"]) ){
+    $walk_id        = $_REQUEST["walk_id"];
     $local_folder   = "temp/$walk_id";
 
     if ($_FILES["attachment"]["error"] == UPLOAD_ERR_OK){
         // CHECK IF WALK DATA ALREADY EXISTS, NEED TO DELETE IT TO WRITE IT AGAIN, NO OVERWRITE FEATURE?
         $file       = $_FILES["attachment"]["tmp_name"];
-        $attachment = $local_folder."/".$_id;
+        $name       = "fuckoff.jpg";
+        $attachment = $local_folder."/".$name ;
         if( file_exists($attachment) ){
             unlink($attachment);
         }
