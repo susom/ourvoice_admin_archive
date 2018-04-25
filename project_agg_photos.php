@@ -264,13 +264,7 @@ function highlightedIcon() {
     url: 'img/marker_purple.png'
   };
 }
-$(document).ready(function(){
-	window.current_preview = null;
-	//$("#addtags").addClass("closed"); //default closed
-	bindProperties();
-	appendProjectCount();
-	var gmarkers = drawGMap(<?php echo json_encode($photo_geos) ?>, 'photos', 16);
-	
+function bindMapFunctionality(gmarkers){
 	$.each(gmarkers, function(){
 		var el = this;
 		$("#" + this.extras["photo_id"]).hover(function(){
@@ -297,6 +291,17 @@ $(document).ready(function(){
 			$("#" + photo_id).removeClass("photoOn");
         });
 	}
+}
+$(document).ready(function(){
+	window.current_preview = null;
+	//$("#addtags").addClass("closed"); //default closed
+	bindProperties();
+	appendProjectCount();
+	var pins = <?php echo json_encode($photo_geos) ?>;
+	console.log("ON READY CALLED");
+
+	var gmarkers = drawGMap(<?php echo json_encode($photo_geos) ?>, 'photos', 16);
+	bindMapFunctionality(gmarkers);
 
 	//HOVER ON MAP SPOT
 	$(document).on({
@@ -432,12 +437,17 @@ $(document).ready(function(){
 	
 	//ADD PHOTO TAG
 	$("#addtags").on("click",".tagphoto", function(){
-		console.log(this.childNodes[0].attributes[0].value);
-		var tag = this.childNodes[0].attributes[0].value;
+		console.log("inside here");
+		console.log(this);
+		console.log($(this).children("b").attr("datakey"));
+		//console.log(this.childNodes[0].attributes[0].value);
+		var tag = $(this).children("b").attr("datakey");
 		var photo_selection = $("."+tag);
 		var all_photos = $(".ui-widget-drop");
 		var selected_tag = false;
-			// console.log($(".tagphoto").children("b"));
+		var pic_ids = [];
+		var marker_tags = [];
+		var retpins = [];
 		$(".tagphoto").each(function(index){ //for the tag boxes on the left side of the screen
 			if($(this).children("b").attr("datakey") == tag){
 				if($(this).parent().hasClass("selected")){
@@ -452,6 +462,7 @@ $(document).ready(function(){
 		if(selected_tag){ //if trying to hide pictures
 			photo_selection.each(function(index){
 				$(this).closest(".ui-widget-drop").addClass(tag+"_photo"); //add display to each of the matching tag pics
+				pic_ids.push($(this).closest(".ui-widget-drop").attr("id"));
 			});
 
 			all_photos.each(function(index){ //add hide to each of the others
@@ -460,25 +471,54 @@ $(document).ready(function(){
 				else
 					$(this).addClass("hide_"+tag);
 			});
-
+			//trying to hide the map markers now
+			$.each(pins, function(){ //loop through all map markers defined globally onReady()
+				for(var i = 0 ; i < pic_ids.length ; i++) //loop through all currently visible pictures on page
+					if($(this).attr("photo_id") == pic_ids[i]){ //identify which markers to add tags to
+						retpins.push(this);
+						//console.log(pins);
+					}
+			});
+			console.log(retpins);
+			var gmarkers = drawGMap(retpins, 'photos', 14);
+			bindMapFunctionality(gmarkers);
+		
 		}else{	//trying to reveal pictures
-			console.log(photo_selection);
-			// photo_selection.each(function(index){
-			// if($(this).closest(".ui-widget-drop").hasClass(tag+"_photo")){
-			// 	$(this).closest(".ui-widget-drop").removeClass(tag+"_photo");
-			// 	if($(this).closest(".ui-widget-drop").hasClass("hide"))
-			// 		console.log("hidden");
-			// }
+			// console.log(photo_selection);
+			// all_photos.each(function(index){
+			// 	pic_ids.push($(this).closest(".ui-widget-drop").attr("id"));
 
 			// });
-		
+			console.log(pic_ids);
 			all_photos.each(function(index){
-				if($(this).hasClass(tag+"_photo"))
+				if($(this).hasClass(tag+"_photo")){
 					$(this).removeClass(tag+"_photo");
+					 pic_ids.push($(this).closest(".ui-widget-drop").attr("id"));
+					console.log("removing " + $(this).closest(".ui-widget-drop").attr("id"));
+				}
 				
-				if($(this).hasClass("hide_"+tag))
+				if($(this).hasClass("hide_"+tag)){
 					$(this).removeClass("hide_"+tag);
+					 pic_ids.push($(this).closest(".ui-widget-drop").attr("id"));
+					console.log("removing2 " + $(this).closest(".ui-widget-drop").attr("id"));
+
+				}
 			});
+						console.log(pic_ids);
+
+			
+			// photo_selection.each(function(index){
+			// 	pic_ids.push($(this).closest(".ui-widget-drop").attr("id"));
+			// });
+			$.each(pins, function(){ //loop through all map markers defined globally onReady()
+				for(var i = 0 ; i < pic_ids.length ; i++) //loop through all currently visible pictures on page
+					if($(this).attr("photo_id") == pic_ids[i]){ //identify which markers to add tags to
+						retpins.push(this);
+					}
+			});
+			// console.log(retpins);
+			var gmarkers = drawGMap(retpins, 'photos', 14);
+			bindMapFunctionality(gmarkers);
 
 		}
 		return false;
