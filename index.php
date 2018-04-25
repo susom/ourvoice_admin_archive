@@ -91,8 +91,12 @@ if( isset($_POST["proj_idx"]) ){
 			,"app_lang" 		=> $app_lang
 		);
 
-		$pidx 		= $proj_idx;
-		$payload 	= $ap;
+		$pidx 			= $proj_idx;
+		
+		// due to unfreshness of SESSION multiple people saving and shit, we need to pull fresh version before pushing back up
+		$url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+	    $response 		= doCurl($url);
+		$payload = $_SESSION["DT"] = json_decode($response,1);
 		$payload["project_list"][$pidx] = $updated_project;
 
         $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
