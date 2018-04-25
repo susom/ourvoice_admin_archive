@@ -1,7 +1,7 @@
 <?php
 require_once("common.php");
 
-// AJAX HANDLE walk data
+// AJAX UPLOAD WALK DATA
 if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
 	$_id = $_POST["doc_id"];
 	$doc = json_decode($_POST["doc"],1);
@@ -40,6 +40,7 @@ if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
     exit;
 }
 
+// AJAX UPLOAD ATTACHMENTS
 if( isset($_REQUEST["walk_id"]) ){
     $walk_id        = $_REQUEST["walk_id"];
     $local_folder   = "temp/$walk_id";
@@ -65,6 +66,5 @@ if( isset($_REQUEST["walk_id"]) ){
     }
     exit;
 }
-
 
 exit;
