@@ -476,7 +476,8 @@ $(document).ready(function(){
 				for(var i = 0 ; i < pic_ids.length ; i++) //loop through all currently visible pictures on page
 					if($(this).attr("photo_id") == pic_ids[i]){ //identify which markers to add tags to
 						retpins.push(this);
-						//console.log(pins);
+						console.log("adding to retpins");
+						console.log($(this).attr("photo_id") + "--- " + pic_ids[i]);
 					}
 			});
 			console.log(retpins);
@@ -484,35 +485,27 @@ $(document).ready(function(){
 			bindMapFunctionality(gmarkers);
 		
 		}else{	//trying to reveal pictures
-			// console.log(photo_selection);
-			// all_photos.each(function(index){
-			// 	pic_ids.push($(this).closest(".ui-widget-drop").attr("id"));
 
-			// });
 			console.log(pic_ids);
 			all_photos.each(function(index){
 				if($(this).hasClass(tag+"_photo")){
 					$(this).removeClass(tag+"_photo");
-					 pic_ids.push($(this).closest(".ui-widget-drop").attr("id"));
-					console.log("removing " + $(this).closest(".ui-widget-drop").attr("id"));
 				}
 				
 				if($(this).hasClass("hide_"+tag)){
 					$(this).removeClass("hide_"+tag);
-					 pic_ids.push($(this).closest(".ui-widget-drop").attr("id"));
-					console.log("removing2 " + $(this).closest(".ui-widget-drop").attr("id"));
-
 				}
 			});
-						console.log(pic_ids);
 
+			$(".ui-widget-drop").not("[class*=hide]").each(function(index){ //find all pics that are displayed
+				pic_ids.push($(this).closest(".ui-widget-drop").attr("id")); //store for comparison loop
+			});
+			console.log(pic_ids);
 			
-			// photo_selection.each(function(index){
-			// 	pic_ids.push($(this).closest(".ui-widget-drop").attr("id"));
-			// });
+	
 			$.each(pins, function(){ //loop through all map markers defined globally onReady()
-				for(var i = 0 ; i < pic_ids.length ; i++) //loop through all currently visible pictures on page
-					if($(this).attr("photo_id") == pic_ids[i]){ //identify which markers to add tags to
+				for(var i = 0 ; i < pic_ids.length ; i++) //loop through all previously stored visible pictures
+					if($(this).attr("photo_id") == pic_ids[i]){ //identify which markers to redraw
 						retpins.push(this);
 					}
 			});
