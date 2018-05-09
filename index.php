@@ -150,6 +150,8 @@ if(isset($_POST["discpw"])){
   
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	<script src="js/common.js"></script>
+
 </head>
 <body id="main" class="configurator">
 <div id="box">
@@ -191,6 +193,10 @@ if(!isset($_SESSION["discpw"])) {
 			<li><a href = "organization.php">Organization</a></li>
 			<li><a href = "recent_activity.php">All Data</a></li>
 			<li style="float:right"><a href="index.php?clearsession=1">Refresh Project Data</a></li>
+			<li style="float:right"><img id = "magnifying_glass" src = "img/Magnifying_glass_icon.svg"></li>
+			<li style="float:right"><input type = "text" id = "search" placeholder="TAG"></li>
+			<li style="float:right"><a href = "">Search: </a></li>
+
 		</ul>
 	</div>
 	<?php
@@ -368,6 +374,7 @@ function sortTable(n){
 }
 
 $(document).ready(function(){
+	pdata = <?php echo json_encode($ALL_PROJ_DATA);?>;
 	if($("#folderspace").length){
 		sortTable(1);
 		sortTable(1); //default to Last updated Time
@@ -399,19 +406,12 @@ $(document).ready(function(){
 	        },function(err){
 	          console.log("ERROR");
 	          console.log(err);
-	    });
+	    }); //ajax
 
-	 //  	if($('#'+this.innerText+':visible').length == 0)
-	 //    	$('#'+this.innerText).css('display','inline-block');
-		// else{
-  //   	 	$('#'+this.innerText).css('display','none');
-  //       	console.log(this.innerText);
-		// }
+	});//on
 
-	});
-
-
-
+	/*On magnifying glass click and enter press -> run search fx */
+	implementSearch(pdata);
 
 	<?php
 

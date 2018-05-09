@@ -331,4 +331,19 @@ input[readonly]{
 	background-color: #111;
 }
 
+#nav li input{
+	position: relative;
+	top:10px;
+	width:200px;
+}
+#nav li img{
+	max-width:18px;
+	position: relative;
+	top:12px;
+	right:23px;
+	z-index: 1;
+}
+#nav li img:hover{
+	cursor: pointer;
+}
 
