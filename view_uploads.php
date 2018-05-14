@@ -97,12 +97,24 @@ function deleteDirectory($dir) {
     return $retval == 0; // UNIX commands return zero on success
 }
 
+function prepareAttachment($key,$rev){
+    $parent_dir     = $parent_check[$key];
+    $file_i         = str_replace($parent_dir."_","",$key);   
+    $splitdot       = explode(".",$file_i);
+    $c_type         = $splitdot[1];
+
+    $couchurl       = $attach_url."/".$key."/".$file_i."?rev=".$rev;
+    $filepath       = 'temp/'.$parent_dir.'/'.$key;
+    $content_type   = strpos($key,"photo") ? 'image/jpeg' : $c_type;
+    $response       = uploadAttach($couchurl, $filepath, $content_type);
+    return $response;
+}
+
 if(isset($_POST["syncToCouch"])){
     $backup_keys            = $_POST["backups"];
     $backup_attach_keys     = $_POST["backups_attach"];
     $backup_url             = $_POST["backups_url"];
     $backup_attach_url      = $_POST["backups_attach_url"];
-
     $backup_response        = json_decode(doCurl($backup_url, $backup_keys, "POST"),1);
     $backup_attach_response = json_decode(doCurl($backup_attach_url."?include_docs=true", $backup_attach_keys, "POST"),1);
 
@@ -111,27 +123,29 @@ if(isset($_POST["syncToCouch"])){
         if(isset($row["error"]) && $row["error"] == "not_found"){
             $payload  = file_get_contents('temp/'.$row["key"].'/'.$row["key"].'.json');
             $response   = doCurl($walks_url, $payload, 'POST');
-            print_rr($response);
         }
     }
 
     $attach_url = cfg::$couch_url . "/" . cfg::$couch_attach_db;
     foreach($backup_attach_response["rows"] as $row){
+
         if(isset($row["error"]) && $row["error"] == "not_found"){
             // 2 step process 
+            
             // first , create the data entry
             $payload    = json_encode(array("_id" => $row["key"]));
             $response   = doCurl($attach_url, $payload, 'POST');
             $response   = json_decode($response,1);
+            $rev        = $response["rev"];
 
             // next upload the attach
-            $parent_dir     = $parent_check[$row["key"]];
-            $file_i         = str_replace($parent_dir."_","",$row["key"]);           
-            $couchurl       = $attach_url."/".$row["key"]."/".$file_i."?rev=".$response["rev"];
-            $filepath       = 'temp/'.$parent_dir.'/'.$row["key"];
-            $content_type   = strpos($row["key"],"photo") ? 'image/jpeg' : 'audio/wav';
-            $response       = uploadAttach($couchurl, $filepath, $content_type);
+            $response   = prepareAttachment($key,$rev); 
             print_rr($response);
+        }elseif(isset($row["doc"]["_rev"]) && !isset($row["doc"]["_attachments"])){
+            // the stub was created but the attachment was not yet uploaded
+            // so only need to do the second step
+            $rev        = $row["doc"]["_rev"];
+            $response   = prepareAttachment($key,$rev); 
         }
     }
 }elseif(isset($_POST["deleteDir"])){
