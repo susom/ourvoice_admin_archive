@@ -15,8 +15,9 @@ if ($folder = opendir('temp')) {
     closedir($folder);
 }
 
-echo "<h2>Our Voice Emergency Back Up Folder</h2>";
-echo "<ul>";
+$html = array();
+$html[] =  "<h2>Our Voice Emergency Back Up Folder</h2>";
+$html[] =  "<ul>";
 $backedup_attachments = array();
 $parent_check         = array();  //THIS WILL BE USED IN THE POST HANDLER UGH
 foreach($backedup as $backup){
@@ -26,8 +27,8 @@ foreach($backedup as $backup){
     //check the photo attachments 
     //push to couch if not in disc_attachment
     
-    echo "<li><h3>$backup <form method='POST'><input type='hidden' name='deleteDir' value='temp/$backup'/><input type='submit' value='Delete Directory'/></form></h3>";
-    echo "<ul>";
+    $html[] =  "<li><h3>$backup <form method='POST'><input type='hidden' name='deleteDir' value='temp/$backup'/><input type='submit' value='Delete Directory'/></form></h3>";
+    $html[] =  "<ul>";
         if ($folder = opendir('temp/'.$backup)) {
             while (false !== ($file = readdir($folder))) {
                 if($file == "." || $file == ".."){
@@ -38,29 +39,29 @@ foreach($backedup as $backup){
                     $backedup_attachments[] = $file;
                     $parent_check[$file]    = $backup;
                 }
-                echo "<li><a href='temp/$backup/$file' target='blank'>";
-                echo $file;
-                echo "</a></li>";
+                $html[] =  "<li><a href='temp/$backup/$file' target='blank'>";
+                $html[] =  $file;
+                $html[] =  "</a></li>";
             }
             closedir($folder);
         }
-    echo "</ul>";
-    echo "</li>";
+    $html[] =  "</ul>";
+    $html[] =  "</li>";
 }
-echo "</ul>";
+$html[] =  "</ul>";
 
 $backup_url         = cfg::$couch_url . "/" . cfg::$couch_users_db . "/_all_docs";
 $backup_keys        = json_encode(array("keys" => $backedup));
 $backup_attach_url  = cfg::$couch_url . "/" . cfg::$couch_attach_db . "/_all_docs";
 $backup_attach_keys = json_encode(array("keys" => $backedup_attachments));
-echo "<form method='POST'>";
-echo "<input type='hidden' name='syncToCouch' value='1'/>";
-echo "<input type='hidden' name='backups' value='$backup_keys'/>";
-echo "<input type='hidden' name='backups_attach' value='$backup_attach_keys'/>";
-echo "<input type='hidden' name='backups_url' value='$backup_url'/>";
-echo "<input type='hidden' name='backups_attach_url' value='$backup_attach_url'/>";
-echo "<input type='submit' value='save to couch'/>";
-echo "</form>";
+$html[] =  "<form method='POST'>";
+$html[] =  "<input type='hidden' name='syncToCouch' value='1'/>";
+$html[] =  "<input type='hidden' name='backups' value='$backup_keys'/>";
+$html[] =  "<input type='hidden' name='backups_attach' value='$backup_attach_keys'/>";
+$html[] =  "<input type='hidden' name='backups_url' value='$backup_url'/>";
+$html[] =  "<input type='hidden' name='backups_attach_url' value='$backup_attach_url'/>";
+$html[] =  "<input type='submit' value='save to couch'/>";
+$html[] =  "</form>";
 
 function uploadAttach($couchurl, $filepath, $content_type){
     $data       = file_get_contents($filepath);
@@ -122,7 +123,7 @@ if(isset($_POST["syncToCouch"])){
             $payload    = json_encode(array("_id" => $row["key"]));
             $response   = doCurl($attach_url, $payload, 'POST');
             $response   = json_decode($response,1);
-            
+
             // next upload the attach
             $parent_dir     = $parent_check[$row["key"]];
             $file_i         = str_replace($parent_dir."_","",$row["key"]);           
@@ -138,6 +139,9 @@ if(isset($_POST["syncToCouch"])){
     deleteDirectory($rmdir);
     header("location:view_uploads.php");
 }
+
+
+echo implode("\r\n",$html);
 ?>
 <style>
 h3 form{ display:inline-block; }
