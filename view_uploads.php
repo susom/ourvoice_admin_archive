@@ -139,13 +139,15 @@ if(isset($_POST["syncToCouch"])){
             $rev        = $response["rev"];
 
             // next upload the attach
-            $response   = prepareAttachment($key,$rev); 
+            $response   = prepareAttachment($row["key"],$rev); 
             print_rr($response);
         }elseif(isset($row["doc"]["_rev"]) && !isset($row["doc"]["_attachments"])){
+
             // the stub was created but the attachment was not yet uploaded
             // so only need to do the second step
             $rev        = $row["doc"]["_rev"];
-            $response   = prepareAttachment($key,$rev); 
+            $response   = prepareAttachment($row["key"],$rev); 
+            print_rr($response);
         }
     }
 }elseif(isset($_POST["deleteDir"])){
