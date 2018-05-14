@@ -127,6 +127,11 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
     $forjsongeo = array_filter($doc["geotags"],function($tag){
         return $tag["accuracy"] <= 50;
     });
+
+    if(empty($forjsongeo)){
+        $forjsongeo = $doc["geotags"]; 
+    }
+
     $walk_geo 	= json_encode($forjsongeo);
 
 	$photos 	= $doc["photos"];
@@ -311,6 +316,7 @@ function addmarker(latilongi,map_id) {
     window[map_id].setCenter(marker.getPosition());
     window.current_preview = marker;
 }
+
 function saveTag(doc_id,photo_i,tagtxt,proj_idx){
 	var data = { doc_id: doc_id, photo_i: photo_i, tag_text: tagtxt};
 	if(proj_idx){
@@ -348,6 +354,7 @@ function saveTag(doc_id,photo_i,tagtxt,proj_idx){
 	});
 	return;
 }
+
 $(document).ready(function(){
 	<?php
 		echo implode($gmaps);

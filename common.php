@@ -94,6 +94,10 @@ function printRow($doc){
         return $tag["accuracy"] <= 50;
     });
 
+    if(empty($forjsongeo)){
+        $forjsongeo = $geotags; 
+    }
+
     $json_geo    = json_encode($forjsongeo);
     $last4       = substr($doc["_id"],-4);
     $firstpart   = substr($doc["_id"],0, strlen($doc["_id"]) - 4);
