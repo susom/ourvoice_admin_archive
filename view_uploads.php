@@ -83,9 +83,9 @@ function uploadAttach($couchurl, $filepath, $content_type){
     );
     curl_setopt_array($ch, $options);
     $info       = curl_getinfo($ch);
-    print_rr($info);
+    // print_rr($info);
     $err        = curl_errno($ch);
-    print_rr($err);
+    // print_rr($err);
     $response   = curl_exec($ch);
     curl_close($ch);
     return $response;
