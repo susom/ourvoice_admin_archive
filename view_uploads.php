@@ -98,6 +98,7 @@ function deleteDirectory($dir) {
 }
 
 function prepareAttachment($key,$rev){
+    global $parent_check;
     $parent_dir     = $parent_check[$key];
     $file_i         = str_replace($parent_dir."_","",$key);   
     $splitdot       = explode(".",$file_i);
