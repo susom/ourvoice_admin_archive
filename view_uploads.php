@@ -104,11 +104,13 @@ if(isset($_POST["syncToCouch"])){
 
     $backup_response        = json_decode(doCurl($backup_url, $backup_keys, "POST"),1);
     $backup_attach_response = json_decode(doCurl($backup_attach_url."?include_docs=true", $backup_attach_keys, "POST"),1);
+
     $walks_url = cfg::$couch_url . "/" . cfg::$couch_users_db ;
     foreach($backup_response["rows"] as $row){
         if(isset($row["error"]) && $row["error"] == "not_found"){
             $payload  = file_get_contents('temp/'.$row["key"].'/'.$row["key"].'.json');
             $response   = doCurl($walks_url, $payload, 'POST');
+            print_rr($response);
         }
     }
 
@@ -119,21 +121,22 @@ if(isset($_POST["syncToCouch"])){
             // first , create the data entry
             $payload    = json_encode(array("_id" => $row["key"]));
             $response   = doCurl($attach_url, $payload, 'POST');
-
+            $response   = json_decode($response,1);
+            
             // next upload the attach
-            if(isset($response["ok"]) && $response["ok"]){
-                $parent_dir     = $parent_check[$row["key"]];
-                $couchurl       = $attach_url."/".$row["key"]."/".$row["key"]."?rev=".$row["doc"]["_rev"];
-                $filepath       = 'temp/'.$parent_dir.'/'.$row["key"];
-                $content_type   = strpos($row["key"],"photo") ? 'image/jpeg' : 'audio/wav';
-                $response       = uploadAttach($couchurl, $filepath, $content_type);
-            }
+            $parent_dir     = $parent_check[$row["key"]];
+            $file_i         = str_replace($parent_dir."_","",$row["key"]);           
+            $couchurl       = $attach_url."/".$row["key"]."/".$file_i."?rev=".$response["rev"];
+            $filepath       = 'temp/'.$parent_dir.'/'.$row["key"];
+            $content_type   = strpos($row["key"],"photo") ? 'image/jpeg' : 'audio/wav';
+            $response       = uploadAttach($couchurl, $filepath, $content_type);
+            print_rr($response);
         }
     }
 }elseif(isset($_POST["deleteDir"])){
     $rmdir = $_POST["deleteDir"];
     deleteDirectory($rmdir);
-    // header("location:view_uploads.php");
+    header("location:view_uploads.php");
 }
 ?>
 <style>
