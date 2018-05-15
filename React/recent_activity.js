@@ -78,7 +78,7 @@ class Header extends React.Component{
       return(
         <div>
           <h1>Recent Activities</h1>
-          <p> Projects updated within the last 5 weeks: <b>{this.rec_counter}</b> </p>
+          <p> Projects updated within the last 4 weeks: <b>{this.rec_counter}</b> </p>
 
           <ul>{listItems}</ul>
         </div>
