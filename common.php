@@ -1,4 +1,8 @@
 <?php
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
+
 if (!file_exists(__DIR__ . "/_config.php")) {
     exit("You must create a _config.php file from the template before this application can run properly");
 }
@@ -380,7 +384,7 @@ function parseTime($data, $storage){
         return $storage;
 }
 
-function populateRecent($ALL_PROJ_DATA, $stor, $listid){
+function populateRecent($ALL_PROJ_DATA, $stor, $listid){ //stor should be 
     $checkWeek = strtotime("-4 Week");
     $abvStorage = array();
     $cache_data = array();
@@ -489,4 +493,20 @@ function getThumb($ph_id, $thumb_uri, $fileurl){
     }
 
     return $thumb_uri;
+}
+
+
+function transcribeAudio($name, $data){
+    //save local file temporarily: under name.wav
+    $localfile  = "$name";
+    $file = fopen($localfile, "w+");
+    fputs($file, $data);
+    fclose($file);
+
+    $ret = shell_exec("php audioConversion.php $name");
+
+    
+    // print_rr($ret);
+    // echo "done printing ret";
+    return $ret;
 }

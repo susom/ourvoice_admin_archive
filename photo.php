@@ -1,4 +1,7 @@
 <?php
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 require_once "common.php";
 $gmaps_key 	= cfg::$gmaps_key;
 $projlist 	= $_SESSION["DT"]["project_list"]; 
@@ -464,7 +467,6 @@ $(document).on('click', function(event) {
 </html>
 <?php 
 //GET FILE
-$filename = "android_test_2.wav";
 function convertAudio($filename){
 	$split = explode("." , $filename);
 	$noext = $split[0];
@@ -523,7 +525,6 @@ function getConvertedAudio($attach_url){
 	$data 		= curl_exec($ch);
 	$errors 	= curl_error($ch);
 	curl_close ($ch);
-
 	$newAudioPath = "";
 	if(empty($errors)){
 		//THEN EXTRACT THE FILE NAME
@@ -537,9 +538,36 @@ function getConvertedAudio($attach_url){
 		fclose($file);
 
 		//THEN CONVERT THE AUDIO
-		$newAudioPath = convertAudio($filename);
+		$newAudioPath = convertAudio($filename); 
+		$lookup_tag = explode("_audio",$split[1]);
+
+		$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $lookup_tag[0];
+	    $response       = doCurl($url);
+		$storage 		= json_decode($response,1);
+		// print_rr($storage);
+		if(isset($storage["transcriptions"])){ //if the transcriptions folder exists on db
+			if(!isset($storage["transcriptions"][$filename])){ //if the audio entry is not present in the transcriptions folder
+				$resp = transcribeAudio($filename, $data);
+				print_rr($resp);
+				if(!empty($resp)){
+					$storage["transcriptions"][$filename] = $resp;
+					$response 	= doCurl($url, json_encode($storage), 'PUT');
+	        		$resp 		= json_decode($response,1);
+				}
+			}
+		}else{ //transcription tag does not exist on project in storage
+			$resp = transcribeAudio($filename, $data);
+			print_rr($resp);
+			if(!empty($resp)){
+					$storage["transcriptions"][$filename] = $resp;
+					$response 	= doCurl($url, json_encode($storage), 'PUT');
+	        		$resp 		= json_decode($response,1);
+			}
+		} 
+			//print_rr($storage);
+		// $resp = transcribeAudio($filename,$data);
+
 	}
-	
 	return $newAudioPath;
 }
 ?>

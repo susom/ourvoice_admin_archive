@@ -299,7 +299,7 @@ if(!isset($_SESSION["discpw"])) {
 					$tm = urlToJson($turl);
 					$stor = $listid = array();
 					$stor = parseTime($tm,$stor);
-					
+					// print_rr($tm);
 					foreach ($stor as $key => $value){
 						array_push($listid, $key);
 					}
