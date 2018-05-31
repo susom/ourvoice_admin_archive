@@ -548,7 +548,7 @@ function getConvertedAudio($attach_url){
 		if(isset($storage["transcriptions"])){ //if the transcriptions folder exists on db
 			if(!isset($storage["transcriptions"][$filename])){ //if the audio entry is not present in the transcriptions folder
 				$resp = transcribeAudio($filename, $data);
-				print_rr($resp);
+				// print_rr($resp);
 				if(!empty($resp)){
 					$storage["transcriptions"][$filename] = $resp;
 					$response 	= doCurl($url, json_encode($storage), 'PUT');
@@ -557,7 +557,7 @@ function getConvertedAudio($attach_url){
 			}
 		}else{ //transcription tag does not exist on project in storage
 			$resp = transcribeAudio($filename, $data);
-			print_rr($resp);
+			// print_rr($resp);
 			if(!empty($resp)){
 					$storage["transcriptions"][$filename] = $resp;
 					$response 	= doCurl($url, json_encode($storage), 'PUT');

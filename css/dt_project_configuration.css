@@ -16,4 +16,9 @@ p{
 	background-color: #efefef;
 	margin:0 0 10px;
 	padding:1px;
+
+ 	-webkit-column-break-inside: avoid;
+           page-break-inside: avoid;
+                break-inside: avoid;
+
 }

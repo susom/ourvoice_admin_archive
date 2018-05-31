@@ -42,16 +42,18 @@ require_once("common.php");
 	if(isset($_SESSION["DT"])){
 		$ALL_PROJ_DATA = $_SESSION["DT"];
 		$sort = array();
-		foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects)
-			if($projects["project_name"] != ""){
-				if(isset($sort[$projects["project_name"]]))
-					array_push($sort[$projects["project_name"]],$key);
-				else
-	       			$sort[$projects["project_name"]] = $key;  	
+		foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects){
+			if(!isset($projects["project_name"])){
+				continue;
 			}
+			$sort[$projects["project_name"]] = $key;  
+		}
 	    ksort($sort);
 	}
 	foreach($sort as $name => $key){
+			if(strpos($name,"Template") > -1){
+				continue;
+			}
 			echo '<div class="entry" data-key = "'.$key.'" ><p><a href="index.php?proj_idx='.$key.'"'.'>'.$name.'</a></p></div>';
 	}
 ?>
