@@ -14,10 +14,6 @@ $ffmpeg = FFMpeg\FFMpeg::create(array(
     'ffmpeg.threads' => 12
 ));
 
-if(strpos($filename, '.wav') == true)
-    $bitrate = 44100;
-elseif(strpos($filename, '.amr') == true)
-    $bitrate = 8000;
 
 $audio = $ffmpeg->open($filename);
 $format = new FFMpeg\Format\Audio\Flac();
@@ -38,7 +34,6 @@ $flac = base64_encode($flac);
 $data = array(
     "config" => array(
         "encoding" => "FLAC",
-        "sampleRateHertz" => $bitrate,
         "languageCode" => "en-US"
     ),
    "audio" => array(
@@ -62,7 +57,6 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 
 $resp = curl_exec($ch);
 curl_close($ch);
-
 $resp = json_decode($resp,1);
 // print_r($resp);
 if(!empty($resp)){
