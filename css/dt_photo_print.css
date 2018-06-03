@@ -3,6 +3,7 @@
 	border-radius:none;
 	box-shadow:none;
 	background:none;
+	border:1px solid #fff;
 }
 
 .photo_detail .user_entry hgroup{
