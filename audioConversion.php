@@ -14,11 +14,17 @@ $postfields = array(
 );
     // CURL OPTIONS
     // POST IT TO FFMPEG SERVICE
+$data_string = json_encode($postfields);                                                              
+
 $ffmpeg_url = cfg::$ffmpeg_url; 
 $ch = curl_init($ffmpeg_url);
 curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
 curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
+   'Content-Type: application/json',                                                                                
+   'Content-Length: ' . strlen($data_string))                                                                       
+); 
 $response = curl_exec($ch);
 echo $response;
 
