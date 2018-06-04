@@ -39,7 +39,7 @@ function get_head(string $url, array $opts = []){
 }
 
 $uploaded_walk_id       = isset($_POST["uploaded_walk_id"]) ? $_POST["uploaded_walk_id"] : null;                         
-$proccesed_thumb_ids    = isset($_POST["proccesed_thumb_ids"]) ?  $_POST["proccesed_thumb_ids"] : null;                  
+// $proccesed_thumb_ids    = isset($_POST["proccesed_thumb_ids"]) ?  $_POST["proccesed_thumb_ids"] : null;                  
 
 // GET PROJECT ID , FROM THE PING
 // 
@@ -56,35 +56,45 @@ if(!empty($uploaded_walk_id)){
     $post   = json_decode($_POST,1);                                                                                 
     $_id    = $uploaded_walk_id;                                                                                     
     $doc    = json_decode($_POST["doc"],1);    
-    $email 	= isset($doc["project_email"]) ? $doc["project_email"] : null;                                                           
+    $email 	= isset($_POST["project_email"]) ? $_POST["project_email"] : false;                                                       
     $photos = $doc["photos"];
 
-    sleep(1); //11
+    sleep(1); //11 seconds same amount of time as it takes to get to 83% on phone
 
-    $check_attach_urls = array();
-    $head_results = array();
-
+    $check_attach_urls 	= array();
     $couch_url = "http://".cfg::$couch_user.":".cfg::$couch_pw."@couchdb:5984";
     foreach($photos as $i => $photo){
 		$ph_id 			= $_id . "_" . $photo["name"];
 		$photo_attach 	= $couch_url . "/".$couch_attach_db."/" . $ph_id ;
-		array_push($check_attach_urls, $photo_attach);
-		$head_results[] = get_head($photo_attach);
+		$check_attach_urls[$photo_attach] = get_head($photo_attach);
 		if(isset($photo["audios"])){
 			foreach($photo["audios"] as $filename){
 				$aud_id			= $_id . "_" . $filename;
 				$audio_attach 	= $couch_url . "/".$couch_attach_db."/" . $aud_id ;
-				array_push($check_attach_urls, $audio_attach);
-				$head_results[] = get_head($audio_attach);
+				$check_attach_urls[$audio_attach] = get_head($audio_attach);
 			}
 		}
 	}
     $meta = array("uploaded_walk_id" 	=> $_id  
     			 ,"email" 				=> $email                                                                       
                  ,"attachments" 		=> $check_attach_urls
-                 ,"head_check"			=> $head_results);   
+             );   
 
-    echo json_encode(array("uploaded_walk" => $meta));                                                               
+    echo json_encode(array("uploaded_walk" => $meta)); 
+
+    $failed_uploads = array();
+    foreach($check_attach_urls as $attach_id => $head_result){
+    	if(array_key_exists("error", $head_result)){
+    		 $failed_uploads[] = $attach_id;
+    	}
+    }
+
+    // the message
+	$msg 		= "Hi Admin, there was a new walk uploaded to your project. ";
+	$msg  		.= count($failed_uploads) ? "Please check the portal for the following attachments; " . implode(", ", $failed_uploads) . ".  If you find them missing on the portal, you can try to upload again from the app.  Please remember to be on a wifi connection and leave the app open through out the upload process." : "";
+	$subject 	= count($failed_uploads) ? "New walk uploaded, possibly missing attachments" : "New walk uploaded!";
+	// send email
+	mail("irvins@stanford.edu", $subject, $msg);                                                              
 } 
 
 // if get head = succesful
