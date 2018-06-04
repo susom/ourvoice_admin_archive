@@ -2,6 +2,10 @@
 require_once "common.php";
 require_once "inc/class.mail.php";
 
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
+
 // GET WALK ID , FROM THE PING
 $uploaded_walk_id = isset($_POST["uploaded_walk_id"]) ? $_POST["uploaded_walk_id"] : null;                         
 // $proccesed_thumb_ids    = isset($_POST["proccesed_thumb_ids"]) ?  $_POST["proccesed_thumb_ids"] : null;                  
@@ -49,28 +53,28 @@ if(!empty($uploaded_walk_id)){
     	}
     }
 
-    $temp           = explode("_",$_id);
-    $project_id     = $temp[0];
-
-    $from_name      = "Stanford Our Voice";
-    $reply_email    = "irvins@stanford.edu";
-
+    // TODO , CREATE EXTERNAL MODULE IN REDCAP TO ACT AS API TO RELAY EMAILS
+    
+    // $temp           = explode("_",$_id);
+    // $project_id     = $temp[0];
+    // $from_name      = "Stanford Our Voice";
+    // $reply_email    = "irvins@stanford.edu";
     // EMAIL TO PROJECT ADMIN EMAIL, CC ANN,IRVIN, JORDAN 
-	$msg 		= "Hi Admin,\r\n\r\n";
-	$msg  	   .= count($failed_uploads) ? "Please check the portal for the following attachments; " . implode(", ", $failed_uploads) . ".  If you find them missing on the portal, you can try to upload again from the app.  Please remember to be on a wifi connection and leave the app open through out the upload process.\r\n" : "\r\n";
-	$subject 	= count($failed_uploads) ? "Notification: [$project_id] New walk uploaded, possibly missing attachments" : "Notification: [$project_id] New walk uploaded!";
-	// send email
-	mail("irvins@stanford.edu", $subject, $msg);                                                              
+	// $msg 		= "Hi Admin,\r\n\r\n";
+	// $msg  	   .= count($failed_uploads) ? "Please check the portal for the following attachments; " . implode(", ", $failed_uploads) . ".  If you find them missing on the portal, you can try to upload again from the app.  Please remember to be on a wifi connection and leave the app open through out the upload process.\r\n" : "\r\n";
+	// $subject 	= count($failed_uploads) ? "Notification: [$project_id] New walk uploaded, possibly missing attachments" : "Notification: [$project_id] New walk uploaded!";
+	// // send email
+	// mail("irvins@stanford.edu", $subject, $msg);                                                              
 }else{
-    print_r("hey mail");
-    mail("irvins@stanford.edu", "TEST", "TESTING TESTING");    
+    phpinfo();
+    // mail("irvins@stanford.edu", "TEST", "TESTING TESTING");    
 
-    $from_name      = "Stanford Our Voice";
-    $reply_email    = "irvins@stanford.edu";
-    $email          = "irvins@stanford.edu";
-    $email_subject  = "testing testing";
-    $email_msg      = "msg msg";
-    emailNotification($from_name, $reply_email, $email, $email_subject, $email_msg);
+    // $from_name      = "Stanford Our Voice";
+    // $reply_email    = "irvins@stanford.edu";
+    // $email          = "irvins@stanford.edu";
+    // $email_subject  = "testing testing";
+    // $email_msg      = "msg msg";
+    // emailNotification($from_name, $reply_email, $email, $email_subject, $email_msg);
 }
 
 // if get head = succesful
