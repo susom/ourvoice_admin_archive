@@ -14,6 +14,7 @@ $postfields = array(
 );
     // CURL OPTIONS
     // POST IT TO FFMPEG SERVICE
+$postfields = base64_encode($postfields);
 $data_string = json_encode($postfields);                                                              
 echo "sending off the data string@@@@@@@@";
 $ffmpeg_url = cfg::$ffmpeg_url; 
