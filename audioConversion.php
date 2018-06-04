@@ -5,30 +5,45 @@ require_once "common.php";
 if(isset($_SERVER['argv'][1]))
     $filename = $_SERVER['argv'][1];
 
-$temp = file_get_contents($filename);
-// echo "Hi";
-$ffmpeg = FFMpeg\FFMpeg::create(array(
-    'ffmpeg.binaries' => '/usr/local/bin/ffmpeg',
-    'ffprobe.binaries' => '/usr/local/bin/ffprobe',
-    'timeout' => 3600,
-    'ffmpeg.threads' => 12
-));
+$postfields = array(
+    "file"     => $filename,
+    "format"   => "FLAC"
+);
+    // CURL OPTIONS
+    // POST IT TO FFMPEG SERVICE
+$ffmpeg_url = cfg::$ffmpeg_url; 
+$ch = curl_init($ffmpeg_url);
+curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
+curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+echo $response;
+
+curl_close($ch);
+$repsonse = base64_encode($response);
+
+// $ffmpeg = FFMpeg\FFMpeg::create(array(
+//     'ffmpeg.binaries' => '/usr/local/bin/ffmpeg',
+//     'ffprobe.binaries' => '/usr/local/bin/ffprobe',
+//     'timeout' => 3600,
+//     'ffmpeg.threads' => 12
+// ));
 
 
-$audio = $ffmpeg->open($filename);
-$format = new FFMpeg\Format\Audio\Flac();
-$format->on('progress', function ($audio, $format, $percentage) {
-    echo "$percentage % transcoded";
-});
+// $audio = $ffmpeg->open($filename);
+// $format = new FFMpeg\Format\Audio\Flac();
+// $format->on('progress', function ($audio, $format, $percentage) {
+//     echo "$percentage % transcoded";
+// });
 
-$format
-    ->setAudioChannels(1)
-    ->setAudioKiloBitrate(256);
+// $format
+//     ->setAudioChannels(1)
+//     ->setAudioKiloBitrate(256);
 
-$audio->save($format, 'track.flac');
+// $audio->save($format, 'track.flac');
 
-$flac = file_get_contents('track.flac');
-$flac = base64_encode($flac);
+// $flac = file_get_contents('track.flac');
+// $flac = base64_encode($flac);
 
 // Set some options - we are passing in a useragent too here
 $data = array(
@@ -37,7 +52,7 @@ $data = array(
         "languageCode" => "en-US"
     ),
    "audio" => array(
-        "content" => $flac
+        "content" => $response
     )
 );
 
@@ -58,7 +73,7 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 $resp = curl_exec($ch);
 curl_close($ch);
 $resp = json_decode($resp,1);
-// print_r($resp);
+print_r($resp);
 if(!empty($resp)){
     foreach($resp["results"] as $results){
         $transcript = $transcript . $results["alternatives"][0]["transcript"];
@@ -70,5 +85,5 @@ if(!empty($resp)){
     // print_r($confidence);
 }
 unlink($filename);
-unlink('track.flac');
+// unlink('track.flac');
 

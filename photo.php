@@ -530,7 +530,7 @@ function getConvertedAudio($attach_url){
 		//THEN EXTRACT THE FILE NAME
 		$split 		= explode("=",$attach_url);
 		$filename 	= $split[count($split) -1];
-
+		print_r($split[1]);
 		$localfile 	= "./temp/$filename";
 		$file 		= fopen($localfile, "w+");
 		
@@ -545,25 +545,27 @@ function getConvertedAudio($attach_url){
 	    $response       = doCurl($url);
 		$storage 		= json_decode($response,1);
 		// print_rr($storage);
+	if($split[1] == "GNT_CBD64DEE-423E-40D1-8CAB-A282031BCCD8_3_1524753518048_audio_3_1.wav&_file"){
 		if(isset($storage["transcriptions"])){ //if the transcriptions folder exists on db
 			if(!isset($storage["transcriptions"][$filename])){ //if the audio entry is not present in the transcriptions folder
 				$resp = transcribeAudio($filename, $data);
-				// print_rr($resp);
-				if(!empty($resp)){
-					$storage["transcriptions"][$filename] = $resp;
-					$response 	= doCurl($url, json_encode($storage), 'PUT');
-	        		$resp 		= json_decode($response,1);
-				}
+				print_rr($resp);
+				// if(!empty($resp)){
+				// 	$storage["transcriptions"][$filename] = $resp;
+				// 	$response 	= doCurl($url, json_encode($storage), 'PUT');
+	   //      		$resp 		= json_decode($response,1);
+				// }
 			}
 		}else{ //transcription tag does not exist on project in storage
 			$resp = transcribeAudio($filename, $data);
-			// print_rr($resp);
-			if(!empty($resp)){
-					$storage["transcriptions"][$filename] = $resp;
-					$response 	= doCurl($url, json_encode($storage), 'PUT');
-	        		$resp 		= json_decode($response,1);
-			}
-		} 
+			print_rr($resp);
+			// if(!empty($resp)){
+			// 		$storage["transcriptions"][$filename] = $resp;
+			// 		$response 	= doCurl($url, json_encode($storage), 'PUT');
+	  //       		$resp 		= json_decode($response,1);
+			// }
+		}
+	} 
 			//print_rr($storage);
 		// $resp = transcribeAudio($filename,$data);
 
