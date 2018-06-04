@@ -8,15 +8,14 @@ error_reporting(E_ALL);
 if(isset($_SERVER['argv'][1]))
     $filename = $_SERVER['argv'][1];
 print_r($filename);
-$filename = base64_encode($filename);
 $postfields = array(
     "file"     => $filename,
-    "format"   => "flac"
+    "format"   => "FLAC"
 );
     // CURL OPTIONS
     // POST IT TO FFMPEG SERVICE
 $data_string = json_encode($postfields);                                                              
-
+echo "sending off the data string@@@@@@@@";
 $ffmpeg_url = cfg::$ffmpeg_url; 
 $ch = curl_init($ffmpeg_url);
 curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
