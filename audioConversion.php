@@ -7,7 +7,7 @@ if(isset($_SERVER['argv'][1]))
 print_r($filename);
 $postfields = array(
     "file"     => $filename,
-    "format"   => "FLAC"
+    "format"   => "flac"
 );
     // CURL OPTIONS
     // POST IT TO FFMPEG SERVICE
