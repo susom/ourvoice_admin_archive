@@ -545,7 +545,7 @@ function getConvertedAudio($attach_url){
 	    $response       = doCurl($url);
 		$storage 		= json_decode($response,1);
 		// print_rr($storage);
-	if($split[1] == "GNT_CBD64DEE-423E-40D1-8CAB-A282031BCCD8_3_1524753518048_audio_3_1.wav&_file"){
+	if($split[1] == "GNT_3DDFF25B-C571-4524-AF7B-CE8AEF13343A_1_1521601012267_audio_1_1.wav&_file"){
 		if(isset($storage["transcriptions"])){ //if the transcriptions folder exists on db
 			if(!isset($storage["transcriptions"][$filename])){ //if the audio entry is not present in the transcriptions folder
 				$resp = transcribeAudio($filename, $data);
