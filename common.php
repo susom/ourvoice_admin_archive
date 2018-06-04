@@ -38,6 +38,43 @@ function doCurl($url, $data = null, $method = null, $username = null, $password 
     return $result;
 }
 
+function get_head(string $url, array $opts = []){
+    // Store previous default context
+    $prev = stream_context_get_options(stream_context_get_default());
+
+    // Set new one with head and a small timeout
+    stream_context_set_default(['http' => $opts + 
+        [
+            'method' => 'HEAD',
+            'timeout' => 2,
+        ]]);
+
+    // Do the head request
+    $req = @get_headers($url, true);
+    if(!$req){
+        return false;
+    }
+
+    // Make more sane response
+    foreach($req as $h => $v){
+        if(is_int($h)){
+            $headers[$h]['Status'] = $v;
+        }else{
+            if(is_string($v)){
+                $headers[0][$h] = $v;
+            }else{
+                foreach($v as $x => $y){
+                    $headers[$x][$h] = $y;
+                }
+            }
+        }
+    }
+
+    // Restore previous default context and return
+    stream_context_set_default($prev);
+    return $headers;
+}
+
 function print_rr($ar){
     echo "<pre>";
     print_r($ar);

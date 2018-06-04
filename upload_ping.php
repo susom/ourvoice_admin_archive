@@ -1,66 +1,25 @@
 <?php     
 require_once "common.php";
+require_once "inc/class.mail.php";
 
-function get_head(string $url, array $opts = []){
-    // Store previous default context
-    $prev = stream_context_get_options(stream_context_get_default());
-
-    // Set new one with head and a small timeout
-    stream_context_set_default(['http' => $opts + 
-        [
-            'method' => 'HEAD',
-            'timeout' => 2,
-        ]]);
-
-    // Do the head request
-    $req = @get_headers($url, true);
-    if(!$req){
-        return false;
-    }
-
-    // Make more sane response
-    foreach($req as $h => $v){
-        if(is_int($h)){
-            $headers[$h]['Status'] = $v;
-        }else{
-            if(is_string($v)){
-                $headers[0][$h] = $v;
-            }else{
-                foreach($v as $x => $y){
-                    $headers[$x][$h] = $y;
-                }
-            }
-        }
-    }
-
-    // Restore previous default context and return
-    stream_context_set_default($prev);
-    return $headers;
-}
-
-$uploaded_walk_id       = isset($_POST["uploaded_walk_id"]) ? $_POST["uploaded_walk_id"] : null;                         
+// GET WALK ID , FROM THE PING
+$uploaded_walk_id = isset($_POST["uploaded_walk_id"]) ? $_POST["uploaded_walk_id"] : null;                         
 // $proccesed_thumb_ids    = isset($_POST["proccesed_thumb_ids"]) ?  $_POST["proccesed_thumb_ids"] : null;                  
-
-// GET PROJECT ID , FROM THE PING
-// 
-// GET PROJECT EMAIL , NEED TO GET THIS FROM disc_projects OR PASS IT IN
-// 
-// sleep(11) seconds, 
-// 
-// CHECK IF ATTACHMENT IDS ARE ALL EXISTING WITHIN disc_attachments AFTER SLEEP PERIOD
-// 
-// EITHER YES OR NO
-// EMAIL TO PROJECT ADMIN EMAIL, CC ANN,IRVIN, JORDAN 
                                                                                                                    
 if(!empty($uploaded_walk_id)){                                                                                           
     $post   = json_decode($_POST,1);                                                                                 
     $_id    = $uploaded_walk_id;                                                                                     
     $doc    = json_decode($_POST["doc"],1);    
+    
+    // GET PROJECT EMAIL 
     $email 	= isset($_POST["project_email"]) ? $_POST["project_email"] : false;                                                       
     $photos = $doc["photos"];
 
-    sleep(1); //11 seconds same amount of time as it takes to get to 83% on phone
+    // SLEEP GIVE IT TIME TO UPLOAD ATTACHMENTS 
+    // 11 seconds (only?) same amount of time as it takes to get to 83% on phone
+    sleep(11); 
 
+    // CHECK IF ATTACHMENT IDS ARE ALL EXISTING WITHIN disc_attachments AFTER SLEEP PERIOD
     $check_attach_urls 	= array();
     $couch_url = "http://".cfg::$couch_user.":".cfg::$couch_pw."@couchdb:5984";
     foreach($photos as $i => $photo){
@@ -82,6 +41,7 @@ if(!empty($uploaded_walk_id)){
 
     echo json_encode(array("uploaded_walk" => $meta)); 
 
+    // EITHER YES OR NO ON PARTIAL UPLOADS
     $failed_uploads = array();
     foreach($check_attach_urls as $attach_id => $head_result){
     	if(array_key_exists("error", $head_result)){
@@ -89,13 +49,28 @@ if(!empty($uploaded_walk_id)){
     	}
     }
 
-    // the message
-	$msg 		= "Hi Admin, there was a new walk uploaded to your project. ";
-	$msg  		.= count($failed_uploads) ? "Please check the portal for the following attachments; " . implode(", ", $failed_uploads) . ".  If you find them missing on the portal, you can try to upload again from the app.  Please remember to be on a wifi connection and leave the app open through out the upload process." : "";
-	$subject 	= count($failed_uploads) ? "New walk uploaded, possibly missing attachments" : "New walk uploaded!";
+    $temp           = explode("_",$_id);
+    $project_id     = $temp[0];
+
+    $from_name      = "Stanford Our Voice";
+    $reply_email    = "irvins@stanford.edu";
+
+    // EMAIL TO PROJECT ADMIN EMAIL, CC ANN,IRVIN, JORDAN 
+	$msg 		= "Hi Admin,\r\n\r\n";
+	$msg  	   .= count($failed_uploads) ? "Please check the portal for the following attachments; " . implode(", ", $failed_uploads) . ".  If you find them missing on the portal, you can try to upload again from the app.  Please remember to be on a wifi connection and leave the app open through out the upload process.\r\n" : "\r\n";
+	$subject 	= count($failed_uploads) ? "Notification: [$project_id] New walk uploaded, possibly missing attachments" : "Notification: [$project_id] New walk uploaded!";
 	// send email
 	mail("irvins@stanford.edu", $subject, $msg);                                                              
-} 
+}else{
+    print_r("hey");
+
+    $from_name      = "Stanford Our Voice";
+    $reply_email    = "irvins@stanford.edu";
+    $email          = "irvins@stanford.edu";
+    $email_subject  = "testing testing";
+    $email_msg      = "msg msg";
+    emailNotification($from_name, $reply_email, $email, $email_subject, $email_msg);
+}
 
 // if get head = succesful
 // {"_id":"IRV_7B6D2189-3F1E-4290-91DB-E7DCBD0E42A0_4_1528047306210_photo_0.jpg","_rev":"15-2b55e7600c989813497f81a114eb23a7
