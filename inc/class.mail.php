@@ -64,7 +64,7 @@ function replaceDefaultHook($str) {
 	return (str_replace($default_hooks,$default_replace,$str));
 }
 
-function emailNotification($from_name, $reply_email, $email, $email_subject, $email_msg, $hooks, $email_template){
+function emailNotification($from_name, $reply_email, $email, $email_subject, $email_msg, $hooks = null, $email_template = null){
 	$mail = new userPieMail();
 
 	// Build the template - Optional, you can just use the sendMail function to message
@@ -74,7 +74,7 @@ function emailNotification($from_name, $reply_email, $email, $email_subject, $em
 	} else {
 	 // Send the mail. Specify users email here and subject.
 	 // SendMail can have a third parementer for message if you do not wish to build a template.
-	 if(!is_null($email_msg) && !$mail->sendMail($from_name, $reply_email, $walk_id, $email,$email_subject,$email_msg)) {
+	 if(!is_null($email_msg) && !$mail->sendMail($from_name, $reply_email, $email, $email_subject, $email_msg)) {
 	 	// print_r("error : sending email");
 	    // logIt("Error sending email: " . print_r($mail,true), "ERROR");
 	 } else {

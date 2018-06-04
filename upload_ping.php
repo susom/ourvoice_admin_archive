@@ -62,7 +62,8 @@ if(!empty($uploaded_walk_id)){
 	// send email
 	mail("irvins@stanford.edu", $subject, $msg);                                                              
 }else{
-    print_r("hey");
+    print_r("hey mail");
+    mail("irvins@stanford.edu", "TEST", "TESTING TESTING");    
 
     $from_name      = "Stanford Our Voice";
     $reply_email    = "irvins@stanford.edu";
