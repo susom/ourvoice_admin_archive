@@ -548,6 +548,7 @@ function getConvertedAudio($attach_url){
 	if($split[1] == "GNT_3DDFF25B-C571-4524-AF7B-CE8AEF13343A_1_1521601012267_audio_1_1.wav&_file"){
 		if(isset($storage["transcriptions"])){ //if the transcriptions folder exists on db
 			if(!isset($storage["transcriptions"][$filename])){ //if the audio entry is not present in the transcriptions folder
+				echo "going in transcribe";
 				$resp = transcribeAudio($filename, $data);
 				print_rr($resp);
 				// if(!empty($resp)){

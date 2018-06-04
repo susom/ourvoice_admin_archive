@@ -4,7 +4,7 @@ require_once "common.php";
 //exec from transcribeAudio passes in name of audio file as parameter
 if(isset($_SERVER['argv'][1]))
     $filename = $_SERVER['argv'][1];
-
+print_r($filename);
 $postfields = array(
     "file"     => $filename,
     "format"   => "FLAC"
