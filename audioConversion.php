@@ -21,22 +21,22 @@ if (function_exists('curl_file_create')) { // php 5.5+
     print_r($cFile);
 $postfields = array(
     "file"     => $cFile,
-    "format"   => "FLAC"
+    "format"   => "flac"
 );
     // CURL OPTIONS
     // POST IT TO FFMPEG SERVICE
 //$postfields = base64_encode($postfields);
-$data_string = json_encode($postfields);                                                              
+//$data_string = json_encode($postfields);                                                              
 echo "sending off the data string@@@@@@@@";
 $ffmpeg_url = cfg::$ffmpeg_url; 
 $ch = curl_init($ffmpeg_url);
 curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
-curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
-   'Content-Type: application/json',                                                                                
-   'Content-Length: ' . strlen($data_string))                                                                       
-); 
+// curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
+//    'Content-Type: application/json',                                                                                
+//    'Content-Length: ' . strlen($data_string))                                                                       
+// ); 
 $response = curl_exec($ch);
 echo $response;
 
