@@ -38,7 +38,7 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 //    'Content-Length: ' . strlen($data_string))                                                                       
 // ); 
 $response = curl_exec($ch);
-echo $response;
+// echo $response;
 
 curl_close($ch);
 $repsonse = base64_encode($response);
