@@ -8,6 +8,7 @@ error_reporting(E_ALL);
 if(isset($_SERVER['argv'][1]))
     $filename = $_SERVER['argv'][1];
 $file = fopen($filename, "w+");
+print_r($file);
 print_r($filename);
 $postfields = array(
     "file"     => $file,
