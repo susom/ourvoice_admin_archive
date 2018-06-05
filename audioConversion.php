@@ -7,9 +7,8 @@ error_reporting(E_ALL);
 //exec from transcribeAudio passes in name of audio file as parameter
 if(isset($_SERVER['argv'][1]))
     $filename = $_SERVER['argv'][1];
-$file = fopen($filename, "w+");
+$file = fopen($filename, "r");
 print_r($file);
-print_r($filename);
 $postfields = array(
     "file"     => $file,
     "format"   => "FLAC"
