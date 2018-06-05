@@ -1,9 +1,9 @@
 <?php
 require 'vendor/autoload.php';
 require_once "common.php";
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 //exec from transcribeAudio passes in name of audio file as parameter
 if(isset($_SERVER['argv'][1]))
     $filename = $_SERVER['argv'][1];
@@ -41,7 +41,7 @@ $response = curl_exec($ch);
 // echo $response;
 
 curl_close($ch);
-$repsonse = base64_encode($response);
+// $repsonse = base64_encode($response);
 
 // $ffmpeg = FFMpeg\FFMpeg::create(array(
 //     'ffmpeg.binaries' => '/usr/local/bin/ffmpeg',
