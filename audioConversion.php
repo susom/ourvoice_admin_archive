@@ -78,7 +78,7 @@ $data = array(
         "content" => $response
     )
 );
-print_rr($data);
+// print_rr($data);
 $data_string = json_encode($data);                                                              
 
 $ch = curl_init('https://speech.googleapis.com/v1/speech:recognize?key='.cfg::$gvoice_key);                                                                      
