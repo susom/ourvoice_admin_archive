@@ -7,7 +7,7 @@ require_once "inc/class.mail.php";
 // error_reporting(E_ALL);
 
 // GET WALK ID , FROM THE PING
-$uploaded_walk_id = isset($_POST["uploaded_walk_id"]) ? $_POST["uploaded_walk_id"] : null;                         
+$uploaded_walk_id   = isset($_POST["uploaded_walk_id"]) ? $_POST["uploaded_walk_id"] : null;
 // $proccesed_thumb_ids    = isset($_POST["proccesed_thumb_ids"]) ?  $_POST["proccesed_thumb_ids"] : null;                  
                                                                                                                    
 if(!empty($uploaded_walk_id)){ 
@@ -51,6 +51,13 @@ if(!empty($uploaded_walk_id)){
     }else{
         // EMERGENCY UPLOAD SUCCESS
         $emergency_uploaded = "Notification: [$project_id] Emergency Backup Uploaded";
+
+        // SCAN ./temp FOLDER FOR NEW FOLDERS!
+        $backedup           = scanForBackUpFolders("temp/$_id");
+
+        // RECURSIVELY GO THROUGH THOSE AND UPLOAD THOSE MAFUHS
+        echo json_encode(array("ebackup" => $backedup));
+
     }                                                                                
 
     // EITHER YES OR NO ON PARTIAL UPLOADS

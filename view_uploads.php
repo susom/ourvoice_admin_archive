@@ -1,19 +1,7 @@
 <?php
 require_once("common.php");
 
-$backedup = array();
-if ($folder = opendir('temp')) {
-    while (false !== ($file = readdir($folder))) {
-        if($file == "." || $file == ".."){
-            continue;
-        }
-
-        if (is_dir("temp/".$file)) {
-            $backedup[] = $file;
-        }
-    }
-    closedir($folder);
-}
+$backedup = scanForBackUpFolders("temp");
 
 $html = array();
 $html[] =  "<h2>Our Voice Emergency Back Up Folder</h2>";
