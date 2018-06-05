@@ -1,8 +1,6 @@
 <?php
 require_once("common.php");
-
 ?>
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 	<head>
@@ -12,12 +10,10 @@ require_once("common.php");
   		<script src="js/jquery-ui.js"></script>
 	    <link href="css/dt_common.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 	    <link href="css/dt_index.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
-	  
 	    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 		<link rel = "stylesheet" type = "text/css" href = "css/dt_project_configuration.css">
 		<script src="js/common.js"></script>
-
 	</head>
 	<div id = "nav">
 		<ul>
@@ -36,7 +32,6 @@ require_once("common.php");
 			<a href="index.php?proj_idx=100" class="tpl btn btn-success" data-tpl="100">Create new Project from Template</a>
 		<p><strong><em>* To Make Changes to an Existing Project: Click on a project Below</em></strong></p>
 	</div>
-
 <div id = "proj">
 <?php 
 	if(isset($_SESSION["DT"])){
@@ -46,15 +41,15 @@ require_once("common.php");
 			if(!isset($projects["project_name"])){
 				continue;
 			}
-			$sort[$projects["project_name"]] = $key;  
+			$sort[$projects["project_name"]] = array("key" => $key, "project_id" => $projects["project_id"]);  
 		}
 	    ksort($sort);
 	}
-	foreach($sort as $name => $key){
+	foreach($sort as $name => $p){
 			if(strpos($name,"Template") > -1){
 				continue;
 			}
-			echo '<div class="entry" data-key = "'.$key.'" ><p><a href="index.php?proj_idx='.$key.'"'.'>'.$name.'</a></p></div>';
+			echo '<div class="entry" data-key = "'.$p["key"].'" ><p><a href="index.php?proj_idx='.$p["key"].'"'.'>'.$name. ' [' . $p["project_id"] . ']</a></p></div>';
 	}
 ?>
 
