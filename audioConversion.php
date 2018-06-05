@@ -13,7 +13,12 @@ if(isset($_SERVER['argv'][1]))
 // } else { // 
 //     $cFile = '@' . realpath('./'.$filename);
 // }
-$cFile = new CURLFile('./'.$filename);
+if (function_exists('curl_file_create')) { // php 5.5+
+      $cFile = curl_file_create("./".$filename);
+    } else { // 
+      $cFile = '@' . realpath("./".$filename);
+    }
+    print_r($cFile);
 $postfields = array(
     "file"     => $cFile,
     "format"   => "FLAC"
