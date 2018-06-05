@@ -41,7 +41,7 @@ $response = curl_exec($ch);
 // echo $response;
 
 curl_close($ch);
-// $repsonse = base64_encode($response);
+$repsonse = base64_encode($response);
 
 // $ffmpeg = FFMpeg\FFMpeg::create(array(
 //     'ffmpeg.binaries' => '/usr/local/bin/ffmpeg',
