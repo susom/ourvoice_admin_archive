@@ -555,8 +555,12 @@ function saveTranscriptionData($transcript,$filename,$lookup_tag){
 	$flac = explode(".",$filename);
 	if(file_exists('./temp/'.$filename)){
 		unlink('./temp/'.$filename);
+		echo 'removing ' . './temp/'.$filename;
+
 	if(file_exists('./temp/'.$flac[0].'.flac'))
 		unlink('./temp/'.$flac[0].'.flac');
+		echo 'removing ' . './temp/'.$flac[0].'.flac';
+
 	}
 }
 
