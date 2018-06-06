@@ -469,101 +469,6 @@ $(document).on('click', function(event) {
 //GET FILE
 
 
-function transcribeAudio($cFile,$filename, $lookup_tag){
-	$split = explode("." , $filename);
-	$noext = $split[0];
-
-	$ffmpeg_url = cfg::$ffmpeg_url; 
-	$postfields = array(
-			 "file" 	=> $cFile
-			,"format" 	=> "flac"
-		);
-
-	// CURL OPTIONS
-	// POST IT TO FFMPEG SERVICE, Convert to FLAC
-	$ch = curl_init($ffmpeg_url);
-	curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	$response = curl_exec($ch);
-	curl_close($ch);
-
-	// REPLACE ATTACHMENT
-	$newfile 	= "./temp/".$noext.".flac";
-	$handle 	= fopen($newfile, 'w');
-	fwrite($handle, $response); 
-
-	//Convert to base 64 for google's API
-	$flac = file_get_contents($newfile);
-	$flac = base64_encode($flac);
-
-	// WE NEED TO json_encode the base64 of the flac file
-	// Set some options 
-	$data = array(
-	    "config" => array(
-	        "encoding" => "FLAC",
-	        "languageCode" => "en-US"
-	    ),
-	   "audio" => array(
-	        "content" => $flac
-	    )
-	);
-	$data_string = json_encode($data);                                                              
-
-	//POST to google's service
-	$ch = curl_init('https://speech.googleapis.com/v1/speech:recognize?key='.cfg::$gvoice_key);                                                                      
-	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");                                                                     
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);                                                                  
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);                                                                      
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
-	   'Content-Type: application/json',                                                                                
-	   'Content-Length: ' . strlen($data_string))                                                                       
-	);                                
-	$resp = curl_exec($ch);
-	curl_close($ch);
-	$resp = json_decode($resp,1);
-	// print_rr($resp);
-	if(!empty($resp["results"])){
-	    foreach($resp["results"] as $results){
-	        $transcript = $transcript . $results["alternatives"][0]["transcript"];
-	    }
-	}
-	if(!empty($transcript)){
-		saveTranscriptionData($transcript,$filename,$lookup_tag);
-	}
-}
-
-function saveTranscriptionData($transcript,$filename,$lookup_tag){
-	//Look to see if Transcription folder in DB exists...
-	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $lookup_tag[0];
-    $response       = doCurl($url);
-	$storage 		= json_decode($response,1);
-
-	if(isset($storage["transcriptions"])){ //if the transcriptions folder exists on db
-		if(!isset($storage["transcriptions"][$filename])){ //if the audio entry is not present in the transcriptions folder
-				$storage["transcriptions"][$filename] = $transcript;
-				$response 	= doCurl($url, json_encode($storage), 'PUT');
-        		$resp 		= json_decode($response,1);
-		}
-
-	}else{ //transcription tag does not exist on project in storage
-				$storage["transcriptions"][$filename] = $transcript;
-				$response 	= doCurl($url, json_encode($storage), 'PUT');
-        		$resp 		= json_decode($response,1);
-	} 
-	//remove temp files 
-	$flac = explode(".",$filename);
-	if(file_exists('./temp/'.$filename)){
-		unlink('./temp/'.$filename);
-		echo 'removing ' . './temp/'.$filename;
-
-	if(file_exists('./temp/'.$flac[0].'.flac'))
-		unlink('./temp/'.$flac[0].'.flac');
-		echo 'removing ' . './temp/'.$flac[0].'.flac';
-
-	}
-}
-
 function getFullUrl($partialUrl){
 	$paths = explode("/",$_SERVER["SCRIPT_NAME"]);
 	array_unshift($paths,$_SERVER["HTTP_HOST"]);
@@ -582,6 +487,7 @@ function getFullUrl($partialUrl){
 
 function getConvertedAudio($attach_url){
 	//FIRST DOWNLOAD THE AUDIO FILE
+
 	$fullURL 	= getFullUrl($attach_url);
 	$ch 		= curl_init($fullURL);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -593,7 +499,12 @@ function getConvertedAudio($attach_url){
 		//THEN EXTRACT THE FILE NAME
 		$split 		= explode("=",$attach_url);
 		$filename 	= $split[count($split) -1];
-
+		//returns something like  audio_3_1.wav
+		$full_proj_code = explode("_audio",$split[1]);
+		//returns something akin to : GNT_CBD64DEE-423E-40D1-8CAB-A282031BCCD8_3_1524753518048    _3_1.wav
+		
+		//save to server as audio_x_x.wav/AMR
+		//if(file_exists)
 		$localfile 	= "./temp/$filename";
 		$file 		= fopen($localfile, "w+");
 		
@@ -666,19 +577,96 @@ function convertAudio($filename, $lookup_tag){
 	$handle 	= fopen($newfile, 'w');
 	fwrite($handle, $response); 
 
+	//check if transcription exists on database
 	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $lookup_tag[0];
     $response       = doCurl($url);
 	$storage 		= json_decode($response,1);
 
-	if(isset($storage["transcriptions"])){ //if the transcriptions folder exists on db
-		if(!isset($storage["transcriptions"][$filename])){ //if the audio entry is not present in the transcriptions folder
-			transcribeAudio($cFile,$filename,$lookup_tag);
-		}
-	}else{ //transcription tag does not exist on project in storage
-			transcribeAudio($cFile,$filename,$lookup_tag);
-	} 
 
+	if(!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename])){
+		$trans = transcribeAudio($cFile,$filename,$lookup_tag);
+
+		$storage["transcriptions"][$filename] = $trans;
+		$response 	= doCurl($url, json_encode($storage), 'PUT');
+        $resp 		= json_decode($response,1);
+	}
+
+
+	//remove extraneous files from server
+	$flac = explode(".",$filename);
+	if(file_exists('./temp/'.$filename)){
+		unlink('./temp/'.$filename);
+		echo 'removing ' . './temp/'.$filename;
+
+	if(file_exists('./temp/'.$flac[0].'.flac'))
+		unlink('./temp/'.$flac[0].'.flac');
+		echo 'removing ' . './temp/'.$flac[0].'.flac';
+
+	}
 
 	return $newfile;
 }
+
+function transcribeAudio($cFile,$filename, $lookup_tag){
+	$split = explode("." , $filename);
+	$noext = $split[0];
+
+	$ffmpeg_url = cfg::$ffmpeg_url; 
+	$postfields = array(
+			 "file" 	=> $cFile
+			,"format" 	=> "flac"
+		);
+
+	// CURL OPTIONS
+	// POST IT TO FFMPEG SERVICE, Convert to FLAC
+	$ch = curl_init($ffmpeg_url);
+	curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	$response = curl_exec($ch);
+	curl_close($ch);
+
+	// REPLACE ATTACHMENT
+	$newfile 	= "./temp/".$noext.".flac";
+	$handle 	= fopen($newfile, 'w');
+	fwrite($handle, $response); 
+
+	//Convert to base 64 for google's API
+	$flac = file_get_contents($newfile);
+	$flac = base64_encode($flac);
+
+	// WE NEED TO json_encode the base64 of the flac file
+	// Set some options 
+	$data = array(
+	    "config" => array(
+	        "encoding" => "FLAC",
+	        "languageCode" => "en-US"
+	    ),
+	   "audio" => array(
+	        "content" => $flac
+	    )
+	);
+	$data_string = json_encode($data);                                                              
+
+	//POST to google's service
+	$ch = curl_init('https://speech.googleapis.com/v1/speech:recognize?key='.cfg::$gvoice_key);                                                                      
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");                                                                     
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);                                                                  
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);                                                                      
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
+	   'Content-Type: application/json',                                                                                
+	   'Content-Length: ' . strlen($data_string))                                                                       
+	);                                
+	$resp = curl_exec($ch);
+	curl_close($ch);
+	$resp = json_decode($resp,1);
+	// print_rr($resp);
+	if(!empty($resp["results"])){
+	    foreach($resp["results"] as $results){
+	        $transcript = $transcript . $results["alternatives"][0]["transcript"];
+	    }
+	}
+	return $transcript;
+}
+
 ?>
