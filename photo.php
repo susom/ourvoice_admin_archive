@@ -513,7 +513,7 @@ function getConvertedAudio($attach_url){
 
 		//THEN CONVERT THE AUDIO
 		$lookup_tag = explode("_audio",$split[1]);
-		$newAudioPath = convertAudio($filename, $lookup_tag); 
+		$newAudioPath = convertAudio($filename, $lookup_tag, $full_proj_code); 
 
 		// $url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $lookup_tag[0];
 	 //    $response       = doCurl($url);
@@ -545,7 +545,7 @@ function getConvertedAudio($attach_url){
 	return $newAudioPath;
 }
 
-function convertAudio($filename, $lookup_tag){
+function convertAudio($filename, $lookup_tag, $full_proj_code){
 	$split = explode("." , $filename);
 	$noext = $split[0];
 
@@ -556,27 +556,28 @@ function convertAudio($filename, $lookup_tag){
 	  $cFile = '@' . realpath("./temp/".$filename);
 	}
 
-	$ffmpeg_url = cfg::$ffmpeg_url; 
-	$postfields = array(
-			 "file" 	=> $cFile
-			,"format" 	=> "mp3"
-			,"rate" 	=> 16000
-		);
+	if(!file_exists('./temp/'.$full_proj_code.'.mp3'))
+		$ffmpeg_url = cfg::$ffmpeg_url; 
+		$postfields = array(
+				 "file" 	=> $cFile
+				,"format" 	=> "mp3"
+				,"rate" 	=> 16000
+			);
 
-	// CURL OPTIONS
-	// POST IT TO FFMPEG SERVICE
-	$ch = curl_init($ffmpeg_url);
-	curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	$response = curl_exec($ch);
-	curl_close($ch);
+		// CURL OPTIONS
+		// POST IT TO FFMPEG SERVICE
+		$ch = curl_init($ffmpeg_url);
+		curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$response = curl_exec($ch);
+		curl_close($ch);
 
-	// REPLACE ATTACHMENT
-	$newfile 	= "./temp/".$noext.".mp3";
-	$handle 	= fopen($newfile, 'w');
-	fwrite($handle, $response); 
-
+		// REPLACE ATTACHMENT
+		$newfile 	= "./temp/".$full_proj_code.".mp3";
+		$handle 	= fopen($newfile, 'w');
+		fwrite($handle, $response); 
+	}
 	//check if transcription exists on database
 	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $lookup_tag[0];
     $response       = doCurl($url);
@@ -584,7 +585,7 @@ function convertAudio($filename, $lookup_tag){
 
 
 	if(!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename])){
-		$trans = transcribeAudio($cFile,$filename,$lookup_tag);
+		$trans = transcribeAudio($cFile,$filename);
 
 		$storage["transcriptions"][$filename] = $trans;
 		$response 	= doCurl($url, json_encode($storage), 'PUT');
@@ -607,7 +608,7 @@ function convertAudio($filename, $lookup_tag){
 	return $newfile;
 }
 
-function transcribeAudio($cFile,$filename, $lookup_tag){
+function transcribeAudio($cFile,$filename){
 	$split = explode("." , $filename);
 	$noext = $split[0];
 
