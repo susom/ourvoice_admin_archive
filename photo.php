@@ -582,19 +582,17 @@ function saveTranscriptionData($transcript,$filename,$lookup_tag){
 
 	if(isset($storage["transcriptions"])){ //if the transcriptions folder exists on db
 		if(!isset($storage["transcriptions"][$filename])){ //if the audio entry is not present in the transcriptions folder
-			echo "trying to store, does exist";
 				$storage["transcriptions"][$filename] = $transcript;
 				$response 	= doCurl($url, json_encode($storage), 'PUT');
         		$resp 		= json_decode($response,1);
 		}
 
 	}else{ //transcription tag does not exist on project in storage
-			echo 'trying to store t doesnt exist';
 				$storage["transcriptions"][$filename] = $transcript;
 				$response 	= doCurl($url, json_encode($storage), 'PUT');
         		$resp 		= json_decode($response,1);
 	} 
-	print_r($resp);
+	print_r($transcript);
 }
 
 function getFullUrl($partialUrl){
