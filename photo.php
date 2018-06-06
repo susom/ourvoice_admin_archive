@@ -565,6 +565,8 @@ function transcribeAudio($cFile,$noext){
 	    // $transcript = $resp["results"][0]["alternatives"][0]["transcript"];
 	   // $confidence = $resp["results"][0]["alternatives"][0]["confidence"];
 	}
+	print_r($transcript);
+	print_r($noext);
 	if(!empty($transcript)){
 		saveTranscriptionData($transcript,$noext);
 	}
