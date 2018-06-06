@@ -467,45 +467,7 @@ $(document).on('click', function(event) {
 </html>
 <?php 
 //GET FILE
-function convertAudio($filename, $lookup_tag){
-	$split = explode("." , $filename);
-	$noext = $split[0];
 
-	// MAKE THE MP3 FROM locally saved .wav or .amr
-	if (function_exists('curl_file_create')) { // php 5.5+
-	  $cFile = curl_file_create("./temp/".$filename);
-	} else { // 
-	  $cFile = '@' . realpath("./temp/".$filename);
-	}
-
-	$ffmpeg_url = cfg::$ffmpeg_url; 
-	$postfields = array(
-			 "file" 	=> $cFile
-			,"format" 	=> "mp3"
-			,"rate" 	=> 16000
-		);
-
-	// CURL OPTIONS
-	// POST IT TO FFMPEG SERVICE
-	$ch = curl_init($ffmpeg_url);
-	curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	$response = curl_exec($ch);
-	curl_close($ch);
-
-	// REPLACE ATTACHMENT
-	$newfile 	= "./temp/".$noext.".mp3";
-	$handle 	= fopen($newfile, 'w');
-	fwrite($handle, $response); 
-
-
-	// MaKE THE FLAC for transcription using google API
-	transcribeAudio($cFile,$filename,$lookup_tag);
-
-
-	return $newfile;
-}
 
 function transcribeAudio($cFile,$filename, $lookup_tag){
 	$split = explode("." , $filename);
@@ -565,10 +527,7 @@ function transcribeAudio($cFile,$filename, $lookup_tag){
 	    foreach($resp["results"] as $results){
 	        $transcript = $transcript . $results["alternatives"][0]["transcript"];
 	    }
-	    // $transcript = $resp["results"][0]["alternatives"][0]["transcript"];
-	   // $confidence = $resp["results"][0]["alternatives"][0]["confidence"];
 	}
-	print_r($transcript);
 	if(!empty($transcript)){
 		saveTranscriptionData($transcript,$filename,$lookup_tag);
 	}
@@ -592,9 +551,8 @@ function saveTranscriptionData($transcript,$filename,$lookup_tag){
 				$response 	= doCurl($url, json_encode($storage), 'PUT');
         		$resp 		= json_decode($response,1);
 	} 
-	print_rr($filename);
+	//remove temp files 
 	$flac = explode(".",$filename);
-	print_rr($flac);
 	if(file_exists('./temp/'.$filename)){
 		unlink('./temp/'.$filename);
 	if(file_exists('./temp/'.$flac[0].'.flac'))
@@ -670,5 +628,53 @@ function getConvertedAudio($attach_url){
 
 	}
 	return $newAudioPath;
+}
+
+function convertAudio($filename, $lookup_tag){
+	$split = explode("." , $filename);
+	$noext = $split[0];
+
+	// MAKE THE MP3 FROM locally saved .wav or .amr
+	if (function_exists('curl_file_create')) { // php 5.5+
+	  $cFile = curl_file_create("./temp/".$filename);
+	} else { // 
+	  $cFile = '@' . realpath("./temp/".$filename);
+	}
+
+	$ffmpeg_url = cfg::$ffmpeg_url; 
+	$postfields = array(
+			 "file" 	=> $cFile
+			,"format" 	=> "mp3"
+			,"rate" 	=> 16000
+		);
+
+	// CURL OPTIONS
+	// POST IT TO FFMPEG SERVICE
+	$ch = curl_init($ffmpeg_url);
+	curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	$response = curl_exec($ch);
+	curl_close($ch);
+
+	// REPLACE ATTACHMENT
+	$newfile 	= "./temp/".$noext.".mp3";
+	$handle 	= fopen($newfile, 'w');
+	fwrite($handle, $response); 
+
+	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $lookup_tag[0];
+    $response       = doCurl($url);
+	$storage 		= json_decode($response,1);
+
+	if(isset($storage["transcriptions"])){ //if the transcriptions folder exists on db
+		if(!isset($storage["transcriptions"][$filename])){ //if the audio entry is not present in the transcriptions folder
+			transcribeAudio($cFile,$filename,$lookup_tag);
+		}
+	}else{ //transcription tag does not exist on project in storage
+			transcribeAudio($cFile,$filename,$lookup_tag);
+	} 
+
+
+	return $newfile;
 }
 ?>
