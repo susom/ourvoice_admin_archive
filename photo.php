@@ -471,6 +471,7 @@ function convertAudio($filename){
 	$split = explode("." , $filename);
 	$noext = $split[0];
 
+	// MAKE THE MP3 FROM locally saved .wav or .amr
 	if (function_exists('curl_file_create')) { // php 5.5+
 	  $cFile = curl_file_create("./temp/".$filename);
 	} else { // 
@@ -495,6 +496,28 @@ function convertAudio($filename){
 
 	// REPLACE ATTACHMENT
 	$newfile 	= "./temp/".$noext.".mp3";
+	$handle 	= fopen($newfile, 'w');
+	fwrite($handle, $response); 
+
+
+	// MaKE THE FLAC for transcription
+	$ffmpeg_url = cfg::$ffmpeg_url; 
+	$postfields = array(
+			 "file" 	=> $cFile
+			,"format" 	=> "flac"
+		);
+
+	// CURL OPTIONS
+	// POST IT TO FFMPEG SERVICE
+	$ch = curl_init($ffmpeg_url);
+	curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	$response = curl_exec($ch);
+	curl_close($ch);
+
+	// REPLACE ATTACHMENT
+	$newfile 	= "./temp/".$noext.".flac";
 	$handle 	= fopen($newfile, 'w');
 	fwrite($handle, $response); 
 
@@ -530,7 +553,7 @@ function getConvertedAudio($attach_url){
 		//THEN EXTRACT THE FILE NAME
 		$split 		= explode("=",$attach_url);
 		$filename 	= $split[count($split) -1];
-		print_r($split[1]);
+
 		$localfile 	= "./temp/$filename";
 		$file 		= fopen($localfile, "w+");
 		
@@ -545,28 +568,25 @@ function getConvertedAudio($attach_url){
 	    $response       = doCurl($url);
 		$storage 		= json_decode($response,1);
 		// print_rr($storage);
-	if($split[1] == "GNT_3DDFF25B-C571-4524-AF7B-CE8AEF13343A_1_1521601012267_audio_1_1.wav&_file"){
 		if(isset($storage["transcriptions"])){ //if the transcriptions folder exists on db
 			if(!isset($storage["transcriptions"][$filename])){ //if the audio entry is not present in the transcriptions folder
-				echo "going in transcribe";
 				$resp = transcribeAudio($filename, $data);
-				print_rr($resp);
-				// if(!empty($resp)){
-				// 	$storage["transcriptions"][$filename] = $resp;
-				// 	$response 	= doCurl($url, json_encode($storage), 'PUT');
-	   //      		$resp 		= json_decode($response,1);
-				// }
+				// print_rr($resp);
+				if(!empty($resp)){
+					$storage["transcriptions"][$filename] = $resp;
+					$response 	= doCurl($url, json_encode($storage), 'PUT');
+	        		$resp 		= json_decode($response,1);
+				}
 			}
 		}else{ //transcription tag does not exist on project in storage
 			$resp = transcribeAudio($filename, $data);
-			print_rr($resp);
-			// if(!empty($resp)){
-			// 		$storage["transcriptions"][$filename] = $resp;
-			// 		$response 	= doCurl($url, json_encode($storage), 'PUT');
-	  //       		$resp 		= json_decode($response,1);
-			// }
-		}
-	} 
+			// print_rr($resp);
+			if(!empty($resp)){
+					$storage["transcriptions"][$filename] = $resp;
+					$response 	= doCurl($url, json_encode($storage), 'PUT');
+	        		$resp 		= json_decode($response,1);
+			}
+		} 
 			//print_rr($storage);
 		// $resp = transcribeAudio($filename,$data);
 
