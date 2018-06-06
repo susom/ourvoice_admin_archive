@@ -467,7 +467,7 @@ $(document).on('click', function(event) {
 </html>
 <?php 
 //GET FILE
-function convertAudio($filename){
+function convertAudio($filename, $lookup_tag){
 	$split = explode("." , $filename);
 	$noext = $split[0];
 
@@ -501,13 +501,13 @@ function convertAudio($filename){
 
 
 	// MaKE THE FLAC for transcription using google API
-	transcribeAudio($cFile,$filename);
+	transcribeAudio($cFile,$filename,$lookup_tag);
 
 
 	return $newfile;
 }
 
-function transcribeAudio($cFile,$filename){
+function transcribeAudio($cFile,$filename, $lookup_tag){
 	$split = explode("." , $filename);
 	$noext = $split[0];
 
@@ -570,11 +570,11 @@ function transcribeAudio($cFile,$filename){
 	}
 	print_r($transcript);
 	if(!empty($transcript)){
-		saveTranscriptionData($transcript,$filename);
+		saveTranscriptionData($transcript,$filename,$lookup_tag);
 	}
 }
 
-function saveTranscriptionData($transcript,$filename){
+function saveTranscriptionData($transcript,$filename,$lookup_tag){
 	//Look to see if Transcription folder in DB exists...
 	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $lookup_tag[0];
     $response       = doCurl($url);
@@ -634,8 +634,8 @@ function getConvertedAudio($attach_url){
 		fclose($file);
 
 		//THEN CONVERT THE AUDIO
-		$newAudioPath = convertAudio($filename); 
 		$lookup_tag = explode("_audio",$split[1]);
+		$newAudioPath = convertAudio($filename, $lookup_tag); 
 
 		// $url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $lookup_tag[0];
 	 //    $response       = doCurl($url);
