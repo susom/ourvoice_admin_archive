@@ -501,13 +501,16 @@ function convertAudio($filename){
 
 
 	// MaKE THE FLAC for transcription using google API
-	transcribeAudio($cFile,$noext);
+	transcribeAudio($cFile,$filename);
 
 
 	return $newfile;
 }
 
-function transcribeAudio($cFile,$noext){
+function transcribeAudio($cFile,$filename){
+	$split = explode("." , $filename);
+	$noext = $split[0];
+
 	$ffmpeg_url = cfg::$ffmpeg_url; 
 	$postfields = array(
 			 "file" 	=> $cFile
@@ -566,9 +569,8 @@ function transcribeAudio($cFile,$noext){
 	   // $confidence = $resp["results"][0]["alternatives"][0]["confidence"];
 	}
 	print_r($transcript);
-	print_r($noext);
 	if(!empty($transcript)){
-		saveTranscriptionData($transcript,$noext);
+		saveTranscriptionData($transcript,$filename);
 	}
 }
 
@@ -580,16 +582,19 @@ function saveTranscriptionData($transcript,$filename){
 
 	if(isset($storage["transcriptions"])){ //if the transcriptions folder exists on db
 		if(!isset($storage["transcriptions"][$filename])){ //if the audio entry is not present in the transcriptions folder
+			echo "trying to store, does exist";
 				$storage["transcriptions"][$filename] = $transcript;
 				$response 	= doCurl($url, json_encode($storage), 'PUT');
         		$resp 		= json_decode($response,1);
 		}
 
 	}else{ //transcription tag does not exist on project in storage
+			echo 'trying to store t doesnt exist';
 				$storage["transcriptions"][$filename] = $transcript;
 				$response 	= doCurl($url, json_encode($storage), 'PUT');
         		$resp 		= json_decode($response,1);
 	} 
+	print_r($resp);
 }
 
 function getFullUrl($partialUrl){
