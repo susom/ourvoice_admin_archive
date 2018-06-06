@@ -549,34 +549,35 @@ function convertAudio($filename, $lookup_tag, $full_proj_code){
 	$split = explode("." , $filename);
 	$noext = $split[0];
 
+	if(!file_exists("./temp/".$full_proj_code.".mp3")){
 	// MAKE THE MP3 FROM locally saved .wav or .amr
-	if (function_exists('curl_file_create')) { // php 5.5+
-	  $cFile = curl_file_create("./temp/".$filename);
-	} else { // 
-	  $cFile = '@' . realpath("./temp/".$filename);
+		if (function_exists('curl_file_create')) { // php 5.5+
+		  $cFile = curl_file_create("./temp/".$filename);
+		} else { // 
+		  $cFile = '@' . realpath("./temp/".$filename);
+		}
+
+		$ffmpeg_url = cfg::$ffmpeg_url; 
+		$postfields = array(
+				 "file" 	=> $cFile
+				,"format" 	=> "mp3"
+				,"rate" 	=> 16000
+			);
+
+		// CURL OPTIONS
+		// POST IT TO FFMPEG SERVICE
+		$ch = curl_init($ffmpeg_url);
+		curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$response = curl_exec($ch);
+		curl_close($ch);
+
+		// REPLACE ATTACHMENT
+		$newfile 	= "./temp/".$full_proj_code.".mp3";
+		$handle 	= fopen($newfile, 'w');
+		fwrite($handle, $response); 
 	}
-
-	$ffmpeg_url = cfg::$ffmpeg_url; 
-	$postfields = array(
-			 "file" 	=> $cFile
-			,"format" 	=> "mp3"
-			,"rate" 	=> 16000
-		);
-
-	// CURL OPTIONS
-	// POST IT TO FFMPEG SERVICE
-	$ch = curl_init($ffmpeg_url);
-	curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	$response = curl_exec($ch);
-	curl_close($ch);
-
-	// REPLACE ATTACHMENT
-	$newfile 	= "./temp/".$full_proj_code.".mp3";
-	$handle 	= fopen($newfile, 'w');
-	fwrite($handle, $response); 
-
 	//check if transcription exists on database
 	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $lookup_tag[0];
     $response       = doCurl($url);
@@ -596,11 +597,11 @@ function convertAudio($filename, $lookup_tag, $full_proj_code){
 	$flac = explode(".",$filename);
 	if(file_exists('./temp/'.$filename)){
 		unlink('./temp/'.$filename);
-		echo 'removing ' . './temp/'.$filename;
+		// echo 'removing ' . './temp/'.$filename;
 
 	if(file_exists('./temp/'.$flac[0].'.flac'))
 		unlink('./temp/'.$flac[0].'.flac');
-		echo 'removing ' . './temp/'.$flac[0].'.flac';
+		// echo 'removing ' . './temp/'.$flac[0].'.flac';
 
 	}
 
