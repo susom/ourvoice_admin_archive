@@ -495,18 +495,3 @@ function getThumb($ph_id, $thumb_uri, $fileurl){
     return $thumb_uri;
 }
 
-
-// function transcribeAudio($name, $data){
-//     // //save local file temporarily: under name.wav
-//     // $localfile  = "$name";
-//     // $file = fopen($localfile, "w+");
-//     // fputs($file, $data);
-//     // fclose($file);
-
-//     // $ret = shell_exec("php audioConversion.php $name");
-
-    
-//     // // print_rr($ret);
-//     // // echo "done printing ret";
-//     return $ret;
-// }
