@@ -592,7 +592,7 @@ function saveTranscriptionData($transcript,$filename,$lookup_tag){
 				$response 	= doCurl($url, json_encode($storage), 'PUT');
         		$resp 		= json_decode($response,1);
 	} 
-	print_r($transcript);
+	print_r($filename);
 }
 
 function getFullUrl($partialUrl){
