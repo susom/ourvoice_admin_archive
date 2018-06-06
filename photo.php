@@ -513,7 +513,7 @@ function getConvertedAudio($attach_url){
 
 		//THEN CONVERT THE AUDIO
 		$lookup_tag = explode("_audio",$split[1]);
-		$newAudioPath = convertAudio($filename, $lookup_tag, $full_proj_code); 
+		$newAudioPath = convertAudio($filename, $lookup_tag, $full_proj_code[0]); 
 
 		// $url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $lookup_tag[0];
 	 //    $response       = doCurl($url);
