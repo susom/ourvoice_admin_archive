@@ -1,7 +1,7 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 require_once "common.php";
 $gmaps_key 	= cfg::$gmaps_key;
 $projlist 	= $_SESSION["DT"]["project_list"]; 
@@ -556,28 +556,27 @@ function convertAudio($filename, $lookup_tag, $full_proj_code){
 	  $cFile = '@' . realpath("./temp/".$filename);
 	}
 
-	if(!file_exists('./temp/'.$full_proj_code.'.mp3'))
-		$ffmpeg_url = cfg::$ffmpeg_url; 
-		$postfields = array(
-				 "file" 	=> $cFile
-				,"format" 	=> "mp3"
-				,"rate" 	=> 16000
-			);
+	$ffmpeg_url = cfg::$ffmpeg_url; 
+	$postfields = array(
+			 "file" 	=> $cFile
+			,"format" 	=> "mp3"
+			,"rate" 	=> 16000
+		);
 
-		// CURL OPTIONS
-		// POST IT TO FFMPEG SERVICE
-		$ch = curl_init($ffmpeg_url);
-		curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		$response = curl_exec($ch);
-		curl_close($ch);
+	// CURL OPTIONS
+	// POST IT TO FFMPEG SERVICE
+	$ch = curl_init($ffmpeg_url);
+	curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	$response = curl_exec($ch);
+	curl_close($ch);
 
-		// REPLACE ATTACHMENT
-		$newfile 	= "./temp/".$full_proj_code.".mp3";
-		$handle 	= fopen($newfile, 'w');
-		fwrite($handle, $response); 
-	}
+	// REPLACE ATTACHMENT
+	$newfile 	= "./temp/".$full_proj_code.".mp3";
+	$handle 	= fopen($newfile, 'w');
+	fwrite($handle, $response); 
+
 	//check if transcription exists on database
 	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $lookup_tag[0];
     $response       = doCurl($url);
