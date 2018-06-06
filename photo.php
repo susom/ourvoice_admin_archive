@@ -574,7 +574,7 @@ function convertAudio($filename, $lookup_tag, $full_proj_code){
 		curl_close($ch);
 
 		// REPLACE ATTACHMENT
-		$newfile 	= "./temp/".$full_proj_code.".mp3";
+		$newfile 	= "./temp/".$full_proj_code."_".$filename.".mp3";
 		$handle 	= fopen($newfile, 'w');
 		fwrite($handle, $response); 
 	}
