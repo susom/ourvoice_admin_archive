@@ -592,7 +592,14 @@ function saveTranscriptionData($transcript,$filename,$lookup_tag){
 				$response 	= doCurl($url, json_encode($storage), 'PUT');
         		$resp 		= json_decode($response,1);
 	} 
-	print_r($filename);
+	print_rr($filename);
+	$flac = explode(".",$filename);
+	print_rr($flac);
+	if(file_exists('./temp/'.$filename)){
+		unlink('./temp/'.$filename);
+	if(file_exists('./temp/'.$flac[0].'.flac'))
+		unlink('./temp/'.$flac[0].'.flac');
+	}
 }
 
 function getFullUrl($partialUrl){
