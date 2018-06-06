@@ -496,17 +496,79 @@ function getThumb($ph_id, $thumb_uri, $fileurl){
 }
 
 
-function transcribeAudio($name, $data){
-    //save local file temporarily: under name.wav
-    $localfile  = "$name";
-    $file = fopen($localfile, "w+");
-    fputs($file, $data);
-    fclose($file);
+function transcribeAudio($cFile){
+    // //save local file temporarily: under name.wav
+    // $localfile  = "$name";
+    // $file = fopen($localfile, "w+");
+    // fputs($file, $data);
+    // fclose($file);
 
-    $ret = shell_exec("php audioConversion.php $name");
+    // $ret = shell_exec("php audioConversion.php $name");
 
     
-    // print_rr($ret);
-    // echo "done printing ret";
+    // // print_rr($ret);
+    // // echo "done printing ret";
+    $ffmpeg_url = cfg::$ffmpeg_url; 
+    $postfields = array(
+             "file"     => $cFile
+            ,"format"   => "flac"
+        );
+
+    // CURL OPTIONS
+    // POST IT TO FFMPEG SERVICE
+    $ch = curl_init($ffmpeg_url);
+    curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    // REPLACE ATTACHMENT
+    $newfile    = "./temp/".$noext.".flac";
+    $handle     = fopen($newfile, 'w');
+    fwrite($handle, $response); 
+
+    $flac = file_get_contents($newfile);
+    $flac = base64_encode($flac);
+
+    // WE NEED TO json_encode the base64 of the flac file
+    // Set some options - we are passing in a useragent too here
+    $data = array(
+        "config" => array(
+            "encoding" => "FLAC",
+            "languageCode" => "en-US"
+        ),
+       "audio" => array(
+            "content" => $flac
+        )
+    );
+    $data_string = json_encode($data);                                                              
+
+    $ch = curl_init('https://speech.googleapis.com/v1/speech:recognize?key='.cfg::$gvoice_key);                                                                      
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");                                                                     
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);                                                                  
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);                                                                      
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
+       'Content-Type: application/json',                                                                                
+       'Content-Length: ' . strlen($data_string))                                                                       
+    );                                
+    $resp = curl_exec($ch);
+    curl_close($ch);
+    $resp = json_decode($resp,1);
+    print_r($resp);
+    if(!empty($resp)){
+        foreach($resp["results"] as $results){
+            $transcript = $transcript . $results["alternatives"][0]["transcript"];
+        }
+        // $transcript = $resp["results"][0]["alternatives"][0]["transcript"];
+        $confidence = $resp["results"][0]["alternatives"][0]["confidence"];
+
+        print_r($transcript);
+        // print_r($confidence);
+    }
+
+
+
+
     return $ret;
 }
