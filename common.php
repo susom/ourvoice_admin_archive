@@ -496,17 +496,17 @@ function getThumb($ph_id, $thumb_uri, $fileurl){
 }
 
 
-function transcribeAudio($name, $data){
-    // //save local file temporarily: under name.wav
-    // $localfile  = "$name";
-    // $file = fopen($localfile, "w+");
-    // fputs($file, $data);
-    // fclose($file);
+// function transcribeAudio($name, $data){
+//     // //save local file temporarily: under name.wav
+//     // $localfile  = "$name";
+//     // $file = fopen($localfile, "w+");
+//     // fputs($file, $data);
+//     // fclose($file);
 
-    // $ret = shell_exec("php audioConversion.php $name");
+//     // $ret = shell_exec("php audioConversion.php $name");
 
     
-    // // print_rr($ret);
-    // // echo "done printing ret";
-    return $ret;
-}
+//     // // print_rr($ret);
+//     // // echo "done printing ret";
+//     return $ret;
+// }
