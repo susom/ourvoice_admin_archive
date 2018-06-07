@@ -38,6 +38,43 @@ function doCurl($url, $data = null, $method = null, $username = null, $password 
     return $result;
 }
 
+function get_head(string $url, array $opts = []){
+    // Store previous default context
+    $prev = stream_context_get_options(stream_context_get_default());
+
+    // Set new one with head and a small timeout
+    stream_context_set_default(['http' => $opts + 
+        [
+            'method' => 'HEAD',
+            'timeout' => 2,
+        ]]);
+
+    // Do the head request
+    $req = @get_headers($url, true);
+    if(!$req){
+        return false;
+    }
+
+    // Make more sane response
+    foreach($req as $h => $v){
+        if(is_int($h)){
+            $headers[$h]['Status'] = $v;
+        }else{
+            if(is_string($v)){
+                $headers[0][$h] = $v;
+            }else{
+                foreach($v as $x => $y){
+                    $headers[$x][$h] = $y;
+                }
+            }
+        }
+    }
+
+    // Restore previous default context and return
+    stream_context_set_default($prev);
+    return $headers;
+}
+
 function print_rr($ar){
     echo "<pre>";
     print_r($ar);
@@ -424,7 +461,6 @@ function fetchKeys($abvList, $ALL_PROJ_DATA){
 
     }
     return $keyList;
-
 }
 
 function getAllData(){
@@ -495,3 +531,84 @@ function getThumb($ph_id, $thumb_uri, $fileurl){
     return $thumb_uri;
 }
 
+function scanBackUpFolder($backup_dir){
+    $backedup   = array();
+    $couch_url  = "http://".cfg::$couch_user.":".cfg::$couch_pw."@couchdb:5984";
+
+    if ($folder = opendir($backup_dir)) {
+        while (false !== ($file = readdir($folder))) {
+            if($file == "." || $file == ".."){
+                continue;
+            }
+
+            if (!is_dir("$backup_dir/".$file)) {
+                if(strpos($file,".json") > 0){
+                    $split          = explode(".",$file);
+                    $backup         = $split[0];
+                    $walk_json      = $couch_url . "/".cfg::$couch_users_db."/" . $backup ;
+                    $check_walk_id  = get_head($walk_json);
+                    if(array_key_exists("ETag", $check_walk_id[0])){
+                         // DOESNT EXIST SO NEED TO UPLOAD TO disc_users
+                         continue;
+                    }
+                }else{
+                    $attach_file    = $couch_url . "/".cfg::$couch_attach_db."/" . $file ;
+                    $check_attach   = get_head($attach_file);
+                    if(array_key_exists("ETag", $check_attach[0])){
+                         // DOESNT EXIST SO NEED TO UPLOAD TO disc_users
+                         continue;
+                    }
+                }
+                $backedup[] = $file;
+            }
+        }
+        closedir($folder);
+    }
+
+    return $backedup;
+}
+
+function prepareAttachment($key,$rev,$parent_dir,$attach_url){
+    $file_i         = str_replace($parent_dir."_","",$key);   
+    $splitdot       = explode(".",$file_i);
+    $c_type         = $splitdot[1];
+
+    $couchurl       = $attach_url."/".$key."/".$file_i."?rev=".$rev;
+    $filepath       = 'temp/'.$parent_dir.'/'.$key;
+    $content_type   = strpos($key,"photo") ? 'image/jpeg' : $c_type;
+    $response       = uploadAttach($couchurl, $filepath, $content_type);
+    return $response;
+}
+
+function uploadAttach($couchurl, $filepath, $content_type){
+    $data       = file_get_contents($filepath);
+    $ch         = curl_init();
+
+    $username   = cfg::$couch_user;
+    $password   = cfg::$couch_pw;
+    $options    = array(
+        CURLOPT_URL             => $couchurl,
+        CURLOPT_USERPWD         => $username . ":" . $password,
+        CURLOPT_SSL_VERIFYPEER  => FALSE,
+        CURLOPT_RETURNTRANSFER  => true,
+        CURLOPT_CUSTOMREQUEST   => 'PUT',
+        CURLOPT_HTTPHEADER      => array (
+            "Content-Type: ".$content_type,
+        ),
+        CURLOPT_POST            => true,
+        CURLOPT_POSTFIELDS      => $data
+    );
+    curl_setopt_array($ch, $options);
+    $info       = curl_getinfo($ch);
+    // print_rr($info);
+    $err        = curl_errno($ch);
+    // print_rr($err);
+    $response   = curl_exec($ch);
+    curl_close($ch);
+    return $response;
+}
+
+function deleteDirectory($dir) {
+    system('rm -rf ' . escapeshellarg($dir), $retval);
+    return $retval == 0; // UNIX commands return zero on success
+}

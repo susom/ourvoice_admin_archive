@@ -86,6 +86,7 @@ if( isset($_POST["proj_idx"]) ){
 			,"project_name" 	=> $_POST["project_name"]
 			,"project_pass" 	=> $_POST["project_pass"]
 			,"summ_pass" 		=> $_POST["summ_pass"]
+			,"project_email" 	=> $_POST["project_email"]
 			,"template_type"	=> $_POST["template_type"]
 			,"thumbs"			=> isset($_POST["thumbs"]) ? $_POST["thumbs"] : 0
 			,"app_lang" 		=> $app_lang
@@ -201,9 +202,11 @@ if(!isset($_SESSION["discpw"])) {
 	</div>
 	<?php
 	if( isset($_GET["proj_idx"]) ){
+		// SET UP NEW PROJECT
 		$proj_ids = array_column($projs, 'project_id');
 		$p 		  = $projs[$_GET["proj_idx"]];
 		$pid 	  = $p["project_id"];
+		$email    = isset($p["project_email"]) ? $p["project_email"] : "";
 		$pname 	  = $p["project_name"];
 		$ppass 	  = $p["project_pass"];
 		$spass 	  = isset($p["summ_pass"]) ? $p["summ_pass"] : "";
@@ -222,6 +225,7 @@ if(!isset($_SESSION["discpw"])) {
 			<fieldset class="app_meta">
 				<legend>Project Meta</legend>
 				<input type="hidden" name="proj_idx" value="<?php echo $_GET["proj_idx"]; ?>"/>
+				<label><span>Admin Email</span><input type="text" name="project_email" value="<?php echo !$template ? $email : ""; ?>"/></label>
 				<label><span>Project Id</span><input <?php echo $template ? "" : "readonly"; ?>  type="text" name="project_id" value="<?php echo !$template ? $pid : ""; ?>"/><?php echo $template_instructions ?></label>
 				<label><span>Project Name</span><input  type="text" name="project_name" value="<?php echo !$template ? $pname : ""; ?>"/></label>
 				<label><span>Project Pass</span><input type="text" name="project_pass" value="<?php echo $ppass; ?>"/></label>
@@ -251,19 +255,18 @@ if(!isset($_SESSION["discpw"])) {
 			</fieldset>
 			<button type="submit" class="btn btn-primary">Save Project</button>
 			<?php echo '</form>'.'<form action="summary.php" form id="route_summary" method="get">';	?>
-			<button type="submit" class ="btn btn-info" name = "id" value = <?php echo $pid?> >Summary</button>
 		</form>
 		<?php
 	}else{
-	$turl  	= cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
-	$tm 	= urlToJson($turl); //Just for times + project abv
-	$stor 	= $listid = array();
-	$stor 	= parseTime($tm, $stor, $listid);
+		$turl  	= cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
+		$tm 	= urlToJson($turl); //Just for times + project abv
+		$stor 	= $listid = array();
+		$stor 	= parseTime($tm, $stor, $listid);
 
-	foreach ($stor as $key => $value){
-	  array_push($listid, $key);
-	}
-	?>
+		foreach ($stor as $key => $value){
+		  array_push($listid, $key);
+		}
+		?>
 		<form id="project_config" method="get">
 				    <div id = "folderspace">
 				      	<?php
@@ -285,7 +288,6 @@ if(!isset($_SESSION["discpw"])) {
 					        }
 				      	?>    
 				    </div>
-			
 			<table id = "rec-table">
 				<tr>
 					<td ><h3>Recent Activity</h3></td>
