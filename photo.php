@@ -638,7 +638,7 @@ function transcribeAudio($cFile,$filename){
 	$resp = curl_exec($ch);
 	curl_close($ch);
 	$resp = json_decode($resp,1);
-	// print_rr($resp);
+	print_rr($resp);
 	if(!empty($resp["results"])){
 	    foreach($resp["results"] as $results){
 	        $transcript = $transcript . $results["alternatives"][0]["transcript"];
