@@ -525,14 +525,15 @@ function convertAudio($filename, $full_proj_code){
 	// print_rr($full_proj_code);
 	$split = explode("." , $filename);
 	$noext = $split[0];
-
-	if(!file_exists("./temp/".$full_proj_code."_".$noext.".mp3")){
-	// MAKE THE MP3 FROM locally saved .wav or .amr
-		if (function_exists('curl_file_create')) { // php 5.5+
+	
+	if (function_exists('curl_file_create')) { // php 5.5+
 		  $cFile = curl_file_create("./temp/".$filename);
 		} else { // 
 		  $cFile = '@' . realpath("./temp/".$filename);
 		}
+
+	if(!file_exists("./temp/".$full_proj_code."_".$noext.".mp3")){
+	// MAKE THE MP3 FROM locally saved .wav or .amr
 
 		$ffmpeg_url = cfg::$ffmpeg_url; 
 		$postfields = array(
@@ -563,10 +564,11 @@ function convertAudio($filename, $full_proj_code){
 
 	if(!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename])){
 		$trans = transcribeAudio($cFile,$filename);
-
-		$storage["transcriptions"][$filename] = $trans;
-		$response 	= doCurl($url, json_encode($storage), 'PUT');
-        $resp 		= json_decode($response,1);
+		if(!empty($trans)){
+			$storage["transcriptions"][$filename] = $trans;
+			$response 	= doCurl($url, json_encode($storage), 'PUT');
+	        $resp 		= json_decode($response,1);
+		}
 	}
 
 
@@ -639,12 +641,20 @@ function transcribeAudio($cFile,$filename){
 	curl_close($ch);
 	$resp = json_decode($resp,1);
 	print_rr($resp);
+	$count = 0;
 	if(!empty($resp["results"])){
 	    foreach($resp["results"] as $results){
 	        $transcript = $transcript . $results["alternatives"][0]["transcript"];
+	        $confidence = $confidence + $confidence["alternatives"][0]["confidence"];
+	        $count++;
 	    }
 	}
-	return $transcript;
-}
+	$confidence = $confidence / $count;
+	print_rr($confidence);
+	if($confidence > 0.7)
+		return $transcript;
+	else
+		return "";
+}	
 
 ?>
