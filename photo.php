@@ -512,8 +512,7 @@ function getConvertedAudio($attach_url){
 		fclose($file);
 
 		//THEN CONVERT THE AUDIO
-		$lookup_tag = explode("_audio",$split[1]);
-		$newAudioPath = convertAudio($filename, $lookup_tag, $full_proj_code[0]); 
+		$newAudioPath = convertAudio($filename, $full_proj_code[0]); 
 
 		// $url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $lookup_tag[0];
 	 //    $response       = doCurl($url);
@@ -545,10 +544,9 @@ function getConvertedAudio($attach_url){
 	return $newAudioPath;
 }
 
-function convertAudio($filename, $lookup_tag, $full_proj_code){
+function convertAudio($filename, $full_proj_code){
 	echo 'inside convertAudio';
 	print_rr($filename);
-	print_rr($lookup_tag);
 	print_rr($full_proj_code);
 	$split = explode("." , $filename);
 	$noext = $split[0];
@@ -578,12 +576,12 @@ function convertAudio($filename, $lookup_tag, $full_proj_code){
 		curl_close($ch);
 
 		// REPLACE ATTACHMENT
-		$newfile 	= "./temp/".$full_proj_code."_".$filename.".mp3";
+		$newfile 	= "./temp/".$full_proj_code."_".$noext.".mp3";
 		$handle 	= fopen($newfile, 'w');
 		fwrite($handle, $response); 
 	}
 	//check if transcription exists on database
-	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $lookup_tag[0];
+	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $full_proj_code;
     $response       = doCurl($url);
 	$storage 		= json_decode($response,1);
 
