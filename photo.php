@@ -649,6 +649,7 @@ function transcribeAudio($cFile,$filename){
 	        $count++;
 	    }
 	}
+	print_rr($confidence);
 	$confidence = $confidence / $count;
 	print_rr($confidence);
 	if($confidence > 0.7)
