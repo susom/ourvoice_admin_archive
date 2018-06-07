@@ -51,54 +51,6 @@ $html[] =  "<input type='hidden' name='backups_attach_url' value='$backup_attach
 $html[] =  "<input type='submit' value='save to couch'/>";
 $html[] =  "</form>";
 
-function uploadAttach($couchurl, $filepath, $content_type){
-    $data       = file_get_contents($filepath);
-    $ch         = curl_init();
-
-    $username   = cfg::$couch_user;
-    $password   = cfg::$couch_pw;
-    $options    = array(
-        CURLOPT_URL             => $couchurl,
-        CURLOPT_USERPWD         => $username . ":" . $password,
-        CURLOPT_SSL_VERIFYPEER  => FALSE,
-        CURLOPT_RETURNTRANSFER  => true,
-        CURLOPT_CUSTOMREQUEST   => 'PUT',
-        CURLOPT_HTTPHEADER      => array (
-            "Content-Type: ".$content_type,
-        ),
-        CURLOPT_POST            => true,
-        CURLOPT_POSTFIELDS      => $data
-    );
-    curl_setopt_array($ch, $options);
-    $info       = curl_getinfo($ch);
-    // print_rr($info);
-    $err        = curl_errno($ch);
-    // print_rr($err);
-    $response   = curl_exec($ch);
-    curl_close($ch);
-    return $response;
-}
-
-function deleteDirectory($dir) {
-    print_rr($dir);
-    system('rm -rf ' . escapeshellarg($dir), $retval);
-    return $retval == 0; // UNIX commands return zero on success
-}
-
-function prepareAttachment($key,$rev){
-    global $parent_check, $attach_url;
-    $parent_dir     = $parent_check[$key];
-    $file_i         = str_replace($parent_dir."_","",$key);   
-    $splitdot       = explode(".",$file_i);
-    $c_type         = $splitdot[1];
-
-    $couchurl       = $attach_url."/".$key."/".$file_i."?rev=".$rev;
-    $filepath       = 'temp/'.$parent_dir.'/'.$key;
-    $content_type   = strpos($key,"photo") ? 'image/jpeg' : $c_type;
-    $response       = uploadAttach($couchurl, $filepath, $content_type);
-    return $response;
-}
-
 if(isset($_POST["syncToCouch"])){
     $backup_keys            = $_POST["backups"];
     $backup_attach_keys     = $_POST["backups_attach"];
@@ -120,7 +72,8 @@ if(isset($_POST["syncToCouch"])){
 
         if(isset($row["error"]) && $row["error"] == "not_found"){
             // 2 step process 
-            
+            $parent_dir     = $parent_check[$row["key"]];
+
             // first , create the data entry
             $payload    = json_encode(array("_id" => $row["key"]));
             $response   = doCurl($attach_url, $payload, 'POST');
@@ -128,14 +81,15 @@ if(isset($_POST["syncToCouch"])){
             $rev        = $response["rev"];
 
             // next upload the attach
-            $response   = prepareAttachment($row["key"],$rev); 
+            $response   = prepareAttachment($row["key"],$rev,$parent_dir,$attach_url); 
             print_rr($response);
         }elseif(isset($row["doc"]["_rev"]) && !isset($row["doc"]["_attachments"])){
+            $parent_dir     = $parent_check[$row["key"]];
 
             // the stub was created but the attachment was not yet uploaded
             // so only need to do the second step
             $rev        = $row["doc"]["_rev"];
-            $response   = prepareAttachment($row["key"],$rev); 
+            $response   = prepareAttachment($row["key"],$rev,$parent_dir,$attach_url); 
             print_rr($response);
         }
     }
