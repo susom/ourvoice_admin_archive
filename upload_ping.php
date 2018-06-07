@@ -55,9 +55,13 @@ if(!empty($uploaded_walk_id)){
         // SCAN ./temp FOLDER FOR NEW FOLDERS!
         $backedup           = scanForBackUpFolders("temp/$_id");
 
-        // RECURSIVELY GO THROUGH THOSE AND UPLOAD THOSE MAFUHS
-        echo json_encode(array("ebackup" => $backedup));
 
+        // RECURSIVELY GO THROUGH THOSE AND UPLOAD THOSE MAFUHS
+        echo json_encode(array(  "ebackup"      => $backedup
+                                ,"backupfolder" => "temp/$_id"
+                                ,"email"        => $email
+                                
+                        ));
     }                                                                                
 
     // EITHER YES OR NO ON PARTIAL UPLOADS
@@ -96,7 +100,7 @@ if(!empty($uploaded_walk_id)){
 	// mail("irvins@stanford.edu", $subject, $msg); 
     // emailNotification($from_name, $reply_email, $email, $email_subject, $email_msg);                                                              
 }else{
-    phpinfo();
+    echo "why are you here?";
 }
 
 // if get head = succesful
