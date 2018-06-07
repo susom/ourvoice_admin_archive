@@ -645,7 +645,7 @@ function transcribeAudio($cFile,$filename){
 	if(!empty($resp["results"])){
 	    foreach($resp["results"] as $results){
 	        $transcript = $transcript . $results["alternatives"][0]["transcript"];
-	        $confidence = $confidence + $confidence["alternatives"][0]["confidence"];
+	        $confidence = $confidence + $results["alternatives"][0]["confidence"];
 	        $count++;
 	    }
 	}
