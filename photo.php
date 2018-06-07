@@ -498,6 +498,7 @@ function getConvertedAudio($attach_url){
 	if(empty($errors)){
 		//THEN EXTRACT THE FILE NAME
 		$split 		= explode("=",$attach_url);
+		print_rr($split);
 		$filename 	= $split[count($split) -1];
 		//returns something like  audio_3_1.wav
 		$full_proj_code = explode("_audio",$split[1]);
@@ -513,32 +514,6 @@ function getConvertedAudio($attach_url){
 
 		//THEN CONVERT THE AUDIO
 		$newAudioPath = convertAudio($filename, $full_proj_code[0]); 
-
-		// $url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $lookup_tag[0];
-	 //    $response       = doCurl($url);
-		// $storage 		= json_decode($response,1);
-		// print_rr($storage);
-		// if(isset($storage["transcriptions"])){ //if the transcriptions folder exists on db
-		// 	if(!isset($storage["transcriptions"][$filename])){ //if the audio entry is not present in the transcriptions folder
-		// 		$resp = transcribeAudio($filename, $data);
-		// 		// print_rr($resp);
-		// 		if(!empty($resp)){
-		// 			$storage["transcriptions"][$filename] = $resp;
-		// 			$response 	= doCurl($url, json_encode($storage), 'PUT');
-	 //        		$resp 		= json_decode($response,1);
-		// 		}
-		// 	}
-		// }else{ //transcription tag does not exist on project in storage
-		// 	$resp = transcribeAudio($filename, $data);
-		// 	// print_rr($resp);
-		// 	if(!empty($resp)){
-		// 			$storage["transcriptions"][$filename] = $resp;
-		// 			$response 	= doCurl($url, json_encode($storage), 'PUT');
-	 //        		$resp 		= json_decode($response,1);
-		// 	}
-		// } 
-			//print_rr($storage);
-		// $resp = transcribeAudio($filename,$data);
 
 	}
 	return $newAudioPath;
