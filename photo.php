@@ -546,6 +546,10 @@ function getConvertedAudio($attach_url){
 }
 
 function convertAudio($filename, $lookup_tag, $full_proj_code){
+	echo 'inside convertAudio';
+	print_rr($filename);
+	print_rr($lookup_tag);
+	print_rr($full_proj_code);
 	$split = explode("." , $filename);
 	$noext = $split[0];
 
