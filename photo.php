@@ -498,7 +498,7 @@ function getConvertedAudio($attach_url){
 	if(empty($errors)){
 		//THEN EXTRACT THE FILE NAME
 		$split 		= explode("=",$attach_url);
-		print_rr($split);
+		// print_rr($split);
 		$filename 	= $split[count($split) -1];
 		//returns something like  audio_3_1.wav
 		$full_proj_code = explode("_audio",$split[1]);
