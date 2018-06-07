@@ -520,13 +520,13 @@ function getConvertedAudio($attach_url){
 }
 
 function convertAudio($filename, $full_proj_code){
-	echo 'inside convertAudio';
-	print_rr($filename);
-	print_rr($full_proj_code);
+	// echo 'inside convertAudio';
+	// print_rr($filename);
+	// print_rr($full_proj_code);
 	$split = explode("." , $filename);
 	$noext = $split[0];
 
-	if(!file_exists("./temp/".$full_proj_code."_".$filename.".mp3")){
+	if(!file_exists("./temp/".$full_proj_code."_".$noext.".mp3")){
 	// MAKE THE MP3 FROM locally saved .wav or .amr
 		if (function_exists('curl_file_create')) { // php 5.5+
 		  $cFile = curl_file_create("./temp/".$filename);
