@@ -53,14 +53,42 @@ if(!empty($uploaded_walk_id)){
         $emergency_uploaded = "Notification: [$project_id] Emergency Backup Uploaded";
 
         // SCAN ./temp FOLDER FOR NEW FOLDERS!
-        $backedup           = scanForBackUpFolders("temp/$_id");
+        $backup_folder      = "temp/$_id";
+        $backup_files       = scanBackUpFolder($backup_folder);
 
+        foreach($backup_files as $file){
+            $path = $backup_folder . "/" . $file;
+            if(strpos($file,".json") > 0){
+                $walks_url  = cfg::$couch_url . "/" . cfg::$couch_users_db ;
+                $payload    = file_get_contents($path);
+                $response   = doCurl($walks_url, $payload, 'POST');
+            }else{
+                $attach_url = cfg::$couch_url . "/" . cfg::$couch_attach_db; 
+                // TWO STEPS
+                
+                // first , create the data entry
+                $payload    = json_encode(array("_id" => $file));
+                $response   = doCurl($attach_url, $payload, 'POST');
+                $response   = json_decode($response,1);
+                $rev        = $response["rev"];
+
+                // TODO
+                // IN CASE WHERE THE data entry is created, but the attachment is empty, 
+                // just get the REV somehow and do the PREP attachment as USUAL
+                // so only need to do the second step
+
+                // next upload the attach
+                $response   = prepareAttachment($file,$rev,$_id,$attach_url); 
+            }
+        }
+
+        // DELETE THE DIRECTORY , NOT YET?
+        // deleteDirectory($backup_folder);
 
         // RECURSIVELY GO THROUGH THOSE AND UPLOAD THOSE MAFUHS
-        echo json_encode(array(  "ebackup"      => $backedup
-                                ,"backupfolder" => "temp/$_id"
+        echo json_encode(array(  "ebackup"      => $backup_files
+                                ,"backupfolder" => $backup_folder
                                 ,"email"        => $email
-                                
                         ));
     }                                                                                
 

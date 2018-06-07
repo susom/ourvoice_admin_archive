@@ -546,20 +546,34 @@ function transcribeAudio($name, $data){
     return $ret;
 }
 
-function scanForBackUpFolders($backup_dir){
-    $backedup = array();
+function scanBackUpFolder($backup_dir){
+    $backedup   = array();
+    $couch_url  = "http://".cfg::$couch_user.":".cfg::$couch_pw."@couchdb:5984";
+
     if ($folder = opendir($backup_dir)) {
         while (false !== ($file = readdir($folder))) {
             if($file == "." || $file == ".."){
                 continue;
             }
 
-            if (is_dir("$backup_dir/".$file)) {
-
-
-
-
-                
+            if (!is_dir("$backup_dir/".$file)) {
+                if(strpos($file,".json") > 0){
+                    $split          = explode(".",$file);
+                    $backup         = $split[0];
+                    $walk_json      = $couch_url . "/".cfg::$couch_users_db."/" . $backup ;
+                    $check_walk_id  = get_head($walk_json);
+                    if(array_key_exists("ETag", $check_walk_id[0])){
+                         // DOESNT EXIST SO NEED TO UPLOAD TO disc_users
+                         continue;
+                    }
+                }else{
+                    $attach_file    = $couch_url . "/".cfg::$couch_attach_db."/" . $file ;
+                    $check_attach   = get_head($attach_file);
+                    if(array_key_exists("ETag", $check_attach[0])){
+                         // DOESNT EXIST SO NEED TO UPLOAD TO disc_users
+                         continue;
+                    }
+                }
                 $backedup[] = $file;
             }
         }
@@ -569,41 +583,48 @@ function scanForBackUpFolders($backup_dir){
     return $backedup;
 }
 
-function scanForBackUpFiles($backedup, $backup_dir){
-    $backedup_attachments = array();
-    $parent_check         = array();  //THIS WILL BE USED IN THE POST HANDLER UGH
-    foreach($backedup as $backup){
-        //CHECK COUCH IF $backup exists in disc_users
-        //if not then put it to couch
-        $couch_url      = "http://".cfg::$couch_user.":".cfg::$couch_pw."@couchdb:5984";
+function prepareAttachment($key,$rev,$parent_dir,$attach_url){
+    $file_i         = str_replace($parent_dir."_","",$key);   
+    $splitdot       = explode(".",$file_i);
+    $c_type         = $splitdot[1];
 
-        $walk_json      = $couch_url . "/".cfg::$couch_users_db."/" . $backup ;
-        $check_walk_id  = get_head($walk_json);
-        if(array_key_exists("error", $check_walk_id)){
-             // DOESNT EXIST SO NEED TO UPLOAD TO disc_users
-        }
-
-        // for deleting
-        // "<form method='POST'><input type='hidden' name='deleteDir' value='temp/$backup'/><input type='submit' value='Delete Directory'/></form></h3>";
-
-        //check the photo attachments 
-        //push to couch if not in disc_attachment
-        
-        if ($folder = opendir('temp/'.$backup)) {
-            while (false !== ($file = readdir($folder))) {
-                if($file == "." || $file == ".."){
-                    continue;
-                }
-                
-                if(!strpos($file,".json")){
-                    $backedup_attachments[] = $file;
-                    $parent_check[$file]    = $backup;
-                }
-                $html[] =  "<li><a href='temp/$backup/$file' target='blank'>";
-                $html[] =  $file;
-                $html[] =  "</a></li>";
-            }
-            closedir($folder);
-        }
-    }
+    $couchurl       = $attach_url."/".$key."/".$file_i."?rev=".$rev;
+    $filepath       = 'temp/'.$parent_dir.'/'.$key;
+    $content_type   = strpos($key,"photo") ? 'image/jpeg' : $c_type;
+    $response       = uploadAttach($couchurl, $filepath, $content_type);
+    return $response;
 }
+
+function uploadAttach($couchurl, $filepath, $content_type){
+    $data       = file_get_contents($filepath);
+    $ch         = curl_init();
+
+    $username   = cfg::$couch_user;
+    $password   = cfg::$couch_pw;
+    $options    = array(
+        CURLOPT_URL             => $couchurl,
+        CURLOPT_USERPWD         => $username . ":" . $password,
+        CURLOPT_SSL_VERIFYPEER  => FALSE,
+        CURLOPT_RETURNTRANSFER  => true,
+        CURLOPT_CUSTOMREQUEST   => 'PUT',
+        CURLOPT_HTTPHEADER      => array (
+            "Content-Type: ".$content_type,
+        ),
+        CURLOPT_POST            => true,
+        CURLOPT_POSTFIELDS      => $data
+    );
+    curl_setopt_array($ch, $options);
+    $info       = curl_getinfo($ch);
+    // print_rr($info);
+    $err        = curl_errno($ch);
+    // print_rr($err);
+    $response   = curl_exec($ch);
+    curl_close($ch);
+    return $response;
+}
+
+function deleteDirectory($dir) {
+    system('rm -rf ' . escapeshellarg($dir), $retval);
+    return $retval == 0; // UNIX commands return zero on success
+}
+
