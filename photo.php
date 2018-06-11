@@ -660,7 +660,7 @@ function transcribeAudio($cFile,$filename){
 		$confidence = $confidence / $count;
 		$_SESSION['transcription']['text'] = $transcript;
 		$_SESSION['transcription']['confidence'] = $confidence; 
-		$a = $transcript . "\n" . "audio was auto transcribed using google transcription API with ";
+		$a = $transcript . "\n\n" . "Audio was auto transcribed using google transcription API with " . round($confidence*100,2) . "% confidence";
 		//.round(($confidence*100),2);.'% confidence';
 		print_rr($a);
 		print_rr(round($confidence*100,2));
