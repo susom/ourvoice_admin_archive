@@ -656,8 +656,11 @@ function transcribeAudio($cFile,$filename){
 	}
 	if(isset($confidence) && $count != 0){
 		$confidence = $confidence / $count;
+		$_SESSION['transcription']['text'] = $transcript;
+		$_SESSION['transcription']['confidence'] = $confidence; 
+
 		if($confidence > 0.7)
-			return $transcript;
+			return $transcript . '\n' . 'audio was auto transcribed using google transcription API with '.round(($confidence*100),2);.'% confidence';
 	}
 		return "";
 }	
