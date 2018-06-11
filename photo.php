@@ -567,8 +567,10 @@ function convertAudio($filename, $full_proj_code){
 
 	if(!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename])){
 		$trans = transcribeAudio($cFile,$filename);
-		if(!empty($trans)){
-			$storage["transcriptions"][$filename] = $trans;
+		// print_rr($trans);
+		if(!empty($trans["transcript"])){
+			$storage["transcriptions"][$filename]["text"] = $trans;
+			$storage["transcriptions"][$filename]["confidence"] = $trans["confidence"];
 			$response 	= doCurl($url, json_encode($storage), 'PUT');
 	        $resp 		= json_decode($response,1);
 	        header("Refresh:0");
@@ -658,9 +660,10 @@ function transcribeAudio($cFile,$filename){
 	}
 	if(isset($confidence) && $count != 0){
 		$confidence = $confidence / $count;
-		$transcript = $transcript . "\n\n" . "Audio was auto transcribed using google transcription API with " . round($confidence*100,2) . "% confidence";
+		$data["transcript"] = $transcript;
+		$data["confidence"] = $confidence;
 		if($confidence > 0.7)
-			return $transcript;
+			return $data;
 		
 	}
 		return "";
