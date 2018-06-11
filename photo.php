@@ -1,7 +1,7 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 require_once "common.php";
 $gmaps_key 	= cfg::$gmaps_key;
 $projlist 	= $_SESSION["DT"]["project_list"]; 
@@ -660,7 +660,8 @@ function transcribeAudio($cFile,$filename){
 		$_SESSION['transcription']['confidence'] = $confidence; 
 
 		if($confidence > 0.7)
-			return $transcript . '\n' . 'audio was auto transcribed using google transcription API with '.round(($confidence*100),2);.'% confidence';
+			return $transcript;
+		//$transcript . '\n' . 'audio was auto transcribed using google transcription API with '.round($confidence*100),2);.'% confidence';
 	}
 		return "";
 }	
