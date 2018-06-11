@@ -555,6 +555,9 @@ function convertAudio($filename, $full_proj_code){
 		$newfile 	= "./temp/".$full_proj_code."_".$noext.".mp3";
 		$handle 	= fopen($newfile, 'w');
 		fwrite($handle, $response); 
+	}else{
+		//if the mp3 already exists just link it 
+		$newfile 	= "./temp/".$full_proj_code."_".$noext.".mp3";
 	}
 	//check if transcription exists on database
 	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $full_proj_code;
