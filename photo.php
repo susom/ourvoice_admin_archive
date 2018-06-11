@@ -647,6 +647,8 @@ function transcribeAudio($cFile,$filename){
 	$resp = json_decode($resp,1);
 	// print_rr($resp);
 	$count = 0;
+	$transcript = '';
+	$confidence = 0;
 	if(!empty($resp["results"])){
 	    foreach($resp["results"] as $results){
 	        $transcript = $transcript . $results["alternatives"][0]["transcript"];
@@ -658,9 +660,10 @@ function transcribeAudio($cFile,$filename){
 		$confidence = $confidence / $count;
 		$_SESSION['transcription']['text'] = $transcript;
 		$_SESSION['transcription']['confidence'] = $confidence; 
-		$a = $transcript . '\n' . 'audio was auto transcribed using google transcription API with ';
+		$a = $transcript . "\n" . "audio was auto transcribed using google transcription API with ";
 		//.round(($confidence*100),2);.'% confidence';
 		print_rr($a);
+		print_rr(round($confidence*100,2));
 		if($confidence > 0.7)
 			return $transcript;
 		
