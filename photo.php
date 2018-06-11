@@ -571,6 +571,8 @@ function convertAudio($filename, $full_proj_code){
 			$storage["transcriptions"][$filename] = $trans;
 			$response 	= doCurl($url, json_encode($storage), 'PUT');
 	        $resp 		= json_decode($response,1);
+	        header("Refresh:0");
+
 		}
 	}
 
