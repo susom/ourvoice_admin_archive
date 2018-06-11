@@ -659,9 +659,8 @@ function transcribeAudio($cFile,$filename){
 	}
 	if(isset($confidence) && $count != 0){
 		$confidence = $confidence / $count;
-		$_SESSION['transcription']['text'] = $transcript;
-		$_SESSION['transcription']['confidence'] = $confidence; 
 		$transcript . "\n\n" . "Audio was auto transcribed using google transcription API with " . round($confidence*100,2) . "% confidence";
+		print_rr($transcript);
 		if($confidence > 0.7)
 			return $transcript;
 		
