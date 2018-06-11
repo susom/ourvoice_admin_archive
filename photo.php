@@ -36,7 +36,7 @@ if( isset($_POST["doc_id"]) ){
 			}
 			foreach($payload["transcriptions"] as $name => $val){
 				if(strpos($name,$audio_match) > -1){
-					unset($payload["transcriptions"][$name]);
+					unset($payload["transcriptions"][$name]["text"]);
 				}
 			}
 		}elseif(isset($_POST["tag_text"])){
