@@ -569,7 +569,7 @@ function convertAudio($filename, $full_proj_code){
 		$trans = transcribeAudio($cFile,$filename);
 		// print_rr($trans);
 		if(!empty($trans["transcript"])){
-			$storage["transcriptions"][$filename]["text"] = $trans;
+			$storage["transcriptions"][$filename]["text"] = $trans["transcript"];
 			$storage["transcriptions"][$filename]["confidence"] = $trans["confidence"];
 			$response 	= doCurl($url, json_encode($storage), 'PUT');
 	        $resp 		= json_decode($response,1);
