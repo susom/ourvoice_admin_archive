@@ -652,12 +652,11 @@ function transcribeAudio($cFile,$filename){
 	        $count++;
 	    }
 	}
-	print_rr($confidence);
-	$confidence = $confidence / $count;
-	print_rr($confidence);
-	if($confidence > 0.7)
-		return $transcript;
-	else
+	if(isset($confidence) && $count != 0){
+		$confidence = $confidence / $count;
+		if($confidence > 0.7)
+			return $transcript;
+	}
 		return "";
 }	
 
