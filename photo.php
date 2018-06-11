@@ -36,7 +36,7 @@ if( isset($_POST["doc_id"]) ){
 			}
 			foreach($payload["transcriptions"] as $name => $val){
 				if(strpos($name,$audio_match) > -1){
-					unset($payload["transcriptions"][$name]["text"]);
+					unset($payload["transcriptions"][$name]);
 				}
 			}
 		}elseif(isset($_POST["tag_text"])){
@@ -205,7 +205,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				$audio_src 		= getConvertedAudio($attach_url);
 
 				$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
-				$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]) : "";
+				$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]) : "";
 				$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
 				<div class='forprint'>$transcription</div><textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";
 			}
