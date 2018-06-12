@@ -205,7 +205,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				$audio_src 		= getConvertedAudio($attach_url);
 				$confidence 	= appendConfidence($attach_url);
 				
-				$script 		= !empty($confidence) ? "This audio was translated using Google's Speech to Text API at ".round($confidence*100,2)."% confidence" : "";
+				$script 		= !empty($confidence) ? "This audio was translated using Google's API at ".round($confidence*100,2)."% confidence" : "";
 				$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
 				$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]) : "";
 				$audio_attachments .=   "<div class='audio_clip'>
