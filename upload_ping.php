@@ -10,7 +10,7 @@ require_once "inc/class.mail.php";
 $uploaded_walk_id   = isset($_POST["uploaded_walk_id"]) ? $_POST["uploaded_walk_id"] : null;
 // $proccesed_thumb_ids    = isset($_POST["proccesed_thumb_ids"]) ?  $_POST["proccesed_thumb_ids"] : null;                  
 
-function sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $email_msg, $from_name, $from_email, $to, $cc = array(), $bcc = array()){
+function sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $email_msg, $from_name, $from_email, $to, $cc = "", $bcc = ""){
     $data                   = array();
     $data["email_token"]    = $mail_api_token;
     $data["to"]             = $to;
@@ -22,7 +22,7 @@ function sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $e
     $data["body "]          = $email_msg;
     $method                 = "POST";
     
-    $process            = curl_init($url);
+    $process            = curl_init($mail_relay_endpoint);
     curl_setopt($process, CURLOPT_TIMEOUT, 30);
     curl_setopt($process, CURLOPT_RETURNTRANSFER, TRUE);
     curl_setopt($process, CURLOPT_SSL_VERIFYPEER, FALSE);
@@ -44,9 +44,10 @@ function sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $e
 // $email_msg              = "Test Body";
 // $from_name              = " ME Mario";
 // $from_email             = "irvins@stanford.edu";
-// // $cc             = "banchoff@stanford.edu";
-// // $bcc            = array("irvins@stanford.edu", "jmschultz@stanford.edu");
-// sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $email_msg, $from_name, $from_email, $to);
+// $cc                     = "banchoff@stanford.edu";
+// $bcc                    = "irvins@stanford.edu, jmschultz@stanford.edu";
+// $result = sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $email_msg, $from_name, $from_email, $to);
+// print_rr($result);
 // exit;
 
 if(!empty($uploaded_walk_id)){ 
@@ -165,12 +166,11 @@ if(!empty($uploaded_walk_id)){
     //EXTERNAL MODULE IN REDCAP TO ACT AS API TO RELAY EMAILS
     $mail_relay_endpoint    = "https://redcap.stanford.edu/api/?type=module&prefix=email_relay&page=service&pid=13619";
     $mail_api_token         = "XemWorYpUv";
-
-    $to     = $email;
-    $cc     = "banchoff@stanford.edu";
-    $bcc    = array("irvins@stanford.edu", "jmschultz@stanford.edu");
+    $to                     = $email;
+    $cc                     = "banchoff@stanford.edu";
+    $bcc                    = "irvins@stanford.edu, jmschultz@stanford.edu";
 	
-    sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $email_msg, $from_name, $from_email, $to, $cc = array(), $bcc = array());                                                            
+    sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $email_msg, $from_name, $from_email, $to, $cc, $bcc);                                                            
 }else{
     echo "why are you here?";
 }
