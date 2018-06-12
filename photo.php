@@ -90,7 +90,7 @@ if( isset($_POST["doc_id"]) ){
 		//SAVE TRANSCRIPTIONS
 		foreach($_POST["transcriptions"] as $audio_name => $transcription){
 			$txns = str_replace('"','&#34;', $transcription);
-			$payload["transcriptions"][$audio_name] = $txns;
+			$payload["transcriptions"][$audio_name]["text"] = $txns;
 		}
 	}
 	$response 	= doCurl($url, json_encode($payload),"PUT");
