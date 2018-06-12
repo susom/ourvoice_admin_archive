@@ -1,7 +1,7 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 require_once "common.php";
 $gmaps_key 	= cfg::$gmaps_key;
 $projlist 	= $_SESSION["DT"]["project_list"]; 
@@ -90,7 +90,7 @@ if( isset($_POST["doc_id"]) ){
 		//SAVE TRANSCRIPTIONS
 		foreach($_POST["transcriptions"] as $audio_name => $transcription){
 			$txns = str_replace('"','&#34;', $transcription);
-			$payload["transcriptions"][$audio_name] = $txns;
+			$payload["transcriptions"][$audio_name]["text"] = $txns;
 		}
 	}
 	$response 	= doCurl($url, json_encode($payload),"PUT");
@@ -203,11 +203,29 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				$aud_id			= $doc["_id"] . "_" . $filename;
                 $attach_url 	= "passthru.php?_id=".$aud_id."&_file=$filename" . $old;
 				$audio_src 		= getConvertedAudio($attach_url);
-
+				$confidence 	= appendConfidence($attach_url);
+				
+				$script 		= !empty($confidence) ? "This audio was translated using Google's API at ".round($confidence*100,2)."% confidence" : "";
 				$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
-				$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]) : "";
-				$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
-				<div class='forprint'>$transcription</div><textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";
+				//Works for archaic saving scheme as well as the new one : 
+				if(isset($doc["transcriptions"][$filename]["text"])){
+					$txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]);
+					$transcription = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]);
+				}else if(isset($doc["transcriptions"][$filename])){
+					$txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]);
+					$transcription = str_replace('&#34;','"', $doc["transcriptions"][$filename]);
+				}else{
+					$transcription = "";
+				}
+				$audio_attachments .=   "<div class='audio_clip'>
+											<audio controls>
+												<source src='$audio_src'/>
+											</audio> 
+											<a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
+											<div class='forprint'>$transcription</div>
+											<textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
+											<p id = 'confidence_exerpt'>$script</p>
+										</div>";
 			}
 		}else{
 			if(!empty($photo["audio"])){
@@ -567,8 +585,10 @@ function convertAudio($filename, $full_proj_code){
 
 	if(!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename])){
 		$trans = transcribeAudio($cFile,$filename);
-		if(!empty($trans)){
-			$storage["transcriptions"][$filename] = $trans;
+		// print_rr($trans);
+		if(!empty($trans["transcript"])){
+			$storage["transcriptions"][$filename]["text"] = $trans["transcript"];
+			$storage["transcriptions"][$filename]["confidence"] = $trans["confidence"];
 			$response 	= doCurl($url, json_encode($storage), 'PUT');
 	        $resp 		= json_decode($response,1);
 	        header("Refresh:0");
@@ -647,6 +667,8 @@ function transcribeAudio($cFile,$filename){
 	$resp = json_decode($resp,1);
 	// print_rr($resp);
 	$count = 0;
+	$transcript = '';
+	$confidence = 0;
 	if(!empty($resp["results"])){
 	    foreach($resp["results"] as $results){
 	        $transcript = $transcript . $results["alternatives"][0]["transcript"];
@@ -656,13 +678,27 @@ function transcribeAudio($cFile,$filename){
 	}
 	if(isset($confidence) && $count != 0){
 		$confidence = $confidence / $count;
-		$_SESSION['transcription']['text'] = $transcript;
-		$_SESSION['transcription']['confidence'] = $confidence; 
-
+		$data["transcript"] = $transcript;
+		$data["confidence"] = $confidence;
 		if($confidence > 0.7)
-			return $transcript . '\n' . 'audio was auto transcribed using google transcription API with '.round(($confidence*100),2);.'% confidence';
+			return $data;
+		
 	}
 		return "";
 }	
+
+function appendConfidence($attach_url){
+	$split 		= explode("=",$attach_url);
+	$filename 	= $split[count($split) -1];
+	$full_proj_code = explode("_audio",$split[1]);
+	
+	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $full_proj_code[0];
+    $response       = doCurl($url);
+	$storage 		= json_decode($response,1);
+	if(isset($storage["transcriptions"][$filename]["confidence"]))
+		return $storage["transcriptions"][$filename]["confidence"];
+	else
+		return "";
+}
 
 ?>
