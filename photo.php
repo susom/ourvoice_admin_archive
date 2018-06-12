@@ -207,7 +207,18 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				
 				$script 		= !empty($confidence) ? "This audio was translated using Google's API at ".round($confidence*100,2)."% confidence" : "";
 				$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
-				$transcription 	= isset($doc["transcriptions"][$filename]["text"]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]) : "";
+				//$transcription 	= isset($doc["transcriptions"][$filename]["text"]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]) : "";
+				if(isset($doc["transcriptions"][$filename]["text"])){
+					$txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]);
+					$transcription = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]);
+				}else if(isset($doc["transcriptions"][$filename])){
+					print_rr('hey im in this');
+					echo gettype($doc["transcriptions"][$filename]);
+					$txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]);
+					$transcription = str_replace('&#34;','"', $doc["transcriptions"][$filename]);
+				}else{
+					$transcription = "";
+				}
 				$audio_attachments .=   "<div class='audio_clip'>
 											<audio controls>
 												<source src='$audio_src'/>
