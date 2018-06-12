@@ -203,11 +203,20 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				$aud_id			= $doc["_id"] . "_" . $filename;
                 $attach_url 	= "passthru.php?_id=".$aud_id."&_file=$filename" . $old;
 				$audio_src 		= getConvertedAudio($attach_url);
-
+				$confidence 	= appendConfidence($attach_url);
+				
+				$script 		= !empty($confidence) ? "This audio was translated using Google's Speech to Text API at ".round($confidence*100,2)."% confidence" : "";
 				$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
 				$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]) : "";
-				$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
-				<div class='forprint'>$transcription</div><textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";
+				$audio_attachments .=   "<div class='audio_clip'>
+											<audio controls>
+												<source src='$audio_src'/>
+											</audio> 
+											<a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
+											<div class='forprint'>$transcription</div>
+											<textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
+											<p id = 'confidence_exerpt'>$script</p>
+										</div>";
 			}
 		}else{
 			if(!empty($photo["audio"])){
@@ -668,5 +677,19 @@ function transcribeAudio($cFile,$filename){
 	}
 		return "";
 }	
+
+function appendConfidence($attach_url){
+	$split 		= explode("=",$attach_url);
+	$filename 	= $split[count($split) -1];
+	$full_proj_code = explode("_audio",$split[1]);
+	
+	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $full_proj_code[0];
+    $response       = doCurl($url);
+	$storage 		= json_decode($response,1);
+	if(isset($storage["transcriptions"][$filename]["confidence"]))
+		return $storage["transcriptions"][$filename]["confidence"];
+	else
+		return "";
+}
 
 ?>
