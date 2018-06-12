@@ -11,16 +11,16 @@ $uploaded_walk_id   = isset($_POST["uploaded_walk_id"]) ? $_POST["uploaded_walk_
 // $proccesed_thumb_ids    = isset($_POST["proccesed_thumb_ids"]) ?  $_POST["proccesed_thumb_ids"] : null;                  
 
 function sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $email_msg, $from_name, $from_email, $to, $cc = array(), $bcc = array()){
-    $data               = array();
-    $data["token"]      = $mail_api_token;
-    $data["to"]         = $to;
-    $data["from_name"]  = $from_name;
-    $data["from_email"] = $from_email;
-    $data["cc"]         = $cc;
-    $data["bcc"]        = $bcc;
-    $data["subject"]    = $email_subject;
-    $data["body "]      = $email_msg;
-    $method             = "POST";
+    $data                   = array();
+    $data["email_token"]    = $mail_api_token;
+    $data["to"]             = $to;
+    $data["from_name"]      = $from_name;
+    $data["from_email"]     = $from_email;
+    $data["cc"]             = $cc;
+    $data["bcc"]            = $bcc;
+    $data["subject"]        = $email_subject;
+    $data["body "]          = $email_msg;
+    $method                 = "POST";
     
     $process            = curl_init($url);
     curl_setopt($process, CURLOPT_TIMEOUT, 30);
@@ -32,22 +32,22 @@ function sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $e
     
     $errors = curl_error($process);
     $result = curl_exec($process);
-
     curl_close($process);
+
+    return $result;
 } 
 
-$mail_relay_endpoint    = "https://redcap.stanford.edu/api/?type=module&prefix=email_relay&page=service&pid=13619";
-$mail_api_token         = "XemWorYpUv";
-
-$to             = "irvins@stanford.edu";
-$email_subject  = "Test Subject";
-$email_msg      = "Test Body";
-$from_name      = " ME Mario";
-$from_email     = "irvins@stanford.edu";
-// $cc             = "banchoff@stanford.edu";
-// $bcc            = array("irvins@stanford.edu", "jmschultz@stanford.edu");
-sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $email_msg, $from_name, $from_email, $to);
-exit;
+// $mail_relay_endpoint    = "https://redcap.stanford.edu/api/?type=module&prefix=email_relay&page=service&pid=13619";
+// $mail_api_token         = "XemWorYpUv";
+// $to                     = "irvins@stanford.edu";
+// $email_subject          = "Test Subject";
+// $email_msg              = "Test Body";
+// $from_name              = " ME Mario";
+// $from_email             = "irvins@stanford.edu";
+// // $cc             = "banchoff@stanford.edu";
+// // $bcc            = array("irvins@stanford.edu", "jmschultz@stanford.edu");
+// sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $email_msg, $from_name, $from_email, $to);
+// exit;
 
 if(!empty($uploaded_walk_id)){ 
     $_id                = $uploaded_walk_id;  
