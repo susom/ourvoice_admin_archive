@@ -150,7 +150,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			continue;
 		}
 
-		if($old && !isset($photo["audios"])){
+		if(!$old && !isset($photo["audios"])){
 			$old = "&_old=2";
 		}
 
@@ -197,7 +197,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
     	$photo_name = $old ? "photo_" . $i . ".jpg" : $photo["name"];
 		$ph_id 		= $old ? $_id : $_id . "_" . $photo_name;
 		$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$photo_name" . $old;
-		
+
 		$attach_url = "#";
 		$audio_attachments = "";
 		
