@@ -150,7 +150,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			continue;
 		}
 
-		if(!isset($photo["audios"])){
+		if($old && !isset($photo["audios"])){
 			$old = "&_old=2";
 		}
 
