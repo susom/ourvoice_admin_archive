@@ -150,6 +150,10 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			continue;
 		}
 
+		if(!isset($photo["audios"])){
+			$old = "&_old=2";
+		}
+
 		//PREV NEXT
 		if(isset($photos[$i-1])){
 			$prevnext[0] = "photo.php?_id=" . $doc["_id"] . "&_file=photo_" . ($i - 1) . ".jpg";
