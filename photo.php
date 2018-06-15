@@ -512,6 +512,7 @@ function getConvertedAudio($attach_url){
 	//FIRST DOWNLOAD THE AUDIO FILE
 
 	$fullURL 	= getFullUrl($attach_url);
+
 	$ch 		= curl_init($fullURL);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	$data 		= curl_exec($ch);
@@ -520,24 +521,28 @@ function getConvertedAudio($attach_url){
 	$newAudioPath = "";
 	if(empty($errors)){
 		//THEN EXTRACT THE FILE NAME
-		$split 		= explode("=",$attach_url);
-		// print_rr($split);
-		$filename 	= $split[count($split) -1];
-		//returns something like  audio_3_1.wav
-		$full_proj_code = explode("_audio",$split[1]);
-		//returns something akin to : GNT_CBD64DEE-423E-40D1-8CAB-A282031BCCD8_3_1524753518048    _3_1.wav
-		
+		$split 				= explode("=",$attach_url);
+		$filename_or_old 	= array_pop($split);
+
+		if($filename_or_old == 1 || $filename_or_old == 2){
+			$old_ 			= explode("&",array_pop($split));
+			$filename 		= $old_[0];
+			$full_proj_code = explode("&",array_pop($split));
+		}else{
+			$filename 		= $filename_or_old;
+			$full_proj_code = explode("_audio",array_pop($split));
+		}
+
 		//save to server as audio_x_x.wav/AMR
 		//if(file_exists)
 		$localfile 	= "./temp/$filename";
+
 		$file 		= fopen($localfile, "w+");
-		
 		fputs($file, $data);
 		fclose($file);
 
 		//THEN CONVERT THE AUDIO
 		$newAudioPath = convertAudio($filename, $full_proj_code[0]); 
-
 	}
 	return $newAudioPath;
 }
