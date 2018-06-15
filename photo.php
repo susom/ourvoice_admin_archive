@@ -189,8 +189,9 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
             $response = json_decode($responseJson);
             date_default_timezone_set($response->timeZoneId); 
         }
-		$photo_name = $photo["name"];
-		$ph_id 		= $_id . "_" . $photo_name;
+
+    	$photo_name = $old ? "photo_" . $i . ".jpg" : $photo["name"];
+		$ph_id 		= $old ? $_id : $_id . "_" . $photo_name;
 		$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$photo_name" . $old;
 		
 		$attach_url = "#";
