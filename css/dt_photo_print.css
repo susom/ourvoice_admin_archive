@@ -85,18 +85,17 @@ textarea{
 		display:none;
 	}
 	
-	.photo_detail .forcommunity{
-		position:absolute;
-		margin-top:-60px;
-		margin-left:10px;
+	.user_entry h4 {
+		font-size:150%;
 	}
-	.photo_detail .forcommunity h4{
+
+	#confidence_exerpt{
 		display:none;
 	}
 
 	.forprint{
 		display:block;
-		font-size:115%;
+		font-size:125%;
 	}
 }
 
