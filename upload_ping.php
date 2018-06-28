@@ -9,7 +9,47 @@ require_once "inc/class.mail.php";
 // GET WALK ID , FROM THE PING
 $uploaded_walk_id   = isset($_POST["uploaded_walk_id"]) ? $_POST["uploaded_walk_id"] : null;
 // $proccesed_thumb_ids    = isset($_POST["proccesed_thumb_ids"]) ?  $_POST["proccesed_thumb_ids"] : null;                  
-                                                                                                                   
+
+function sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $email_msg, $from_name, $from_email, $to, $cc = "", $bcc = ""){
+    $data                   = array();
+    $data["email_token"]    = $mail_api_token;
+    $data["to"]             = $to;
+    $data["from_name"]      = $from_name;
+    $data["from_email"]     = $from_email;
+    $data["cc"]             = $cc;
+    $data["bcc"]            = $bcc;
+    $data["subject"]        = $email_subject;
+    $data["body "]          = $email_msg;
+    $method                 = "POST";
+    
+    $process            = curl_init($mail_relay_endpoint);
+    curl_setopt($process, CURLOPT_TIMEOUT, 30);
+    curl_setopt($process, CURLOPT_RETURNTRANSFER, TRUE);
+    curl_setopt($process, CURLOPT_SSL_VERIFYPEER, FALSE);
+
+    if (!empty($data)) curl_setopt($process, CURLOPT_POSTFIELDS, $data);
+    if (!empty($method)) curl_setopt($process, CURLOPT_CUSTOMREQUEST, $method);
+    
+    $errors = curl_error($process);
+    $result = curl_exec($process);
+    curl_close($process);
+
+    return $result;
+} 
+
+// $mail_relay_endpoint    = "https://redcap.stanford.edu/api/?type=module&prefix=email_relay&page=service&pid=13619";
+// $mail_api_token         = "XemWorYpUv";
+// $to                     = "irvins@stanford.edu";
+// $email_subject          = "Test Subject";
+// $email_msg              = "Test Body";
+// $from_name              = " ME Mario";
+// $from_email             = "irvins@stanford.edu";
+// $cc                     = "banchoff@stanford.edu";
+// $bcc                    = "irvins@stanford.edu, jmschultz@stanford.edu";
+// $result = sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $email_msg, $from_name, $from_email, $to);
+// print_rr($result);
+// exit;
+
 if(!empty($uploaded_walk_id)){ 
     $_id                = $uploaded_walk_id;  
     $email              = isset($_POST["project_email"]) ? $_POST["project_email"] : false;   
@@ -101,7 +141,7 @@ if(!empty($uploaded_walk_id)){
     }
 
     $from_name      = "Stanford Our Voice";
-    $reply_email    = "irvins@stanford.edu";
+    $from_email     = "irvins@stanford.edu";
     $email_subject  = count($failed_uploads) ? "Notification: [$project_id] New walk uploaded, possibly missing attachments" : "Notification: [$project_id] New walk uploaded!";
     $email_subject  = !$emergency_uploaded ? $subject : $emergency_uploaded;
 
@@ -123,10 +163,14 @@ if(!empty($uploaded_walk_id)){
     $msg_arr[]      = "<i style='font-size:77%;'>Participant rights: contact our IRB at 1-866-680-2906</i>";
     $email_msg      = implode("<br>",$msg_arr);
 
-    // TODO , CREATE EXTERNAL MODULE IN REDCAP TO ACT AS API TO RELAY EMAILS
-	// // send email
-	// mail("irvins@stanford.edu", $subject, $msg); 
-    // emailNotification($from_name, $reply_email, $email, $email_subject, $email_msg);                                                              
+    //EXTERNAL MODULE IN REDCAP TO ACT AS API TO RELAY EMAILS
+    $mail_relay_endpoint    = "https://redcap.stanford.edu/api/?type=module&prefix=email_relay&page=service&pid=13619";
+    $mail_api_token         = "XemWorYpUv";
+    $to                     = $email;
+    $cc                     = "banchoff@stanford.edu";
+    $bcc                    = "irvins@stanford.edu, jmschultz@stanford.edu";
+	
+    sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $email_msg, $from_name, $from_email, $to, $cc, $bcc);                                                            
 }else{
     echo "why are you here?";
 }

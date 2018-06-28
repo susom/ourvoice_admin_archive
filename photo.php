@@ -150,6 +150,10 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			continue;
 		}
 
+		if(!$old && !isset($photo["audios"])){
+			$old = "&_old=2";
+		}
+
 		//PREV NEXT
 		if(isset($photos[$i-1])){
 			$prevnext[0] = "photo.php?_id=" . $doc["_id"] . "&_file=photo_" . ($i - 1) . ".jpg";
@@ -189,11 +193,11 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
             $response = json_decode($responseJson);
             date_default_timezone_set($response->timeZoneId); 
         }
-		$photo_name = $photo["name"];
-		$ph_id 		= $_id . "_" . $photo_name;
+
+    	$photo_name = $old ? "photo_" . $i . ".jpg" : $photo["name"];
+		$ph_id 		= $old ? $_id : $_id . "_" . $photo_name;
 		$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$photo_name" . $old;
-		// detectFaces($ph_id,$old,$photo_name);
-		//print_r($photo_uri);
+
 		$attach_url = "#";
 		$audio_attachments = "";
 		
@@ -517,24 +521,27 @@ function getConvertedAudio($attach_url){
 	$newAudioPath = "";
 	if(empty($errors)){
 		//THEN EXTRACT THE FILE NAME
-		$split 		= explode("=",$attach_url);
-		// print_rr($split);
-		$filename 	= $split[count($split) -1];
-		//returns something like  audio_3_1.wav
-		$full_proj_code = explode("_audio",$split[1]);
-		//returns something akin to : GNT_CBD64DEE-423E-40D1-8CAB-A282031BCCD8_3_1524753518048    _3_1.wav
-		
+		$split 				= explode("=",$attach_url);
+		$filename_or_old 	= array_pop($split);
+
+		if($filename_or_old == 1 || $filename_or_old == 2){
+			$old_ 			= explode("&",array_pop($split));
+			$filename 		= $old_[0];
+			$full_proj_code = explode("&",array_pop($split));
+		}else{
+			$filename 		= $filename_or_old;
+			$full_proj_code = explode("_audio",array_pop($split));
+		}
+
 		//save to server as audio_x_x.wav/AMR
 		//if(file_exists)
 		$localfile 	= "./temp/$filename";
 		$file 		= fopen($localfile, "w+");
-		
 		fputs($file, $data);
 		fclose($file);
 
 		//THEN CONVERT THE AUDIO
 		$newAudioPath = convertAudio($filename, $full_proj_code[0]); 
-
 	}
 	return $newAudioPath;
 }
@@ -578,7 +585,6 @@ function convertAudio($filename, $full_proj_code){
 	}else{
 		//if the mp3 already exists just link it 
 		$newfile 	= "./temp/".$full_proj_code."_".$noext.".mp3";
-		
 	}
 	//check if transcription exists on database
 	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $full_proj_code;
