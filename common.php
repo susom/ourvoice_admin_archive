@@ -377,7 +377,7 @@ function printPhotos($doc){
         $thumb_uri      = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
         // $photo_uri  = $file_uri;
         $photo_uri      = getThumb($img_id,$thumb_uri,$file_uri);
-
+        $blur_coord     = "facial_detection.php?uri=".$photo_uri;
         $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
         $attach_url     = "#";
         $pic_time       = date("g:i a", floor($timestamp/1000));
@@ -607,6 +607,27 @@ function uploadAttach($couchurl, $filepath, $content_type){
     curl_close($ch);
     return $response;
 }
+
+function postData($url, $data){ //MUST INCLUDE Key attached to URL, 
+    $data_string = json_encode($data); 
+    $ch = curl_init($url);         
+                                            
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");                                                                     
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);                                                                  
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);                                                                      
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
+       'Content-Type: application/json',                                                                                
+       'Content-Length: ' . strlen($data_string))                                                                       
+    );    
+
+    $resp = curl_exec($ch);
+    $c = 0;
+    curl_close($ch);
+    $resp = json_decode($resp,1);
+    return $resp;
+
+}
+
 
 function deleteDirectory($dir) {
     system('rm -rf ' . escapeshellarg($dir), $retval);
