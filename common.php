@@ -162,14 +162,14 @@ function printRow($doc){
 
     $url_path    = $_SERVER['HTTP_ORIGIN'].dirname($_SERVER['PHP_SELF'])."/";
     foreach($photos as $n => $photo){
-        if(is_null($photo)){
+        if(is_null($photo) || isset($photo["deleted"])){
             continue;
         }
 
         $hasaudio   = !empty($photo["audio"]) ? "has" : "";
         $long       = isset($photo["geotag"]["longitude"]) ? $photo["geotag"]["longitude"]: 0;
         $lat        = isset($photo["geotag"]["latitude"])  ? $photo["geotag"]["latitude"] : 0;
-        $timestamp  = $photo["geotag"]["timestamp"];
+        $timestamp  = isset($photo["geotag"]["timestamp"]) ? $photo["geotag"]["timestamp"] : 0;
         $goodbad    = "";
         if($photo["goodbad"] > 1){
             $goodbad  .= "<span class='goodbad good'></span>";
@@ -220,7 +220,7 @@ function printRow($doc){
             $response = json_decode($responseJson);
             date_default_timezone_set($response->timeZoneId); 
         }
-        $codeblock[] = "<li id='photo_$n'>
+        $codeblock[] = "<li data-phid='$img_id'>
 
         <figure>
         <a href='$detail_url' target='_blank' rel='google_map_$i' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate' rev='$rotate'><img src='$photo_uri' /><span></span><b></b></a>

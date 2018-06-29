@@ -9,34 +9,43 @@ $projlist 	= $_SESSION["DT"]["project_list"];
 // AJAX HANDLING
 if( isset($_POST["doc_id"]) ){
 	// FOR PHOTOS
+	// FIRST GET A FRESH COPY OF THE WALK DATA
 	$_id  		= $_POST["doc_id"];
     $url 		= cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
-	$response 	= doCurl($url);
-
+    $response   = doCurl($url);
 	$doc 	 	= json_decode(stripslashes($response),1);
 	$payload 	= $doc;
 
 	if(isset($_POST["photo_i"])){
 		$photo_i = $_POST["photo_i"];
+
 		if(isset($_POST["rotate"])){
 			//SAVE ROTATION
 			$rotate = $_POST["rotate"]; 
 			$payload["photos"][$photo_i]["rotate"] = $rotate;
 		}elseif(isset($_POST["delete"])){
-			unset($payload["photos"][$photo_i]);
 			$photo_name 	= "photo_".$photo_i.".jpg";
 			$audio_match 	= "audio_".$photo_i."_";
-			foreach($payload["_attachments"] as $name => $val){
-				if($name == $photo_name){
-					unset($payload["_attachments"][$name]);
-				}
-				if(strpos($name,$audio_match) > -1){
-					unset($payload["_attachments"][$name]);
+
+			$payload["photos"][$photo_i]["deleted"] = true;
+			// unset ($payload["photos"][$photo_i]);
+
+			if(isset($payload["_attachments"])){
+				foreach($payload["_attachments"] as $name => $val){
+					if($name == $photo_name){
+						unset($payload["_attachments"][$name]);
+					}
+					if(strpos($name,$audio_match) > -1){
+						unset($payload["_attachments"][$name]);
+					}
 				}
 			}
-			foreach($payload["transcriptions"] as $name => $val){
-				if(strpos($name,$audio_match) > -1){
-					unset($payload["transcriptions"][$name]);
+
+			if(isset($payload["transcriptions"])){
+				foreach($payload["transcriptions"] as $name => $val){
+					if(strpos($name,$audio_match) > -1){
+						unset($payload["transcriptions"][$name]);
+					}
 				}
 			}
 		}elseif(isset($_POST["tag_text"])){
@@ -84,7 +93,8 @@ if( isset($_POST["doc_id"]) ){
 				}
 			}
 		}
-        $tes = doCurl($url, json_encode($payload),"PUT");
+
+        $response = doCurl($url, json_encode($payload),"PUT");
 		exit;
 	}else{
 		//SAVE TRANSCRIPTIONS
@@ -93,6 +103,7 @@ if( isset($_POST["doc_id"]) ){
 			$payload["transcriptions"][$audio_name]["text"] = $txns;
 		}
 	}
+
 	$response 	= doCurl($url, json_encode($payload),"PUT");
 	$resp 		= json_decode($response,1);
 	if(isset($resp["ok"])){
@@ -491,8 +502,6 @@ $(document).on('click', function(event) {
 </html>
 <?php 
 //GET FILE
-
-
 function getFullUrl($partialUrl){
 	$paths = explode("/",$_SERVER["SCRIPT_NAME"]);
 	array_unshift($paths,$_SERVER["HTTP_HOST"]);
@@ -560,7 +569,7 @@ function convertAudio($filename, $full_proj_code){
 		}
 
 	if(!file_exists("./temp/".$full_proj_code."_".$noext.".mp3")){
-	// MAKE THE MP3 FROM locally saved .wav or .amr
+		// MAKE THE MP3 FROM locally saved .wav or .amr
 
 		$ffmpeg_url = cfg::$ffmpeg_url; 
 		$postfields = array(
@@ -586,11 +595,11 @@ function convertAudio($filename, $full_proj_code){
 		//if the mp3 already exists just link it 
 		$newfile 	= "./temp/".$full_proj_code."_".$noext.".mp3";
 	}
+
 	//check if transcription exists on database
 	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $full_proj_code;
     $response       = doCurl($url);
 	$storage 		= json_decode($response,1);
-
 
 	if(!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename])){
 		$trans = transcribeAudio($cFile,$filename);
@@ -601,10 +610,8 @@ function convertAudio($filename, $full_proj_code){
 			$response 	= doCurl($url, json_encode($storage), 'PUT');
 	        $resp 		= json_decode($response,1);
 	        header("Refresh:0");
-
 		}
 	}
-
 
 	//remove extraneous files from server
 	$flac = explode(".",$filename);
@@ -615,7 +622,6 @@ function convertAudio($filename, $full_proj_code){
 	if(file_exists('./temp/'.$flac[0].'.flac'))
 		unlink('./temp/'.$flac[0].'.flac');
 		// echo 'removing ' . './temp/'.$flac[0].'.flac';
-
 	}
 
 	return $newfile;
@@ -697,8 +703,8 @@ function transcribeAudio($cFile,$filename){
 }	
 
 function appendConfidence($attach_url){
-	$split 		= explode("=",$attach_url);
-	$filename 	= $split[count($split) -1];
+	$split 			= explode("=",$attach_url);
+	$filename 		= $split[count($split) -1];
 	$full_proj_code = explode("_audio",$split[1]);
 	
 	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $full_proj_code[0];
@@ -806,9 +812,4 @@ function pixelate($image, $pixelate_x = 12, $pixelate_y = 12){
 	    }
 	}
 }
-
-
-
-
-
 ?>

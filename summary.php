@@ -155,32 +155,23 @@ nav ul {
 			?>
 		</ul>
 	</nav>
-
-	
-
-
-
 <?php
 if( $active_project_id ){
 	
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
     $response 		= filter_by_projid("get_data_ts","[\"$active_pid\"]");
-    
+
 	//ORDER AND SORT BY DATES
 	$date_headers 	= [];
-	
 	foreach($response["rows"] as $row){
 		$date = Date($row["value"]);
-
 		if(array_key_exists($date, $date_headers)){ //if the date already exists in dateheaders
 			$date_headers[$date]++;					// increment the counter
 		}else{
 			$date_headers[$date] = 1;				//otherwise create an element [date -> #occurrences]
 		}
 	}
-	
 	uksort($date_headers, "cmp_date"); //sorts date headers in reverse order starting with date
-
 
 	//PRINT TO SCREEN
 	echo "<h1>Discovery Tool Data Summary for $active_project_id</h1>";
@@ -198,7 +189,6 @@ if( $active_project_id ){
 			//AUTOMATICALLY SHOW MOST RECENT DATE's DATA, AJAX THE REST
 			$response 	= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
 			$days_data 	= rsort($response["rows"]); 
-
 			$code_block = array();
 			foreach($response["rows"] as $row){
 				$doc 		= $row["value"];
@@ -344,7 +334,6 @@ $(document).ready(function(){
 
 	//DELETE PHOTO
 	$(".collapse").on("click", ".preview b", function(){
-		console.log("hey shithead");
 		var doc_id 	= $(this).parent().data("doc_id");
 		var photo_i = $(this).parent().data("photo_i"); 
 		
@@ -355,7 +344,8 @@ $(document).ready(function(){
 			  url 		: "photo.php",
 			  data 		: { doc_id: doc_id, photo_i: photo_i, delete: true }
 			}).done(function(response) {
-				$("#photo_"+photo_i).fadeOut("fast",function(){
+				var phid = doc_id+"_photo_"+photo_i+".jpg";
+				$("li[data-phid='"+phid+"']").fadeOut("fast",function(){
 					$(this).remove();
 				});
 			}).fail(function(response){
