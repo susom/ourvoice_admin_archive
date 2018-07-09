@@ -41,8 +41,7 @@ function detectFaces($id, $old, $photo_name){
 	);
 
 	$vertices = array();
-	//$new = imagecreatefromstring(base64_decode($contents)); //create image from raw data
-	// //POST to google's service
+	 //POST to google's service
 	$resp = postData('https://vision.googleapis.com/v1/images:annotate?key='.cfg::$gvoice_key,$data);
 	print_rr($resp);
 	// if(empty($resp['responses'][0])){ //try rotating once, and resending.
