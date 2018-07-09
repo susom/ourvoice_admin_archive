@@ -197,6 +197,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
     	$photo_name = $old ? "photo_" . $i . ".jpg" : $photo["name"];
 		$ph_id 		= $old ? $_id : $_id . "_" . $photo_name;
 		$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$photo_name" . $old;
+		detectFaces($ph_id,$old, $photo_name);
 
 		$attach_url = "#";
 		$audio_attachments = "";
@@ -209,7 +210,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
                 $attach_url 	= "passthru.php?_id=".$aud_id."&_file=$filename" . $old;
 				$audio_src 		= getConvertedAudio($attach_url);
 				$confidence 	= appendConfidence($attach_url);
-				$script 		= !empty($confidence) ? "This audio was translated using Google's API at ".round($confidence*100,2)."% confidence" : "";
+				$script 		= !empty($confidence) ? "This audio was transcribed using Google's API at ".round($confidence*100,2)."% confidence" : "";
 				$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
 				//Works for archaic saving scheme as well as the new one : 
 				if(isset($doc["transcriptions"][$filename]["text"])){
@@ -711,6 +712,9 @@ function appendConfidence($attach_url){
 }
 
 function detectFaces($id, $old, $photo_name){
+	print_rr($id);
+	print_rr($old);
+	print_rr($photo_name);
 	if($old){
 		if($old == 2)
 			$url = cfg::$couch_url . "/disc_attachments/$id";
@@ -744,7 +748,7 @@ function detectFaces($id, $old, $photo_name){
 	$resp = postData('https://vision.googleapis.com/v1/images:annotate?key='.cfg::$gvoice_key,$data);
 	// print_rr($resp);
 
-	//parse response into useable format : XY coordinates per face
+	//parse response into useable format : XY coordinates per face / IF 
 	if(!empty($resp['responses'][0])){
 		foreach($resp['responses'][0]['faceAnnotations'] as $index => $entry){
 	 		$coord = ($entry['boundingPoly']['vertices']);
@@ -757,13 +761,16 @@ function detectFaces($id, $old, $photo_name){
 		}
 	// print_rr($vertices);
 		$new = imagecreatefromstring(base64_decode($picture));
-		filterFaces($vertices, $new, $id);
+		$altered_image = filterFaces($vertices, $new, $id);
+		if(isset($altered_image) && $altered_image)
+			imagejpeg($altered_image, "$id.jpg");
 	}
 
 }
 
 
 function filterFaces($vertices,$image,$id){
+	$passed = false;
 	foreach($vertices as $faces){
 		$width = isset($faces[0]) && isset($faces[2]) ? $faces[2] - $faces[0] : 0;
 		$height = isset($faces[1]) && isset($faces[7]) ? $faces[7] - $faces[1] : 0;
@@ -774,6 +781,7 @@ function filterFaces($vertices,$image,$id){
 			pixelate($crop);
 			//put faces back on the original image
 			imagecopymerge($image, $crop, $faces[0], $faces[1], 0, 0, $width, $height, 100);
+			$passed = true;
 		}
 		// $gaussian = array(array(1.0, 3.0, 1.0), array(3.0, 4.0, 3.0), array(1.0, 3.0, 1.0));
 		// $divisor = array_sum(array_map('array_sum',$gaussian));
@@ -784,24 +792,28 @@ function filterFaces($vertices,$image,$id){
 		// 	imageconvolution($crop, $gaussian, $divisor, 0);
 	}
 	//save image locally
-	imagejpeg($image, "$id.jpg");
+	if($passed){
+		return $image;
+	}
+	else
+		return false;
 }
 
-function pixelate($image, $pixelate_x = 12, $pixelate_y = 12){
+function pixelate($image, $pixel_width = 12, $pixel_height = 12){
     if(isset($image)){
 	    $height = imagesy($image);
 	    $width = imagesx($image);
 
 	    // start from the top-left pixel and keep looping until we have the desired effect
-	    for($y = 0; $y < $height; $y += $pixelate_y+1){
-	        for($x = 0; $x < $width; $x += $pixelate_x+1){
+	    for($y = 0; $y < $height; $y += $pixel_height+1){
+	        for($x = 0; $x < $width; $x += $pixel_width+1){
 	            // get the color for current pixel, make it legible 
 	            $rgb = imagecolorsforindex($image, imagecolorat($image, $x, $y));
 
 	            // get the closest color from palette
 	            $color = imagecolorclosest($image, $rgb['red'], $rgb['green'], $rgb['blue']);
 	            // fill squares with specified width/height
-	            imagefilledrectangle($image, $x, $y, $x+$pixelate_x, $y+$pixelate_y, $color);
+	            imagefilledrectangle($image, $x, $y, $x+$pixel_width, $y+$pixel_height, $color);
 	        }       
 	    }
 	}
