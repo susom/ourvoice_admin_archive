@@ -3,16 +3,46 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 require_once "common.php";
+	//Get all attachment data
+	$url = cfg::$couch_url . "/". cfg::$couch_attach_db . "/" .cfg::$couch_all_db;
+	$result = doCurl($url);
+	$result = json_decode($result,1);
+	$count = 0;
+	 // print_rr($result);
 
+	
+		foreach($result['rows'] as $row){ //find all pictures
+			$count++;	
+			if($count == 5255)
+				break;
+			elseif($count < 5155)
+				continue;
+			else{
+				print_rr($count . '-----------------');
 
-detectFaces("AFUM_c9adec2879e0d0b5_30_1523461489155_photo_6.jpg",0,"photo_6.jpg");
+				if(isset($row['id'])){
+				$type = explode('.',$row['id']);
+				if($type[1] == 'jpg'){ //if there is a jpg on the portal
+					$rev = $row['value']['rev'];
+					$photo_numeral = explode('photo',$row['id']);
+					if(isset($photo_numeral[1]))
+						$photo_numeral = 'photo'.$photo_numeral[1];
+					detectFaces($row['id'],0,$photo_numeral,$rev);
+					}
+				}
+
+			}	
+		}
+	
+//detectFaces("AFUM_c9adec2879e0d0b5_30_1523461489155_photo_6.jpg",0,"photo_6.jpg");
   // detectFaces("IRV_B48AC597-7E1B-4800-A060-B71EF21DEFEB_1_1528399128851_photo_0.jpg",0,"photo_0.jpg");
 //will save under ID
 
 
 
 
-function detectFaces($id, $old, $photo_name){
+
+function detectFaces($id, $old, $photo_name, $rev){
 	if($old){
 		if($old == 2)
 			$url = cfg::$couch_url . "/disc_attachments/$id";
@@ -35,7 +65,7 @@ function detectFaces($id, $old, $photo_name){
 	        ),
 	    	"features" => array(
 	        	"type" => "FACE_DETECTION",
-	        	"maxResults" => 4
+	        	"maxResults" => 10
 	    	)    
 	    )
 	);
@@ -43,36 +73,10 @@ function detectFaces($id, $old, $photo_name){
 	$vertices = array();
 	 //POST to google's service
 	$resp = postData('https://vision.googleapis.com/v1/images:annotate?key='.cfg::$gvoice_key,$data);
-	print_rr($resp);
-	// if(empty($resp['responses'][0])){ //try rotating once, and resending.
-	// 	echo 'uyes';
-	// 	$rotate = imagerotate($new,270,0); //rotate the image
-	// 	imagedestroy($new);
-	// 	imagejpeg($rotate,'temp.jpg');
-	// 		print_rr(exif_read_data('temp.jpg'));
-
-	// 	imagedestroy($rotate); //kill everything else
-	// 	$picture = file_get_contents('./temp.jpg'); //get the image 
-	// 	$picture = base64_encode($picture);
-	// 	// unlink('./temp.jpg')
-
-	// 	$data = array(
-	//     "requests" => array(
-	//         "image" => array(
-	//         	"content" => $picture
-	//         ),
-	//     	"features" => array(
-	//         	"type" => "FACE_DETECTION",
-	//         	"maxResults" => 4
-	//     	)    
-	//     )
-	// );
-	// 	$resp = postData('https://vision.googleapis.com/v1/images:annotate?key='.cfg::$gvoice_key,$data);
-	// // print_rr($resp);
-
-	// }
+	
 	//parse response into useable format : XY coordinates per face / IF 
 	if(!empty($resp['responses'][0])){
+		print_rr('detected face '. $id);
 		foreach($resp['responses'][0]['faceAnnotations'] as $index => $entry){
 	 		$coord = ($entry['boundingPoly']['vertices']);
 		 	$put = array();
@@ -87,8 +91,17 @@ function detectFaces($id, $old, $photo_name){
 
 		$altered_image = filterFaces($vertices, $new, $id, $pixel_count);
 		if(isset($altered_image) && $altered_image){
-			imagejpeg($altered_image, "$id");
+			$filepath = "./temp/$id";
+			imagejpeg($altered_image, $filepath); //save it 
 			imagedestroy($altered_image);
+			$attach_url = cfg::$couch_url . "/" . cfg::$couch_attach_db;
+
+		    $couchurl       = $attach_url."/".$id."/".$photo_name."?rev=".$rev;
+		    $content_type   = 'image/jpeg';
+			$response       = uploadAttach($couchurl, $filepath, $content_type);
+			// if(isset("./temp/$id"))
+			// 	unset("./temp/$id");
+
 		}
 
 	}
@@ -101,13 +114,12 @@ function filterFaces($vertices,$image,$id, $pixel_count){
 	foreach($vertices as $faces){
 		$width = isset($faces[0]) && isset($faces[2]) ? $faces[2] - $faces[0] : 0;
 		$height = isset($faces[1]) && isset($faces[7]) ? $faces[7] - $faces[1] : 0;
-		print_rr($height);
-		print_rr($width);
-		$scale_pixels = isset($pixel_count)? 10 + ($pixel_count/($pixel_count/10)) : 15;
+		$scale_pixels = isset($pixel_count)? ($pixel_count/(50000)) : 15;
 		if($width != 0 && $height != 0){
 			//have to crop out the faces first then apply filter
 			$crop = imagecrop($image,['x'=>$faces[0],'y'=>$faces[1],'width'=>$width, 'height'=>$height]);
-			pixelate($crop, $scale_pixels,$scale_pixels);
+			// pixelate($crop, $scale_pixels,$scale_pixels);
+			pixelate($crop);
 			//put faces back on the original image
 			imagecopymerge($image, $crop, $faces[0], $faces[1], 0, 0, $width, $height, 100);
 			$passed = true;
@@ -128,7 +140,7 @@ function filterFaces($vertices,$image,$id, $pixel_count){
 		return false;
 }
 
-function pixelate($image, $pixel_width = 15, $pixel_height = 15){
+function pixelate($image, $pixel_width = 20, $pixel_height = 20){
     if(isset($image)){
 	    $height = imagesy($image);
 	    $width = imagesx($image);
