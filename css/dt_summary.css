@@ -730,6 +730,24 @@ label span {
 	font-size: 12px;
 	font-style: italic;
 }
+.covering_canvas{
+	position:absolute;
+	z-index: 1000;
+}
+#pixelate{
+	background-color: #4CAF50;
+	color:white;
+	font-size:13px;
+	height:25px;
+	margin: 0 5px 5px 0;
+}
+#pixelateSubmit{
+	color:white;
+	font-size: 13px;
+	background-color: #008CBA;
+	height:25px;
+	margin: 0 5px 5px 0;
+}
 
 @-moz-keyframes spin { 100% { -moz-transform: rotate(-360deg); } }
 @-webkit-keyframes spin { 100% { -webkit-transform: rotate(-360deg); } }

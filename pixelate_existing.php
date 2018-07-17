@@ -33,7 +33,6 @@ require_once "common.php";
 
 			}	
 		}
-	
 //detectFaces("AFUM_c9adec2879e0d0b5_30_1523461489155_photo_6.jpg",0,"photo_6.jpg");
   // detectFaces("IRV_B48AC597-7E1B-4800-A060-B71EF21DEFEB_1_1528399128851_photo_0.jpg",0,"photo_0.jpg");
 //will save under ID

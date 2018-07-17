@@ -112,6 +112,31 @@ if( isset($_POST["doc_id"]) ){
 		echo "something went wrong:";
 	}
 }
+
+if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordinates'])){
+	//ajax response to pixelation via portal tool
+	$face_coord = json_decode($_POST["coordinates"],1);
+	$id = ($_POST["pic_id"]);
+	$photo_num = ($_POST["photo_num"]);
+	$photo_num = 'photo_'.$photo_num . '.jpg';
+	$id = $id."_".$photo_num;
+	//find rev by curling to couch
+	$url = cfg::$couch_url . "/". cfg::$couch_attach_db . "/" .$id;
+	$result = doCurl($url);
+	$result = json_decode($result,1);
+	$rev = ($result['_rev']);
+	$id = ($_POST["pic_id"]);
+	//
+	$picture = doCurl($url . '/' . $photo_num); //returns the actual image in string format
+	$new = imagecreatefromstring($picture); //set the actual picture for editing
+	$altered_image = filterFaces($face_coord, $new, $id, $pixel_count);
+	if(isset($altered_image) && $altered_image){
+		$filepath = "./temp/A.jpg";
+		imagejpeg($altered_image, $filepath); //save it 
+		imagedestroy($altered_image);
+	}
+	exit();
+}
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -278,8 +303,11 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo "
 		<figure>
 		<a class='preview rotate' rev='$hasrotate' data-photo_i=$photo_i data-doc_id='".$doc["_id"]."' rel='google_map_0' data-long='$long' data-lat='$lat'>
-				<img src='$photo_uri' /><span></span>
+				<canvas class='covering_canvas'></canvas>
+				<img id = 'main_photo' src='$photo_uri' /><span></span>
+
 		</a>
+
 		</figure>";
 		
 		$geotags   = array();
@@ -301,8 +329,12 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo 	"</section>";
 
 	echo "<section class='side'>";
+	echo "<button type = 'button' id = 'pixelateSubmit' style='float:right'>Submit Area</button>";
+	echo "<button type = 'button' id = 'pixelate' style='float:right'>Select Area for Pixelation</button>";
+
 	echo "<aside>
 			<b>lat: $lat long: $long</b>
+
 			<div id='google_map_0' class='gmap'></div>
 		</aside>";
 	echo "<aside class='forcommunity'>
@@ -324,6 +356,8 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		if(isset($prevnext[1])){
 			echo "<a href='".$prevnext[1]."' class='next'>Next Photo</a>";
 		}
+
+
 		echo "</aside>";
 	}
 	echo "<i class='print_only'>Data gathered using the Stanford Healthy Neighborhood Discovery Tool, © Stanford University 2017</i>";
@@ -398,6 +432,23 @@ $(document).ready(function(){
 	<?php
 		echo implode($gmaps);
 	?>
+	$("#pixelate").on("click", function(){
+		var doc_id 	= $(".preview span").parent().data("doc_id"); //AFUM23894572093482093.. etc
+		var photo_i = $(".preview span").parent().data("photo_i"); //Photo1.jpg
+		$("#pixelateSubmit").off();
+		$(".covering_canvas").off();
+		if($("#pixelate").css("background-color") == 'rgb(255, 0, 0)'){
+			$("#pixelate").css("background-color","#4CAF50");
+			$(".covering_canvas").css("cursor", "");
+
+		}else{
+			$("#pixelate").css("background-color","red");
+			//set the canvas for drawing to be the same dimensions as the photo
+			setCanvas(doc_id, photo_i);		
+		}
+
+	});
+	
 
 	window.snd_o           = null;
 	$(".audio").click(function(){
@@ -492,6 +543,83 @@ $(document).ready(function(){
 		return false;
 	});
 });
+
+function setCanvas(doc_id = 0, photo_i = 0){
+	var width_pic = $("#main_photo")[0].clientWidth;
+	var height_pic = $("#main_photo")[0].clientHeight;
+	$(".covering_canvas").css("width",width_pic).css("height", height_pic);
+	$(".covering_canvas").css("cursor", "crosshair");
+	//css and pixel count set
+	var canvas = $(".covering_canvas")[0];
+	canvas.width = width_pic;
+	canvas.height = height_pic;
+	var ctx = canvas.getContext('2d');
+	var canvasx = $(canvas).offset().left;
+	var canvasy = $(canvas).offset().top;
+	var last_mousex = last_mousey = 0;
+	var mousex = mousey = 0;
+	var mousedown = false;
+	var coord_array = {};
+	var data = {};
+	var scrollOffset = 0; //necessary for scaling pixels from top of page for Y coordinate
+
+	$("#pixelateSubmit").on("click",function(){
+			if(confirm('Are you sure you want to pixelate this area?')){
+				$.ajax({
+			 		method: "POST",
+			  	 	url: "photo.php",
+			  	 	data: { pic_id: doc_id, photo_num: photo_i, coordinates: data},
+			  	 	success:function(response){
+			  			console.log(response);
+			 	 	}
+				});
+				$("#pixelate").css("background-color", "#4CAF50"); //change color back to reg
+				ctx.clearRect(0,0,canvas.width,canvas.height); //clear rect
+				data = {};
+				$(canvas).off();	//turn off events 
+				$(".covering_canvas").css("cursor", "");
+			}
+
+	});
+
+	$(".covering_canvas").on("mousedown", function(e){
+		console.log(scrollOffset);
+		scrollOffset = window.scrollY;
+		last_mousex = parseInt(e.clientX-canvasx);
+		last_mousey = parseInt(e.clientY-canvasy+scrollOffset);
+		mousedown = true; 
+	});
+
+	$(canvas).on('mouseup', function(e) {
+			mousedown = false;
+			coord_array.width = (mousex-last_mousex);
+			coord_array.height = (mousey-last_mousey);
+			coord_array.x = last_mousex;
+			coord_array.y = last_mousey;
+			coord_array.width_pic = width_pic;
+			coord_array.height_pic = height_pic;
+			if(coord_array.width && coord_array.height){ 
+				data = JSON.stringify(coord_array);
+			}
+	});
+
+	$(canvas).on('mousemove', function(e) {
+		scrollOffset = window.scrollY;
+	    mousex = parseInt(e.clientX-canvasx);
+		mousey = parseInt(e.clientY-canvasy+scrollOffset);
+	    if(mousedown) {
+	        ctx.clearRect(0,0,canvas.width,canvas.height); //clear canvas
+	        ctx.beginPath();
+	        var width = mousex-last_mousex;
+	        var height = mousey-last_mousey;
+	        ctx.rect(last_mousex,last_mousey,width,height);
+	        ctx.strokeStyle = 'red';
+	        ctx.lineWidth = 2;
+	        ctx.stroke();
+    	}
+	});
+
+}
 
 $(document).on('click', function(event) {
 	if (!$(event.target).closest('#newtag').length ) {
@@ -717,111 +845,147 @@ function appendConfidence($attach_url){
 		return "";
 }
 
-// function detectFaces($id, $old, $photo_name){
-// 	print_rr($id);
-// 	print_rr($old);
-// 	print_rr($photo_name);
-// 	if($old){
-// 		if($old == 2)
-// 			$url = cfg::$couch_url . "/disc_attachments/$id";
-// 		else
-// 			$url = cfg::$couch_url . "/".cfg::$couch_users_db."/" . $id;
-// 	}else{
-// 		$url = cfg::$couch_url . "/". cfg::$couch_attach_db . "/" . $id; 
-// 	}
-// 	$result = doCurl($url);
-// 	$meta = json_decode($result,true);
-	
-// 	$picture = doCurl($url . '/' . $photo_name); //returns the actual image
-// 	// $picture = file_get_contents('./AAA.jpg'); //delete when actual. 
-// 	$picture = base64_encode($picture); //encode so we can send it to API 
+function detectFaces($id, $old, $photo_name, $rev){
+	if($old){
+		if($old == 2)
+			$url = cfg::$couch_url . "/disc_attachments/$id";
+		else
+			$url = cfg::$couch_url . "/".cfg::$couch_users_db."/" . $id;
+	}else{
+		$url = cfg::$couch_url . "/". cfg::$couch_attach_db . "/" . $id; 
+	}
+	$result = doCurl($url);
+	$meta = json_decode($result,true);
+	// echo $url . '/' . $photo_name;
+	$picture = doCurl($url . '/' . $photo_name); //returns the actual image in string format
+	// $picture = file_get_contents('5faces_landscape.jpg');
+	$new = imagecreatefromstring($picture); //set the actual picture for editing
+	$pixel_count = imagesy($new)*imagesx($new);
+	$picture = base64_encode($picture); //encode so we can send it to API 
+	$data = array(
+	    "requests" => array(
+	        "image" => array(
+	        	"content" => $picture
+	        ),
+	    	"features" => array(
+	        	"type" => "FACE_DETECTION",
+	        	"maxResults" => 10
+	    	)    
+	    )
+	);
 
-// 	$data = array(
-// 	    "requests" => array(
-// 	        "image" => array(
-// 	        	"content" => $picture
-// 	        ),
-// 	    	"features" => array(
-// 	        	"type" => "FACE_DETECTION",
-// 	        	"maxResults" => 4
-// 	    	)    
-// 	    )
-// 	);
+	$vertices = array();
+	 //POST to google's service
+	$resp = postData('https://vision.googleapis.com/v1/images:annotate?key='.cfg::$gvoice_key,$data);
+	//parse response into useable format : XY coordinates per face / IF 
+	print_rr ($resp);
+	if(!empty($resp['responses'][0])){
+		print_rr('detected face '. $id);
+		foreach($resp['responses'][0]['faceAnnotations'] as $index => $entry){
+	 		$coord = ($entry['boundingPoly']['vertices']);
+		 	$put = array();
+		 	foreach($coord as $vtx){
+				isset($vtx['x']) ? array_push($put, $vtx['x']) : array_push($put, -1);
+			 	isset($vtx['y']) ? array_push($put, $vtx['y']) : array_push($put, -1);
+			}
+			array_push($vertices,$put);
+		}
+	// print_rr($vertices);
+		// $new = imagecreatefromstring(base64_decode($picture)); //set the actual picture for editing
 
-// 	$vertices = array();
-// 	//$new = imagecreatefromstring(base64_decode($contents)); //create image from raw data
-// 	// //POST to google's service
-// 	$resp = postData('https://vision.googleapis.com/v1/images:annotate?key='.cfg::$gvoice_key,$data);
-// 	// print_rr($resp);
+		$altered_image = filterFaces($vertices, $new, $id, $pixel_count);
+		if(isset($altered_image) && $altered_image){
+			// echo 'inside save';
+			$filepath = "./temp/$id";
+			// imagejpeg($altered_image, $filepath); //save it 
+			// imagedestroy($altered_image);
+			// $attach_url = cfg::$couch_url . "/" . cfg::$couch_attach_db;
 
-// 	//parse response into useable format : XY coordinates per face / IF 
-// 	if(!empty($resp['responses'][0])){
-// 		foreach($resp['responses'][0]['faceAnnotations'] as $index => $entry){
-// 	 		$coord = ($entry['boundingPoly']['vertices']);
-// 		 	$put = array();
-// 		 	foreach($coord as $vtx){
-// 				array_push($put, $vtx['x']);
-// 			 	array_push($put, $vtx['y']);
-// 			}
-// 			array_push($vertices,$put);
-// 		}
-// 	// print_rr($vertices);
-// 		$new = imagecreatefromstring(base64_decode($picture));
-// 		$altered_image = filterFaces($vertices, $new, $id);
-// 		if(isset($altered_image) && $altered_image)
-// 			imagejpeg($altered_image, "$id.jpg");
-// 	}
+		    // $couchurl       = $attach_url."/".$id."/".$photo_name."?rev=".$rev;
+		 //    $content_type   = 'image/jpeg';
+			// $response       = uploadAttach($couchurl, $filepath, $content_type);
+			// if(isset("./temp/$id"))
+			// 	unset("./temp/$id");
 
-// }
+		}
+
+	}
+
+}
 
 
-// function filterFaces($vertices,$image,$id){
-// 	$passed = false;
-// 	foreach($vertices as $faces){
-// 		$width = isset($faces[0]) && isset($faces[2]) ? $faces[2] - $faces[0] : 0;
-// 		$height = isset($faces[1]) && isset($faces[7]) ? $faces[7] - $faces[1] : 0;
+function filterFaces($vertices,$image,$id, $pixel_count){
+	$passed = false;
+	if(count($vertices) == 6){ //from the portal tool
+		$scale_factor_x = imagesx($image) / $vertices['width_pic']; //width_pic is the thumbnail size on the portal , imagesx returns FULL res
+		$scale_factor_y = imagesy($image) / $vertices['height_pic'];
+		print_rr($scale_factor_y . " " . $scale_factor_x);
+		$width = isset($vertices['width']) ? $vertices['width'] : -1;
+		$height = isset($vertices['height']) ? $vertices['height'] : -1;
+		if($width != -1 && $height != -1){
+			$crop = imagecrop($image,['x'=>$vertices['x']*$scale_factor_x,'y'=>$vertices['y']*$scale_factor_y,'width'=>$width*$scale_factor_x, 'height'=>$height*$scale_factor_y]);
+			imagejpeg($crop, "./temp/AA.jpg");
+			// pixelate($crop, $scale_pixels,$scale_pixels);
+			pixelate($crop);
+			//put faces back on the original image
+			imagecopymerge($image, $crop, $vertices['x']*$scale_factor_x, $vertices['y']*$scale_factor_y, 0, 0, $width*$scale_factor_x, $height*$scale_factor_y, 100);
+			$passed = true;
+		}
+	}else{
+		foreach($vertices as $faces){
+			$width = isset($faces[0]) && isset($faces[2]) ? $faces[2] - $faces[0] : 0;
+			$height = isset($faces[1]) && isset($faces[7]) ? $faces[7] - $faces[1] : 0;
+			$scale_pixels = isset($pixel_count)? ($pixel_count/(50000)) : 15;
+			if($width != 0 && $height != 0){
+				//have to crop out the faces first then apply filter
+				$crop = imagecrop($image,['x'=>$faces[0],'y'=>$faces[1],'width'=>$width, 'height'=>$height]);
+				// pixelate($crop, $scale_pixels,$scale_pixels);
+				pixelate($crop);
+				//put faces back on the original image
+				imagecopymerge($image, $crop, $faces[0], $faces[1], 0, 0, $width, $height, 100);
+				$passed = true;
+			}
+			// $gaussian = array(array(1.0, 3.0, 1.0), array(3.0, 4.0, 3.0), array(1.0, 3.0, 1.0));
+			// $divisor = array_sum(array_map('array_sum',$gaussian));
+			// 	$col = imagecolorallocate($new, 255, 255, 255);
+			// 	imagepolygon($new, $faces, 4, $col);
+			// 	//imagecrop($new,$faces);
+			// for($i = 0 ; $i < $itr ; $i++)
+			// 	imageconvolution($crop, $gaussian, $divisor, 0);
+		}
+	}
 
-// 		if($width != 0 && $height != 0){
-// 			//have to crop out the faces first then apply filter
-// 			$crop = imagecrop($image,['x'=>$faces[0],'y'=>$faces[1],'width'=>$width, 'height'=>$height]);
-// 			pixelate($crop);
-// 			//put faces back on the original image
-// 			imagecopymerge($image, $crop, $faces[0], $faces[1], 0, 0, $width, $height, 100);
-// 			$passed = true;
-// 		}
-// 		// $gaussian = array(array(1.0, 3.0, 1.0), array(3.0, 4.0, 3.0), array(1.0, 3.0, 1.0));
-// 		// $divisor = array_sum(array_map('array_sum',$gaussian));
-// 		// 	$col = imagecolorallocate($new, 255, 255, 255);
-// 		// 	imagepolygon($new, $faces, 4, $col);
-// 		// 	//imagecrop($new,$faces);
-// 		// for($i = 0 ; $i < $itr ; $i++)
-// 		// 	imageconvolution($crop, $gaussian, $divisor, 0);
-// 	}
-// 	//save image locally
-// 	if($passed){
-// 		return $image;
-// 	}
-// 	else
-// 		return false;
-// }
+	//save image locally
+	if($passed){
+		echo 'yes';
+		return $image;
 
-// function pixelate($image, $pixel_width = 12, $pixel_height = 12){
-//     if(isset($image)){
-// 	    $height = imagesy($image);
-// 	    $width = imagesx($image);
+	}else{
+		echo 'no';
+		return false;
+	}
+}
 
-// 	    // start from the top-left pixel and keep looping until we have the desired effect
-// 	    for($y = 0; $y < $height; $y += $pixel_height+1){
-// 	        for($x = 0; $x < $width; $x += $pixel_width+1){
-// 	            // get the color for current pixel, make it legible 
-// 	            $rgb = imagecolorsforindex($image, imagecolorat($image, $x, $y));
+function pixelate($image, $pixel_width = 20, $pixel_height = 20){
+    if(isset($image)){
+	    $height = imagesy($image);
+	    $width = imagesx($image);
+	    // start from the top-left pixel and keep looping until we have the desired effect
+	    for($y = 0; $y < $height; $y += $pixel_height+1){
+	        for($x = 0; $x < $width; $x += $pixel_width+1){
+	            // get the color for current pixel, make it legible 
+	            $rgb = imagecolorsforindex($image, imagecolorat($image, $x, $y));
 
-// 	            // get the closest color from palette
-// 	            $color = imagecolorclosest($image, $rgb['red'], $rgb['green'], $rgb['blue']);
-// 	            // fill squares with specified width/height
-// 	            imagefilledrectangle($image, $x, $y, $x+$pixel_width, $y+$pixel_height, $color);
-// 	        }       
-// 	    }
-// 	}
-// }
+	            // get the closest color from palette
+	            $color = imagecolorclosest($image, $rgb['red'], $rgb['green'], $rgb['blue']);
+	            // fill squares with specified width/height
+	            imagefilledrectangle($image, $x, $y, $x+$pixel_width, $y+$pixel_height, $color);
+	        }       
+	    }
+	}
+}
+
+
+
+
 ?>
