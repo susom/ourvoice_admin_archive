@@ -6,6 +6,7 @@ require_once "common.php";
 $gmaps_key 	= cfg::$gmaps_key;
 $projlist 	= $_SESSION["DT"]["project_list"]; 
 
+
 // AJAX HANDLING
 if( isset($_POST["doc_id"]) ){
 	// FOR PHOTOS
@@ -113,27 +114,46 @@ if( isset($_POST["doc_id"]) ){
 	}
 }
 
-if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordinates'])){
-	//ajax response to pixelation via portal tool
+if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordinates'])){ 	//ajax response to pixelation via portal tool
 	$face_coord = json_decode($_POST["coordinates"],1);
 	$id = ($_POST["pic_id"]);
 	$photo_num = ($_POST["photo_num"]);
+	$rotationOffset = $_POST["rotation"];
 	$photo_num = 'photo_'.$photo_num . '.jpg';
 	$id = $id."_".$photo_num;
 	//find rev by curling to couch
 	$url = cfg::$couch_url . "/". cfg::$couch_attach_db . "/" .$id;
 	$result = doCurl($url);
+	echo $url;
 	$result = json_decode($result,1);
 	$rev = ($result['_rev']);
 	$id = ($_POST["pic_id"]);
-	//
+	//find the offset so canvas can be specified for each image based on portal rotation
+	// $rOffset = findRotationOffset(cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $id);
+	// 0 = none, 1 = base, 2 = 90 degree rotation
+
 	$picture = doCurl($url . '/' . $photo_num); //returns the actual image in string format
 	$new = imagecreatefromstring($picture); //set the actual picture for editing
-	$altered_image = filterFaces($face_coord, $new, $id, $pixel_count);
+	$altered_image = filterFaces($face_coord, $new, $id, $pixel_count, $rotationOffset);
 	if(isset($altered_image) && $altered_image){
-		$filepath = "./temp/A.jpg";
+		echo "./temp/$id.jpg";
+		$filepath = "./temp/$id.jpg";
+		if(file_exists($filepath))
+			unlink("./temp/$id.jpg");
+			// echo "exists";
+		
+		// if(file_exists($filepath))
+		// 	unset($filepath);
+
 		imagejpeg($altered_image, $filepath); //save it 
 		imagedestroy($altered_image);
+		$content_type   = 'image/jpeg';
+	 	$attach_url = cfg::$couch_url . "/" . cfg::$couch_attach_db;
+	    $couchurl       = $attach_url."/".$id."_$photo_num/".$photo_num."?rev=".$rev;
+	    $content_type   = 'image/jpeg';
+		$response       = uploadAttach($couchurl, $filepath, $content_type);
+		echo $response;
+		//refresh page
 	}
 	exit();
 }
@@ -179,7 +199,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	$temp_1 	= explode("_",$_file);
 	$temp_2 	= explode(".",$temp_1[1]);
 	$photo_i 	= $temp_2[0];
-
+	// $rotate 	= isset($doc['photos'][0]['rotate']) ? $doc['photos'][0]['rotate'] : 0;
 	$prevnext 	= [];
 	foreach($photos as $i => $photo){
 		if($i !== intval($photo_i)){
@@ -242,6 +262,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		if(isset($photo["audios"])){
 			foreach($photo["audios"] as $filename){
 				//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
+
 				$aud_id			= $doc["_id"] . "_" . $filename;
                 $attach_url 	= "passthru.php?_id=".$aud_id."&_file=$filename" . $old;
 				$audio_src 		= getConvertedAudio($attach_url);
@@ -287,7 +308,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		}
 		break;
 	}
-
+	// rotate= '$doc['photos'][0]['rotate'])'
 	echo "<form id='photo_detail' method='POST'>";
 	echo "<input type='hidden' name='doc_id' value='".$doc["_id"]."'/>";
 	echo "<div class='user_entry'>";
@@ -304,7 +325,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		<figure>
 		<a class='preview rotate' rev='$hasrotate' data-photo_i=$photo_i data-doc_id='".$doc["_id"]."' rel='google_map_0' data-long='$long' data-lat='$lat'>
 				<canvas class='covering_canvas'></canvas>
-				<img id = 'main_photo' src='$photo_uri' /><span></span>
+				<img id = 'main_photo' src='$photo_uri'/><span></span>
 
 		</a>
 
@@ -432,10 +453,14 @@ $(document).ready(function(){
 	<?php
 		echo implode($gmaps);
 	?>
+
 	$("#pixelate").on("click", function(){
 		var doc_id 	= $(".preview span").parent().data("doc_id"); //AFUM23894572093482093.. etc
 		var photo_i = $(".preview span").parent().data("photo_i"); //Photo1.jpg
-		$("#pixelateSubmit").off();
+		var rotationOffset = $(".preview").attr("rev"); // rotation
+
+		console.log(rotationOffset);
+		$("#pixelateSubmit").off(); //on reclick, turn off events
 		$(".covering_canvas").off();
 		if($("#pixelate").css("background-color") == 'rgb(255, 0, 0)'){
 			$("#pixelate").css("background-color","#4CAF50");
@@ -443,8 +468,7 @@ $(document).ready(function(){
 
 		}else{
 			$("#pixelate").css("background-color","red");
-			//set the canvas for drawing to be the same dimensions as the photo
-			setCanvas(doc_id, photo_i);		
+			drawPixelation(doc_id, photo_i,rotationOffset);		
 		}
 
 	});
@@ -543,16 +567,14 @@ $(document).ready(function(){
 		return false;
 	});
 });
-
-function setCanvas(doc_id = 0, photo_i = 0){
-	var width_pic = $("#main_photo")[0].clientWidth;
-	var height_pic = $("#main_photo")[0].clientHeight;
-	$(".covering_canvas").css("width",width_pic).css("height", height_pic);
-	$(".covering_canvas").css("cursor", "crosshair");
-	//css and pixel count set
+function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 	var canvas = $(".covering_canvas")[0];
-	canvas.width = width_pic;
-	canvas.height = height_pic;
+	var width_pic = $("#main_photo")[0].getBoundingClientRect().width;
+	var height_pic = $("#main_photo")[0].getBoundingClientRect().height;
+	// console.log($("#main_photo")[0].getBoundingClientRect().width);
+	setCanvas(canvas, rotationOffset, width_pic, height_pic);
+	//css and pixel count set
+	
 	var ctx = canvas.getContext('2d');
 	var canvasx = $(canvas).offset().left;
 	var canvasy = $(canvas).offset().top;
@@ -568,7 +590,7 @@ function setCanvas(doc_id = 0, photo_i = 0){
 				$.ajax({
 			 		method: "POST",
 			  	 	url: "photo.php",
-			  	 	data: { pic_id: doc_id, photo_num: photo_i, coordinates: data},
+			  	 	data: { pic_id: doc_id, photo_num: photo_i, coordinates: data, rotation: rotationOffset},
 			  	 	success:function(response){
 			  			console.log(response);
 			 	 	}
@@ -619,6 +641,30 @@ function setCanvas(doc_id = 0, photo_i = 0){
     	}
 	});
 
+}
+
+function setCanvas(canvas, rotationOffset, width_pic, height_pic){
+	// $(".covering_canvas").css("width",width_pic).css("height", height_pic);
+	$(".covering_canvas").css("cursor", "crosshair");
+
+	//set the canvas for drawing to be the same dimensions as the photo
+	canvas.width = width_pic;
+	canvas.height = height_pic;
+	canvas.style.position = "absolute";
+	$(".covering_canvas").css("left",$("#main_photo").position().left);
+	$(".covering_canvas").css("top",$("#main_photo").position().top);
+
+	switch(rotationOffset){
+		case 0,1,3: 
+			canvas.width = width_pic;
+			canvas.height = height_pic;
+			break;
+		case 2,4:
+			canvas.width = height_pic;
+			canvas.height = width_pic;
+		default:
+			break;
+	}
 }
 
 $(document).on('click', function(event) {
@@ -897,15 +943,16 @@ function detectFaces($id, $old, $photo_name, $rev){
 		if(isset($altered_image) && $altered_image){
 			// echo 'inside save';
 			$filepath = "./temp/$id";
-			// imagejpeg($altered_image, $filepath); //save it 
-			// imagedestroy($altered_image);
+			imagejpeg($altered_image, $filepath); //save it 
+			imagedestroy($altered_image);
 			// $attach_url = cfg::$couch_url . "/" . cfg::$couch_attach_db;
 
-		    // $couchurl       = $attach_url."/".$id."/".$photo_name."?rev=".$rev;
+		 //    $couchurl       = $attach_url."/".$id."/".$photo_name."?rev=".$rev;
 		 //    $content_type   = 'image/jpeg';
 			// $response       = uploadAttach($couchurl, $filepath, $content_type);
 			// if(isset("./temp/$id"))
 			// 	unset("./temp/$id");
+// 'https://ourvoice-cdb.med.stanford.edu/disc_attachment/XYZ_1ADF98E2-BFD3-4E64-83FE-D9D39BE12978_1_1512073591362_photo_9.jpg/photo_9.jpg?rev=1-a3b731515e579f5cbe6922a492ead622'
 
 		}
 
@@ -914,22 +961,36 @@ function detectFaces($id, $old, $photo_name, $rev){
 }
 
 
-function filterFaces($vertices,$image,$id, $pixel_count){
+function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
 	$passed = false;
+				echo '<pre>';
+				echo(imagesx($image) . " " . imagesy($image));
+	if($rotationOffset){ //rotate back
+		if($rotationOffset == 1){
+			$image = imagerotate($image,-90,0);
+		}elseif($rotationOffset ==2){
+			$image = imagerotate($image,-180,0);
+		}elseif($rotationOffset ==3){
+			$image = imagerotate($image,-270,0);
+		}
+	}
+	// imagedestroy($image);
+	
 	if(count($vertices) == 6){ //from the portal tool
 		$scale_factor_x = imagesx($image) / $vertices['width_pic']; //width_pic is the thumbnail size on the portal , imagesx returns FULL res
 		$scale_factor_y = imagesy($image) / $vertices['height_pic'];
-		print_rr($scale_factor_y . " " . $scale_factor_x);
+		// echo $scale_factor_x . " " . $scale_factor_y;
 		$width = isset($vertices['width']) ? $vertices['width'] : -1;
 		$height = isset($vertices['height']) ? $vertices['height'] : -1;
 		if($width != -1 && $height != -1){
 			$crop = imagecrop($image,['x'=>$vertices['x']*$scale_factor_x,'y'=>$vertices['y']*$scale_factor_y,'width'=>$width*$scale_factor_x, 'height'=>$height*$scale_factor_y]);
-			imagejpeg($crop, "./temp/AA.jpg");
 			// pixelate($crop, $scale_pixels,$scale_pixels);
 			pixelate($crop);
 			//put faces back on the original image
 			imagecopymerge($image, $crop, $vertices['x']*$scale_factor_x, $vertices['y']*$scale_factor_y, 0, 0, $width*$scale_factor_x, $height*$scale_factor_y, 100);
 			$passed = true;
+			imagedestroy($crop);
+
 		}
 	}else{
 		foreach($vertices as $faces){
@@ -944,6 +1005,7 @@ function filterFaces($vertices,$image,$id, $pixel_count){
 				//put faces back on the original image
 				imagecopymerge($image, $crop, $faces[0], $faces[1], 0, 0, $width, $height, 100);
 				$passed = true;
+				imagedestroy($crop);
 			}
 			// $gaussian = array(array(1.0, 3.0, 1.0), array(3.0, 4.0, 3.0), array(1.0, 3.0, 1.0));
 			// $divisor = array_sum(array_map('array_sum',$gaussian));
@@ -955,6 +1017,17 @@ function filterFaces($vertices,$image,$id, $pixel_count){
 		}
 	}
 
+	if($rotationOffset){ //rotate back so uploaded image will have the same format
+		if($rotationOffset == 1){
+			$image = imagerotate($image,90,0);
+		}elseif($rotationOffset ==2){
+			$image = imagerotate($image,180,0);
+		}elseif($rotationOffset ==3){
+			$image = imagerotate($image,270,0);
+		}
+	}
+		// imagedestroy($image_r);
+	
 	//save image locally
 	if($passed){
 		echo 'yes';
@@ -984,7 +1057,6 @@ function pixelate($image, $pixel_width = 20, $pixel_height = 20){
 	    }
 	}
 }
-
 
 
 

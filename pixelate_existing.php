@@ -13,9 +13,9 @@ require_once "common.php";
 	
 		foreach($result['rows'] as $row){ //find all pictures
 			$count++;	
-			if($count == 5255)
+			if($count == 5157)
 				break;
-			elseif($count < 5155)
+			elseif($count < 5136)
 				continue;
 			else{
 				print_rr($count . '-----------------');
@@ -72,7 +72,14 @@ function detectFaces($id, $old, $photo_name, $rev){
 	$vertices = array();
 	 //POST to google's service
 	$resp = postData('https://vision.googleapis.com/v1/images:annotate?key='.cfg::$gvoice_key,$data);
-	
+	$attach_url = cfg::$couch_url . "/" . cfg::$couch_attach_db;
+
+		    $couchurl       = $attach_url."/".$id."/".$photo_name."?rev=".$rev;
+		    $content_type   = 'image/jpeg';
+		    			$filepath = "./temp/$id";
+
+	    	print_rr($couchurl);
+			print_rr($filepath);
 	//parse response into useable format : XY coordinates per face / IF 
 	if(!empty($resp['responses'][0])){
 		print_rr('detected face '. $id);
@@ -97,7 +104,8 @@ function detectFaces($id, $old, $photo_name, $rev){
 
 		    $couchurl       = $attach_url."/".$id."/".$photo_name."?rev=".$rev;
 		    $content_type   = 'image/jpeg';
-			$response       = uploadAttach($couchurl, $filepath, $content_type);
+	    	print_rr($couchurl);
+			// $response       = uploadAttach($couchurl, $filepath, $content_type);
 			// if(isset("./temp/$id"))
 			// 	unset("./temp/$id");
 
