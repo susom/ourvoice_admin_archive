@@ -4,6 +4,11 @@
 	box-shadow:none;
 	background:none;
 	border:1px solid #fff;
+	padding-bottom:80px;
+}
+.print_logo{
+	display:block;
+	-webkit-print-color-adjust: exact;
 }
 
 .photo_detail .user_entry hgroup{
@@ -97,6 +102,18 @@ textarea{
 		display:block;
 		font-size:125%;
 	}
+
+	#tags ul.photopage {
+	    float: none;
+	    width: auto;
+	}
+
+	#tags .noback,
+	#tags .deletetag{
+		display:none;
+	}
+
+	
 }
 
 @media print and (orientation: portrait) {
