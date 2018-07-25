@@ -107,7 +107,13 @@ textarea{
 	    float: none;
 	    width: auto;
 	}
-
+	#tags ul li {
+	    margin: 0 5px 10px;
+	    padding:initial; 
+	    background: none; 
+	    border-radius: initial; 
+	    position: initial; 
+	}
 	#tags .noback,
 	#tags .deletetag{
 		display:none;
