@@ -2,6 +2,7 @@
 // ini_set('display_errors', 1);
 // ini_set('display_startup_errors', 1);
 // error_reporting(E_ALL);
+ini_set('memory_limit','256M'); //necessary for picture processing.
 require_once "common.php";
 $gmaps_key 	= cfg::$gmaps_key;
 $projlist 	= $_SESSION["DT"]["project_list"]; 
@@ -124,7 +125,6 @@ if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordin
 	//find rev by curling to couch
 	$url = cfg::$couch_url . "/". cfg::$couch_attach_db . "/" .$id;
 	$result = doCurl($url);
-	echo $url;
 	$result = json_decode($result,1);
 	$rev = ($result['_rev']);
 	$id = ($_POST["pic_id"]);
@@ -134,6 +134,7 @@ if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordin
 
 	$picture = doCurl($url . '/' . $photo_num); //returns the actual image in string format
 	$new = imagecreatefromstring($picture); //set the actual picture for editing
+	$pixel_count = (imagesx($new)*imagesy($new)); //scale pixel to % image size
 	$altered_image = filterFaces($face_coord, $new, $id, $pixel_count, $rotationOffset);
 	if(isset($altered_image) && $altered_image){
 		echo "./temp/$id.jpg";
@@ -350,7 +351,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo 	"</section>";
 
 	echo "<section class='side'>";
-	echo "<button type = 'button' id = 'pixelateSubmit' style='float:right'>Submit Area</button>";
+	echo "<button type = 'button' id = 'pixelateSubmit' class = 'hidden' style='float:right'>Submit</button>";
 	echo "<button type = 'button' id = 'pixelate' style='float:right'>Select Area for Pixelation</button>";
 
 	echo "<aside>
@@ -393,7 +394,10 @@ include("inc/modal_tag.php");
 ?>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/autosize.js/3.0.20/autosize.js"></script>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<!-- <script src = "js/jquery-ui.js"> //added -->
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo $gmaps_key; ?>"></script>
+<script src = "js/jquery-ui.js"></script>
+
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
 <script>
 function addmarker(latilongi,map_id) {
@@ -465,9 +469,10 @@ $(document).ready(function(){
 		if($("#pixelate").css("background-color") == 'rgb(255, 0, 0)'){
 			$("#pixelate").css("background-color","#4CAF50");
 			$(".covering_canvas").css("cursor", "");
-
+			$("#pixelateSubmit").addClass("hidden");
 		}else{
 			$("#pixelate").css("background-color","red");
+			$("#pixelateSubmit").removeClass("hidden");
 			drawPixelation(doc_id, photo_i,rotationOffset);		
 		}
 
@@ -600,6 +605,7 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 				data = {};
 				$(canvas).off();	//turn off events 
 				$(".covering_canvas").css("cursor", "");
+				$("#pixelateSubmit").addClass("hidden");
 			}
 
 	});
@@ -891,7 +897,7 @@ function appendConfidence($attach_url){
 		return "";
 }
 
-function detectFaces($id, $old, $photo_name, $rev){
+function detectFaces($id, $old, $photo_name, $rev){ //deprecated
 	if($old){
 		if($old == 2)
 			$url = cfg::$couch_url . "/disc_attachments/$id";
@@ -952,7 +958,6 @@ function detectFaces($id, $old, $photo_name, $rev){
 			// $response       = uploadAttach($couchurl, $filepath, $content_type);
 			// if(isset("./temp/$id"))
 			// 	unset("./temp/$id");
-// 'https://ourvoice-cdb.med.stanford.edu/disc_attachment/XYZ_1ADF98E2-BFD3-4E64-83FE-D9D39BE12978_1_1512073591362_photo_9.jpg/photo_9.jpg?rev=1-a3b731515e579f5cbe6922a492ead622'
 
 		}
 
@@ -962,9 +967,8 @@ function detectFaces($id, $old, $photo_name, $rev){
 
 
 function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
+	echo $pixel_count;
 	$passed = false;
-				echo '<pre>';
-				echo(imagesx($image) . " " . imagesy($image));
 	if($rotationOffset){ //rotate back
 		if($rotationOffset == 1){
 			$image = imagerotate($image,-90,0);
@@ -980,12 +984,14 @@ function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
 		$scale_factor_x = imagesx($image) / $vertices['width_pic']; //width_pic is the thumbnail size on the portal , imagesx returns FULL res
 		$scale_factor_y = imagesy($image) / $vertices['height_pic'];
 		// echo $scale_factor_x . " " . $scale_factor_y;
+		$scale_pixels = isset($pixel_count)? ($pixel_count*0.000005) : 15;
+		print_rr($scale_pixels);
 		$width = isset($vertices['width']) ? $vertices['width'] : -1;
 		$height = isset($vertices['height']) ? $vertices['height'] : -1;
 		if($width != -1 && $height != -1){
 			$crop = imagecrop($image,['x'=>$vertices['x']*$scale_factor_x,'y'=>$vertices['y']*$scale_factor_y,'width'=>$width*$scale_factor_x, 'height'=>$height*$scale_factor_y]);
 			// pixelate($crop, $scale_pixels,$scale_pixels);
-			pixelate($crop);
+			pixelate($crop, $scale_pixels, $scale_pixels);
 			//put faces back on the original image
 			imagecopymerge($image, $crop, $vertices['x']*$scale_factor_x, $vertices['y']*$scale_factor_y, 0, 0, $width*$scale_factor_x, $height*$scale_factor_y, 100);
 			$passed = true;
@@ -996,12 +1002,13 @@ function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
 		foreach($vertices as $faces){
 			$width = isset($faces[0]) && isset($faces[2]) ? $faces[2] - $faces[0] : 0;
 			$height = isset($faces[1]) && isset($faces[7]) ? $faces[7] - $faces[1] : 0;
-			$scale_pixels = isset($pixel_count)? ($pixel_count/(50000)) : 15;
+			$scale_pixels = isset($pixel_count)? ($pixel_count*0.000005) : 15;
+			print_rr($pixel_count);
 			if($width != 0 && $height != 0){
 				//have to crop out the faces first then apply filter
 				$crop = imagecrop($image,['x'=>$faces[0],'y'=>$faces[1],'width'=>$width, 'height'=>$height]);
 				// pixelate($crop, $scale_pixels,$scale_pixels);
-				pixelate($crop);
+				pixelate($crop,$scale_pixels,$scale_pixels);
 				//put faces back on the original image
 				imagecopymerge($image, $crop, $faces[0], $faces[1], 0, 0, $width, $height, 100);
 				$passed = true;
@@ -1039,7 +1046,7 @@ function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
 	}
 }
 
-function pixelate($image, $pixel_width = 20, $pixel_height = 20){
+function pixelate($image, $pixel_width = 15, $pixel_height = 15){
     if(isset($image)){
 	    $height = imagesy($image);
 	    $width = imagesx($image);
