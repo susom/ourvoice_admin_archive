@@ -355,8 +355,9 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo "<button type = 'button' id = 'pixelate' style='float:right'>Select Area for Pixelation</button>";
 
 	echo "<aside>
-			<b>lat: $lat long: $long</b>
-
+			<b id = 'lat' value = '$lat'>lat: $lat</b>
+			<b id = 'long' value = '$long'>long: $long</b>
+			<div id ='cover' class = 'gmap location_alert'></div>
 			<div id='google_map_0' class='gmap'></div>
 		</aside>";
 	echo "<aside class='forcommunity'>
@@ -457,6 +458,11 @@ $(document).ready(function(){
 	<?php
 		echo implode($gmaps);
 	?>
+	if(!$("#long").attr('value') && !$("#lat").attr('value')){
+		$("#cover").append("<p>No location data was found. Please enable location services on future walks</p>");
+		$("#cover").css("background-color","rgba(248,247,216,0.7)");
+	}
+	
 
 	$("#pixelate").on("click", function(){
 		var doc_id 	= $(".preview span").parent().data("doc_id"); //AFUM23894572093482093.. etc

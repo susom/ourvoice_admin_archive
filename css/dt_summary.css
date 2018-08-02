@@ -283,6 +283,7 @@ label span {
 	clear:right;
 	width:420px;
 	margin-bottom:12px;
+	position:relative;
 }
 .photo_detail aside h4{
 	color:#333;
@@ -760,7 +761,16 @@ label span {
 .hidden{
 	display:none;
 }
-
+.location_alert{
+	position: absolute;
+	z-index: 2;
+	/*background-color: rgba(248,247,216,0.7);*/
+}
+.location_alert p{
+	text-align: center;
+	padding:110px;
+	font-weight: bold;
+}
 @-moz-keyframes spin { 100% { -moz-transform: rotate(-360deg); } }
 @-webkit-keyframes spin { 100% { -webkit-transform: rotate(-360deg); } }
 @keyframes spin { 100% { -webkit-transform: rotate(-360deg); transform:rotate(-360deg); } }
