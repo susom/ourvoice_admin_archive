@@ -460,7 +460,8 @@ $(document).ready(function(){
 	?>
 	if(!$("#long").attr('value') && !$("#lat").attr('value')){
 		$("#cover").append("<p>No location data was found. Please enable location services on future walks</p>");
-		$("#cover").css("background-color","rgba(248,247,216,0.7)");
+		$("#cover").css("background-color","rgba(248,247,216,0.7)").css("z-index","2");
+
 	}
 	
 
