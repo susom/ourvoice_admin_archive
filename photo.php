@@ -292,6 +292,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			}
 		}else{
 			if(!empty($photo["audio"])){
+				print_rr("$$$$$$$");
 				$ext   = $device == "iOS" ? "wav" : "amr";
 				for($j = 1 ; $j <= $photo["audio"]; $j++ ){
 					$filename = "audio_".$i."_".$j . "." .$ext;
@@ -302,8 +303,15 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 
 					$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $doc["_id"] . "/". $filename;
 					$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$audio_name]) : "";
-					$audio_attachments .= "<div class='audio_clip'><audio controls><source src='$audio_src'/></audio> <a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
-					<div class='forprint'>$transcription</div><textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></div>";
+					$audio_attachments .=   "<div class='audio_clip'>
+											<audio controls>
+												<source src='$audio_src'/>
+											</audio> 
+											<a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
+											<div class='forprint'>$transcription</div>
+											<textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
+											<p id = 'confidence_exerpt'>$script</p>
+										</div>";
 				}
 			}
 		}
