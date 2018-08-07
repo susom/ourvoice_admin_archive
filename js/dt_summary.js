@@ -6,7 +6,6 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
     for(var i in geotags) {
         var lat = geotags[i].hasOwnProperty("lat") ? geotags[i]["lat"] : geotags[i]["latitude"];
         var lng = geotags[i].hasOwnProperty("lng") ? geotags[i]["lng"] : geotags[i]["longitude"];
-
     	var ltlnpt     = new google.maps.LatLng(lat, lng);
     	walkMap.push(ltlnpt);
 	}
@@ -92,5 +91,40 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
     }
     
     window[map_id].fitBounds(LatLngBounds); 
+    
+//NEW
+     // infoWindow = new google.maps.InfoWindow();
+    // var test = document.getElementById(map_id);
+    // var legend = document.createElement('div');
+    // legend.id = "legend";
+    // var nt = document.createElement("div");
+    // nt.appendChild(document.createTextNode("nice"));
+    // nt.id = 'mySlider';
+    // legend.appendChild(nt);
+    // legend.innerHTML = "<div id = 'mySlider'>YO</div>";
+
+
+    // window[map_id].controls[google.maps.ControlPosition.TOP_CENTER].push(legend);
+    // window[map_id].addListener("click", function(){
+    //     alert('yes');
+    //     $("#mySlider").slider({
+    //         value:100,
+    //         min: 0,
+    //         max: 500,
+    //         step: 50
+    //     });
+    // });
+    // test.html = ('<div id = "mySlider" style = "width:450px;height:150px;"></div>');
+
+    
+    // google.maps.event.addListener(window[map_id], 'domready', function(){
+    //     $('#Slider').slider({
+    //         value:100,
+    //         min:0,
+    //         max:500,
+    //         step:50
+    //     });
+    // })    
+
 	return gmarkers;
 }

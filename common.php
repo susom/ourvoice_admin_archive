@@ -167,8 +167,17 @@ function printRow($doc){
         }
 
         $hasaudio   = !empty($photo["audio"]) ? "has" : "";
-        $long       = isset($photo["geotag"]["longitude"]) ? $photo["geotag"]["longitude"]: 0;
-        $lat        = isset($photo["geotag"]["latitude"])  ? $photo["geotag"]["latitude"] : 0;
+
+        if(isset($photo["geotag"]["longitude"]) &&  isset($photo["geotag"]["latitude"])){
+            $long = $photo["geotag"]["longitude"];
+            $lat = $photo["geotag"]["latitude"];
+        }else if(isset($photo["geotag"]["lng"]) &&  isset($photo["geotag"]["lat"])){
+            $long = $photo["geotag"]["lng"];
+            $lat = $photo["geotag"]["lat"];
+        }else{
+            $long = 0;
+            $lat = 0;
+        }
         $timestamp  = isset($photo["geotag"]["timestamp"]) ? $photo["geotag"]["timestamp"] : 0;
         $goodbad    = "";
         if($photo["goodbad"] > 1){
@@ -220,7 +229,11 @@ function printRow($doc){
             $response = json_decode($responseJson);
             date_default_timezone_set($response->timeZoneId); 
         }
-        $codeblock[] = "<li data-phid='$img_id'>
+        $codeblock[] = "
+        <li data-phid='$img_id'>
+        <div class = 'load'>
+            <div class = 'progress'></div>
+        </div>
 
         <figure>
         <a href='$detail_url' target='_blank' rel='google_map_$i' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate' rev='$rotate'><img src='$photo_uri' /><span></span><b></b></a>

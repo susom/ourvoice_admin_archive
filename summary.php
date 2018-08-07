@@ -243,24 +243,62 @@ if( $active_project_id ){
 }
 ?>
 <script>
+var _GMARKERS = []; //GLOBAL 
 function addmarker(latilongi,map_id) {
+    if(_GMARKERS.length > 0) //clear the map of the plotted markers from hovering if exists
+    	for(var a = 0 ; a < _GMARKERS.length ; a++)
+    		_GMARKERS[a].setMap(null);
+
     var marker = new google.maps.Marker({
         position  : latilongi,
         map       : window[map_id],
         icon      : {
-			    path        : google.maps.SymbolPath.CIRCLE,
-			    scale       : 8,
-			    fillColor   : "#ffffff",
-			    fillOpacity : 1
+			    path        : google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+			    scale       : 6,
+			    fillColor   : "#ff0000",
+			    fillOpacity : 1,
+			    strokeWeight: 2,
 			},
     });
     window[map_id].setCenter(marker.getPosition());
     window.current_preview = marker;
+    _GMARKERS.push(marker);
 }
-
+function bindHover(){
+	$(".thumbs").find("li").on({
+		mouseenter: function(){
+			var loading_bar = $(this).find(".progress");
+			var pic_src = $(this).find("a")[0];
+			timer = setInterval(frame,10);
+			var width = 0;
+			function frame(){
+				if(width >= 100){
+					clearInterval(timer);
+					loading_bar.css("width","0%");
+					var long 	= $(pic_src).attr('data-long');
+					var lat 	= $(pic_src).attr("data-lat"); 
+					var map_id 	= $(pic_src).attr("rel");
+					var latlng 	= new google.maps.LatLng(lat, long);
+					if(lat != 0 && long != 0 ){
+						addmarker(latlng,map_id);
+					}
+				}else{
+					width++;
+					loading_bar.css("width",width+"%");
+				}
+			}
+		},
+		mouseleave: function(){
+			var loading_bar = $(this).find(".progress");
+			clearInterval(timer);
+			loading_bar.css("width", "0%");
+		}
+	});
+}
 $(document).ready(function(){
 	window.current_preview = null;
-
+	var timer;
+	bindHover();
 	//COLLAPSING AJAX DATE HEADER
 	$("h4.day").on("click",function(){
 		var hasData 	= $(this).attr("rel");
@@ -281,7 +319,10 @@ $(document).ready(function(){
 				},1500);
 				setTimeout(function(){
 					$(target).append(response);
+					$(".thumbs").find("li").unbind();
+					bindHover();
 				},1600);
+				
 			}).fail(function(msg){
 				// console.log("rotation save failed");
 			});
@@ -290,23 +331,6 @@ $(document).ready(function(){
 			$(this).attr("rel","true");
 		}
 	});
-
-	//HOVER ON MAP SPOT
-	// $(document).on({
-	//     mouseenter: function () {
-	//         var long 	= $(this).data("long");
-	// 		var lat 	= $(this).data("lat"); 
-	// 		var map_id 	= $(this).attr("rel");
-	// 		var latlng 	= new google.maps.LatLng(lat, long);
-	// 		addmarker(latlng,map_id);
-	//     },
-	//     mouseleave: function () {
-	//     	var map 	= $(this).attr("rel");
-	//     	var map_geo = $("div."+map.replace("google_map_","")).data("mapgeo");
-	//         window.current_preview.setMap(null);
-	//         drawGMap(map_geo,map.replace("google_map_",""),16);
-	//     }
-	// }, ".preview");
 
 	//ROTATE
 	$(".collapse").on("click",".preview span",function(){
