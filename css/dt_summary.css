@@ -770,6 +770,19 @@ label span {
 	padding:110px;
 	font-weight: bold;
 }
+.location_alert_summary{
+	position: absolute;
+	width:420px;
+	height:300px;
+	right:20px;
+	top:62px;
+	z-index: -1;
+}
+.location_alert_summary p{
+	text-align: center;
+	padding:110px;
+	font-weight: bold;
+}
 #cover{
 	z-index: -1;
 }
@@ -777,7 +790,7 @@ label span {
 	width:140px;
 	height:10px;
 	position:relative;
-	top:-5px;
+	top:-20px;
 }
 .progress{
 	width:0%;

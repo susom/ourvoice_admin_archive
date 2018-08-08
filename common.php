@@ -151,8 +151,10 @@ function printRow($doc){
     <b>".$date_ts."</b> 
     <i>$firstpart<strong>$last4</strong></i></h4>";
     $codeblock[] = "</hgroup>";
-    
+
     $codeblock[] = "<div id='google_map_$i' class='gmap'></div>";
+    $codeblock[] = "<div class = 'location_alert_summary'></div>";
+
     
     $codeblock[] = "<section class='photo_previews'>";
     $codeblock[] = "<a href='#' class='btn btn-danger deletewalk' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'>Delete This Walk</a>";
