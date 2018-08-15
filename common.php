@@ -163,6 +163,8 @@ function printRow($doc){
     $codeblock[] = "<ul>";
 
     $url_path    = $_SERVER['HTTP_ORIGIN'].dirname($_SERVER['PHP_SELF'])."/";
+    $count_empty = 0;
+
     foreach($photos as $n => $photo){
         if(is_null($photo) || isset($photo["deleted"])){
             continue;
@@ -531,7 +533,6 @@ function cacheThumb($ph_id,$thumb_uri){
 
 function getThumb($ph_id, $thumb_uri, $fileurl){
     $localthumb = "img/thumbs/$ph_id";
-
     // IF IT EXISTS AND ISNT GARBAGE
     if( file_exists($localthumb) ){
         if( filesize($localthumb) < 1000 ){
