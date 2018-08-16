@@ -9,7 +9,7 @@ if(isset($_POST['start']) && $_POST['start'] == 1){
 
 function searchEmpty($ph_id){
     $localthumb = "img/thumbs/$ph_id";
-    //$ph_id = BIBP_9b06585bca0d569b_11_1534326675243_photo_0.jpg
+    echo $ph_id + " \n";
     if(!file_exists($localthumb) )
         return 1; //if empty return true
     else
@@ -64,11 +64,11 @@ $(document).ready(function(){
 	        type: 'POST',
 	        data: "&start=1" ,
 	        success:function(result){ //on completion of data parsing, remove loading text on page.
-	        	// console.log(result);
-	        	var res = JSON.parse(result);
-	        	console.log(res);
-	  			$("#load").remove();
-	  			drawChart(res);
+	        	console.log(result);
+	     //    	var res = JSON.parse(result);
+	     //    	console.log(res);
+	  			// $("#load").remove();
+	  			// drawChart(res);
 			}
 	    }); //ajax
 });
@@ -166,7 +166,8 @@ function countData($attachments){
 			if(isset($photos['audio']))
 				$audio_count = $audio_count + $photos['audio'];
 			$pic_count++;
-			// echo ($entry['id'] + "_" + $photos['name']);
+			echo ($entry['id'] . "_" . $photos['name']);
+
 			if(searchEmpty($entry['id'] . "_" . $photos['name']))
 				$empty_count++;
 
