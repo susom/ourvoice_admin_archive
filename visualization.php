@@ -9,7 +9,6 @@ if(isset($_POST['start']) && $_POST['start'] == 1){
 
 function searchEmpty($ph_id){
     $localthumb = "DIR/img/thumbs/$ph_id";
-    echo $$localthumb;
     if(file_exists($localthumb)){
         return 0; //if empty return true
     }
@@ -65,11 +64,11 @@ $(document).ready(function(){
 	        type: 'POST',
 	        data: "&start=1" ,
 	        success:function(result){ //on completion of data parsing, remove loading text on page.
-	        	console.log(result);
-	     //    	var res = JSON.parse(result);
-	     //    	console.log(res);
-	  			// $("#load").remove();
-	  			// drawChart(res);
+	        	// console.log(result);
+	        	var res = JSON.parse(result);
+	        	console.log(res);
+	  			$("#load").remove();
+	  			drawChart(res);
 			}
 	    }); //ajax
 });
