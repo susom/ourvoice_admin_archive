@@ -10,12 +10,15 @@ if(isset($_POST['start']) && $_POST['start'] == 1){
 function searchEmpty($ph_id){
     $localthumb = "img/thumbs/$ph_id";
     echo $ph_id;
-    if(!file_exists($localthumb) )
-        return 1; //if empty return true
-    else
-        return 0;
+    if(file_exists($localthumb)){
+        return 0; //if empty return true
+    	echo 'yes';
+    }
+    else{
+        return 1;
+        echo "not";
+    }
 }
-
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -166,7 +169,6 @@ function countData($attachments){
 			if(isset($photos['audio']))
 				$audio_count = $audio_count + $photos['audio'];
 			$pic_count++;
-			echo ($entry['id'] . "_" . $photos['name']);
 
 			if(searchEmpty($entry['id'] . "_" . $photos['name']))
 				$empty_count++;
