@@ -193,7 +193,7 @@ if(!isset($_SESSION["discpw"])) {
 			<li><a href = "project_configuration.php">Project Configuration</a></li>
 			<li><a href = "organization.php">Organization</a></li>
 			<li><a href = "recent_activity.php">All Data</a></li>
-			<li><a href = "visualization.php">Visualize</a></li>
+			<!-- <li><a href = "visualization.php">Visualize</a></li> -->
 			<li style="float:right"><a href="index.php?clearsession=1">Refresh Project Data</a></li>
 			<li style="float:right"><img id = "magnifying_glass" src = "img/Magnifying_glass_icon.svg"></li>
 			<li style="float:right"><input type = "text" id = "search" placeholder="TAG"></li>
