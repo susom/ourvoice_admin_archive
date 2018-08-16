@@ -9,7 +9,7 @@ if(isset($_POST['start']) && $_POST['start'] == 1){
 
 function searchEmpty($ph_id){
     $localthumb = "img/thumbs/$ph_id";
-    echo $ph_id + " \n";
+    echo $ph_id;
     if(!file_exists($localthumb) )
         return 1; //if empty return true
     else
