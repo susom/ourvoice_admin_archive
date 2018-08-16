@@ -166,7 +166,9 @@ function countData($attachments){
 				$audio_count = $audio_count + $photos['audio'];
 			$pic_count++;
 
-			$empty_count += searchEmpty($entry['id'] + "_" + $photos['name']);
+			if(searchEmpty($entry['id'] + "_" + $photos['name']))
+				$empty_count++;
+		
 		}
 
 		$data[$id]['pic_count'] = $pic_count;
