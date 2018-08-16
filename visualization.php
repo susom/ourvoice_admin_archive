@@ -11,12 +11,14 @@ function searchEmpty($ph_id){
     $localthumb = "img/thumbs/$ph_id";
     echo $ph_id;
     if(file_exists($localthumb)){
-        return 0; //if empty return true
     	echo 'yes';
+        return 0; //if empty return true
+
     }
     else{
-        return 1;
         echo "not";
+        return 1;
+
     }
 }
 
