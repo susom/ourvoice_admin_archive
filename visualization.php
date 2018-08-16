@@ -64,6 +64,7 @@ $(document).ready(function(){
 	        type: 'POST',
 	        data: "&start=1" ,
 	        success:function(result){ //on completion of data parsing, remove loading text on page.
+	        	// console.log(result);
 	        	var res = JSON.parse(result);
 	        	console.log(res);
 	  			$("#load").remove();
@@ -165,10 +166,10 @@ function countData($attachments){
 			if(isset($photos['audio']))
 				$audio_count = $audio_count + $photos['audio'];
 			$pic_count++;
-
-			if(searchEmpty($entry['id'] + "_" + $photos['name']))
+			// echo ($entry['id'] + "_" + $photos['name']);
+			if(searchEmpty($entry['id'] . "_" . $photos['name']))
 				$empty_count++;
-		
+
 		}
 
 		$data[$id]['pic_count'] = $pic_count;
