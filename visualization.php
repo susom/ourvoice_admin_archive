@@ -4,6 +4,7 @@ ini_set('memory_limit','1024M'); //necessary for picture processing.
 
 if(isset($_POST['start']) && $_POST['start'] == 1){
 	initializeData();
+	clearstatcache();
 	exit();
 }
 
@@ -173,8 +174,9 @@ function countData($attachments){
 function searchEmpty($ph_id){
 //	img/thumbs/BIBP_9b06585bca0d569b_11_1534326675243_photo_0.jpg
 	$localthumb = "img/thumbs/$ph_id";
+	// print_rr($localthumb);
 	if(file_exists($localthumb)){
-	    return 0; //if empty return true
+	    return 0; //if empty return false
 	}
 	else{
 	    return 1;
