@@ -161,8 +161,8 @@ function countData($attachments){
 
 			if(searchEmpty($entry['id'] . "_" . $photos['name']))
 				$empty_count++;
-
 		}
+		echo "\n" . "\n";
 
 		$data[$id]['pic_count'] = $pic_count;
 		$data[$id]['audio_count'] = $audio_count;
@@ -173,14 +173,16 @@ function countData($attachments){
 
 function searchEmpty($ph_id){
 //	img/thumbs/BIBP_9b06585bca0d569b_11_1534326675243_photo_0.jpg
+
 	$localthumb = "img/thumbs/$ph_id";
+	echo $localthumb . "\n";
 	// print_rr($localthumb);
 	if(file_exists($localthumb)){
-		echo '##############';
+		echo 'yes';
 	    return 0; //if empty return false
 	}
 	else{
-		echo "@@@@@@@@@@@@";
+		echo "no";
 	    return 1;
 	}
 }
