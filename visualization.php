@@ -176,9 +176,11 @@ function searchEmpty($ph_id){
 	$localthumb = "img/thumbs/$ph_id";
 	// print_rr($localthumb);
 	if(file_exists($localthumb)){
+		echo '##############';
 	    return 0; //if empty return false
 	}
 	else{
+		echo "@@@@@@@@@@@@";
 	    return 1;
 	}
 }
