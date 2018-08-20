@@ -7,16 +7,6 @@ if(isset($_POST['start']) && $_POST['start'] == 1){
 	exit();
 }
 
-function searchEmpty($ph_id){
-    $localthumb = "DIR/img/thumbs/$ph_id";
-    if(file_exists($localthumb)){
-        return 0; //if empty return true
-    }
-    else{
-        return 1;
-    }
-}
-
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -64,11 +54,11 @@ $(document).ready(function(){
 	        type: 'POST',
 	        data: "&start=1" ,
 	        success:function(result){ //on completion of data parsing, remove loading text on page.
-	        	// console.log(result);
-	        	var res = JSON.parse(result);
-	        	console.log(res);
-	  			$("#load").remove();
-	  			drawChart(res);
+	        	console.log(result);
+	     //    	var res = JSON.parse(result);
+	     //    	console.log(res);
+	  			// $("#load").remove();
+	  			// drawChart(res);
 			}
 	    }); //ajax
 });
@@ -149,6 +139,7 @@ function initializeData(){
 }
 
 function countData($attachments){
+	echo getcwd() . "\n";
 	if(!isset($attachments))
 		return;
 	$pic_count = 0;
@@ -178,7 +169,18 @@ function countData($attachments){
 	}
 	return $data;
 }
-	
+
+function searchEmpty($ph_id){
+//	img/thumbs/BIBP_9b06585bca0d569b_11_1534326675243_photo_0.jpg
+	$localthumb = "img/thumbs/$ph_id";
+	if(file_exists($localthumb)){
+	    return 0; //if empty return true
+	}
+	else{
+	    return 1;
+	}
+}
+
 ?>
 
 </div>
