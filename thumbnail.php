@@ -50,8 +50,8 @@ $img = NULL;
 // - imagecreatefromjpeg
 // - imagecreatefrompng
 // - imagecreatefromgif
-
-$sExtension = strtolower(end(explode('.', $sImagePath)));
+$temp = end(explode('.', $sImagePath));
+$sExtension = strtolower($temp);
 $sExtension = str_replace("&_old=1","",$sExtension);
 $sExtension = str_replace("&_old=2","",$sExtension);
 if ($sExtension == 'jpg' || $sExtension == 'jpeg') {
