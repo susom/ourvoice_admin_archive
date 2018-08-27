@@ -246,10 +246,8 @@ if ($img) {
  
     // Display the image using the header function to specify
     // the type of output our page is giving
-    if(isset($img) && !empty($img)){
-        header("Content-type: image/jpeg");
-        imagejpeg($img);
-    }
-    
+ 
+    header("Content-type: image/jpeg");
+    imagejpeg($img);
 }
 ?>

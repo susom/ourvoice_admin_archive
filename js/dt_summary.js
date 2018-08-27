@@ -67,7 +67,7 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
             };
             gmarkers.push(marker);
     	}
-        
+
     	// Creates the polyline object (connecting the dots)
         var polyline = new google.maps.Polyline({
           map: window[map_id],

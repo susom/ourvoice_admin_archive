@@ -165,7 +165,7 @@ if( $active_project_id ){
 		}
 	}
 	echo "<div class='thumbs all-photos'><ul class='collapse' id='tags'>";
-	echo implode("",$code_block); //join elements with the "" string separating.
+	echo implode("",$code_block);
 	echo "</ul></div>";
 
 	$project_tags = $_SESSION["DT"]["project_list"][$active_pid]["tags"];
@@ -292,22 +292,8 @@ function bindMapFunctionality(gmarkers){
         });
 	}
 }
-function removeEmptyPhotos(){
-	var totals = $(".ui-widget-drop").find("img");
-	console.log(totals);
-	for(var v = 0 ; v < totals.length; v++){
-		if($(totals[v]).height() < 30)
-			$(totals[v]).parents("li").remove();
-	}
-}
-
-$(window).on('load', function(){ //on photo load remove the empty ones
-	removeEmptyPhotos();
-});
-
 $(document).ready(function(){
 	window.current_preview = null;
-	 $('.imagen[src=""]').hide();
 	//$("#addtags").addClass("closed"); //default closed
 	bindProperties();
 	appendProjectCount();
