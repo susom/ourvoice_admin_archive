@@ -38,7 +38,7 @@ function doCurl($url, $data = null, $method = null, $username = null, $password 
     return $result;
 }
 
-function get_head(string $url, array $opts = []){
+function get_head($url, $opts = []){
     // Store previous default context
     $prev = stream_context_get_options(stream_context_get_default());
 
@@ -240,7 +240,11 @@ function printRow($doc){
         </div>
 
         <figure>
-        <a href='$detail_url' target='_blank' rel='google_map_$i' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate' rev='$rotate'><img src='$photo_uri' /><span></span><b></b></a>
+        <a href='$detail_url' target='_blank' rel='google_map_$i' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate' rev='$rotate'>
+            <img src='$photo_uri'>
+            <span></span>
+            <b></b>
+        </a>
         <figcaption>
 
             <span class='time'>@".date("g:i a", floor($timestamp/1000))."</span>
@@ -393,6 +397,7 @@ function printPhotos($doc){
         $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
         $thumb_uri      = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
         // $photo_uri  = $file_uri;
+
         $photo_uri      = getThumb($img_id,$thumb_uri,$file_uri);
         $blur_coord     = "facial_detection.php?uri=".$photo_uri;
         $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
@@ -402,12 +407,17 @@ function printPhotos($doc){
         $photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
         $codeblock[]    = "<li id='".$doc["_id"]."_"."photo_".$n."' class = 'ui-widget-drop'><figure>";
         $codeblock[]    = "<ul>";
+
         foreach($photo_tags as $idx => $tag){
             $codeblock[]    = "<li class = '$tag'>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='".$doc["_id"]."' data-photo_i='$n'>x</a></li>";
         }
         $codeblock[]    = "</ul>";
-        $codeblock[]    = "<a href='$detail_url' target='_blank'  data-time='".$pic_time."' data-date='".$date_ts."' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate walk_photo $nogeo' data-imgsrc='$photo_uri' rev='$rotate'><img src='$photo_uri' /><span></span><b></b><i></i></a>";
+      
+        $codeblock[]    = "<a href='$detail_url' target='_blank'  data-time='".$pic_time."' data-date='".$date_ts."' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate walk_photo $nogeo' data-imgsrc='$photo_uri' rev='$rotate'>
         
+        <img src='$photo_uri' />
+        <span></span><b></b><i></i></a>";
+    
         $codeblock[]    = "</figure></li>";
     }
     return $codeblock;
@@ -538,6 +548,7 @@ function getThumb($ph_id, $thumb_uri, $fileurl){
         if( filesize($localthumb) < 1000 ){
             //DELETE IT , ITS GARBAGE
             unlink($localthumb);
+            return ""; //removes the weird icon from aggregate page. 
         }else{
             //ITS GOOD , USE IT
             $thumb_uri = $localthumb;
