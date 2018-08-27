@@ -50,7 +50,8 @@ $img = NULL;
 // - imagecreatefromjpeg
 // - imagecreatefrompng
 // - imagecreatefromgif
-$temp = end(explode('.', $sImagePath));
+$expl = explode('.', $sImagePath);
+$temp = end($expl); //end takes a reference pointer, so expl is necessary
 $sExtension = strtolower($temp);
 $sExtension = str_replace("&_old=1","",$sExtension);
 $sExtension = str_replace("&_old=2","",$sExtension);
