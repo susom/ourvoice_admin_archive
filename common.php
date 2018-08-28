@@ -161,8 +161,9 @@ function printRow($doc){
     $codeblock[] = "<h5>Photo Previews (".count($photos).")</h5>";
     $codeblock[] = "<div class='thumbs'>";
     $codeblock[] = "<ul>";
-
-    $url_path    = $_SERVER['HTTP_ORIGIN'].dirname($_SERVER['PHP_SELF'])."/";
+    $host        = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : "";
+    $url_path    = $host .dirname($_SERVER['PHP_SELF'])."/";
+    // $url_path    = $_SERVER['HTTP_ORIGIN'].dirname($_SERVER['PHP_SELF'])."/";
     $count_empty = 0;
 
     foreach($photos as $n => $photo){
