@@ -612,7 +612,7 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 			  	 	url: "photo.php",
 			  	 	data: { pic_id: doc_id, photo_num: photo_i, coordinates: data, rotation: rotationOffset},
 			  	 	success:function(response){
-			  			console.log(response);
+			  			window.location.reload(true);
 			 	 	}
 				});
 				$("#pixelate").css("background-color", "#4CAF50"); //change color back to reg
