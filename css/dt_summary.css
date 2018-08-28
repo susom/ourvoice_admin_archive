@@ -75,7 +75,7 @@ section h5{
 }
 .thumbs li {
 	display:inline-block;
-	margin:0 10px 20px 0; 
+	margin: 5px 10px 20px 0; 
     vertical-align: top;
 
 }
@@ -577,17 +577,22 @@ label span {
 
 
 /*agg photos */
+/*::-webkit-scrollbar {
+    width: 7px;
+}*/
 .all-photos{
     top:18px;
     border:solid;
     border-width: 2px;
-    overflow: scroll;
+    overflow-y: scroll;
     max-width: 333px;
     min-width:333px;
     float:right;
     min-height: 690px;
     max-height: 690px;
     position: relative;
+    border-color:gray;
+    border-radius: 10px;
 }
 
 .thumbs{
@@ -605,7 +610,8 @@ label span {
 .nogeo:before {
 	content:"Geo Data N/A";
 	text-align:center;
-	line-height:150px;
+	line-height:130px;
+	font-size: 12px;
 	position:absolute; 
 	top:0; left:0; 
 	width:142px; 

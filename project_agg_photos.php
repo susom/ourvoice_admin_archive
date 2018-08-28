@@ -118,6 +118,7 @@ if( $active_project_id ){
 
 	//PRINT TO SCREEN
 	echo "<h1 class = 'title'>Discovery Tool Data Summary for $active_project_id</h1>";
+	echo "<div id = 'main-container'>";
 	echo "<div id='google_map_photos' class='gmap'></div>";
 	$project_meta 	= $ap["project_list"][$active_pid];
 	$photo_geos 	= array();
@@ -166,7 +167,7 @@ if( $active_project_id ){
 	}
 	echo "<div class='thumbs all-photos'><ul class='collapse' id='tags'>";
 	echo implode("",$code_block); //join elements with the "" string separating.
-	echo "</ul></div>";
+	echo "</ul></div></div>";
 
 	$project_tags = $_SESSION["DT"]["project_list"][$active_pid]["tags"];
 	include("inc/fixed_tags.php");
@@ -199,6 +200,9 @@ nav {
 nav ul {
 	margin:0;
 	padding:0;
+}
+#main-container{
+	position:absolute;
 }
 #google_map_photos {
 	box-shadow:0 0 3px  #888; 
