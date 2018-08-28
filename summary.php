@@ -301,13 +301,13 @@ function checkLocationData(){
 	var visible_photos = $(".thumbs").find("figure").children("a");
 	var checkRepeated;
 	for(var i = 0 ; i < visible_photos.length ; i++){
-		if($(visible_photos[i]).attr("data-long") == 0){
+		if($(visible_photos[i]).attr("data-long") == 0){ //check first two pictures. if either of them are 0 then place cover.
 			if(visible_photos[i+1]!=null && $(visible_photos[i+1]).attr("data-long") != 0 && $(visible_photos[i+1]).attr("data-photo_i") != 0)
 				continue;
 
 			var cover = $(visible_photos[i]).closest(".user_entry").find(".location_alert_summary"); //closest cover for each summary 
 			if(!cover.hasClass("cover_appended")){
-				cover.append("<p>No location data was found. Please enable location services on future walks</p>");
+				cover.append("<p>Location data is missing on at least one walk photo. Please enable location services on future walks</p>");
 				cover.css("background-color","rgba(248,247,216,0.7)").css("text-align","center");
 				cover.css("z-index","2");
 				cover.addClass("cover_appended");

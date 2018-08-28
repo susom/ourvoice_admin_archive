@@ -1,7 +1,6 @@
 <?php
 require_once "common.php";
 
-
 /**
  * A test for passthru
  */
