@@ -305,7 +305,7 @@ function removeEmptyPhotos(){
 }
 
 $(window).on('load', function(){ //on photo load remove the empty ones
-	removeEmptyPhotos();
+	// removeEmptyPhotos();
 	appendProjectCount();
 
 });
