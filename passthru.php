@@ -25,7 +25,7 @@ if($old){
 		$url = cfg::$couch_url . "/".cfg::$couch_users_db."/" . $id;
 	}
 }else{
-	$url = cfg::$couch_url . "/". $couch_attach_db."/" . $id;
+	$url = cfg::$couch_url . "/". cfg::$couch_attach_db."/" . $id;
 }
 
 $result = doCurl($url);

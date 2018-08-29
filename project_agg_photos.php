@@ -305,7 +305,7 @@ function removeEmptyPhotos(){
 }
 
 $(window).on('load', function(){ //on photo load remove the empty ones
-	// removeEmptyPhotos();
+	removeEmptyPhotos();
 	appendProjectCount();
 
 });
@@ -379,7 +379,7 @@ $(document).ready(function(){
 	$(".collapse").on("click", ".preview i", function(){
 		var doc_id 	= $(this).parent().data("doc_id");
 		var photo_i = $(this).parent().data("photo_i"); 
-		console.log(doc_id);
+		// console.log(doc_id);
 		
 		if($(this).parent().prev("ul.tagon").length){
 			$(this).parent().prev("ul.tagon").removeClass("tagon");
@@ -405,14 +405,14 @@ $(document).ready(function(){
 		var doc_id 	= $(this).data("doc_id");
 		var photo_i = $(this).data("photo_i");
 		var tagtxt 	= $(this).data("deletetag");
-		console.log(tagtxt);
+		// console.log(tagtxt);
 		var _this 	= $(this);
 		$.ajax({
 			method: "POST",
 			url: "photo.php",
 			data: { doc_id: doc_id, photo_i: photo_i, delete_tag_text: tagtxt},
 			success:function(result){
-				console.log(result);
+				// console.log(result);
 			}
 
 		}).done(function( msg ) {
@@ -445,15 +445,15 @@ $(document).ready(function(){
           }
         });  
 		ele.remove();
-		console.log("clicking on the trashcan");
+		// console.log("clicking on the trashcan");
 		return false;
 	});
 	
 	//ADD PHOTO TAG
 	$("#addtags").on("click",".tagphoto", function(){
-		console.log("inside here");
-		console.log(this);
-		console.log($(this).children("b").attr("datakey"));
+		// console.log("inside here");
+		// console.log(this);
+		// console.log($(this).children("b").attr("datakey"));
 		//console.log(this.childNodes[0].attributes[0].value);
 		var tag = $(this).children("b").attr("datakey");
 		var photo_selection = $("."+tag);
@@ -481,7 +481,7 @@ $(document).ready(function(){
 
 			all_photos.each(function(index){ //add hide to each of the others
 				if($(this).hasClass(tag+"_photo"))
-					console.log("nothing");
+					// console.log("nothing");
 				else
 					$(this).addClass("hide_"+tag);
 			});
@@ -490,17 +490,17 @@ $(document).ready(function(){
 				for(var i = 0 ; i < pic_ids.length ; i++) //loop through all currently visible pictures on page
 					if($(this).attr("photo_id") == pic_ids[i]){ //identify which markers to add tags to
 						retpins.push(this);
-						console.log("adding to retpins");
-						console.log($(this).attr("photo_id") + "--- " + pic_ids[i]);
+						// console.log("adding to retpins");
+						// console.log($(this).attr("photo_id") + "--- " + pic_ids[i]);
 					}
 			});
-			console.log(retpins);
+			// console.log(retpins);
 			var gmarkers = drawGMap(retpins, 'photos', 14);
 			bindMapFunctionality(gmarkers);
 		
 		}else{	//trying to reveal pictures
 
-			console.log(pic_ids);
+			// console.log(pic_ids);
 			all_photos.each(function(index){
 				if($(this).hasClass(tag+"_photo")){
 					$(this).removeClass(tag+"_photo");
@@ -514,7 +514,7 @@ $(document).ready(function(){
 			$(".ui-widget-drop").not("[class*=hide]").each(function(index){ //find all pics that are displayed
 				pic_ids.push($(this).closest(".ui-widget-drop").attr("id")); //store for comparison loop
 			});
-			console.log(pic_ids);
+			// console.log(pic_ids);
 			
 	
 			$.each(pins, function(){ //loop through all map markers defined globally onReady()
@@ -600,7 +600,7 @@ function bindProperties(){
           type:'POST',
           data: { DragTag: drag, DropTag: drop, Project: proj, Key: datakey },
           success:function(result){
-          	console.log(result);
+          	// console.log(result);
           	var appendloc = $("#"+drop).find("ul");
           	for(var i = 0 ; i < appendloc[0].childNodes.length; i++){
           		//console.log(appendloc[0].childNodes[i].childNodes);
