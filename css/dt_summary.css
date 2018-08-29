@@ -75,7 +75,7 @@ section h5{
 }
 .thumbs li {
 	display:inline-block;
-	margin: 5px 10px 20px 0; 
+	margin: 5px 10px 20px 5px; 
     vertical-align: top;
 
 }

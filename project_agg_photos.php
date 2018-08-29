@@ -298,7 +298,6 @@ function bindMapFunctionality(gmarkers){
 }
 function removeEmptyPhotos(){
 	var totals = $(".ui-widget-drop").find("img");
-	console.log(totals);
 	for(var v = 0 ; v < totals.length; v++){
 		if($(totals[v]).height() < 30)
 			$(totals[v]).parents("li").remove();
@@ -307,17 +306,14 @@ function removeEmptyPhotos(){
 
 $(window).on('load', function(){ //on photo load remove the empty ones
 	removeEmptyPhotos();
+	appendProjectCount();
+
 });
 
 $(document).ready(function(){
 	window.current_preview = null;
-	 $('.imagen[src=""]').hide();
-	//$("#addtags").addClass("closed"); //default closed
 	bindProperties();
-	appendProjectCount();
 	var pins = <?php echo json_encode($photo_geos) ?>;
-	console.log("ON READY CALLED");
-
 	var gmarkers = drawGMap(<?php echo json_encode($photo_geos) ?>, 'photos', 16);
 	bindMapFunctionality(gmarkers);
 
@@ -631,7 +627,6 @@ function bindProperties(){
 }
 function appendProjectCount(){
 	$(".title").append(" ("+$("#tags").children().length+")");
-	console.log($("#tags").children().length);
 }
 </script>
 <style>
