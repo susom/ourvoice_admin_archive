@@ -346,9 +346,9 @@ $(document).ready(function(){
 		  url 		: "photo.php",
 		  data 		: { doc_id: doc_id, photo_i: photo_i, rotate: rotate },
 		}).done(function(response) {
-			// console.log("rotation saved");
+			console.log("rotation saved");
 		}).fail(function(msg){
-			// console.log("rotation save failed");
+			console.log("rotation save failed");
 		});
 		return false;
 	});
@@ -481,7 +481,7 @@ $(document).ready(function(){
 
 			all_photos.each(function(index){ //add hide to each of the others
 				if($(this).hasClass(tag+"_photo"))
-					// console.log("nothing");
+					console.log("nothing");
 				else
 					$(this).addClass("hide_"+tag);
 			});
