@@ -353,7 +353,9 @@ function printPhotos($doc){
     
     $date_ts     = date("F j, Y", floor($walk_ts_sub/1000)) ;
     $host        = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : "";
-    $url_path    = $host .dirname($_SERVER['PHP_SELF'])."/";
+    $url_path    = $host .dirname($_SERVER['PHP_SELF']); 
+    if($url_path != '/') //if its empty then we dont want to add the additional / 
+        $url_path = $host .dirname($_SERVER['PHP_SELF']) . '/';               
 
     foreach($photos as $n => $photo){
         if(is_null($photo)){
@@ -393,7 +395,7 @@ function printPhotos($doc){
         
         $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
         $thumb_uri      = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-        // $photo_uri  = $file_uri;
+ 
         $photo_uri      = getThumb($img_id,$thumb_uri,$file_uri);
         $blur_coord     = "facial_detection.php?uri=".$photo_uri;
         $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";

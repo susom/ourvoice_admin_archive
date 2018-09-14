@@ -2,7 +2,6 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
 	var map_id         = "google_map_" + i_uniquemap;
 	var geotags        = o_geotags;
 	var walkMap        = [];
-
     for(var i in geotags) {
         var lat = geotags[i].hasOwnProperty("lat") ? geotags[i]["lat"] : geotags[i]["latitude"];
         var lng = geotags[i].hasOwnProperty("lng") ? geotags[i]["lng"] : geotags[i]["longitude"];

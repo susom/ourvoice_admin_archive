@@ -45,25 +45,39 @@ if( isset($_REQUEST["walk_id"]) ){
     $walk_id        = $_REQUEST["walk_id"];
     $local_folder   = "temp/$walk_id";
 
-    if ($_FILES["attachment"]["error"] == UPLOAD_ERR_OK){
-        // CHECK IF WALK DATA ALREADY EXISTS, NEED TO DELETE IT TO WRITE IT AGAIN, NO OVERWRITE FEATURE?
-        $file       = $_FILES["attachment"]["tmp_name"];
+    require('UploadHandler.php');
+    $upload_handler = new UploadHandler(null,true,null,$local_folder);
 
-        // how the fuck do i get this name properly? 
-        $name       = $_FILES["attachment"]["name"];
+
+
+
+
+
+
+
+
+
+
+    // WORKS SOMETIMES
+    // if ($_FILES["attachment"]["error"] == UPLOAD_ERR_OK){
+    //     // CHECK IF WALK DATA ALREADY EXISTS, NEED TO DELETE IT TO WRITE IT AGAIN, NO OVERWRITE FEATURE?
+    //     $file       = $_FILES["attachment"]["tmp_name"];
+
+    //     // how the fuck do i get this name properly? 
+    //     $name       = $_FILES["attachment"]["name"];
         
-        $attachment = $local_folder."/".$name ;
-        if( file_exists($attachment) ){
-            unlink($attachment);
-        }
+    //     $attachment = $local_folder."/".$name ;
+    //     if( file_exists($attachment) ){
+    //         unlink($attachment);
+    //     }
 
-        // now you have access to the file being uploaded
-        //perform the upload operation.
-        move_uploaded_file( $file, $attachment );
-        print_r(json_encode(array("$attachment saved to disk?!!!")));
-    }else{
-        print_r(json_encode(array($attachment . " upload failed")));
-    }
+    //     // now you have access to the file being uploaded
+    //     //perform the upload operation.
+    //     move_uploaded_file( $file, $attachment );
+    //     print_r(json_encode(array("$attachment saved to disk?!!!")));
+    // }else{
+    //     print_r(json_encode(array($attachment . " upload failed")));
+    // }
     exit;
 }
 

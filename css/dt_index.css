@@ -273,7 +273,7 @@ input[readonly]{
 	margin: 10px;
 	margin-left: 20px; 
 	text-align: center; 
-	background-image: url('img/FolderClose.svg');
+	/*background-image: url('img/FolderClose.svg');*/
 	background-color: transparent;
 	background-size: 100%;
 	line-height: 600%;
