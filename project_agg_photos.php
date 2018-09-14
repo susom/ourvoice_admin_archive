@@ -74,7 +74,6 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 <script src="js/jquery-ui.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"/>
-
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
 </head>
@@ -94,7 +93,6 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 		</ul>
 		<?php } ?>
 	</nav>
-
 <?php
 if( $active_project_id ){
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
@@ -152,9 +150,10 @@ if( $active_project_id ){
 			            $filename   = $photo_name;
 			            $ph_id      = $doc["_id"];
 			        }
+
 			        $file_uri   	= "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
 			        $photo_uri 		= $file_uri;
-			        // $photo_uri  	= "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+			        $photo_uri  	= "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
 			        $photo["geotag"]["photo_src"] = $photo_uri;
 			        $photo["geotag"]["photo_id"]  = $doc["_id"]. "_" . "photo_".$n;
 					
@@ -165,7 +164,7 @@ if( $active_project_id ){
 		}
 	}
 	echo "<div class='thumbs all-photos'><ul class='collapse' id='tags'>";
-	echo implode("",$code_block); //join elements with the "" string separating.
+	echo implode("\r",$code_block); //join elements with the "" string separating.
 	echo "</ul></div>";
 
 	$project_tags = $_SESSION["DT"]["project_list"][$active_pid]["tags"];
