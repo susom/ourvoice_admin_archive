@@ -9,8 +9,6 @@ function getPhotos($view, $keys_array){ //keys array is the # integer of the PrI
     return json_decode($response,1);
 }
 
-$_POST["walk_id"] 	= "AAAA_7DE79DB2-5E68-4D0A-B50A-F0745BB8E087_1_1536798921363";
-
 $webhook_from_app 	= false;
 $filescreated 		= array();
 $filescreated[] 	= "following are list of fotos that thumbnails were created for";
