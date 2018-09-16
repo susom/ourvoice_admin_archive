@@ -33,6 +33,7 @@ if(isset($_POST["walk_id"])){
 		if(strpos($thumbfile,$walk_id) > -1 && !strpos($thumbfile,"(")){
 	        $new_thumb 	= $thumb_folder."/".$thumbfile; // Create the destination filename 
         	
+        	$filescreated[] = $new_thumb;
         	// THIS MOVES THE FILE (REMOVES FROM OLD LOCATION)
         	rename($old_thumb_dir."/".$thumbfile, $new_thumb);
 		}
