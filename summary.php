@@ -147,7 +147,7 @@ nav ul {
 		<ul>
 			<?php
 			if( $active_project_id ){
-				echo '<li><a target="_blank" class="inproject btn btn-success" href="project_map_csv.php?i='.$active_project_id.'&pid='.$active_pid.'">Download Maps Data (.csv)</a></li>';
+				echo '<li><a target="_blank" class="inproject btn btn-success" href="project_map_csv.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Download Maps Data (.csv)</a></li>';
 				echo '<li><a target="_blank" class="inproject btn btn-info" href="project_transcriptions_csv.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">All Transcriptions</a></li>';
 				echo '<li><a target="_blank" class="inproject btn btn-warning" href="project_agg_surveys.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">All Survey Answers</a></li>';
 				echo '<li><a target="_blank" class="inproject btn btn-danger" href="project_agg_photos.php?id='.$active_project_id.'">All Walk Photos</a></li>';

@@ -1,15 +1,6 @@
 <?php
 require_once "common.php";
 
-// output headers so that the file is downloaded rather than displayed
-header('Content-Type: text/csv; charset=utf-8');
-header('Content-Disposition: attachment; filename=data.csv');
-
-// create a file pointer connected to the output stream
-$output = fopen('php://output', 'w');
-
-// output the column headings
-fputcsv($output, array('session_id', 'pic_id', 'type', 'latitude', 'longitude','good_bad','timestamp', 'transcription'));
 if( empty($_SESSION["DT"]) ){
 	// FIRST GET THE PROJECT DATA
 	$couch_url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
@@ -24,8 +15,18 @@ $ap 				= $_SESSION["DT"];
 $_id 				= $ap["_id"];
 $_rev 				= $ap["_rev"];
 $projs 				= $ap["project_list"];
-$active_project_id 	= $_GET["i"];
+$active_project_id 	= $_GET["active_project_id"];
 $active_pid 		= $_GET["pid"];
+
+// output headers so that the file is downloaded rather than displayed
+header('Content-Type: text/csv; charset=utf-8');
+header('Content-Disposition: attachment; filename=maps_'.$active_project_id.'.csv');
+
+// create a file pointer connected to the output stream
+$output = fopen('php://output', 'w');
+
+// output the column headings
+fputcsv($output, array('walk id', 'photo name', 'type', 'latitude', 'longitude','good/bad','date', 'transcription'));
 
 if( $active_project_id ){
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
