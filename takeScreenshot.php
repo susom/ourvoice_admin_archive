@@ -14,12 +14,13 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	$googlePagespeedData = json_decode($googlePagespeedData, true);
 	$screenshot = $googlePagespeedData['screenshot']['data'];
 	$screenshot = str_replace(array('_','-'),array('/','+'),$screenshot);
+	print_rr($screenshot);
 	// file_put_contents('vvv.txt', $screenshot);
 	$resource = imagecreatefromstring($screenshot);
 	$filename = "test.jpg"; 
 	imagejpeg($resource,$filename);
-	generatePDF($filename);
-	// echo "<img src=\"data:image/jpeg;base64,".$screenshot."\" />";
+	//generatePDF($filename);
+	echo "<img src=\"data:image/jpeg;base64,".$screenshot."\" />";
  	
 
 
