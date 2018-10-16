@@ -12,27 +12,21 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	$result = urlencode($result);
 	$googlePagespeedData = file_get_contents("https://www.googleapis.com/pagespeedonline/v4/runPagespeed?url=$result&screenshot=true");
 	$googlePagespeedData = json_decode($googlePagespeedData, true);
-	print_rr($googlePagespeedData);
 	$screenshot = $googlePagespeedData['screenshot']['data'];
 	$screenshot = str_replace(array('_','-'),array('/','+'),$screenshot);
-	file_put_contents('vvv.txt', $screenshot); 
-	// imagejpeg($screenshot,"test.jpg");
-	echo "<img src=\"data:image/jpeg;base64,".$screenshot."\" />";
- 
-
-
-
-
-
-
+	file_put_contents('vvv.txt', $screenshot);
+	$filename = "test.jpg"; 
+	imagejpeg($screenshot,$filename);
+	generatePDF($filename);
+	// echo "<img src=\"data:image/jpeg;base64,".$screenshot."\" />";
+ 	
 
 
 }
 
-
-function generatePDF(){
+function generatePDF($filename){
 	$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-
+/*
 	// set document information
 	// $pdf->SetCreator(PDF_CREATOR);
 	// $pdf->SetAuthor('Nicola Asuni');
@@ -85,20 +79,16 @@ function generatePDF(){
 
 	// set text shadow effect
 	$pdf->setTextShadow(array('enabled'=>true, 'depth_w'=>0.2, 'depth_h'=>0.2, 'color'=>array(196,196,196), 'opacity'=>1, 'blend_mode'=>'Normal'));
-
-	// Set some content to print
-	// $html = <<<EOD
-	// <h1>Welcome to <a href="http://www.tcpdf.org" style="text-decoration:none;background-color:#CC0000;color:black;">&nbsp;<span style="color:black;">TC</span><span style="color:white;">PDF</span>&nbsp;</a>!</h1>
-	// <i>This is the first example of TCPDF library.</i>
-	// <p>This text is printed using the <i>writeHTMLCell()</i> method but you can also use: <i>Multicell(), writeHTML(), Write(), Cell() and Text()</i>.</p>
-	// <p>Please check the source code documentation and other examples for further information.</p>
-	// <p style="color:#CC0000;">TO IMPROVE AND EXPAND TCPDF I NEED YOUR SUPPORT, PLEASE <a href="http://sourceforge.net/donate/index.php?group_id=128076">MAKE A DONATION!</a></p>
-	// EOD;
-	//  echo $html;
-
+*/
 	// Print text using writeHTMLCell()
+	$imageDimensions = getimagesize($filename);
+	$width = $imageDimensions[0]/10;
+	$height = $imageDimensions[1]/10;
+	// print_rr($imageDimensions);
+	// print($width);
+	$pdf->AddPage();
 	$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-	$pdf->Image('AAA.jpg',15, 140, 100, 100);
+	$pdf->Image($filename,0, 0, 210, 140);
 	//// Image($file, $x='', $y='', $w=0, $h=0, $type='', $link='', $align='', $resize=false, $dpi=300, $palign='', $ismask=false, $imgmask=false, $border=0, $fitbox=false, $hidden=false, $fitonpage=false)
 
 	// ---------------------------------------------------------
