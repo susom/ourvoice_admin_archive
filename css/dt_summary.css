@@ -574,7 +574,11 @@ label span {
 }
 
 
-
+.export-pdf{
+	right: 155px;
+	position: absolute;
+	bottom: 20px;
+}
 
 /*agg photos */
 /*::-webkit-scrollbar {

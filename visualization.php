@@ -55,11 +55,11 @@ $(document).ready(function(){
 	        type: 'POST',
 	        data: "&start=1" ,
 	        success:function(result){ //on completion of data parsing, remove loading text on page.
-	        	console.log(result);
-	     //    	var res = JSON.parse(result);
-	     //    	console.log(res);
-	  			// $("#load").remove();
-	  			// drawChart(res);
+	        	// console.log(result);
+	        	var res = JSON.parse(result);
+	        	console.log(res);
+	  			$("#load").remove();
+	  			drawChart(res);
 			}
 	    }); //ajax
 });
@@ -75,11 +75,11 @@ function drawChart(data){
 	 for(var name in data){
 	 	if(ct < 29){
 	 		names.push(name);
-	 		num.push(data[name].pic_count);
+	 		num.push(data[name].total_pics);
 	 		colors.push(random_rgba());
 	 	}else{
 	 		names2.push(name);
-	 		num2.push(data[name].pic_count);
+	 		num2.push(data[name].total_pics);
 	 		colors2.push(random_rgba());
 	 	}
 	 	ct++;
@@ -118,9 +118,50 @@ function random_rgba() {
 }
 
 </script>
+
+
+
+
 <?php 
 
+function initializeDataF(){
+	$data = array();
+	$url 			= cfg::$couch_url . "/" . cfg::$couch_attach_db . "/" . cfg::$couch_all_db;
+	$response 		= doCurl($url);
+	$present_attachments = json_decode($response,1);
+	// print_rr($present_attachments);
+	$pic_count = 0;
+	$audio_count = 0;
+	$prev_id = explode("_",$present_attachments['rows'][0]['id'])[0];
+	echo $prev_id;
+	foreach($present_attachments['rows'] as $entry){
+		$id = explode("_",$entry['id'])[0];
+		$filetype = explode(".", $entry['id'])[1];
+		if($prev_id == $id){
+			// echo "$prev_id" . "\n";
+			// echo $id . " " .$filetype;
+			if($filetype == 'jpg' || $filetype == 'png'){
+				$pic_count++;
+				// echo 'pic';
+			}
+			else{
+				// echo 'audio';
+				$audio_count++;
+			}
 
+			$prev_id = $id;
+		}else{
+			echo 'entering ' . "$id" . " into \n" ;
+			$data[$prev_id]['uploaded_pics'] = $pic_count;
+			$data[$prev_id]['uploaded_audio'] = $audio_count;
+			$pic_count = 0;
+			$audio_count = 0;
+			$prev_id = $id;
+		}
+	}
+	print_rr($data);
+
+}
 function initializeData(){
 	unset($_SESSION['visualization']);
 	if(isset($_SESSION["visualization"]))
@@ -140,34 +181,71 @@ function initializeData(){
 }
 
 function countData($attachments){
-	echo getcwd() . "\n";
+	// echo getcwd() . "\n";
 	if(!isset($attachments))
 		return;
 	$pic_count = 0;
 	$audio_count = 0;
 	$empty_count = 0;
 	$data = array();
-	foreach($attachments['rows'] as $index => $entry){
+	//here we are counting the total
+	foreach($attachments['rows'] as $index => $entry){ //for each project
 		$id = explode("_",$entry['id'])[0];
 		if(!isset($data[$id])){ //if the id isnt already stored
 			$pic_count = 0; 
 			$audio_count = 0;
 			$empty_count = 0;
 		}
-		foreach($entry['doc']['photos'] as $photos){
-			if(isset($photos['audio']))
-				$audio_count = $audio_count + $photos['audio'];
-			$pic_count++;
+		// foreach($entry['doc']['photos'] as $photos){ //each photos array
+		// 	if(isset($photos['audio']))
+		// 		$audio_count = $audio_count + $photos['audio'];
+		// 	$pic_count++;
 
-			if(searchEmpty($entry['id'] . "_" . $photos['name']))
-				$empty_count++;
-		}
-		echo "\n" . "\n";
+		// 	if(searchEmpty($entry['id'] . "_" . $photos['name']))
+		// 		$empty_count++;
 
-		$data[$id]['pic_count'] = $pic_count;
-		$data[$id]['audio_count'] = $audio_count;
-		$data[$id]['empty_count'] = $empty_count;
+		// }
+		$audio_count+=count($entry['doc']['photos']['audios']);
+		$pic_count+=count($entry['doc']['photos']);
+
+		$data[$id]['total_pics'] = $pic_count;
+		$data[$id]['total_audio'] = $audio_count;
 	}
+
+	$url 			= cfg::$couch_url . "/" . cfg::$couch_attach_db . "/" . cfg::$couch_all_db;
+	$response 		= doCurl($url);
+	$present_attachments = json_decode($response,1);
+	// print_rr($present_attachments);
+	$pic_count = 0;
+	$audio_count = 0;
+	$prev_id = explode("_",$present_attachments['rows'][0]['id'])[0];
+	// echo $prev_id;
+	foreach($present_attachments['rows'] as $entry){
+		$id = explode("_",$entry['id'])[0];
+		$filetype = explode(".", $entry['id'])[1];
+		if($prev_id == $id){
+			// echo "$prev_id" . "\n";
+			// echo $id . " " .$filetype;
+			if($filetype == 'jpg' || $filetype == 'png'){
+				$pic_count++;
+				// echo 'pic';
+			}
+			else{
+				// echo 'audio';
+				$audio_count++;
+			}
+
+			$prev_id = $id;
+		}else{
+			// echo 'entering ' . "$id" . " into \n" ;
+			$data[$prev_id]['uploaded_pics'] = $pic_count;
+			$data[$prev_id]['uploaded_audio'] = $audio_count;
+			$pic_count = 0;
+			$audio_count = 0;
+			$prev_id = $id;
+		}
+	}
+
 	return $data;
 }
 
@@ -178,11 +256,11 @@ function searchEmpty($ph_id){
 	echo $localthumb . "\n";
 	// print_rr($localthumb);
 	if(file_exists($localthumb)){
-		echo 'yes';
+		// echo 'yes';
 	    return 0; //if empty return false
 	}
 	else{
-		echo "no";
+		// echo "no";
 	    return 1;
 	}
 }

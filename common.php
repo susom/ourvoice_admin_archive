@@ -158,6 +158,7 @@ function printRow($doc){
     
     $codeblock[] = "<section class='photo_previews'>";
     $codeblock[] = "<a href='#' class='btn btn-danger deletewalk' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'>Delete This Walk</a>";
+    $codeblock[] = "<a href='#' class='btn btn-primary export-pdf' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'>Export to PDF</a>";
     $codeblock[] = "<h5>Photo Previews (".count($photos).")</h5>";
     $codeblock[] = "<div class='thumbs'>";
     $codeblock[] = "<ul>";
