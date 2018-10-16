@@ -147,8 +147,8 @@ nav ul {
 		<ul>
 			<?php
 			if( $active_project_id ){
-				echo '<li><a target="_blank" class="inproject btn btn-success" href="project_map_csv.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Download Maps Data (.csv)</a></li>';
-				echo '<li><a target="_blank" class="inproject btn btn-info" href="project_transcriptions_csv.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">All Transcriptions</a></li>';
+				echo '<li><a target="_blank" class="inproject btn btn-success" href="project_map_csv.php?i='.$active_project_id.'&pid='.$active_pid.'">Download Maps Data (.csv)</a></li>';
+				echo '<li><a target="_blank" class="inproject btn btn-info" href="project_transcriptions.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">All Transcriptions</a></li>';
 				echo '<li><a target="_blank" class="inproject btn btn-warning" href="project_agg_surveys.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">All Survey Answers</a></li>';
 				echo '<li><a target="_blank" class="inproject btn btn-danger" href="project_agg_photos.php?id='.$active_project_id.'">All Walk Photos</a></li>';
 			}
@@ -427,6 +427,26 @@ $(document).ready(function(){
 		}
 		return false;
 	});
+	
+	$(".collapse").on("click",".export-pdf",function(e){
+		console.log("clicked button");
+		var _id 	= $(this).data("id");
+		var last4 	= _id.substr(_id.length - 4);
+		var _rev 	= $(this).data("rev");
+
+		var _parent	= $(this).closest(".user_entry");
+		console.log(this);
+		console.log(_id);
+		console.log(last4);
+		console.log(_rev);
+
+		//e.preventDefault(); //not sure if necessary?
+		
+		window.location.href = 'takeScreenshot.php?_id='+_id+'&_file=photo_0.jpg';
+		//photo.php?_id=".$doc["_id"]."&_file=$photo_name
+
+	});
+
 });
 </script>
 </body>
