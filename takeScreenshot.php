@@ -9,7 +9,8 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	// $full_path = 'https://www.google.com';
 	$result = str_replace('takeScreenshot.php','pdf_conversion.php',$full_path);
 	//Take snapshot of image to use in PDF
-	$googlePagespeedData = file_get_contents("https://www.googleapis.com/pagespeedonline/v4/runPagespeed?url=$result&screenshot=true&snapshots=true");
+	$result = urlencode($result);
+	$googlePagespeedData = file_get_contents("https://www.googleapis.com/pagespeedonline/v4/runPagespeed?url=$result&screenshot=true");
 	$googlePagespeedData = json_decode($googlePagespeedData, true);
 	print_rr($googlePagespeedData);
 	$screenshot = $googlePagespeedData['screenshot']['data'];
