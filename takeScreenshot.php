@@ -14,9 +14,10 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	$googlePagespeedData = json_decode($googlePagespeedData, true);
 	$screenshot = $googlePagespeedData['screenshot']['data'];
 	$screenshot = str_replace(array('_','-'),array('/','+'),$screenshot);
-	file_put_contents('vvv.txt', $screenshot);
+	// file_put_contents('vvv.txt', $screenshot);
+	$resource = imagecreatefromstring($screenshot);
 	$filename = "test.jpg"; 
-	imagejpeg($screenshot,$filename);
+	imagejpeg($resource,$filename);
 	generatePDF($filename);
 	// echo "<img src=\"data:image/jpeg;base64,".$screenshot."\" />";
  	
@@ -87,7 +88,7 @@ function generatePDF($filename){
 	// print_rr($imageDimensions);
 	// print($width);
 	$pdf->AddPage();
-	$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+	// $pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
 	$pdf->Image($filename,0, 0, 210, 140);
 	//// Image($file, $x='', $y='', $w=0, $h=0, $type='', $link='', $align='', $resize=false, $dpi=300, $palign='', $ismask=false, $imgmask=false, $border=0, $fitbox=false, $hidden=false, $fitonpage=false)
 
