@@ -2,16 +2,23 @@
 require_once "common.php";
 require_once "vendor/tcpdf/tcpdf.php";
 
-$html = 
-'<link href="css/dt_summary.css" rel="stylesheet" type="text/css"/>
-<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=AIzaSyCn-w3xVV38nZZcuRtrjrgy4MUAW35iBOo"></script>
-<script type="text/javascript" src="./js/dt_summary.js"></script>
-<body id="main" class="photo_detail">';
 
-if(isset($_GET["_id"]) && isset($_GET["_file"])){
-	$_id 		= trim($_GET["_id"]);
-	$_file 		= $_GET["_file"];
+if(isset($_GET["_id"]) && isset($_GET["_numPhotos"])){
+	 // print_rr($_GET["_numPhotos"]);
+	$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+	setup($pdf, $_GET["_id"]);
+	for($i = 0 ; $i < $_GET["_numPhotos"]; $i++){ //not iterating right now. adding pages to wrong obj
+		generatePhotoPage($pdf,$_GET["_id"], $i);
+	}
+	$pdf->Output('example_001.pdf', 'I');
+}
+
+
+function generatePhotoPage($pdf, $id, $pic){
+	/* Parameters = PDF object, full walk ID , number from [0,x) where x is the picture # on the portal */
+	$_id 		= $id;
+	// $_file 		= $_POST["_file"];
+	$_file		= "photo_".$pic.".jpg";
 
     $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
     $response   = doCurl($url);
@@ -97,41 +104,39 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$photo_name" . $old;
 		// detectFaces($ph_id,$old, $photo_name);
 
-		////PASSTHRU DEF/////
-		// $id 	= isset($ph_id) ? $ph_id : NULL ;
-		// $file 	= isset($photo_name) ? $photo_name : NULL ;
+		////////////////GET MAIN PHOTO DEF/////////////////
+		$id 	= isset($ph_id) ? $ph_id : NULL ;
+		$file 	= isset($photo_name) ? $photo_name : NULL ;
 
-		// if (empty($id) || empty($file)) {
-		//     exit ("Invalid id or file");
-		// }
+		if (empty($id) || empty($file)) {
+		    exit ("Invalid id or file");
+		}
 
-		// // Do initial query to get metadata from couchdb
+		// Do initial query to get metadata from couchdb
 		
-		// if($old == "&_old=2"){
-		// 	$url = cfg::$couch_url . "/disc_attachments/$id";
-		// }else if($old == "&_old=1"){
-		// 	$url = cfg::$couch_url . "/".cfg::$couch_users_db."/" . $id;
-		// }else{
-		// 	$url = cfg::$couch_url . "/". cfg::$couch_attach_db."/" . $id;
-		// }
+		if($old == "&_old=2"){
+			$url = cfg::$couch_url . "/disc_attachments/$id";
+		}else if($old == "&_old=1"){
+			$url = cfg::$couch_url . "/".cfg::$couch_users_db."/" . $id;
+		}else{
+			$url = cfg::$couch_url . "/". cfg::$couch_attach_db."/" . $id;
+		}
 		
 
-		// $result = doCurl($url);
-		// $result = json_decode($result,true);
-		// //print_rr( $result);
-		// $result = doCurl($url ."/" . $file); //the string representation
-		// // $photo = base64_decode($result);
-		
-		// $photo = imagecreatefromstring($result);
-		// imagejpeg($photo, "AAA.jpg");
-		////END PASSTHRU/////
+		$result = doCurl($url);
+		$result = json_decode($result,true);
 
+		// print_rr( $result);
+		$htmlphoto = doCurl($url ."/" . $file); //the string representation htmlphoto is the WALK photo
 
+		///////////////////////////// GET MAIN PHOTO END ///////////////////////////// 
+
+		///////////////////////////// GET TRANSCRIPTIONS START /////////////////////////////		
 		$attach_url = "#";
-		$audio_attachments = "";
-		
+		$retTranscript = [];
 		$photo_tags = isset($photo["tags"]) ? $photo["tags"] : array();
 		if(isset($photo["audios"])){
+
 			foreach($photo["audios"] as $filename){
 				//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
 
@@ -140,7 +145,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				//$audio_src 		= getConvertedAudio($attach_url);
 				$confidence 	= appendConfidence($attach_url);
 				$script 		= !empty($confidence) ? "This audio was transcribed using Google's API at ".round($confidence*100,2)."% confidence" : "";
-				$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
+				$download 		= cfg::$couch_url . "/".cfg::$couch_attach_db."/" . $aud_id . "/". $filename;
 				//Works for archaic saving scheme as well as the new one : 
 				if(isset($doc["transcriptions"][$filename]["text"])){
 					$txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]);
@@ -151,13 +156,8 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				}else{
 					$transcription = "";
 				}
-				$audio_attachments .=   "<div class='audio_clip'>
-											
-											<a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
-											<div class='forprint'>$transcription</div>
-											<textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
-											<p id = 'confidence_exerpt'>$script</p>
-										</div>";
+				array_push($retTranscript, $transcription);
+				
 			}
 		}else{
 			if(!empty($photo["audio"])){
@@ -169,163 +169,119 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	                $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename" . $old;
 					//$audio_src 		= getConvertedAudio($attach_url);
 
-					$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $doc["_id"] . "/". $filename;
+					$download 		= cfg::$couch_url . "/".cfg::$couch_attach_db."/" . $doc["_id"] . "/". $filename;
 					$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$audio_name]) : "";
-					$audio_attachments .=   "<div class='audio_clip'>
-										
-											<a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
-											<div class='forprint'>$transcription</div>
-											<textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
-											<p id = 'confidence_exerpt'>$script</p>
-										</div>";
+					
 				}
 			}
 		}
 		break;
 	}
-	// rotate= '$doc['photos'][0]['rotate'])'
+	///////////////////////////// GET TRANSCRIPTIONS END /////////////////////////////		
 
-	$html .= "<input type='hidden' name='doc_id' value='".$doc["_id"]."'/>";
-	$html .= "<div class='user_entry'>";
-	$html .= "<hgroup>";
-	$html .= "<h4>Photo Detail : 
-	<b>".date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000))." <span class='time'>@".date("g:i a", floor($timestamp/1000))."</span></b> 
-	<i>".$doc["_id"]."</i></h4>";
-	$html .= "</hgroup>";
+	///////////////////////////// FORM HTML BEGIN /////////////////////////////
+	$htmlobj = [];
+	$htmlobj['date'] = date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000));
+	$htmlobj['time'] = date("g:i a", floor($timestamp/1000));
 
-	$html .= "<div class='photobox'>";
-	$html .= 	"<section class='photo_previews'>";
-	$html .= 		"<div>";	
-	$html .= "
-		<figure>
-		<a class='preview rotate' rev='$hasrotate' data-photo_i=$photo_i data-doc_id='".$doc["_id"]."' rel='google_map_0' data-long='$long' data-lat='$lat'>
-				<canvas class='covering_canvas'></canvas>
-				<img id = 'main_photo' src='$photo_uri'/><span></span>
+	///////////////////////////// FORM HTML END /////////////////////////////
+	
+	///////////////////////////// GET STATIC GOOGLE MAP /////////////////////////////
+	$lat = isset($doc["photos"][$pic]["geotag"]["lat"]) ? $doc["photos"][$pic]["geotag"]["lat"] : 0;
+	$lng = isset($doc["photos"][$pic]["geotag"]["lng"]) ? $doc["photos"][$pic]["geotag"]["lng"] : 0;
+	$urlp = urlencode("|$lat,$lng");
+	$parameters = "markers=$urlp";
 
-		</a>
+	$imageResource = imagecreatefromstring($htmlphoto); //convert to resource before checking dimensions
 
-		</figure>";
-		
-		$geotags   = array();
-		$geotags[] = array("lat" => $lat, "lng" => $long);
-		$json_geo  = json_encode($geotags);
-		$gmaps[]   = "drawGMap($json_geo, 0, 16, $walk_geo);\n";
+	if(imagesx($imageResource) > imagesy($imageResource)){ //check picture orientation
+		$landscape = True;
+		$scale = imagesx($imageResource)/imagesy($imageResource);
+		$url = 'https://maps.googleapis.com/maps/api/staticmap?size='.floor(400*$scale).'x400&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
+	}else{
+		$landscape = False;
+		$scale = imagesy($imageResource)/imagesx($imageResource);
+		$url = 'https://maps.googleapis.com/maps/api/staticmap?size=400x'.floor(400*$scale).'&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
+		// print_rr($url);
+	}
+	// print_rr($scale);
+	$gmapsPhoto = doCurl($url);
+	$photo = imagecreatefromstring($gmapsPhoto);
+	
+	generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale);
+	///////////////////////////// END STATIC GOOGLE MAP /////////////////////////////
 
-	$html .= 		"</div>";
-	$html .= 	"</section>";
-
-	$html .= "<section class='side'>";
-
-	$html .= "<aside>
-			<b id = 'lat' value = '$lat'>lat: $lat</b>
-			<b id = 'long' value = '$long'>long: $long</b>
-			<div id ='cover' class = 'gmap location_alert'></div>
-			<div id='google_map_0' class='gmap'></div>
-		</aside>";
-	$html .= "<aside class='forcommunity'>
-			<h4>Good or bad for the community?</h4>
-			$goodbad
-		</aside>";
-
-	$html .= "<aside>
-			<h4>Why did you take this picture?</h4>
-			$audio_attachments
-		</aside>";
-
-	$html .= "<i class='print_only'>Data gathered using the Stanford Healthy Neighborhood Discovery Tool, © Stanford University 2017</i>";
-	$html .= "</section>";
-	$html .= "</div>";
-	$html .= "</div>";
+	
 }
-// echo headers_sent($filename, $line) ? $filename . " ". $line: "no";
+function setup($pdf, $id){ //set page contents and function initially
+	$pdf->SetHeaderData("", " ", "WALK ID: ".$id);
+	$pdf->SetTitle($id);
+	$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', 8));
+	$pdf->setFooterData(array(0,64,0), array(0,64,128));
 
-echo $html;
+	// set header and footer fonts
+	$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', 8));
+	$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
 
+	// set default monospaced font
+	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
+	// set margins
+	$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+	$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+	$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
 
-/*
+	// set auto page breaks
+	$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
 
+	// set image scale factor
+	$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 
-$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+	// set some language-dependent strings (optional)
+	if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
+		require_once(dirname(__FILE__).'/lang/eng.php');
+		$pdf->setLanguageArray($l);
+	}
+		$pdf->setFontSubsetting(true);
+		$pdf->SetFont('dejavusans', '', 8, '', true);
+		$pdf->setTextShadow(array('enabled'=>true, 'depth_w'=>0.2, 'depth_h'=>0.2, 'color'=>array(196,196,196), 'opacity'=>1, 'blend_mode'=>'Normal'));
+}
+function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $photo, $landscape, $scale){
+/* arguments: 
+	pdf = export object
+	htmlobj = includes date, time for picture information
+	htmlphoto = walk photo from portal / one per page
+	retTranscript = text transcription in array format for each photo
+	photo = google maps photo of location
+	landscape = boolean T/F to determine how to scale
+	scale = float that determines scale factor
+ */
+	$pdf->AddPage();
 
-// set document information
-// $pdf->SetCreator(PDF_CREATOR);
-// $pdf->SetAuthor('Nicola Asuni');
-// $pdf->SetTitle('TCPDF Example 001');
-// $pdf->SetSubject('TCPDF Tutorial');
-// $pdf->SetKeywords('TCPDF, PDF, example, test, guide');
+	$pdf->writeHTMLCell(0,0,20,9.5, $htmlobj['date'] . " " .$htmlobj['time'],0,1,0, true, '',true);
+	if($landscape){ //Display Landscape
+		if(isset($retTranscript[0]) && !empty($retTranscript[0]))
+			foreach($retTranscript as $k => $trans)
+				$pdf->writeHTMLCell(0, 0, '', ($k*10)+200, "Transcript ".($k+1). ": '".$trans."'", 0, 1, 0, true, '', true);
+		else
+			$pdf->writeHTMLCell(0, 0, '', 200, "No Transcript Available", 0, 1, 0, true, '', true);
 
-// set default header data
-// $pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE.' 001', PDF_HEADER_STRING, array(0,64,255), array(0,64,128));
-$pdf->setFooterData(array(0,64,0), array(0,64,128));
+		$pdf->Image('@'.$htmlphoto,45, 20, 85*$scale, 85); //landscape
+		$pdf->Image('@'.$photo,45,110,85*$scale,85);
+	}else{ //Display Portrait
+		if(isset($retTranscript[0]) && !empty($retTranscript[0]))
+			foreach($retTranscript as $k => $trans)
+				$pdf->writeHTMLCell(0, 0, '', ($k*10)+130, "Transcript ".($k+1). ": '".$trans."'", 0, 1, 0, true, '', true);
+		else
+			$pdf->writeHTMLCell(0, 0, '', 130, "No Transcript Available", 0, 1, 0, true, '', true);
 
-// set header and footer fonts
-$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
-$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+		$pdf->Image('@'.$htmlphoto,18, 15, 85, 85*$scale); //landscape
+		$pdf->Image('@'.$photo,108,15,85,85*$scale);		
 
-// set default monospaced font
-$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+	}
 
-// set margins
-$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-
-// set auto page breaks
-$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-
-// set image scale factor
-$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-
-// set some language-dependent strings (optional)
-if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
-	require_once(dirname(__FILE__).'/lang/eng.php');
-	$pdf->setLanguageArray($l);
 }
 
-// ---------------------------------------------------------
-
-// set default font subsetting mode
-$pdf->setFontSubsetting(true);
-
-// Set font
-// dejavusans is a UTF-8 Unicode font, if you only need to
-// print standard ASCII chars, you can use core fonts like
-// helvetica or times to reduce file size.
-$pdf->SetFont('dejavusans', '', 11, '', true);
-
-// Add a page
-// This method has several options, check the source code documentation for more information.
-$pdf->AddPage();
-
-// set text shadow effect
-$pdf->setTextShadow(array('enabled'=>true, 'depth_w'=>0.2, 'depth_h'=>0.2, 'color'=>array(196,196,196), 'opacity'=>1, 'blend_mode'=>'Normal'));
-
-// Set some content to print
-// $html = <<<EOD
-// <h1>Welcome to <a href="http://www.tcpdf.org" style="text-decoration:none;background-color:#CC0000;color:black;">&nbsp;<span style="color:black;">TC</span><span style="color:white;">PDF</span>&nbsp;</a>!</h1>
-// <i>This is the first example of TCPDF library.</i>
-// <p>This text is printed using the <i>writeHTMLCell()</i> method but you can also use: <i>Multicell(), writeHTML(), Write(), Cell() and Text()</i>.</p>
-// <p>Please check the source code documentation and other examples for further information.</p>
-// <p style="color:#CC0000;">TO IMPROVE AND EXPAND TCPDF I NEED YOUR SUPPORT, PLEASE <a href="http://sourceforge.net/donate/index.php?group_id=128076">MAKE A DONATION!</a></p>
-// EOD;
-//  echo $html;
-
-// Print text using writeHTMLCell()
-$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-$pdf->Image('AAA.jpg',15, 140, 100, 100);
-//// Image($file, $x='', $y='', $w=0, $h=0, $type='', $link='', $align='', $resize=false, $dpi=300, $palign='', $ismask=false, $imgmask=false, $border=0, $fitbox=false, $hidden=false, $fitonpage=false)
-
-// ---------------------------------------------------------
-
-// Close and output PDF document
-// This method has several options, check the source code documentation for more information.
-$pdf->Output('example_001.pdf', 'I');
-
-//============================================================+
-// END OF FILE
-//============================================================+
-*/
 
 
 
@@ -344,10 +300,3 @@ function appendConfidence($attach_url){
 }
 
 ?>
-<script>
-$(document).ready(function(){
-	<?php
-		echo implode($gmaps);
-	?>
-});
-</script>

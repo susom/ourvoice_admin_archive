@@ -431,18 +431,37 @@ $(document).ready(function(){
 	$(".collapse").on("click",".export-pdf",function(e){
 		console.log("clicked button");
 		var _id 	= $(this).data("id");
-		var last4 	= _id.substr(_id.length - 4);
-		var _rev 	= $(this).data("rev");
+		// var last4 	= _id.substr(_id.length - 4);
+		// var _rev 	= $(this).data("rev");
+		var data = {};
+		//find all photos
+		var photosObj = $(this).parent().children(".thumbs").find('li');
+		var photoNames = [];
 
-		var _parent	= $(this).closest(".user_entry");
-		console.log(this);
-		console.log(_id);
-		console.log(last4);
-		console.log(_rev);
-
-		//e.preventDefault(); //not sure if necessary?
+		photosObj.each(function(index, val){
+			photoNames.push($(val).attr('data-phid'));
+		});
+		data.photoNames = photoNames;
+		data.walkID = _id;
 		
-		window.location.href = 'takeScreenshot.php?_id='+_id+'&_file=photo_0.jpg';
+		// console.log(_id);
+		// console.log(last4);
+		// console.log(_rev);
+
+		//send request with all the #
+
+		// $.ajax({
+		// 	type 		: "POST",
+		// 	url 		: "pdf_conversion.php",
+		// 	data 		: { data: data },
+		// }).done(function(response) {
+		// 	console.log(response);
+		// }).fail(function(msg){
+		// 	console.log("PDF conversion failed");
+		// });
+		
+		//e.preventDefault(); //not sure if necessary?
+		window.location.href = 'pdf_conversion.php?_id='+_id+'&_numPhotos='+photoNames.length;
 		//photo.php?_id=".$doc["_id"]."&_file=$photo_name
 
 	});
