@@ -30,7 +30,7 @@ fputcsv($output, array('walk id', 'photo name', 'type', 'latitude', 'longitude',
 
 if( $active_project_id ){
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
-    $response 		= filter_by_projid("single","[\"$active_pid\"]");
+    $response 		= getAggMaps("[\"$active_pid\"]");
 	$project_meta 	= $ap["project_list"][$active_pid];
 
 	//PRINT TO SCREEN
