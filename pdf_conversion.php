@@ -3,27 +3,31 @@ require_once "common.php";
 require_once "vendor/tcpdf/tcpdf.php";
 
 
-if(isset($_GET["_id"]) && isset($_GET["_numPhotos"])){
-	 // print_rr($_GET["_numPhotos"]);
+if(isset($_GET["_id"]) && isset($_GET["_numPhotos"]) && isset($_GET["_rotationString"])){
 	$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 	setup($pdf, $_GET["_id"]);
 	for($i = 0 ; $i < $_GET["_numPhotos"]; $i++){ //not iterating right now. adding pages to wrong obj
-		generatePhotoPage($pdf,$_GET["_id"], $i);
+		$rotation = str_split($_GET["_rotationString"])[$i]; //get current rotation of picture
+		generatePhotoPage($pdf,$_GET["_id"], $i, $rotation);
 	}
 	$pdf->Output('example_001.pdf', 'I');
 }
 
 
-function generatePhotoPage($pdf, $id, $pic){
-	/* Parameters = PDF object, full walk ID , number from [0,x) where x is the picture # on the portal */
+function generatePhotoPage($pdf, $id, $pic, $rotation){
+	/* Parameters: 
+		pdf = PDF object 
+		id = full walk ID 
+		pic = number from [0,x) where x is the picture # on the portal 
+	*/
 	$_id 		= $id;
-	// $_file 		= $_POST["_file"];
 	$_file		= "photo_".$pic.".jpg";
 
     $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
     $response   = doCurl($url);
 
 	$doc 		= json_decode(stripslashes($response),1); //wtf this breaking certain ones? 
+
 	$_rev 		= $doc["_rev"];
 	$proj_idx 	= $doc["project_id"];
 
@@ -48,7 +52,6 @@ function generatePhotoPage($pdf, $id, $pic){
 	$temp_1 	= explode("_",$_file);
 	$temp_2 	= explode(".",$temp_1[1]);
 	$photo_i 	= $temp_2[0];
-	// $rotate 	= isset($doc['photos'][0]['rotate']) ? $doc['photos'][0]['rotate'] : 0;
 	$prevnext 	= [];
 	foreach($photos as $i => $photo){
 		if($i !== intval($photo_i)){
@@ -69,17 +72,14 @@ function generatePhotoPage($pdf, $id, $pic){
 
 		$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
 		$hasrotate 	= isset($photo["rotate"]) ? $photo["rotate"] : 0;
-		$goodbad 	= "";
-		if($photo["goodbad"] > 1){
-			$goodbad  .= "<span class='goodbad good'></span>";
-		}
-
-		if($photo["goodbad"] == 1 || $photo["goodbad"] == 3){
-			$goodbad  .= "<span class='goodbad bad'></span>";
-		}
-
-		if(!$photo["goodbad"]){
-			$goodbad = "N/A";
+		$goodbad = "";
+		if($photo["goodbad"] == 2){
+			$goodbad = "/img/icon_smile.png";	
+			// $goodbad  .= "<span class='goodbad good'></span>";
+		}elseif($photo["goodbad"] == 1){
+			$goodbad = "/img/icon_frown.png";
+		}else{
+			$goodbad = "/img/icon_frown_gray.png";
 		}
 
 		$long 		= isset($photo["geotag"]["lng"]) ? $photo["geotag"]["lng"] : $photo["geotag"]["longitude"];
@@ -193,31 +193,30 @@ function generatePhotoPage($pdf, $id, $pic){
 	$parameters = "markers=$urlp";
 
 	$imageResource = imagecreatefromstring($htmlphoto); //convert to resource before checking dimensions
-
 	if(imagesx($imageResource) > imagesy($imageResource)){ //check picture orientation
 		$landscape = True;
 		$scale = imagesx($imageResource)/imagesy($imageResource);
-		$url = 'https://maps.googleapis.com/maps/api/staticmap?size='.floor(400*$scale).'x400&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
 	}else{
 		$landscape = False;
 		$scale = imagesy($imageResource)/imagesx($imageResource);
-		$url = 'https://maps.googleapis.com/maps/api/staticmap?size=400x'.floor(400*$scale).'&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
-		// print_rr($url);
 	}
-	// print_rr($scale);
+	$url = 'https://maps.googleapis.com/maps/api/staticmap?size=400x'.floor(400*$scale).'&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
+
+	imagedestroy($imageResource);
 	$gmapsPhoto = doCurl($url);
 	$photo = imagecreatefromstring($gmapsPhoto);
-	
-	generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale);
+	// print_rr($goodbad);
+	generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad);
 	///////////////////////////// END STATIC GOOGLE MAP /////////////////////////////
 
 	
 }
 function setup($pdf, $id){ //set page contents and function initially
-	$pdf->SetHeaderData("", " ", "WALK ID: ".$id);
+	$pdf->SetHeaderData("", "", "WALK ID: ".$id);
+	// $pdf->setFooterData("", "", "COPYRIGHT STANFORD UNIVERSITY 2017");
 	$pdf->SetTitle($id);
 	$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', 8));
-	$pdf->setFooterData(array(0,64,0), array(0,64,128));
+	// $pdf->setFooterData(array(0,64,0), array(0,64,128));
 
 	// set header and footer fonts
 	$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', 8));
@@ -246,8 +245,8 @@ function setup($pdf, $id){ //set page contents and function initially
 		$pdf->SetFont('dejavusans', '', 8, '', true);
 		$pdf->setTextShadow(array('enabled'=>true, 'depth_w'=>0.2, 'depth_h'=>0.2, 'color'=>array(196,196,196), 'opacity'=>1, 'blend_mode'=>'Normal'));
 }
-function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $photo, $landscape, $scale){
-/* arguments: 
+function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad){
+/* arguments: SORRY for list will clean up later.
 	pdf = export object
 	htmlobj = includes date, time for picture information
 	htmlphoto = walk photo from portal / one per page
@@ -255,28 +254,69 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $photo, $lands
 	photo = google maps photo of location
 	landscape = boolean T/F to determine how to scale
 	scale = float that determines scale factor
+	rotation = int of 0-3 to determine which 90 degree offset to rotate
+	goodbad = img path to the correct smile icon
  */
+	// print_rr($rotation);
 	$pdf->AddPage();
-
+	$pdf->writeHTMLCell(0,0,0,0, "© Stanford University 2017",0,1,0, true, '',true);
 	$pdf->writeHTMLCell(0,0,20,9.5, $htmlobj['date'] . " " .$htmlobj['time'],0,1,0, true, '',true);
 	if($landscape){ //Display Landscape
 		if(isset($retTranscript[0]) && !empty($retTranscript[0]))
 			foreach($retTranscript as $k => $trans)
-				$pdf->writeHTMLCell(0, 0, '', ($k*10)+200, "Transcript ".($k+1). ": '".$trans."'", 0, 1, 0, true, '', true);
+				$pdf->writeHTMLCell(0, 0, '', ($k*10)+130, "Transcript ".($k+1). ": '".$trans."'", 0, 1, 0, true, '', true);
 		else
-			$pdf->writeHTMLCell(0, 0, '', 200, "No Transcript Available", 0, 1, 0, true, '', true);
+			$pdf->writeHTMLCell(0, 0, '', 130, "No Transcript Available", 0, 1, 0, true, '', true);
+		
+		if($rotation == 0){
+			$pdf->Image('@'.$htmlphoto,5, 20, 80*$scale, 80); //portrait
+		}else{
+			$pdf->StartTransform();
+			
+			if($rotation == 1){
+				$pdf->Rotate(270,20,20);
+				$pdf->Image('@'.$htmlphoto,20, -70, 80*$scale, 80); //portrait			
+			}elseif($rotation == 2){
+				$pdf->Rotate(180,20,20);
+				$pdf->Image('@'.$htmlphoto,-70, -60, 80*$scale, 80); //portrait	
+			}else{
+				$pdf->Rotate(90,20,20);
+				$pdf->Image('@'.$htmlphoto,-87, 15, 80*$scale, 80); //portrait	
+			}
 
-		$pdf->Image('@'.$htmlphoto,45, 20, 85*$scale, 85); //landscape
-		$pdf->Image('@'.$photo,45,110,85*$scale,85);
+			$pdf->StopTransform();
+
+		}
+		$pdf->Image('@'.$gmapsPhoto,115,20,80,80*$scale);	
+		$pdf->Image('./'.$goodbad,185,130,10,10);	
 	}else{ //Display Portrait
 		if(isset($retTranscript[0]) && !empty($retTranscript[0]))
 			foreach($retTranscript as $k => $trans)
 				$pdf->writeHTMLCell(0, 0, '', ($k*10)+130, "Transcript ".($k+1). ": '".$trans."'", 0, 1, 0, true, '', true);
 		else
 			$pdf->writeHTMLCell(0, 0, '', 130, "No Transcript Available", 0, 1, 0, true, '', true);
+		
+		if($rotation == 0){
+			$pdf->Image('@'.$htmlphoto,16, 20, 80, 80*$scale); //portrait
+		}else{
+			$pdf->StartTransform();
+			
+			if($rotation == 1){
+				$pdf->Rotate(270,20,20);
+				$pdf->Image('@'.$htmlphoto,20, -70, 80, 80*$scale); //portrait			
+			}elseif($rotation == 2){
+				$pdf->Rotate(180,20,20);
+				$pdf->Image('@'.$htmlphoto,-55, -87, 80, 80*$scale); //portrait	
+			}else{
+				$pdf->Rotate(90,20,20);
+				$pdf->Image('@'.$htmlphoto,-60, 5, 80, 80*$scale); //portrait	
+			}
 
-		$pdf->Image('@'.$htmlphoto,18, 15, 85, 85*$scale); //landscape
-		$pdf->Image('@'.$photo,108,15,85,85*$scale);		
+			$pdf->StopTransform();
+
+		}
+		$pdf->Image('@'.$gmapsPhoto,115,20,80,80*$scale);	
+		$pdf->Image('./'.$goodbad,185,130,10,10);	
 
 	}
 

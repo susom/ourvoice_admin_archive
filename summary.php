@@ -437,9 +437,12 @@ $(document).ready(function(){
 		//find all photos
 		var photosObj = $(this).parent().children(".thumbs").find('li');
 		var photoNames = [];
-
+		console.log(photosObj);
+		var rotationString = "";
 		photosObj.each(function(index, val){
 			photoNames.push($(val).attr('data-phid'));
+			let temp = $(this).find("a")[0]; //find the element that houses the rotation tag
+			rotationString += ($(temp).attr("rev")); //append to a string
 		});
 		data.photoNames = photoNames;
 		data.walkID = _id;
@@ -460,8 +463,8 @@ $(document).ready(function(){
 		// 	console.log("PDF conversion failed");
 		// });
 		
-		//e.preventDefault(); //not sure if necessary?
-		window.location.href = 'pdf_conversion.php?_id='+_id+'&_numPhotos='+photoNames.length;
+		// console.log('pdf_conversion.php?_id='+_id+'&_numPhotos='+photoNames.length+'&_rotation='+rotationString);
+		window.location.href = 'pdf_conversion.php?_id='+_id+'&_numPhotos='+photoNames.length+'&_rotationString='+rotationString;
 		//photo.php?_id=".$doc["_id"]."&_file=$photo_name
 
 	});
