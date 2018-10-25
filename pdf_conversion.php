@@ -259,7 +259,7 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
  */
 	// print_rr($rotation);
 	$pdf->AddPage();
-	$pdf->writeHTMLCell(0,0,0,0, "© Stanford University 2017",0,1,0, true, '',true);
+	$pdf->writeHTMLCell(0,0,0,0, "© Stanford Medicine 2018",0,1,0, true, '',true);
 	$pdf->writeHTMLCell(0,0,20,9.5, $htmlobj['date'] . " " .$htmlobj['time'],0,1,0, true, '',true);
 	if($landscape){ //Display Landscape
 		if(isset($retTranscript[0]) && !empty($retTranscript[0]))
