@@ -321,22 +321,4 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 	}
 
 }
-
-
-
-
-function appendConfidence($attach_url){
-	$split 			= explode("=",$attach_url);
-	$filename 		= $split[count($split) -1];
-	$full_proj_code = explode("_audio",$split[1]);
-	
-	$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $full_proj_code[0];
-    $response       = doCurl($url);
-	$storage 		= json_decode($response,1);
-	if(isset($storage["transcriptions"][$filename]["confidence"]))
-		return $storage["transcriptions"][$filename]["confidence"];
-	else
-		return "";
-}
-
 ?>

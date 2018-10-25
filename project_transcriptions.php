@@ -17,7 +17,6 @@ $_rev 				= $ap["_rev"];
 $projs 				= $ap["project_list"];
 $active_project_id 	= $_GET["active_project_id"];
 $active_pid 		= $_GET["pid"];
-
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -43,27 +42,16 @@ h5{
 	font-weight:normal;
 }
 
-dl { 
-	margin:0 0 30px; 
-	overflow:hidden; 
+#summary {
+    width:100%;
+    border-top:1px solid #000;
+    border-left:1px solid #000;
 }
-dt { 
-	float:left;  
-	width:148px;
-}
-dt a { 
-	display:block; 
-	border:1px solid #ccc;
-	text-align:center;
-	padding:3px;
-}
-dd { 
-	float:right; 
-	text-align:left;
-	clear:left; 
-	clear:right;
-	margin:0 0 5px;
-	width:calc(100% - 168px);
+
+#summary td,#summary th {
+    border-right:1px solid #000;
+    border-bottom:1px solid #000;
+    text-align:center;
 }
 </style>
 </head>
@@ -71,64 +59,53 @@ dd {
 <a href="summary.php">Back to Summary</a>
 <?php
 if( $active_project_id ){
+    markPageLoadTime("BEGIN Project Walk Summary");
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
-    $response 		= filter_by_projid("transcriptions","[\"$active_pid\"]");
-	$project_meta 	= $ap["project_list"][$active_pid];
+    $response 		= getProjectSummaryData($active_pid);
 
-	$html_buffer 	= array();
-	echo "<h1>Transcription data for project : $active_project_id</h1>";
-	
-	foreach($response["rows"] as $sesh){
-		$temp_buffer = array();
+    $html_buffer = [];
+    $html_buffer[] = "<table id='summary'>";
+    $html_buffer[] = "<thead>";
+    $html_buffer[] = "<th>#</th>";
+    $html_buffer[] = "<th>Date</th>";
+    $html_buffer[] = "<th>Walk Id</th>";
+    $html_buffer[] = "<th>Device</th>";
+    $html_buffer[] = "<th>Photos #</th>";
+    $html_buffer[] = "<th>Audios #</th>";
+    $html_buffer[] = "<th>Map Available?</th>";
+    $html_buffer[] = "<th>Upload Complete?</th>";
+    $html_buffer[] = "</thead>";
+    $html_buffer[] = "<tbody>";
 
-	    unset($sesh["value"]["project_id"]);
-	    unset($sesh["value"]["_id"]);
-	    unset($sesh["value"]["_rev"]);
-	    unset($sesh["value"]["user_id"]);
-	    unset($sesh["value"]["geotags"]);
-	    unset($sesh["value"]["survey"]);
-	    unset($sesh["value"]["currentDistance"]);
-	    unset($sesh["value"]["upload_try"]);
+    foreach($response["rows"] as $i => $row){
+        $walk   = $row["value"];
+        $_id    = substr($row["id"] , -4);
+        $device = $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
 
-	    $lang 			= $sesh["value"]["lang"];
-	    $id_a 			= substr($sesh["id"],0,strlen($sesh["id"]) - 4);
-	    $walk_id 		= substr($sesh["id"],-4);
-		$temp_buffer[] 	=  "<h5>Walk ID: $id_a<b><u>$walk_id</u></b></h5>";
-		foreach($sesh["value"]["photos"] as $photo_key => $photo){
-			$filename 	= $photo["name"];
-			$img_id 	= $ph_id = $sesh["id"] . "_" . $filename;
+        //check for attachment ids existing
+        //IMPORTANT TO FORMAT THIS RIGHT OR ELSE WILL GET INVALID JSON ERROR
+        $partial    = '["'.implode('","',$walk["attachment_ids"]).'"]';
+        $count_att  = checkAttachmentsExist($partial);
+        $uploaded   = count($walk["attachment_ids"]) == count($count_att["rows"]) ? "Y" : "N";
 
-			$file_uri   = "passthru.php?_id=".$ph_id."&_file=$filename";
-	        $thumb_uri  = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-	        $photo_uri  = getThumb($img_id,$thumb_uri,$file_uri);
-	        $detail_url = "photo.php?_id=".$sesh["id"]."&_file=$filename";
+         $html_buffer[] = "<tr>";
+         $html_buffer[] = "<td>" . ($i+1) . "</td>";
+         $html_buffer[] = "<td>" . $walk["date"] . "</td>";
+         $html_buffer[] = "<td>" . $_id . "</td>";
+         $html_buffer[] = "<td>" . $device . "</td>";
+         $html_buffer[] = "<td>" . $walk["photos"]. "</td>";
+         $html_buffer[] = "<td>" . $walk["audios"]. "</td>";
+         $html_buffer[] = "<td>" . $walk["maps"]. "</td>";
+         $html_buffer[] = "<td>" . $uploaded. "</td>";
+         $html_buffer[] = "</tr>";
+    }
+    $html_buffer[] = "</tbody>";
+    $html_buffer[] = "</table>";
+    echo implode("\r\n",$html_buffer);
 
-			$temp_buffer[] = "<dl>";
-			$temp_buffer[] = "<dt><a href='$detail_url'><img src='$photo_uri'/></a><dt>";
-			if(isset($photo["audios"])){
-				foreach($photo["audios"] as $key => $audio_key){
-					$transcription = isset($sesh["value"]["transcriptions"]) && isset($sesh["value"]["transcriptions"][$audio_key]) ? $sesh["value"]["transcriptions"][$audio_key]["text"] : "Not transcribed yet...";
-					$temp_buffer[] = "<dd>Audio ".($key+1)." ($lang): " . $transcription ."</dd>";
-				}
-			}
-			$temp_buffer[] = "</dl>";
-		}
-
-		$last_ 	= strrpos($sesh["id"],"_");
-		$ts 	= substr($sesh["id"], $last_+1);
-		$html_buffer[$ts] = implode("\n",$temp_buffer);
-	}
-
-	krsort($html_buffer);
-
-	foreach($html_buffer as $walk){
-		echo $walk;
-	};
+    markPageLoadTime("End Project Walk Summary");
 }
 ?>
-<script>
-
-</script>
 </body>
 </html>
 
