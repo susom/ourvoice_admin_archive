@@ -253,7 +253,9 @@ if( $active_project_id ){
         //IMPORTANT TO FORMAT THIS RIGHT OR ELSE WILL GET INVALID JSON ERROR
         $partial    = '["'.implode('","',$walk["attachment_ids"]).'"]';
         $count_att  = checkAttachmentsExist($partial);
-        $uploaded   = count($walk["attachment_ids"]) == count($count_att["rows"]) ? "Y" : "N";
+
+        $expect_cnt = count($count_att["rows"]) - count($walk["attachment_ids"]);
+        $uploaded   = $expect_cnt === 0 ? "Y" : "N ($expect_cnt files)";
 
         $summ_buffer[] = "<tr>";
         $summ_buffer[] = "<td>" . ($i+1) . "</td>";
@@ -269,11 +271,12 @@ if( $active_project_id ){
         $total_photos += $walk["photos"];
         $total_audios += $walk["audios"];
     }
-    while($i < 10){
+    $x = $i;
+    while($x < 10){
         $summ_buffer[] = "<tr>";
         $summ_buffer[] = "<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
         $summ_buffer[] = "</tr>";
-        $i++;
+        $x++;
     }
 
     $summ_buffer[] = "</tbody>";
