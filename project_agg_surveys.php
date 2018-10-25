@@ -46,7 +46,7 @@ h4[data-toggle="collapse"]{
 <?php
 if( $active_project_id ){
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
-    $response 		= filter_by_projid("surveys","[\"$active_pid\"]");
+    $response 		= getAggSurveys("[\"$active_pid\"]");
 	$survey_data 	= $ap["survey_text"];
 	$lang 			= "en";
 	$survey_qa 		= array();

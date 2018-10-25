@@ -30,7 +30,7 @@ fputcsv($output, array('walk id', 'photo name', 'good/bad', 'date', 'transcripti
 
 if( $active_project_id ){
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
-    $response 		= filter_by_projid("transcriptions","[\"$active_pid\"]");
+    $response 		= getAggTranscriptions("[\"$active_pid\"]");
 	$project_meta 	= $ap["project_list"][$active_pid];
 
 	$csv_buffer  	= array();

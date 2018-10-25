@@ -9,6 +9,9 @@ if (!file_exists(__DIR__ . "/_config.php")) {
 // Load the configuration
 require_once __DIR__ . "/_config.php";
 
+//START TIMER FOR PAGE LOAD
+$start_time	= microtime(true);
+
 //TODO REMOVE AFTER UPDATE THE SERVER _config.php
 $couch_attach_db = "disc_attachment";
 
@@ -36,6 +39,14 @@ function doCurl($url, $data = null, $method = null, $username = null, $password 
     $result = curl_exec($process);
     curl_close($process);
     return $result;
+}
+
+function urlToJson($url){
+    if($url){
+        $temp = doCurl($url);
+        $temp = json_decode(stripslashes($temp),1);
+        return $temp;
+    }
 }
 
 function get_head(string $url, array $opts = []){
@@ -81,19 +92,22 @@ function print_rr($ar){
     echo "</pre>";
 }
 
+function markPageLoadTime($msg=null){
+    global $start_time;
+
+    echo "<h6>";
+    if($msg){
+        echo $msg ."<br>";
+    }
+    echo microtime(true) - $start_time;
+    echo "</h6>";
+}
+
 function cmp_date($a, $b){
     $a = str_replace('-', '/', $a); //have to convert to american time because of the strtotime func
     $b = str_replace('-', '/', $b);
     $c = strtotime($a)- strtotime($b);
         return (strtotime($a) < strtotime($b)) ? 1 : -1;
-}
-
-function urlToJson($url){
-    if($url){
-        $temp = doCurl($url);
-        $temp = json_decode(stripslashes($temp),1);
-        return $temp;
-    }
 }
 
 function getFullName($data, $abv){
@@ -417,13 +431,6 @@ function printPhotos($doc){
     return $codeblock;
 }
 
-function filter_by_projid($view, $keys_array){ //keys array is the # integer of the PrID
-    $qs         = http_build_query(array( 'key' => $keys_array ));
-    $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/filter_by_projid/_view/".$view."?" .  $qs;
-    $response   = doCurl($couch_url);
-    return json_decode($response,1);
-}
-
 function parseTime($data, $storage){
     if($data["rows"] == null)
         return false;
@@ -646,20 +653,369 @@ function postData($url, $data){ //MUST INCLUDE Key attached to URL,
 
 }
 
-
 function deleteDirectory($dir) {
     system('rm -rf ' . escapeshellarg($dir), $retval);
     return $retval == 0; // UNIX commands return zero on success
 }
 
-function markPageLoadTime($msg=null){
-    global $start_time;
-    
-    echo "<h6>";
-    if($msg){
-        echo $msg ."<br>";
-    }
-    echo microtime(true) - $start_time;
-    echo "</h6>";
+//DESIGN DOCUMENT CALLS
+function filter_by_projid($view, $keys_array){ //keys array is the # integer of the PrID
+    $qs         = http_build_query(array( 'key' => $keys_array ));
+    $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/filter_by_projid/_view/".$view."?" .  $qs;
+    $response   = doCurl($couch_url);
+    return json_decode($response,1);
 }
 
+function getProjectSummaryData($startkey, $view="walk", $dd="summary"){
+    $endkey     = $startkey+1;
+//    $qs         = http_build_query(array( "startkey" => "['$startkey']" , "endkey" => "['$endkey']"));
+//    WOW, Must use single quotes or else it will be invalid json!
+    $qs         = http_build_query(array( 'startkey' => '["'.$endkey.'"]' , 'endkey' => '["'.$startkey.'"]', 'descending' => 'true'));
+    $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
+    $response   = doCurl($couch_url);
+    return json_decode($response,1);
+}
+
+function checkAttachmentsExist($_ids, $view="ids", $dd="checkExisting"){
+    $qs         = http_build_query(array( 'keys' => $_ids, 'group' => 'true'));
+    $couch_url  = cfg::$couch_url . "/" . cfg::$couch_attach_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
+    $response   = doCurl($couch_url);
+    return json_decode($response,1);
+}
+
+function getAggMaps($pid, $view="filter", $dd="geo"){
+    $qs         = http_build_query(array( 'key' => $pid ));
+    $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
+    $response   = doCurl($couch_url);
+    return json_decode($response,1);
+}
+
+function getAggSurveys($pid, $view="filter", $dd="surveys"){
+    $qs         = http_build_query(array( 'key' => $pid ));
+    $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
+    $response   = doCurl($couch_url);
+    return json_decode($response,1);
+}
+
+function getAggTranscriptions($pid, $view="filter", $dd="transcriptions"){
+    $qs         = http_build_query(array( 'key' => $pid ));
+    $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
+    $response   = doCurl($couch_url);
+    return json_decode($response,1);
+}
+
+
+
+
+
+
+
+// PHOTO PAGE FUNCTIONS (AUDIO TRANSCRIPTION, FACE PIXELATION)
+function getFullUrl($partialUrl){
+    $paths = explode("/",$_SERVER["SCRIPT_NAME"]);
+    array_unshift($paths,$_SERVER["HTTP_HOST"]);
+    array_pop($paths);
+
+    $fullpath = "";
+    foreach($paths as $part){
+        if($part == ""){
+            continue;
+        }
+        $fullpath .= $part;
+        $fullpath .= "/";
+    }
+    return $fullpath . $partialUrl;
+}
+
+function getConvertedAudio($attach_url){
+    //FIRST DOWNLOAD THE AUDIO FILE
+
+    $fullURL    = getFullUrl($attach_url);
+    $ch         = curl_init($fullURL);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    $data       = curl_exec($ch);
+    $errors     = curl_error($ch);
+    curl_close ($ch);
+    $newAudioPath = "";
+    if(empty($errors)){
+        //THEN EXTRACT THE FILE NAME
+        $split              = explode("=",$attach_url);
+        $filename_or_old    = array_pop($split);
+
+        if($filename_or_old == 1 || $filename_or_old == 2){
+            $old_           = explode("&",array_pop($split));
+            $filename       = $old_[0];
+            $full_proj_code = explode("&",array_pop($split));
+        }else{
+            $filename       = $filename_or_old;
+            $full_proj_code = explode("_audio",array_pop($split));
+        }
+
+        //save to server as audio_x_x.wav/AMR
+        //if(file_exists)
+        $localfile  = "./temp/$filename";
+        $file       = fopen($localfile, "w+");
+        fputs($file, $data);
+        fclose($file);
+
+        //THEN CONVERT THE AUDIO
+        $newAudioPath = convertAudio($filename, $full_proj_code[0]); 
+    }
+    return $newAudioPath;
+}
+
+function convertAudio($filename, $full_proj_code){
+    // echo 'inside convertAudio';
+    // print_rr($filename);
+    // print_rr($full_proj_code);
+    $split = explode("." , $filename);
+    $noext = $split[0];
+    
+    if (function_exists('curl_file_create')) { // php 5.5+
+          $cFile = curl_file_create("./temp/".$filename);
+        } else { // 
+          $cFile = '@' . realpath("./temp/".$filename);
+        }
+
+    if(!file_exists("./temp/".$full_proj_code."_".$noext.".mp3")){
+        // MAKE THE MP3 FROM locally saved .wav or .amr
+
+        $ffmpeg_url = cfg::$ffmpeg_url; 
+        $postfields = array(
+                 "file"     => $cFile
+                ,"format"   => "mp3"
+                ,"rate"     => 16000
+            );
+
+        // CURL OPTIONS
+        // POST IT TO FFMPEG SERVICE
+        $ch = curl_init($ffmpeg_url);
+        curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        // REPLACE ATTACHMENT
+        $newfile    = "./temp/".$full_proj_code."_".$noext.".mp3";
+        $handle     = fopen($newfile, 'w');
+        fwrite($handle, $response); 
+    }else{
+        //if the mp3 already exists just link it 
+        $newfile    = "./temp/".$full_proj_code."_".$noext.".mp3";
+    }
+
+    //check if transcription exists on database
+    $url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $full_proj_code;
+    $response       = doCurl($url);
+    $storage        = json_decode($response,1);
+
+    if(!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename])){
+        $trans = transcribeAudio($cFile,$filename);
+        // print_rr($trans);
+        if(!empty($trans["transcript"])){
+            $storage["transcriptions"][$filename]["text"] = $trans["transcript"];
+            $storage["transcriptions"][$filename]["confidence"] = $trans["confidence"];
+            $response   = doCurl($url, json_encode($storage), 'PUT');
+            $resp       = json_decode($response,1);
+            header("Refresh:0");
+        }
+    }
+
+    //remove extraneous files from server
+    $flac = explode(".",$filename);
+    if(file_exists('./temp/'.$filename)){
+        unlink('./temp/'.$filename);
+        // echo 'removing ' . './temp/'.$filename;
+
+    if(file_exists('./temp/'.$flac[0].'.flac'))
+        unlink('./temp/'.$flac[0].'.flac');
+        // echo 'removing ' . './temp/'.$flac[0].'.flac';
+    }
+
+    return $newfile;
+}
+
+function transcribeAudio($cFile,$filename){
+    $split = explode("." , $filename);
+    $noext = $split[0];
+
+    $ffmpeg_url = cfg::$ffmpeg_url; 
+    $postfields = array(
+             "file"     => $cFile
+            ,"format"   => "flac"
+        );
+
+    // CURL OPTIONS
+    // POST IT TO FFMPEG SERVICE, Convert to FLAC
+    $ch = curl_init($ffmpeg_url);
+    curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    // REPLACE ATTACHMENT
+    $newfile    = "./temp/".$noext.".flac";
+    $handle     = fopen($newfile, 'w');
+    fwrite($handle, $response); 
+
+    //Convert to base 64 for google's API
+    $flac = file_get_contents($newfile);
+    $flac = base64_encode($flac);
+
+    // WE NEED TO json_encode the base64 of the flac file
+    // Set some options 
+    $data = array(
+        "config" => array(
+            "encoding" => "FLAC",
+            "languageCode" => "en-US"
+        ),
+       "audio" => array(
+            "content" => $flac
+        )
+    );
+    $data_string = json_encode($data);                                                              
+
+    //POST to google's service
+    $ch = curl_init('https://speech.googleapis.com/v1/speech:recognize?key='.cfg::$gvoice_key);                                                                      
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");                                                                     
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);                                                                  
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);                                                                      
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
+       'Content-Type: application/json',                                                                                
+       'Content-Length: ' . strlen($data_string))                                                                       
+    );                                
+    $resp = curl_exec($ch);
+    curl_close($ch);
+    $resp = json_decode($resp,1);
+    // print_rr($resp);
+    $count = 0;
+    $transcript = '';
+    $confidence = 0;
+    if(!empty($resp["results"])){
+        foreach($resp["results"] as $results){
+            $transcript = $transcript . $results["alternatives"][0]["transcript"];
+            $confidence = $confidence + $results["alternatives"][0]["confidence"];
+            $count++;
+        }
+    }
+    if(isset($confidence) && $count != 0){
+        $confidence = $confidence / $count;
+        $data["transcript"] = $transcript;
+        $data["confidence"] = $confidence;
+        if($confidence > 0.7)
+            return $data;
+        
+    }
+        return "";
+}   
+
+function appendConfidence($attach_url){
+    $split          = explode("=",$attach_url);
+    $filename       = $split[count($split) -1];
+    $full_proj_code = explode("_audio",$split[1]);
+    
+    $url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $full_proj_code[0];
+    $response       = doCurl($url);
+    $storage        = json_decode($response,1);
+    if(isset($storage["transcriptions"][$filename]["confidence"]))
+        return $storage["transcriptions"][$filename]["confidence"];
+    else
+        return "";
+}
+
+function detectFaces($id, $old, $photo_name){
+    if($old){
+        if($old == 2)
+            $url = cfg::$couch_url . "/disc_attachments/$id";
+        else
+            $url = cfg::$couch_url . "/".cfg::$couch_users_db."/" . $id;
+    }else{
+        $url = cfg::$couch_url . "/". cfg::$couch_attach_db . "/" . $id; 
+    }
+    $result = doCurl($url);
+    $meta = json_decode($result,true);
+    
+    $picture = doCurl($url . '/' . $photo_name); //returns the actual image
+    // $picture = file_get_contents('./AAA.jpg'); //delete when actual. 
+    $picture = base64_encode($picture); //encode so we can send it to API 
+
+    $data = array(
+        "requests" => array(
+            "image" => array(
+                "content" => $picture
+            ),
+            "features" => array(
+                "type" => "FACE_DETECTION",
+                "maxResults" => 4
+            )    
+        )
+    );
+
+    $vertices = array();
+    //$new = imagecreatefromstring(base64_decode($contents)); //create image from raw data
+    // //POST to google's service
+    $resp = postData('https://vision.googleapis.com/v1/images:annotate?key='.cfg::$gvoice_key,$data);
+    // print_rr($resp);
+
+    //parse response into useable format : XY coordinates per face
+    if(!empty($resp['responses'][0])){
+        foreach($resp['responses'][0]['faceAnnotations'] as $index => $entry){
+            $coord = ($entry['boundingPoly']['vertices']);
+            $put = array();
+            foreach($coord as $vtx){
+                array_push($put, $vtx['x']);
+                array_push($put, $vtx['y']);
+            }
+            array_push($vertices,$put);
+        }
+    // print_rr($vertices);
+        $new = imagecreatefromstring(base64_decode($picture));
+        filterFaces($vertices, $new, $id);
+    }
+}
+
+function filterFaces($vertices,$image,$id){
+    foreach($vertices as $faces){
+        $width = isset($faces[0]) && isset($faces[2]) ? $faces[2] - $faces[0] : 0;
+        $height = isset($faces[1]) && isset($faces[7]) ? $faces[7] - $faces[1] : 0;
+
+        if($width != 0 && $height != 0){
+            //have to crop out the faces first then apply filter
+            $crop = imagecrop($image,['x'=>$faces[0],'y'=>$faces[1],'width'=>$width, 'height'=>$height]);
+            pixelate($crop);
+            //put faces back on the original image
+            imagecopymerge($image, $crop, $faces[0], $faces[1], 0, 0, $width, $height, 100);
+        }
+        // $gaussian = array(array(1.0, 3.0, 1.0), array(3.0, 4.0, 3.0), array(1.0, 3.0, 1.0));
+        // $divisor = array_sum(array_map('array_sum',$gaussian));
+        //  $col = imagecolorallocate($new, 255, 255, 255);
+        //  imagepolygon($new, $faces, 4, $col);
+        //  //imagecrop($new,$faces);
+        // for($i = 0 ; $i < $itr ; $i++)
+        //  imageconvolution($crop, $gaussian, $divisor, 0);
+    }
+    //save image locally
+    imagejpeg($image, "$id.jpg");
+}
+
+function pixelate($image, $pixelate_x = 12, $pixelate_y = 12){
+    if(isset($image)){
+        $height = imagesy($image);
+        $width = imagesx($image);
+
+        // start from the top-left pixel and keep looping until we have the desired effect
+        for($y = 0; $y < $height; $y += $pixelate_y+1){
+            for($x = 0; $x < $width; $x += $pixelate_x+1){
+                // get the color for current pixel, make it legible 
+                $rgb = imagecolorsforindex($image, imagecolorat($image, $x, $y));
+
+                // get the closest color from palette
+                $color = imagecolorclosest($image, $rgb['red'], $rgb['green'], $rgb['blue']);
+                // fill squares with specified width/height
+                imagefilledrectangle($image, $x, $y, $x+$pixelate_x, $y+$pixelate_y, $color);
+            }       
+        }
+    }
+}

@@ -134,6 +134,63 @@ nav ul {
 	margin:0;
 	padding:0;
 }
+
+
+
+#viewsumm:after{
+    content: "+View Walks Summary";
+    font-size: 40%;
+    margin-left: 20px;
+    color: #60C0DC;
+    cursor: pointer;
+}
+#viewsumm.open:after{
+    content: "-Close Walks Summary";
+}
+#summary{
+    display:none;
+}
+#summary table {
+    width:1024px;
+    margin: 0 auto;
+    border-top:1px solid #000;
+    border-left:1px solid #000;
+}
+#summary td,#summary th {
+    width:128px;
+    border-right:1px solid #000;
+    border-bottom:1px solid #000;
+    text-align:center;
+    margin:0;
+    padding:5px 0;
+}
+#summary tfoot td{
+    padding:2px 0;
+    font-weight:bold;
+}
+#summary th {
+    border-bottom:none;
+}
+#summary tfoot td:not(:last-child){
+    border-right:none;
+}
+#summary table thead,
+#summary table tfoot{
+    background:#efefef;
+}
+#summary table tbody {
+    display:block;
+    height:325px;
+    overflow-y:scroll;
+}
+#summary td.Y{
+    font-weight:bold;
+    color:limegreen;
+}
+#summary td.N{
+    font-weight:bold;
+    color:red;
+}
 </style>
 </head>
 <body id="main">
@@ -142,7 +199,6 @@ nav ul {
 			<li class="pull-left"><a class='btn btn-default' href="summary.php?clearsession=1">Refresh Project Data</a></li>
 			<li class="pull-left"><a class="inproject btn btn-default" href="index.php">Back to project overview</a></li>
 		</ul>
-
 		<!-- <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Aggregate Project Data<span class="caret"></span></button> -->
 		<ul>
 			<?php
@@ -157,24 +213,92 @@ nav ul {
 	</nav>
 <?php
 if( $active_project_id ){
-	
-	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
-    $response 		= filter_by_projid("get_data_ts","[\"$active_pid\"]");
+    //FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
+    $response 		= getProjectSummaryData($active_pid);
 
-	//ORDER AND SORT BY DATES
-	$date_headers 	= [];
-	foreach($response["rows"] as $row){
-		$date = Date($row["value"]);
-		if(array_key_exists($date, $date_headers)){ //if the date already exists in dateheaders
-			$date_headers[$date]++;					// increment the counter
-		}else{
-			$date_headers[$date] = 1;				//otherwise create an element [date -> #occurrences]
-		}
-	}
+    $date_headers 	= [];
+    $summ_buffer    = [];
+    $summ_buffer[]  = "<div id='summary'>";
+    $summ_buffer[]  = "<table cellpadding='0' cellspacing='0' width='100%'>";
+    $summ_buffer[]  = "<thead>";
+    $summ_buffer[]  = "<th>#</th>";
+    $summ_buffer[]  = "<th>Date</th>";
+    $summ_buffer[]  = "<th>Walk Id</th>";
+    $summ_buffer[]  = "<th>Device</th>";
+    $summ_buffer[]  = "<th>Photos #</th>";
+    $summ_buffer[]  = "<th>Audios #</th>";
+    $summ_buffer[]  = "<th>Map Available</th>";
+    $summ_buffer[]  = "<th>Upload Complete</th>";
+    $summ_buffer[]  = "</thead>";
+    $summ_buffer[]  = "</table>";
+    $summ_buffer[]  = "<table cellpadding='0' cellspacing='0' width='100%'>";
+    $summ_buffer[]  = "<tbody>";
+
+    $total_photos = 0;
+    $total_audios = 0;
+    foreach($response["rows"] as $i => $row){
+        $walk   = $row["value"];
+        $date   = Date($walk["date"]);
+        if(array_key_exists($date, $date_headers)){ //if the date already exists in dateheaders
+            $date_headers[$date]++;					// increment the counter
+        }else{
+            $date_headers[$date] = 1;				//otherwise create an element [date -> #occurrences]
+        }
+
+        $walk   = $row["value"];
+        $_id    = substr($row["id"] , -4);
+        $device = $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
+
+        //check for attachment ids existing
+        //IMPORTANT TO FORMAT THIS RIGHT OR ELSE WILL GET INVALID JSON ERROR
+        $partial    = '["'.implode('","',$walk["attachment_ids"]).'"]';
+        $count_att  = checkAttachmentsExist($partial);
+        $uploaded   = count($walk["attachment_ids"]) == count($count_att["rows"]) ? "Y" : "N";
+
+        $summ_buffer[] = "<tr>";
+        $summ_buffer[] = "<td>" . ($i+1) . "</td>";
+        $summ_buffer[] = "<td>" . $date . "</td>";
+        $summ_buffer[] = "<td>" . $_id . "</td>";
+        $summ_buffer[] = "<td>" . $device . "</td>";
+        $summ_buffer[] = "<td>" . $walk["photos"]. "</td>";
+        $summ_buffer[] = "<td>" . $walk["audios"]. "</td>";
+        $summ_buffer[] = "<td class='".$walk["maps"]."'>" . $walk["maps"]. "</td>";
+        $summ_buffer[] = "<td class='$uploaded'>" . $uploaded. "</td>";
+        $summ_buffer[] = "</tr>";
+
+        $total_photos += $walk["photos"];
+        $total_audios += $walk["audios"];
+    }
+    while($i < 10){
+        $summ_buffer[] = "<tr>";
+        $summ_buffer[] = "<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
+        $summ_buffer[] = "</tr>";
+        $i++;
+    }
+
+    $summ_buffer[] = "</tbody>";
+    $summ_buffer[] = "</table>";
+    $summ_buffer[] = "<table cellpadding='0' cellspacing='0' width='100%'>";
+    $summ_buffer[] = "<tfoot>";
+    $summ_buffer[] = "<td></td>";
+    $summ_buffer[] = "<td>Totals:</td>";
+    $summ_buffer[] = "<td>".($i+1)." walks</td>";
+    $summ_buffer[] = "<td></td>";
+    $summ_buffer[] = "<td>$total_photos</td>";
+    $summ_buffer[] = "<td>$total_audios</td>";
+    $summ_buffer[] = "<td></td>";
+    $summ_buffer[] = "<td></td>";
+    $summ_buffer[] = "</tfoot>";
+    $summ_buffer[] = "</table>";
+    $summ_buffer[] = "</div>";
+    //ORDER AND SORT BY DATES
 	uksort($date_headers, "cmp_date"); //sorts date headers in reverse order starting with date
 
 	//PRINT TO SCREEN
-	echo "<h1>Discovery Tool Data Summary for $active_project_id</h1>";
+	echo "<h1 id='viewsumm'>Discovery Tool Data Summary for $active_project_id</h1>";
+
+	echo implode("\r\n",$summ_buffer);
+
 	echo "<form id='project_summary' method='post'>";
 	echo "<input type='hidden' name='proj_id' value='".$_POST["proj_id"]."'/>";
 	echo "<input type='hidden' name='summ_pw' value='".$_POST["summ_pw"]."'/>";
@@ -321,7 +445,18 @@ $(document).ready(function(){
 	var timer;
 	checkLocationData();
 	bindHover();
-	
+
+
+	$("#viewsumm").click(function(){
+	    if($("#summary").is(":visible")){
+            $("#summary").slideUp("fast");
+            $(this).removeClass("open");
+        }else{
+            $("#summary").slideDown("medium");
+            $(this).addClass("open");
+        }
+    });
+
 	//COLLAPSING AJAX DATE HEADER
 	$("h4.day").on("click",function(){
 		var hasData 	= $(this).attr("rel");
@@ -470,7 +605,7 @@ $(document).ready(function(){
 </script>
 </body>
 </html>
-
+<?php markPageLoadTime("Summary Page Loaded") ?>
 
 
 
