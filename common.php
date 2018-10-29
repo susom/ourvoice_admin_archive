@@ -110,6 +110,7 @@ function cmp_date($a, $b){
         return (strtotime($a) < strtotime($b)) ? 1 : -1;
 }
 
+
 function getFullName($data, $abv){
     foreach($data["project_list"] as $in){
         if(isset($in["project_id"]) && $in["project_id"] == $abv){
@@ -181,6 +182,7 @@ function printRow($doc){
     $count_empty = 0;
 
     foreach($photos as $n => $photo){
+
         if(is_null($photo) || isset($photo["deleted"])){
             continue;
         }
@@ -197,6 +199,7 @@ function printRow($doc){
             $long = 0;
             $lat = 0;
         }
+
         $timestamp  = isset($photo["geotag"]["timestamp"]) ? $photo["geotag"]["timestamp"] : 0;
         $goodbad    = "";
         if($photo["goodbad"] > 1){
@@ -235,7 +238,7 @@ function printRow($doc){
             $audio_attachments .= "<a class='audio $hasaudio'></a> $num";
         }
         //date_default_timezone_set('America/New_York'); am-us/ny
-        
+
         if($lat != 0 | $long != 0){
             $time = time();
             $url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$long&timestamp=$time&key=AIzaSyDCH4l8Q6dVpYgCUyO_LROnCuSE1W9cwak";
@@ -274,17 +277,15 @@ function printRow($doc){
     if(empty($survey)){
         $codeblock[] = "<p><i>No Survey Responses</i></p>";
     }
-
     //WHOOO THIS IS NOT GREAT
-    if(isset($project_meta["template_type"]))
+    if(isset($project_meta["template_type"])) {
         $template_type = $project_meta["template_type"];
-    else
+    }else {
         $template_type = 1;
-   // $template_type  = $project_meta["template_type"];
-    $survey_text    = $ap["survey_text"][$template_type]; //available 
+    }
+    $survey_text    = $ap["survey_text"][$template_type]; //available
     $tempsurvey     = array();
     foreach($survey_text as $s){ //loop through all the survey questions
-        
         $tempoptions = array();
         if(isset($s["options"])){
             foreach($s["options"] as $o){ //loop through each of the answer options
@@ -317,7 +318,7 @@ function printRow($doc){
         $codeblock[] = "</div>";
         $codeblock[] = "</section>";
         $codeblock[] = "</div>";
-        $codeblock[] = "<script>$(document).ready(function(){ drawGMap($json_geo, '$i', 16);\n  });</script>";
+        $codeblock[] = "<script> drawGMap($json_geo, '$i', 16); </script>";
         $codeblock[] = "<div class='$i' data-mapgeo='$json_geo'></div>";
         return $codeblock;
     }else{
@@ -330,7 +331,7 @@ function printRow($doc){
         $codeblock[] = "</div>";
         $codeblock[] = "</section>";
         $codeblock[] = "</div>";
-        $codeblock[] = "<script>$(document).ready(function(){ drawGMap($json_geo, '$i', 16);\n  });</script>";
+        $codeblock[] = "<script> drawGMap($json_geo, '$i', 16); </script>";
         $codeblock[] = "<div class='$i' data-mapgeo='$json_geo'></div>";
         return $codeblock;
     }
@@ -429,6 +430,7 @@ function printPhotos($doc){
     }
     return $codeblock;
 }
+
 
 function parseTime($data, $storage){
     if($data["rows"] == null)
@@ -655,6 +657,19 @@ function postData($url, $data){ //MUST INCLUDE Key attached to URL,
 function deleteDirectory($dir) {
     system('rm -rf ' . escapeshellarg($dir), $retval);
     return $retval == 0; // UNIX commands return zero on success
+}
+
+function updateDoc($url,$keyvalues){
+    // TO PROTECT FROM DOC CONFLICTS (LITERALLY THE WORST POSSIBLE THInG) ,
+    // WE FIRST GET A FRESH COPY OF THE DOC, ALTER IT, THEN SAVE IT RIGHT AWAY
+    $response 	= doCurl($url);
+    $payload    = json_decode($response,1);
+    foreach($keyvalues as $k => $v){
+        $payload[$k] = $v;
+    }
+
+    $response 	= doCurl($url, json_encode($payload), 'PUT');
+    return json_decode($response,1);
 }
 
 //DESIGN DOCUMENT CALLS

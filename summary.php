@@ -1,6 +1,8 @@
 <?php
 require_once "common.php";
 
+//markPageLoadTime("Summary Page Start Loading");
+
 // FOR DIRECT LINKING TO SUMMARY PAGE FROM INDEX PAGES
 
 if(isset($_GET["id"])){
@@ -46,7 +48,6 @@ if(isset($_POST["active_pid"]) && $_POST["date"]){
 		$doc 		= $row["value"];
 		$code_block = array_merge($code_block, printRow($doc));
 	}
-
 	echo implode("",$code_block);
 	exit;
 }
@@ -103,8 +104,8 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 <link href="css/dt_common.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 <link href="css/dt_summary.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 <!-- <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script> -->
-  	<script src="js/jquery-3.3.1.min.js"></script>
-  	<script src="js/jquery-ui.js"></script>
+<script src="js/jquery-3.3.1.min.js"></script>
+<script src="js/jquery-ui.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
@@ -247,14 +248,26 @@ if( $active_project_id ){
 
         $walk   = $row["value"];
         $_id    = substr($row["id"] , -4);
-        $device = $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
+        $uuid   = substr($row["id"], strpos($row["id"],"_")+1,5);
+
+        $device = "uuid $uuid ...<br>" . $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
 
         //check for attachment ids existing
         //IMPORTANT TO FORMAT THIS RIGHT OR ELSE WILL GET INVALID JSON ERROR
         $partial    = '["'.implode('","',$walk["attachment_ids"]).'"]';
-        $count_att  = checkAttachmentsExist($partial);
 
-        $expect_cnt = count($count_att["rows"]) - count($walk["attachment_ids"]);
+        if(isset($walk["complete_upload"]) && $walk["complete_upload"]){
+            $expect_cnt = 0;
+        }else{
+            $count_att  = checkAttachmentsExist($partial);
+            $expect_cnt = count($count_att["rows"]) - count($walk["attachment_ids"]);
+            if($expect_cnt === 0){
+                //PUSH Y flag TO THE COUCH SO WE DONT HAVE TO RUN THIS CHECK NEXT TIME
+                $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $row["id"];
+                $keyvalues  = array("complete_upload" => true);
+                $resp       = updateDoc($url,$keyvalues);
+            }
+        }
         $uploaded   = $expect_cnt === 0 ? "Y" : "N ($expect_cnt files)";
 
         $summ_buffer[] = "<tr>";
@@ -271,6 +284,7 @@ if( $active_project_id ){
         $total_photos += $walk["photos"];
         $total_audios += $walk["audios"];
     }
+    // FILL OUT REST OF TABLE EMPTY SPACE
     $x = $i;
     while($x < 10){
         $summ_buffer[] = "<tr>";
@@ -299,7 +313,6 @@ if( $active_project_id ){
 
 	//PRINT TO SCREEN
 	echo "<h1 id='viewsumm'>Discovery Tool Data Summary for $active_project_id</h1>";
-
 	echo implode("\r\n",$summ_buffer);
 
 	echo "<form id='project_summary' method='post'>";
@@ -315,13 +328,13 @@ if( $active_project_id ){
 			
 			//AUTOMATICALLY SHOW MOST RECENT DATE's DATA, AJAX THE REST
 			$response 	= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
-			$days_data 	= rsort($response["rows"]); 
-			$code_block = array();
+
+			$days_data 	    = rsort($response["rows"]);
 			foreach($response["rows"] as $row){
-				$doc 		= $row["value"];
-				$code_block = array_merge($code_block,printRow($doc));
-			}
-			echo implode("",$code_block);
+				$doc        = $row["value"];
+//                markPageLoadTime("ONE PRINT ROW PROCESSED");
+                echo implode("",printRow($doc));
+            }
 			echo "</div>";
 			echo "</aside>";
 
@@ -392,7 +405,6 @@ function addmarker(latilongi,map_id) {
     _GMARKERS.push(marker);
 }
 function bindHover(){
-	console.log($(".thumbs").find("li"));7
 	$(".thumbs").find("li").on({
 		mouseenter: function(){
 			var loading_bar = $(this).find(".progress");
@@ -442,7 +454,6 @@ function checkLocationData(){
 		}
 	}
 }
-
 $(document).ready(function(){
 	window.current_preview = null;
 	var timer;
