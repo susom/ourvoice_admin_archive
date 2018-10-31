@@ -194,13 +194,16 @@ function generatePhotoPage($pdf, $id, $pic, $rotation){
 
 	$imageResource = imagecreatefromstring($htmlphoto); //convert to resource before checking dimensions
 	if(imagesx($imageResource) > imagesy($imageResource)){ //check picture orientation
+		// print_rr(imagesx($imageResource));
+		// print_rr(imagesy($imageResource));
 		$landscape = True;
 		$scale = imagesx($imageResource)/imagesy($imageResource);
 	}else{
 		$landscape = False;
 		$scale = imagesy($imageResource)/imagesx($imageResource);
 	}
-	$url = 'https://maps.googleapis.com/maps/api/staticmap?size=400x'.floor(400*$scale).'&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
+	// print_rr($scale);
+	$url = 'https://maps.googleapis.com/maps/api/staticmap?size=400x'.floor(533).'&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
 
 	imagedestroy($imageResource);
 	$gmapsPhoto = doCurl($url);
@@ -212,7 +215,11 @@ function generatePhotoPage($pdf, $id, $pic, $rotation){
 	
 }
 function setup($pdf, $id){ //set page contents and function initially
-	$pdf->SetHeaderData("", "", "WALK ID: ".$id);
+	$alpha = explode("_",$id)[0];
+	$numeric = substr($id,(strlen($id)-4),strlen($id));
+
+	$pdf->SetHeaderData("", "", "WALK ID: ".$alpha.' - '.$numeric);
+
 	// $pdf->setFooterData("", "", "COPYRIGHT STANFORD UNIVERSITY 2017");
 	$pdf->SetTitle($id);
 	$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', 8));
@@ -259,8 +266,17 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
  */
 	// print_rr($rotation);
 	$pdf->AddPage();
-	$pdf->writeHTMLCell(0,0,0,0, "© Stanford Medicine 2018",0,1,0, true, '',true);
+	$pdf->StartTransform();
+	$pdf->Rotate(90,0,250);
+	$pdf->writeHTMLCell(0,0,0,250, "<small>Generated using the Stanford Discovery Tool, © Stanford University 2018</small>",0,1,0, true, '',true);
+	
+	$pdf->StopTransform();
 	$pdf->writeHTMLCell(0,0,20,9.5, $htmlobj['date'] . " " .$htmlobj['time'],0,1,0, true, '',true);
+	if($scale > 1.4) #scale = 1.77 in this case 
+		$basePixels = 60;
+	else
+		$basePixels = 80;
+
 	if($landscape){ //Display Landscape
 		if(isset($retTranscript[0]) && !empty($retTranscript[0]))
 			foreach($retTranscript as $k => $trans)
@@ -269,26 +285,25 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 			$pdf->writeHTMLCell(0, 0, '', 130, "No Transcript Available", 0, 1, 0, true, '', true);
 		
 		if($rotation == 0){
-			$pdf->Image('@'.$htmlphoto,5, 20, 80*$scale, 80); //portrait
+			$pdf->Image('@'.$htmlphoto,5, 20, $basePixels*$scale, $basePixels); //portrait
 		}else{
 			$pdf->StartTransform();
 			
 			if($rotation == 1){
 				$pdf->Rotate(270,20,20);
-				$pdf->Image('@'.$htmlphoto,20, -70, 80*$scale, 80); //portrait			
+				$pdf->Image('@'.$htmlphoto,20, -70, $basePixels*$scale, $basePixels); //portrait			
 			}elseif($rotation == 2){
 				$pdf->Rotate(180,20,20);
-				$pdf->Image('@'.$htmlphoto,-70, -60, 80*$scale, 80); //portrait	
+				$pdf->Image('@'.$htmlphoto,-70, -60, $basePixels*$scale, $basePixels); //portrait	
 			}else{
 				$pdf->Rotate(90,20,20);
-				$pdf->Image('@'.$htmlphoto,-87, 15, 80*$scale, 80); //portrait	
+				$pdf->Image('@'.$htmlphoto,-87, 15, $basePixels*$scale, $basePixels); //portrait	
 			}
 
 			$pdf->StopTransform();
 
 		}
-		$pdf->Image('@'.$gmapsPhoto,115,20,80,80*$scale);	
-		$pdf->Image('./'.$goodbad,185,130,10,10);	
+			
 	}else{ //Display Portrait
 		if(isset($retTranscript[0]) && !empty($retTranscript[0]))
 			foreach($retTranscript as $k => $trans)
@@ -297,28 +312,29 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 			$pdf->writeHTMLCell(0, 0, '', 130, "No Transcript Available", 0, 1, 0, true, '', true);
 		
 		if($rotation == 0){
-			$pdf->Image('@'.$htmlphoto,16, 20, 80, 80*$scale); //portrait
+			$pdf->Image('@'.$htmlphoto,16, 20, $basePixels, $basePixels*$scale); //portrait
 		}else{
 			$pdf->StartTransform();
 			
 			if($rotation == 1){
 				$pdf->Rotate(270,20,20);
-				$pdf->Image('@'.$htmlphoto,20, -70, 80, 80*$scale); //portrait			
+				$pdf->Image('@'.$htmlphoto,20, -70, $basePixels, $basePixels*$scale); //portrait			
 			}elseif($rotation == 2){
 				$pdf->Rotate(180,20,20);
-				$pdf->Image('@'.$htmlphoto,-55, -87, 80, 80*$scale); //portrait	
+				$pdf->Image('@'.$htmlphoto,-55, -87, $basePixels, $basePixels*$scale); //portrait	
 			}else{
 				$pdf->Rotate(90,20,20);
-				$pdf->Image('@'.$htmlphoto,-60, 5, 80, 80*$scale); //portrait	
+				$pdf->Image('@'.$htmlphoto,-60, 5, $basePixels, $basePixels*$scale); //portrait	
 			}
 
 			$pdf->StopTransform();
 
 		}
-		$pdf->Image('@'.$gmapsPhoto,115,20,80,80*$scale);	
-		$pdf->Image('./'.$goodbad,185,130,10,10);	
+			
 
 	}
+	$pdf->Image('@'.$gmapsPhoto,115,20,80,106);	
+	$pdf->Image('./'.$goodbad,185,130,10,10);
 
 }
 ?>
