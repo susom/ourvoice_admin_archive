@@ -79,7 +79,7 @@ function generatePhotoPage($pdf, $id, $pic, $rotation){
 		}elseif($photo["goodbad"] == 1){
 			$goodbad = "/img/icon_frown.png";
 		}else{
-			$goodbad = "/img/icon_frown_gray.png";
+			$goodbad = "/img/icon_none.png";
 		}
 
 		$long 		= isset($photo["geotag"]["lng"]) ? $photo["geotag"]["lng"] : $photo["geotag"]["longitude"];
@@ -228,7 +228,6 @@ function setup($pdf, $id){ //set page contents and function initially
 	// set header and footer fonts
 	$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', 8));
 	$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
-
 	// set default monospaced font
 	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
@@ -278,11 +277,12 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 		$basePixels = 80;
 
 	if($landscape){ //Display Landscape
+		$pdf->writeHTMLCell(0, 0, '', 140, "<h2>Why did you take this picture?</h2>", 0, 1, 0, true, '', true);
 		if(isset($retTranscript[0]) && !empty($retTranscript[0]))
 			foreach($retTranscript as $k => $trans)
-				$pdf->writeHTMLCell(0, 0, '', ($k*10)+130, "Transcript ".($k+1). ": '".$trans."'", 0, 1, 0, true, '', true);
+				$pdf->writeHTMLCell(0, 0, '', ($k*10)+150, "<h3> ".($k+1). ": '".$trans."'</h3>", 0, 1, 0, true, '', true);
 		else
-			$pdf->writeHTMLCell(0, 0, '', 130, "No Transcript Available", 0, 1, 0, true, '', true);
+			$pdf->writeHTMLCell(0, 0, '', 150, "<h3>No Transcript Available</h3>", 0, 1, 0, true, '', true);
 		
 		if($rotation == 0){
 			$pdf->Image('@'.$htmlphoto,5, 20, $basePixels*$scale, $basePixels); //portrait
@@ -305,11 +305,12 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 		}
 			
 	}else{ //Display Portrait
+		$pdf->writeHTMLCell(0, 0, '', 140, "<h2>Why did you take this picture?</h2>", 0, 1, 0, true, '', true);
 		if(isset($retTranscript[0]) && !empty($retTranscript[0]))
 			foreach($retTranscript as $k => $trans)
-				$pdf->writeHTMLCell(0, 0, '', ($k*10)+130, "Transcript ".($k+1). ": '".$trans."'", 0, 1, 0, true, '', true);
+				$pdf->writeHTMLCell(0, 0, '', ($k*10)+150, "<h3>".($k+1). ": '".$trans."'</h3>", 0, 1, 0, true, '', true);
 		else
-			$pdf->writeHTMLCell(0, 0, '', 130, "No Transcript Available", 0, 1, 0, true, '', true);
+			$pdf->writeHTMLCell(0, 0, '', 150, "<h3>No Transcript Available</h3>", 0, 1, 0, true, '', true);
 		
 		if($rotation == 0){
 			$pdf->Image('@'.$htmlphoto,16, 20, $basePixels, $basePixels*$scale); //portrait
@@ -333,8 +334,9 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 			
 
 	}
-	$pdf->Image('@'.$gmapsPhoto,115,20,80,106);	
-	$pdf->Image('./'.$goodbad,185,130,10,10);
+	$pdf->Image('@'.$gmapsPhoto,115,20,80,106);
+	$pdf->writeHTMLCell(0, 0, 146, 128, "Good or Bad for the Community?", 0, 1, 0, true, '', true);
+	$pdf->Image('./'.$goodbad,185,133,10,10);
 
 }
 ?>
