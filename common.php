@@ -744,7 +744,7 @@ function getFullUrl($partialUrl){
 
 function getConvertedAudio($attach_url){
     //FIRST DOWNLOAD THE AUDIO FILE
-    
+    print_rr("entering getConvertedAudio"); ////////////////
     $fullURL    = getFullUrl($attach_url);
     $ch         = curl_init($fullURL);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -752,6 +752,7 @@ function getConvertedAudio($attach_url){
     $errors     = curl_error($ch);
     curl_close ($ch);
     $newAudioPath = "";
+    print_rr(empty($errors));
     if(empty($errors)){
         //THEN EXTRACT THE FILE NAME
         $split              = explode("=",$attach_url);
@@ -784,17 +785,17 @@ function convertAudio($filename, $full_proj_code){
     print_rr($filename);
     print_rr($full_proj_code);
     $split = explode("." , $filename);
-    $noext = $split[0];
+    $noext = $split[0]; //audio_0_1 (ex)
+    print_rr("./temp/".$full_proj_code."_".$noext.".mp3");
     
     if (function_exists('curl_file_create')) { // php 5.5+
           $cFile = curl_file_create("./temp/".$filename);
         } else { // 
           $cFile = '@' . realpath("./temp/".$filename);
         }
-
-    if(!file_exists("./temp/".$full_proj_code."_".$noext.".mp3")){
+    if(!file_exists("./temp/".$full_proj_code."_".$noext.".mp3")){ //if the mp3 does not exist on the server already
         // MAKE THE MP3 FROM locally saved .wav or .amr
-
+        print_rr("DNE");
         $ffmpeg_url = cfg::$ffmpeg_url; 
         $postfields = array(
                  "file"     => $cFile
@@ -816,6 +817,7 @@ function convertAudio($filename, $full_proj_code){
         $handle     = fopen($newfile, 'w');
         fwrite($handle, $response); 
     }else{
+        print_rr("EXIST");
         //if the mp3 already exists just link it 
         $newfile    = "./temp/".$full_proj_code."_".$noext.".mp3";
     }
