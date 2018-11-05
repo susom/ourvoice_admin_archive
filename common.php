@@ -744,7 +744,6 @@ function getFullUrl($partialUrl){
 
 function getConvertedAudio($attach_url){
     //FIRST DOWNLOAD THE AUDIO FILE
-    print_rr("entering getConvertedAudio"); ////////////////
     $fullURL    = getFullUrl($attach_url);
     $ch         = curl_init($fullURL);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -752,7 +751,6 @@ function getConvertedAudio($attach_url){
     $errors     = curl_error($ch);
     curl_close ($ch);
     $newAudioPath = "";
-    print_rr(empty($errors));
     if(empty($errors)){
         //THEN EXTRACT THE FILE NAME
         $split              = explode("=",$attach_url);
@@ -828,6 +826,7 @@ function convertAudio($filename, $full_proj_code){
     $storage        = json_decode($response,1);
 
     if(!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename])){
+        print_rr($cFile);
         $trans = transcribeAudio($cFile,$filename);
         // print_rr($trans);
         if(!empty($trans["transcript"])){
