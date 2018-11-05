@@ -744,7 +744,7 @@ function getFullUrl($partialUrl){
 
 function getConvertedAudio($attach_url){
     //FIRST DOWNLOAD THE AUDIO FILE
-
+    
     $fullURL    = getFullUrl($attach_url);
     $ch         = curl_init($fullURL);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -781,8 +781,8 @@ function getConvertedAudio($attach_url){
 
 function convertAudio($filename, $full_proj_code){
     // echo 'inside convertAudio';
-    // print_rr($filename);
-    // print_rr($full_proj_code);
+    print_rr($filename);
+    print_rr($full_proj_code);
     $split = explode("." , $filename);
     $noext = $split[0];
     
