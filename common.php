@@ -828,8 +828,9 @@ function convertAudio($filename, $full_proj_code){
     if(!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename])){
         print_rr($cFile);
         $trans = transcribeAudio($cFile,$filename);
-        // print_rr($trans);
+        print_rr($trans);
         if(!empty($trans["transcript"])){
+            print_rr('i');
             $storage["transcriptions"][$filename]["text"] = $trans["transcript"];
             $storage["transcriptions"][$filename]["confidence"] = $trans["confidence"];
             $response   = doCurl($url, json_encode($storage), 'PUT');
@@ -842,11 +843,11 @@ function convertAudio($filename, $full_proj_code){
     $flac = explode(".",$filename);
     if(file_exists('./temp/'.$filename)){
         unlink('./temp/'.$filename);
-        // echo 'removing ' . './temp/'.$filename;
+        echo 'removing ' . './temp/'.$filename;
 
     if(file_exists('./temp/'.$flac[0].'.flac'))
         unlink('./temp/'.$flac[0].'.flac');
-        // echo 'removing ' . './temp/'.$flac[0].'.flac';
+        echo 'removing ' . './temp/'.$flac[0].'.flac';
     }
 
     return $newfile;
@@ -869,6 +870,7 @@ function transcribeAudio($cFile,$filename){
     curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $response = curl_exec($ch);
+    print_rr($response);
     curl_close($ch);
 
     // REPLACE ATTACHMENT
