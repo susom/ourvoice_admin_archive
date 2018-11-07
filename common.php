@@ -780,8 +780,8 @@ function getConvertedAudio($attach_url){
 
 function convertAudio($filename, $full_proj_code){
     // echo 'inside convertAudio';
-    print_rr($filename);
-    print_rr($full_proj_code);
+    // print_rr($filename);
+    // print_rr($full_proj_code);
     $split = explode("." , $filename);
     $noext = $split[0]; //audio_0_1 (ex)
     print_rr("./temp/".$full_proj_code."_".$noext.".mp3");
@@ -847,9 +847,9 @@ function convertAudio($filename, $full_proj_code){
 
     if(file_exists('./temp/'.$flac[0].'.flac'))
         unlink('./temp/'.$flac[0].'.flac');
-        echo 'removing ' . './temp/'.$flac[0].'.flac';
+        echo ' removing ' . './temp/'.$flac[0].'.flac';
     }
-
+    print_rr("RETURNING " . $newfile);
     return $newfile;
 }
 
@@ -862,7 +862,9 @@ function transcribeAudio($cFile,$filename){
              "file"     => $cFile
             ,"format"   => "flac"
         );
-
+    
+    print_rr($postfields);
+    print_rr($ffmpeg_url);
     // CURL OPTIONS
     // POST IT TO FFMPEG SERVICE, Convert to FLAC
     $ch = curl_init($ffmpeg_url);
