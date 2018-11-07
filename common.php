@@ -839,7 +839,7 @@ function convertAudio($filename, $full_proj_code){
         }
     }
 
-    //remove extraneous files from server
+    //remove extraneous files from server after creation of mp3
     $flac = explode(".",$filename);
     if(file_exists('./temp/'.$filename)){
         unlink('./temp/'.$filename);
@@ -907,7 +907,7 @@ function transcribeAudio($cFile,$filename){
     $resp = curl_exec($ch);
     curl_close($ch);
     $resp = json_decode($resp,1);
-    // print_rr($resp);
+    print_rr($resp); //print the resp
     $count = 0;
     $transcript = '';
     $confidence = 0;
