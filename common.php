@@ -815,7 +815,6 @@ function convertAudio($filename, $full_proj_code){
         $handle     = fopen($newfile, 'w');
         fwrite($handle, $response); 
     }else{
-        print_rr("EXIST");
         //if the mp3 already exists just link it 
         $newfile    = "./temp/".$full_proj_code."_".$noext.".mp3";
     }
@@ -826,9 +825,8 @@ function convertAudio($filename, $full_proj_code){
     $storage        = json_decode($response,1);
 
     if(!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename])){
-        print_rr($cFile);
         $trans = transcribeAudio($cFile,$filename);
-        print_rr($trans);
+        print_rr("RESULT ". $trans);
         if(!empty($trans["transcript"])){
             print_rr('i');
             $storage["transcriptions"][$filename]["text"] = $trans["transcript"];
@@ -862,7 +860,7 @@ function transcribeAudio($cFile,$filename){
              "file"     => $cFile
             ,"format"   => "flac"
         );
-    
+
     print_rr($postfields);
     print_rr($ffmpeg_url);
     // CURL OPTIONS

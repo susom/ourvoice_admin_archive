@@ -268,6 +268,8 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				$aud_id			= $doc["_id"] . "_" . $filename;
                 $attach_url 	= "passthru.php?_id=".$aud_id."&_file=$filename" . $old;
 				$audio_src 		= getConvertedAudio($attach_url);
+				print_rr("INSIDE PHOTO PHP");
+				print_rr($audio_src);
 				$confidence 	= appendConfidence($attach_url);
 				$script 		= !empty($confidence) ? "This audio was transcribed using Google's API at ".round($confidence*100,2)."% confidence" : "";
 				$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
