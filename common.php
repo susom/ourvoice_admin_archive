@@ -784,7 +784,7 @@ function convertAudio($filename, $full_proj_code){
     // print_rr($full_proj_code);
     $split = explode("." , $filename);
     $noext = $split[0]; //audio_0_1 (ex)
-    print_rr("./temp/".$full_proj_code."_".$noext.".mp3");
+    // print_rr("./temp/".$full_proj_code."_".$noext.".mp3");
     
     if (function_exists('curl_file_create')) { // php 5.5+
           $cFile = curl_file_create("./temp/".$filename);
@@ -793,7 +793,7 @@ function convertAudio($filename, $full_proj_code){
         }
     if(!file_exists("./temp/".$full_proj_code."_".$noext.".mp3")){ //if the mp3 does not exist on the server already
         // MAKE THE MP3 FROM locally saved .wav or .amr
-        print_rr("DNE");
+        // print_rr("DNE");
         $ffmpeg_url = cfg::$ffmpeg_url; 
         $postfields = array(
                  "file"     => $cFile
@@ -826,9 +826,9 @@ function convertAudio($filename, $full_proj_code){
 
     if(!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename])){
         $trans = transcribeAudio($cFile,$filename);
-        print_rr("RESULT ". $trans);
+        // print_rr("RESULT ". $trans);
         if(!empty($trans["transcript"])){
-            print_rr('i');
+            // print_rr('i');
             $storage["transcriptions"][$filename]["text"] = $trans["transcript"];
             $storage["transcriptions"][$filename]["confidence"] = $trans["confidence"];
             $response   = doCurl($url, json_encode($storage), 'PUT');
@@ -847,7 +847,7 @@ function convertAudio($filename, $full_proj_code){
         unlink('./temp/'.$flac[0].'.flac');
         echo ' removing ' . './temp/'.$flac[0].'.flac';
     }
-    print_rr("RETURNING " . $newfile);
+    // print_rr("RETURNING " . $newfile);
     return $newfile;
 }
 
@@ -861,8 +861,8 @@ function transcribeAudio($cFile,$filename){
             ,"format"   => "flac"
         );
 
-    print_rr($postfields);
-    print_rr($ffmpeg_url);
+    // print_rr($postfields);
+    // print_rr($ffmpeg_url);
     // CURL OPTIONS
     // POST IT TO FFMPEG SERVICE, Convert to FLAC
     $ch = curl_init($ffmpeg_url);
@@ -870,13 +870,13 @@ function transcribeAudio($cFile,$filename){
     curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $response = curl_exec($ch);
-    print_rr($response);
+    // print_rr($response);
     curl_close($ch);
 
     // REPLACE ATTACHMENT
     $newfile    = "./temp/".$noext.".flac";
     $handle     = fopen($newfile, 'w');
-    fwrite($handle, $response); 
+    fwrite($handle, $response); //what if no response  ?
 
     //Convert to base 64 for google's API
     $flac = file_get_contents($newfile);
@@ -904,10 +904,10 @@ function transcribeAudio($cFile,$filename){
        'Content-Type: application/json',                                                                                
        'Content-Length: ' . strlen($data_string))                                                                       
     );                                
-    $resp = curl_exec($ch);
+    $resp = curl_exec($ch); //NO flac data returned as a result , can we even convert to flac using ffmpeg?
     curl_close($ch);
     $resp = json_decode($resp,1);
-    print_rr($resp); //print the resp
+    // print_rr($resp); //error here, response doesnt have an audio file to process results in ERROR
     $count = 0;
     $transcript = '';
     $confidence = 0;
