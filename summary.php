@@ -273,7 +273,7 @@ if( $active_project_id ){
         $summ_buffer[] = "<tr>";
         $summ_buffer[] = "<td>" . ($i+1) . "</td>";
         $summ_buffer[] = "<td>" . $date . "</td>";
-        $summ_buffer[] = "<td>" . $_id . "</td>";
+        $summ_buffer[] = "<td><a href='#".$row["id"]."'>" . $_id . "</a></td>";
         $summ_buffer[] = "<td>" . $device . "</td>";
         $summ_buffer[] = "<td>" . $walk["photos"]. "</td>";
         $summ_buffer[] = "<td>" . $walk["audios"]. "</td>";
@@ -333,6 +333,7 @@ if( $active_project_id ){
 			foreach($response["rows"] as $row){
 				$doc        = $row["value"];
 //                markPageLoadTime("ONE PRINT ROW PROCESSED");
+                echo "<a name='".$doc["_id"]."'></a>";
                 echo implode("",printRow($doc));
             }
 			echo "</div>";
