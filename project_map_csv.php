@@ -15,12 +15,11 @@ $ap 				= $_SESSION["DT"];
 $_id 				= $ap["_id"];
 $_rev 				= $ap["_rev"];
 $projs 				= $ap["project_list"];
-$active_project_id 	= $_GET["active_project_id"];
 $active_pid 		= $_GET["pid"];
 
 // output headers so that the file is downloaded rather than displayed
 header('Content-Type: text/csv; charset=utf-8');
-header('Content-Disposition: attachment; filename=maps_'.$active_project_id.'.csv');
+header('Content-Disposition: attachment; filename=maps_'.$active_pid.'.csv');
 
 // create a file pointer connected to the output stream
 $output = fopen('php://output', 'w');
@@ -28,7 +27,7 @@ $output = fopen('php://output', 'w');
 // output the column headings
 fputcsv($output, array('walk id', 'photo name', 'type', 'latitude', 'longitude','good/bad','date', 'transcription'));
 
-if( $active_project_id ){
+if( $active_pid ){
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
     $response 		= getAggMaps("[\"$active_pid\"]");
 	$project_meta 	= $ap["project_list"][$active_pid];
