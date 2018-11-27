@@ -93,9 +93,9 @@ if( $active_project_id ){
 
 	$summavg = array();
 	foreach($survey_qa as $qname => $q){
-		$sum = array_sum($survey_qa[$qname]["answers"]);
-		$cnt = count($survey_qa[$qname]["answers"]);
-		if( is_numeric($survey_qa[$qname]["answers"][0]) ){
+		$sum = !empty($q["answers"]) ? array_sum($q["answers"]) : 0;
+		$cnt = !empty($q["answers"]) ? count($q["answers"]) : 0;
+		if(!empty($q["answers"]) && is_numeric($q["answers"][0]) ){
 			$summavg[] = "<td>". number_format( $sum/$cnt, 2, ".", "") . " ($cnt responses)</td>";
 		}else{
 			$summavg[] = "<td>n/a</td>";
