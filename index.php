@@ -88,6 +88,7 @@ if( isset($_POST["proj_idx"]) ){
 			,"summ_pass" 		=> $_POST["summ_pass"]
 			,"project_email" 	=> $_POST["project_email"]
 			,"template_type"	=> $_POST["template_type"]
+            ,"text_comments"    => $_POST["text_comments"]
 			,"thumbs"			=> isset($_POST["thumbs"]) ? $_POST["thumbs"] : 0
 			,"app_lang" 		=> $app_lang
 		);
@@ -212,6 +213,7 @@ if(!isset($_SESSION["discpw"])) {
 		$ppass 	  = $p["project_pass"];
 		$spass 	  = isset($p["summ_pass"]) ? $p["summ_pass"] : "";
 		$thumbs   = $p["thumbs"];
+        $texts    = isset($p["text_comments"]) ? $p["text_comments"] : false;
 		$langs 	  = $p["app_lang"];
 		$template_type = isset($p["template_type"]) ? $p["template_type"] : "1";
 
@@ -235,6 +237,10 @@ if(!isset($_SESSION["discpw"])) {
 					<input type="radio" name="template_type" <?php if(!$template_type) echo "checked"; ?> value="0"/> Short Template 
 					<input type="radio" name="template_type" <?php if($template_type) echo "checked"; ?> value="1"/> Full Template
 				</label>
+                <label><span>Text Comments</span>
+                    <input type="radio" name="text_comments" <?php if(!$texts) echo "checked"; ?> value="0"/> No Texting
+                    <input type="radio" name="text_comments" <?php if($texts) echo "checked"; ?> value="1"/> Allow Texting
+                </label>
 				<label><span>Good or Bad Icons</span>
 					<input type="checkbox" name="thumbs" <?php if($thumbs) echo "checked"; ?> value="2"/> Smilies 
 					<input type="checkbox" name="thumbs" <?php if(!$thumbs) echo "checked"; ?> value="1"/> Thumbs
