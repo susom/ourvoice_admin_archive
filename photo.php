@@ -278,7 +278,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$audio_attachments = "";
 		
 		$photo_tags = isset($photo["tags"]) ? $photo["tags"] : array();
-        $text_comment = "<div class='audio_clip'><textarea name='text_comment' placeholder='Click to comment on the photo'>".(isset($photo["text_comment"]) ? $photo['text_comment'] : "") ."</textarea></div>";
+        $text_comment = "<div class='audio_clip keyboard'><textarea name='text_comment' placeholder='Click to comment on the photo'>".(isset($photo["text_comment"]) ? $photo['text_comment'] : "") ."</textarea></div>";
 
 		if(isset($photo["audios"])){
 			foreach($photo["audios"] as $filename){
@@ -300,7 +300,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				}else{
 					$transcription = "";
 				}
-				$audio_attachments .=   "<div class='audio_clip'>
+				$audio_attachments .=   "<div class='audio_clip mic'>
 											<audio controls>
 												<source src='$audio_src'/>
 											</audio> 

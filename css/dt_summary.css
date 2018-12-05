@@ -333,12 +333,12 @@ label span {
 }
 .photo_detail textarea{
 	display:inline-block;
-	width:90%;
+	width:80%;
 	font-size:100%;
 	vertical-align: middle;
+	margin-left:40px;
 	border-radius:5px;
 }
-
 
 .photo_detail .photo_previews .thumbs{
 	min-height:145px;
@@ -369,6 +369,21 @@ label span {
 	/*background:url(../img/icon_listen.png) 0 5px no-repeat;*/
 	background-size:6%;
 	-webkit-print-color-adjust: exact;
+	position:relative;
+}
+
+.photo_detail .audio_clip:before {
+	content:"";
+	position:absolute;
+	width:30px; height:30px;
+	top:6px; left:5px;
+	background: url(../img/icon_keyboard.png) 0 0 no-repeat;
+	background-size:contain;
+}
+.photo_detail .audio_clip.mic:before {
+	top:65px; left:10px;
+	background: url(../img/icon_mic.png) 0 0 no-repeat;
+	background-size:contain;
 }
 
 .photo_detail .forcommunity h4{
