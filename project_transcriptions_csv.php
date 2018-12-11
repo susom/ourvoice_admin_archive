@@ -67,16 +67,21 @@ if( $active_project_id ){
 			$tmp_buffer[] 	= $goodbad;
 			$tmp_buffer[] 	= isset($photo["geotag"]['timestamp']) ? date("F j, Y @ g:i a", floor($photo["geotag"]['timestamp']/1000)) : "N/A";
 
+            $transcript = "";
+
+            if(isset($photo["text_comment"]) && !empty($photo["text_comment"])){
+                $transcript .= "[Text] " .$photo["text_comment"] ."\r";
+            }
+
 			if(isset($photo["audios"]) && !empty($photo['audios'])){
-				$transcript = "";
 				foreach($photo["audios"] as $key => $audio_key){
-					$transcript .= isset($sesh["value"]["transcriptions"]) && isset($sesh["value"]["transcriptions"][$audio_key]) ? $sesh["value"]["transcriptions"][$audio_key]["text"] : "";
+					$transcript .= isset($sesh["value"]["transcriptions"]) && isset($sesh["value"]["transcriptions"][$audio_key]) ? "[audio] " . $sesh["value"]["transcriptions"][$audio_key]["text"] . "\r" : "";
 				}
 				if(empty(trim($transcript))){
 					continue;
 				}
-				$tmp_buffer[] = $transcript;
 			}
+            $tmp_buffer[] = $transcript;
 
 			$csv_buffer[$walk_ts][] = $tmp_buffer;
 		}

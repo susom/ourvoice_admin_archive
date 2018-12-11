@@ -140,9 +140,10 @@ nav ul {
 
 #viewsumm:after{
     content: "+View Walks Summary";
-    font-size: 40%;
+    font-size: 65%;
     margin-left: 20px;
-    color: #60C0DC;
+    color: deepskyblue;
+    text-shadow:1px 1px 1px darkgreen;
     cursor: pointer;
 }
 #viewsumm.open:after{
@@ -614,7 +615,7 @@ $(document).ready(function(){
 		// });
 		
 		// console.log('pdf_conversion.php?_id='+_id+'&_numPhotos='+photoNames.length+'&_rotation='+rotationString);
-		window.location.href = 'pdf_conversion.php?_id='+_id+'&_numPhotos='+photoNames.length+'&_rotationString='+rotationString;
+		window.open('pdf_conversion.php?_id='+_id+'&_numPhotos='+photoNames.length+'&_rotationString='+rotationString, '_blank');
 		//photo.php?_id=".$doc["_id"]."&_file=$photo_name
 
 	});

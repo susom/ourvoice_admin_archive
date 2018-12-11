@@ -21,11 +21,14 @@ if( isset($_POST["doc_id"]) ){
 	if(isset($_POST["photo_i"])){
 		$photo_i = $_POST["photo_i"];
 
+		$ajax = false;
 		if(isset($_POST["rotate"])){
+            $ajax = true;
 			//SAVE ROTATION
 			$rotate = $_POST["rotate"]; 
 			$payload["photos"][$photo_i]["rotate"] = $rotate;
 		}elseif(isset($_POST["delete"])){
+            $ajax = true;
 			$photo_name 	= "photo_".$photo_i.".jpg";
 			$audio_match 	= "audio_".$photo_i."_";
 
@@ -51,6 +54,7 @@ if( isset($_POST["doc_id"]) ){
 				}
 			}
 		}elseif(isset($_POST["tag_text"])){
+            $ajax = true;
 			//SAVE TAG
 			$photo_tag 		= $_POST["tag_text"];
 			$json_response 	= array("new_photo_tag" => false, "new_project_tag" => false);
@@ -82,6 +86,7 @@ if( isset($_POST["doc_id"]) ){
 			}
 			echo json_encode($json_response);
 		}elseif(isset($_POST["delete_tag_text"])){
+            $ajax = true;
 			//SAVE TAG
 
 			$photo_tag = $_POST["delete_tag_text"];
@@ -95,15 +100,25 @@ if( isset($_POST["doc_id"]) ){
 				}
 			}
 		}
+        //SAVE TEXT COMMENT
+		if(isset($_POST["text_comment"])){
+            if(isset($_POST["text_comment"])){
+                $txns = str_replace('"','&#34;', $_POST["text_comment"]);
+                $payload["photos"][$photo_i]["text_comment"] = $txns;
+            }
+        }
+        //SAVE TRANSCRIPTIONs
+        if(isset($_POST["transcriptions"])){
+            foreach($_POST["transcriptions"] as $audio_name => $transcription){
+                $txns = str_replace('"','&#34;', $transcription);
+                $payload["transcriptions"][$audio_name]["text"] = $txns;
+            }
+        }
 
-        $response = doCurl($url, json_encode($payload),"PUT");
-		exit;
-	}else{
-		//SAVE TRANSCRIPTIONS
-		foreach($_POST["transcriptions"] as $audio_name => $transcription){
-			$txns = str_replace('"','&#34;', $transcription);
-			$payload["transcriptions"][$audio_name]["text"] = $txns;
-		}
+        if($ajax) {
+            $response = doCurl($url, json_encode($payload), "PUT");
+            exit;
+        }
 	}
 
 	$response 	= doCurl($url, json_encode($payload),"PUT");
@@ -115,7 +130,8 @@ if( isset($_POST["doc_id"]) ){
 	}
 }
 
-if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordinates'])){ 	//ajax response to pixelation via portal tool
+//ajax response to pixelation via portal tool
+if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordinates'])){
 	$face_coord = json_decode($_POST["coordinates"],1);
 	$id = ($_POST["pic_id"]);
 	$photo_num = ($_POST["photo_num"]);
@@ -208,6 +224,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			continue;
 		}
 
+        $hidden_photo_i = $i;
 		if(!$old && !isset($photo["audios"])){
 			$old = "&_old=2";
 		}
@@ -261,6 +278,8 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$audio_attachments = "";
 		
 		$photo_tags = isset($photo["tags"]) ? $photo["tags"] : array();
+        $text_comment = "<div class='audio_clip keyboard'><textarea name='text_comment' placeholder='Click to comment on the photo'>".(isset($photo["text_comment"]) ? $photo['text_comment'] : "") ."</textarea></div>";
+
 		if(isset($photo["audios"])){
 			foreach($photo["audios"] as $filename){
 				//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
@@ -285,7 +304,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 				}else{
 					$transcription = "";
 				}
-				$audio_attachments .=   "<div class='audio_clip'>
+				$audio_attachments .=   "<div class='audio_clip mic'>
 											<audio controls>
 												<source src='$audio_src'/>
 											</audio> 
@@ -325,6 +344,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	// rotate= '$doc['photos'][0]['rotate'])'
 	echo "<form id='photo_detail' method='POST'>";
 	echo "<input type='hidden' name='doc_id' value='".$doc["_id"]."'/>";
+    echo "<input type='hidden' name='photo_i' value='$hidden_photo_i'/>";
 	echo "<div class='user_entry'>";
 	echo "<hgroup>";
 	echo "<h4>Photo Detail : 
@@ -380,8 +400,10 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 
 	echo "<aside>
 			<h4>Why did you take this picture?</h4>
+			$text_comment
+			
 			$audio_attachments
-			<input type='submit' value='Save Transcriptions'/>
+			<input type='submit' value='Save Transcriptions / Comments'/>
 		</aside>";
 
 	if(count($prevnext)> 0){

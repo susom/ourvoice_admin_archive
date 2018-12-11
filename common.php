@@ -994,28 +994,84 @@ function detectFaces($id, $old, $photo_name){
     }
 }
 
-function filterFaces($vertices,$image,$id){
-    foreach($vertices as $faces){
-        $width = isset($faces[0]) && isset($faces[2]) ? $faces[2] - $faces[0] : 0;
-        $height = isset($faces[1]) && isset($faces[7]) ? $faces[7] - $faces[1] : 0;
+function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
+	echo $pixel_count;
+	$passed = false;
+	if($rotationOffset){ //rotate back
+		if($rotationOffset == 1){
+			$image = imagerotate($image,-90,0);
+		}elseif($rotationOffset ==2){
+			$image = imagerotate($image,-180,0);
+		}elseif($rotationOffset ==3){
+			$image = imagerotate($image,-270,0);
+		}
+	}
+	// imagedestroy($image);
+	
+	if(count($vertices) == 6){ //from the portal tool
+		$scale_factor_x = imagesx($image) / $vertices['width_pic']; //width_pic is the thumbnail size on the portal , imagesx returns FULL res
+		$scale_factor_y = imagesy($image) / $vertices['height_pic'];
+		// echo $scale_factor_x . " " . $scale_factor_y;
+		$scale_pixels = isset($pixel_count)? ($pixel_count*0.000005) : 15;
+		print_rr($scale_pixels);
+		$width = isset($vertices['width']) ? $vertices['width'] : -1;
+		$height = isset($vertices['height']) ? $vertices['height'] : -1;
+		if($width != -1 && $height != -1){
+			$crop = imagecrop($image,['x'=>$vertices['x']*$scale_factor_x,'y'=>$vertices['y']*$scale_factor_y,'width'=>$width*$scale_factor_x, 'height'=>$height*$scale_factor_y]);
+			// pixelate($crop, $scale_pixels,$scale_pixels);
+			pixelate($crop, $scale_pixels, $scale_pixels);
+			//put faces back on the original image
+			imagecopymerge($image, $crop, $vertices['x']*$scale_factor_x, $vertices['y']*$scale_factor_y, 0, 0, $width*$scale_factor_x, $height*$scale_factor_y, 100);
+			$passed = true;
+			imagedestroy($crop);
 
-        if($width != 0 && $height != 0){
-            //have to crop out the faces first then apply filter
-            $crop = imagecrop($image,['x'=>$faces[0],'y'=>$faces[1],'width'=>$width, 'height'=>$height]);
-            pixelate($crop);
-            //put faces back on the original image
-            imagecopymerge($image, $crop, $faces[0], $faces[1], 0, 0, $width, $height, 100);
-        }
-        // $gaussian = array(array(1.0, 3.0, 1.0), array(3.0, 4.0, 3.0), array(1.0, 3.0, 1.0));
-        // $divisor = array_sum(array_map('array_sum',$gaussian));
-        //  $col = imagecolorallocate($new, 255, 255, 255);
-        //  imagepolygon($new, $faces, 4, $col);
-        //  //imagecrop($new,$faces);
-        // for($i = 0 ; $i < $itr ; $i++)
-        //  imageconvolution($crop, $gaussian, $divisor, 0);
-    }
-    //save image locally
-    imagejpeg($image, "$id.jpg");
+		}
+	}else{
+		foreach($vertices as $faces){
+			$width = isset($faces[0]) && isset($faces[2]) ? $faces[2] - $faces[0] : 0;
+			$height = isset($faces[1]) && isset($faces[7]) ? $faces[7] - $faces[1] : 0;
+			$scale_pixels = isset($pixel_count)? ($pixel_count*0.000005) : 15;
+			print_rr($pixel_count);
+			if($width != 0 && $height != 0){
+				//have to crop out the faces first then apply filter
+				$crop = imagecrop($image,['x'=>$faces[0],'y'=>$faces[1],'width'=>$width, 'height'=>$height]);
+				// pixelate($crop, $scale_pixels,$scale_pixels);
+				pixelate($crop,$scale_pixels,$scale_pixels);
+				//put faces back on the original image
+				imagecopymerge($image, $crop, $faces[0], $faces[1], 0, 0, $width, $height, 100);
+				$passed = true;
+				imagedestroy($crop);
+			}
+			// $gaussian = array(array(1.0, 3.0, 1.0), array(3.0, 4.0, 3.0), array(1.0, 3.0, 1.0));
+			// $divisor = array_sum(array_map('array_sum',$gaussian));
+			// 	$col = imagecolorallocate($new, 255, 255, 255);
+			// 	imagepolygon($new, $faces, 4, $col);
+			// 	//imagecrop($new,$faces);
+			// for($i = 0 ; $i < $itr ; $i++)
+			// 	imageconvolution($crop, $gaussian, $divisor, 0);
+		}
+	}
+
+	if($rotationOffset){ //rotate back so uploaded image will have the same format
+		if($rotationOffset == 1){
+			$image = imagerotate($image,90,0);
+		}elseif($rotationOffset ==2){
+			$image = imagerotate($image,180,0);
+		}elseif($rotationOffset ==3){
+			$image = imagerotate($image,270,0);
+		}
+	}
+		// imagedestroy($image_r);
+	
+	//save image locally
+	if($passed){
+		echo 'yes';
+		return $image;
+
+	}else{
+		echo 'no';
+		return false;
+	}
 }
 
 function pixelate($image, $pixelate_x = 12, $pixelate_y = 12){
