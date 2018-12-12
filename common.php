@@ -787,7 +787,8 @@ function getConvertedAudio($attach_url){
 }
 
 function convertAudio($filename, $full_proj_code){
-    print_rr('inside convertaudio');
+    echo '--------------' . "./temp/".$full_proj_code;
+    echo "_".$noext.".mp3" . '---------------';
     $split = explode("." , $filename);
     $noext = $split[0]; //audio_0_1 (ex)
     
