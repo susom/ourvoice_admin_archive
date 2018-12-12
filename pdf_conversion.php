@@ -13,7 +13,6 @@ if(isset($_GET["_id"]) && isset($_GET["_numPhotos"]) && isset($_GET["_rotationSt
 	$pdf->Output('example_001.pdf', 'I');
 }
 
-
 function generatePhotoPage($pdf, $id, $pic, $rotation){
 	/* Parameters: 
 		pdf = PDF object 
@@ -84,6 +83,8 @@ function generatePhotoPage($pdf, $id, $pic, $rotation){
 
 		$long 		= isset($photo["geotag"]["lng"]) ? $photo["geotag"]["lng"] : $photo["geotag"]["longitude"];
 		$lat 		= isset($photo["geotag"]["lat"]) ? $photo["geotag"]["lat"] : $photo["geotag"]["latitude"];
+
+
 
 		$timestamp  = $photo["geotag"]["timestamp"];
 		if($lat != 0 | $long != 0){
@@ -156,7 +157,7 @@ function generatePhotoPage($pdf, $id, $pic, $rotation){
 				}else{
 					$transcription = "";
 				}
-				array_push($retTranscript, $transcription);
+				array_push($retTranscript, array("type" => "audio" , "content" => $transcription));
 				
 			}
 		}else{
@@ -171,10 +172,14 @@ function generatePhotoPage($pdf, $id, $pic, $rotation){
 
 					$download 		= cfg::$couch_url . "/".cfg::$couch_attach_db."/" . $doc["_id"] . "/". $filename;
 					$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$audio_name]) : "";
-					
 				}
 			}
 		}
+
+        $text_comment = !empty($photo["text_comment"]) ? $photo["text_comment"] : false;
+        if($text_comment){
+        	array_push($retTranscript, array("type" => "text" , "content" => $text_comment));
+        }
 		break;
 	}
 	///////////////////////////// GET TRANSCRIPTIONS END /////////////////////////////		
@@ -279,8 +284,12 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 	if($landscape){ //Display Landscape
 		$pdf->writeHTMLCell(0, 0, '', 140, "<h2>Why did you take this picture?</h2>", 0, 1, 0, true, '', true);
 		if(isset($retTranscript[0]) && !empty($retTranscript[0]))
-			foreach($retTranscript as $k => $trans)
-				$pdf->writeHTMLCell(0, 0, '', ($k*10)+150, "<h3> ".($k+1). ": '".$trans."'</h3>", 0, 1, 0, true, '', true);
+			foreach($retTranscript as $k => $trans) {
+				$type 		= $trans["type"];
+				$content 	= $trans["content"];
+                $typeicon 	= $type == "audio" ? "[<img src='./img/icon_mic'/> ".($k + 1)."]" : "[text]";
+                $pdf->writeHTMLCell(0, 0, '', ($k * 10) + 150, "<h3>$typeicon : '" . $content . "'</h3>", 0, 1, 0, true, '', true);
+            }
 		else
 			$pdf->writeHTMLCell(0, 0, '', 150, "<h3>No Transcript Available</h3>", 0, 1, 0, true, '', true);
 		
@@ -307,8 +316,12 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 	}else{ //Display Portrait
 		$pdf->writeHTMLCell(0, 0, '', 140, "<h2>Why did you take this picture?</h2>", 0, 1, 0, true, '', true);
 		if(isset($retTranscript[0]) && !empty($retTranscript[0]))
-			foreach($retTranscript as $k => $trans)
-				$pdf->writeHTMLCell(0, 0, '', ($k*10)+150, "<h3>".($k+1). ": '".$trans."'</h3>", 0, 1, 0, true, '', true);
+			foreach($retTranscript as $k => $trans){
+                $type 		= $trans["type"];
+                $content 	= $trans["content"];
+                $typeicon 	= $type == "audio" ? "[audio ".($k + 1)."]" : "[text]";
+                $pdf->writeHTMLCell(0, 0, '', ($k*10)+150, "<h3>$typeicon : '".$content."'</h3>", 0, 1, 0, true, '', true);
+			}
 		else
 			$pdf->writeHTMLCell(0, 0, '', 150, "<h3>No Transcript Available</h3>", 0, 1, 0, true, '', true);
 		
