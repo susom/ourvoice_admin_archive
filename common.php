@@ -770,7 +770,7 @@ function getConvertedAudio($attach_url){
             $filename       = $filename_or_old;
             $full_proj_code = explode("_audio",array_pop($split));
         }
-
+        echo $filename;
         //save to server as audio_x_x.wav/AMR
         //if(file_exists)
         $localfile  = "./temp/$filename";
@@ -814,6 +814,7 @@ function convertAudio($filename, $full_proj_code){
 
         // REPLACE ATTACHMENT
         $newfile    = "./temp/".$full_proj_code."_".$noext.".mp3";
+        echo 'newfile  ' . $newfile;
         $handle     = fopen($newfile, 'w');
         fwrite($handle, $response); 
     }else{
