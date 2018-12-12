@@ -488,7 +488,7 @@ function saveTag(doc_id,photo_i,tagtxt,proj_idx){
 }
 
 $(document).ready(function(){
-	setTranscription();
+	createAudioPath();
 	<?php
 		echo implode($gmaps);
 	?>
@@ -688,18 +688,18 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 	});
 
 }
-function setTranscription(){ //Fire ajax to dynamically load transcriptions after page load
+function createAudioPath(){ //Fire ajax to dynamically load transcriptions after page load
 	var url = $("#main_photo").attr('src'); //
 	var info = {};
-	
-	
 	console.log($("#main_photo").attr('src'));
 	$.ajax({
 		method: "POST",
 		url: "ajaxHandler.php",
-		data: {setTranscription: {url:url}},
+		data: {convertAudio: {url:url}},
 		success:function(response){
 			console.log(response);
+			$(".mic").find('source').attr('src',response);
+			console.log($(".mic").find('source').attr('src'));
 		}
 	});
 }

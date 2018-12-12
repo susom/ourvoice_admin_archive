@@ -5,7 +5,7 @@ $data = $_REQUEST[$request]; //get the data associated with directive
 
 if(!empty($request)){
     switch($request){
-        case 'setTranscription':
+        case 'convertAudio':
             if(!empty($data['url']))  
                 $pathToAudio = getConvertedAudio($data['url']);
                 echo $pathToAudio;
