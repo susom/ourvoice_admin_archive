@@ -70,6 +70,20 @@ if(isset($_POST["for_delete"]) && $_POST["for_delete"]){
 	exit;
 }
 
+//AJAX FOR MARKING DATA_PROCESSED
+if(isset($_POST["data_procesed"]) && isset($_POST["doc_id"])){
+    // FIRST GET A FRESH COPY OF THE WALK DATA
+    $_id  		= $_POST["doc_id"];
+    $url 		= cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
+    $response   = doCurl($url);
+    $doc 	 	= json_decode(stripslashes($response),1);
+    $payload 	= $doc;
+    $payload["data_processed"] = true;
+    $response = doCurl($url, json_encode($payload), "PUT");
+    exit;
+}
+
+
 //NOW LOGIN TO YOUR PROJECT
 if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 	if(!isset($_POST["authorized"])){
@@ -159,7 +173,7 @@ nav ul {
     border-left:1px solid #000;
 }
 #summary td,#summary th {
-    width:128px;
+    width:114px;
     border-right:1px solid #000;
     border-bottom:1px solid #000;
     text-align:center;
@@ -193,6 +207,10 @@ nav ul {
     font-weight:bold;
     color:red;
 }
+#summary td.data_checked {
+    font-weight:bold;
+    color:limegreen;
+}
 </style>
 </head>
 <body id="main">
@@ -217,7 +235,6 @@ nav ul {
 if( $active_project_id ){
     //FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
     $response 		= getProjectSummaryData($active_pid);
-
     $date_headers 	= [];
     $summ_buffer    = [];
     $summ_buffer[]  = "<div id='summary'>";
@@ -231,6 +248,7 @@ if( $active_project_id ){
     $summ_buffer[]  = "<th>Audios #</th>";
     $summ_buffer[]  = "<th>Map Available</th>";
     $summ_buffer[]  = "<th>Upload Complete</th>";
+    $summ_buffer[]  = "<th>Processed</th>";
     $summ_buffer[]  = "</thead>";
     $summ_buffer[]  = "</table>";
     $summ_buffer[]  = "<table cellpadding='0' cellspacing='0' width='100%'>";
@@ -240,6 +258,7 @@ if( $active_project_id ){
     $total_audios = 0;
     foreach($response["rows"] as $i => $row){
         $walk   = $row["value"];
+
         $date   = Date($walk["date"]);
         if(array_key_exists($date, $date_headers)){ //if the date already exists in dateheaders
             $date_headers[$date]++;					// increment the counter
@@ -251,7 +270,8 @@ if( $active_project_id ){
         $_id    = substr($row["id"] , -4);
         $uuid   = substr($row["id"], strpos($row["id"],"_")+1,5);
 
-        $device = "uuid $uuid ...<br>" . $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
+        $device     = "uuid $uuid ...<br>" . $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
+        $processed  = isset($walk["data_processed"]) ? $walk["data_processed"] : false;
 
         //check for attachment ids existing
         //IMPORTANT TO FORMAT THIS RIGHT OR ELSE WILL GET INVALID JSON ERROR
@@ -269,8 +289,8 @@ if( $active_project_id ){
                 $resp       = updateDoc($url,$keyvalues);
             }
         }
-        $uploaded   = $expect_cnt === 0 ? "Y" : "N ($expect_cnt files)";
-
+        $uploaded       = $expect_cnt === 0 ? "Y" : "N ($expect_cnt files)";
+        $data_processed = $processed ? "data_checked" : "";
         $summ_buffer[] = "<tr>";
         $summ_buffer[] = "<td>" . ($i+1) . "</td>";
         $summ_buffer[] = "<td>" . $date . "</td>";
@@ -280,6 +300,7 @@ if( $active_project_id ){
         $summ_buffer[] = "<td>" . $walk["audios"]. "</td>";
         $summ_buffer[] = "<td class='".$walk["maps"]."'>" . $walk["maps"]. "</td>";
         $summ_buffer[] = "<td class='$uploaded'>" . $uploaded. "</td>";
+        $summ_buffer[] = "<td class='$data_processed'>" . ($processed ? "Y" : "") . "</td>";
         $summ_buffer[] = "</tr>";
 
         $total_photos += $walk["photos"];
@@ -289,7 +310,7 @@ if( $active_project_id ){
     $x = $i;
     while($x < 10){
         $summ_buffer[] = "<tr>";
-        $summ_buffer[] = "<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
+        $summ_buffer[] = "<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
         $summ_buffer[] = "</tr>";
         $x++;
     }
@@ -304,6 +325,7 @@ if( $active_project_id ){
     $summ_buffer[] = "<td></td>";
     $summ_buffer[] = "<td>$total_photos</td>";
     $summ_buffer[] = "<td>$total_audios</td>";
+    $summ_buffer[] = "<td></td>";
     $summ_buffer[] = "<td></td>";
     $summ_buffer[] = "<td></td>";
     $summ_buffer[] = "</tfoot>";
@@ -578,7 +600,30 @@ $(document).ready(function(){
 		}
 		return false;
 	});
-	
+
+    $(".collapse").on("change",".data_processed input",function(e){
+        var el = $(this);
+        el.prop("checked",true);
+
+        var doc_id = el.data("id");
+        $.ajax({
+            type 		: "POST",
+            url 		: "summary.php",
+            data 		: { doc_id: doc_id, data_procesed: 1 },
+        }).done(function(response) {
+            console.log(response);
+            setTimeout(function(){
+                el.parent().fadeOut(function(){
+                    $(this).next().fadeIn();
+                });
+            },1000);
+        }).fail(function(msg){
+            // console.log("rotation save failed");
+        });
+
+        return false;
+    });
+
 	$(".collapse").on("click",".export-pdf",function(e){
 		console.log("clicked button");
 		var _id 	= $(this).data("id");

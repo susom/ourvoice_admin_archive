@@ -588,6 +588,11 @@ label span {
     font-style: italic;
 }
 
+.data_processed {
+	position: absolute;
+	bottom: 5px;
+	right: 200px;
+}
 
 .export-pdf{
 	right: 155px;
@@ -595,6 +600,9 @@ label span {
 	bottom: 20px;
 }
 
+.data_processed + .export-pdf{
+	display:none;
+}
 /*agg photos */
 /*::-webkit-scrollbar {
     width: 7px;

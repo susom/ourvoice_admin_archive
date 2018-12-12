@@ -127,6 +127,7 @@ function printRow($doc){
     $photos     = $doc["photos"];
     $geotags    = $doc["geotags"];
     $survey     = $doc["survey"];
+    $processed  = $doc["data_processed"];
 
     //TODO THIS IS FOR THE 3 VERSIONS OF ATTACHMENT STORAGE AND RETRIEVAL
     if(!empty($doc["_attachments"])){
@@ -173,7 +174,12 @@ function printRow($doc){
     
     $codeblock[] = "<section class='photo_previews'>";
     $codeblock[] = "<a href='#' class='btn btn-danger deletewalk' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'>Delete This Walk</a>";
+
+    if(!$processed){
+        $codeblock[] = "<label class='data_processed' ><input type='checkbox' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'/> Data Processed?</label>";
+    }
     $codeblock[] = "<a href='#' class='btn btn-primary export-pdf' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'>Export as PDF</a>";
+
     $codeblock[] = "<h5>Photo Previews (".count($photos).")</h5>";
     $codeblock[] = "<div class='thumbs'>";
     $codeblock[] = "<ul>";
