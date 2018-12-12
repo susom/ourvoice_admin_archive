@@ -772,7 +772,7 @@ function getConvertedAudio($attach_url){
             $filename       = $filename_or_old;
             $full_proj_code = explode("_audio",array_pop($split));
         }
-        echo $filename;
+        echo $filename; //photo_0.jpg
         //save to server as audio_x_x.wav/AMR
         //if(file_exists)
         $localfile  = "./temp/$filename";
@@ -787,6 +787,7 @@ function getConvertedAudio($attach_url){
 }
 
 function convertAudio($filename, $full_proj_code){
+    print_rr('inside convertaudio');
     $split = explode("." , $filename);
     $noext = $split[0]; //audio_0_1 (ex)
     
@@ -822,6 +823,7 @@ function convertAudio($filename, $full_proj_code){
     }else{
         //if the mp3 already exists just link it 
         $newfile    = "./temp/".$full_proj_code."_".$noext.".mp3";
+        echo '<br> ' . $newfile;
     }
 
     //check if transcription exists on database
