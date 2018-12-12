@@ -787,11 +787,11 @@ function getConvertedAudio($attach_url){
 }
 
 function convertAudio($filename, $full_proj_code){
-    echo '--------------' . "./temp/".$full_proj_code . '---------------';;
-    echo "_".$noext.".mp3" . '---------------';
+    
     $split = explode("." , $filename);
     $noext = $split[0]; //audio_0_1 (ex)
-    
+    echo '--------------' . "./temp/".$full_proj_code . '---------------';;
+    echo "_".$noext.".mp3" . '---------------';
     if (function_exists('curl_file_create')) { // php 5.5+
           $cFile = curl_file_create("./temp/".$filename);
         } else { // 
