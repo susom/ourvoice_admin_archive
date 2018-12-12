@@ -785,12 +785,8 @@ function getConvertedAudio($attach_url){
 }
 
 function convertAudio($filename, $full_proj_code){
-    // echo 'inside convertAudio';
-    // print_rr($filename);
-    // print_rr($full_proj_code);
     $split = explode("." , $filename);
     $noext = $split[0]; //audio_0_1 (ex)
-    // print_rr("./temp/".$full_proj_code."_".$noext.".mp3");
     
     if (function_exists('curl_file_create')) { // php 5.5+
           $cFile = curl_file_create("./temp/".$filename);
@@ -832,9 +828,7 @@ function convertAudio($filename, $full_proj_code){
 
     if(!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename])){
         $trans = transcribeAudio($cFile,$filename);
-        // print_rr("RESULT ". $trans);
         if(!empty($trans["transcript"])){
-            // print_rr('i');
             $storage["transcriptions"][$filename]["text"] = $trans["transcript"];
             $storage["transcriptions"][$filename]["confidence"] = $trans["confidence"];
             $response   = doCurl($url, json_encode($storage), 'PUT');
@@ -847,14 +841,11 @@ function convertAudio($filename, $full_proj_code){
     $flac = explode(".",$filename);
     if(file_exists('./temp/'.$filename)){
         unlink('./temp/'.$filename);
-        // echo 'removing ' . './temp/'.$filename;
 
     if(file_exists('./temp/'.$flac[0].'.flac'))
         unlink('./temp/'.$flac[0].'.flac');
-        // echo ' removing ' . './temp/'.$flac[0].'.flac';
     }
-    // print_rr("RETURNING " . $newfile);
-    return $newfile;
+    return $newfile; //string representation of path to mp3
 }
 
 function transcribeAudio($cFile,$filename){
