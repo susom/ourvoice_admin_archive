@@ -159,6 +159,10 @@ nav ul {
     color: deepskyblue;
     text-shadow:1px 1px 1px darkgreen;
     cursor: pointer;
+
+    position: absolute;
+    left: 25px;
+    top: 135px;
 }
 #viewsumm.open:after{
     content: "-Close Walks Summary";
