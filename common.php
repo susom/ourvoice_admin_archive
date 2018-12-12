@@ -757,6 +757,7 @@ function getConvertedAudio($attach_url){
     $errors     = curl_error($ch);
     curl_close ($ch);
     $newAudioPath = "";
+    echo $errors;
     if(empty($errors)){
         //THEN EXTRACT THE FILE NAME
         $split              = explode("=",$attach_url);
