@@ -698,8 +698,8 @@ function createAudioPath(){ //Fire ajax to dynamically load transcriptions after
 		data: {convertAudio: {url:url}},
 		success:function(response){
 			console.log(response);
-			$(".mic").find('source').attr('src',response);
-			console.log($(".mic").find('source').attr('src'));
+			// $(".mic").find('source').attr('src',response);
+			// console.log($(".mic").find('source').attr('src'));
 		}
 	});
 }

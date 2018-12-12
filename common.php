@@ -750,6 +750,7 @@ function getFullUrl($partialUrl){
 
 function getConvertedAudio($attach_url){
     //FIRST DOWNLOAD THE AUDIO FILE
+    print_rr('made to getCon');
     $fullURL    = getFullUrl($attach_url);
     $ch         = curl_init($fullURL);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
