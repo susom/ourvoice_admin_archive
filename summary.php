@@ -151,7 +151,9 @@ nav ul {
 }
 
 
-
+#viewsumm {
+    padding-bottom:30px;
+}
 #viewsumm:after{
     content: "+View Walks Summary";
     font-size: 65%;
