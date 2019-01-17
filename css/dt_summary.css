@@ -380,6 +380,19 @@ label span {
 	background: url(../img/icon_keyboard.png) 0 0 no-repeat;
 	background-size:contain;
 }
+
+.photo_detail .keyboard p{
+	min-height:30px;
+	width: 80%;
+	font-size: 100%;
+	vertical-align: middle;
+	margin-left: 40px;
+	border-radius: 5px;
+	border:1px solid #ccc;
+	background:#eeeff;
+	padding:5px;
+}
+
 .photo_detail .audio_clip.mic:before {
 	top:65px; left:10px;
 	background: url(../img/icon_mic.png) 0 0 no-repeat;
@@ -423,6 +436,8 @@ label span {
 .photo_detail input[type='submit']{
 	display:block;
 	margin:0 auto;
+	background: orange;
+	color: black;
 }
 .prev,.next{
     float: right;
