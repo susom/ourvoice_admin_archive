@@ -283,14 +283,12 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		if(isset($photo["audios"])){
 			foreach($photo["audios"] as $filename){
 				//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
-
+				print_rr('before page loads');
+				print_rr($filename);
 				$aud_id			= $doc["_id"] . "_" . $filename;
                 $attach_url 	= "passthru.php?_id=".$aud_id."&_file=$filename" . $old;
-				$audio_src 		= getConvertedAudio($attach_url);
-				// print_rr("INSIDE PHOTO PHP");
-
-				// print_rr($audio_src);
-				
+				//$audio_src 		= getConvertedAudio($attach_url);
+				print_rr($attach_url);
 				$confidence 	= appendConfidence($attach_url);
 				$script 		= !empty($confidence) ? "This audio was transcribed using Google's API at ".round($confidence*100,2)."% confidence" : "";
 				$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
@@ -323,7 +321,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 
 					//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
 	                $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename" . $old;
-					$audio_src 		= getConvertedAudio($attach_url);
+					//$audio_src 		= getConvertedAudio($attach_url); //Serving AJAX instead of before page load.
 
 					$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $doc["_id"] . "/". $filename;
 					$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$audio_name]) : "";
@@ -490,6 +488,7 @@ function saveTag(doc_id,photo_i,tagtxt,proj_idx){
 }
 
 $(document).ready(function(){
+	createAudioPath();
 	<?php
 		echo implode($gmaps);
 	?>
@@ -618,7 +617,6 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 	var canvas = $(".covering_canvas")[0];
 	var width_pic = $("#main_photo")[0].getBoundingClientRect().width;
 	var height_pic = $("#main_photo")[0].getBoundingClientRect().height;
-	// console.log($("#main_photo")[0].getBoundingClientRect().width);
 	setCanvas(canvas, rotationOffset, width_pic, height_pic);
 	//css and pixel count set
 	
@@ -689,6 +687,21 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
     	}
 	});
 
+}
+function createAudioPath(){ //Fire ajax to dynamically load transcriptions after page load
+	var url = $("#main_photo").attr('src'); //
+	var info = {};
+	console.log($("#main_photo").attr('src'));
+	$.ajax({
+		method: "POST",
+		url: "ajaxHandler.php",
+		data: {convertAudio: {url:url}},
+		success:function(response){
+			console.log(response);
+			// $(".mic").find('source').attr('src',response);
+			// console.log($(".mic").find('source').attr('src'));
+		}
+	});
 }
 
 function setCanvas(canvas, rotationOffset, width_pic, height_pic){

@@ -750,6 +750,7 @@ function getFullUrl($partialUrl){
 
 function getConvertedAudio($attach_url){
     //FIRST DOWNLOAD THE AUDIO FILE
+    print_rr('made to getCon');
     $fullURL    = getFullUrl($attach_url);
     $ch         = curl_init($fullURL);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -757,6 +758,7 @@ function getConvertedAudio($attach_url){
     $errors     = curl_error($ch);
     curl_close ($ch);
     $newAudioPath = "";
+    echo $errors;
     if(empty($errors)){
         //THEN EXTRACT THE FILE NAME
         $split              = explode("=",$attach_url);
@@ -770,7 +772,7 @@ function getConvertedAudio($attach_url){
             $filename       = $filename_or_old;
             $full_proj_code = explode("_audio",array_pop($split));
         }
-
+        echo $filename; //photo_0.jpg
         //save to server as audio_x_x.wav/AMR
         //if(file_exists)
         $localfile  = "./temp/$filename";
@@ -785,13 +787,11 @@ function getConvertedAudio($attach_url){
 }
 
 function convertAudio($filename, $full_proj_code){
-    // echo 'inside convertAudio';
-    // print_rr($filename);
-    // print_rr($full_proj_code);
+    
     $split = explode("." , $filename);
     $noext = $split[0]; //audio_0_1 (ex)
-    // print_rr("./temp/".$full_proj_code."_".$noext.".mp3");
-    
+    echo '--------------' . "./temp/".$full_proj_code . '---------------';;
+    echo "_".$noext.".mp3" . '---------------';
     if (function_exists('curl_file_create')) { // php 5.5+
           $cFile = curl_file_create("./temp/".$filename);
         } else { // 
@@ -818,11 +818,13 @@ function convertAudio($filename, $full_proj_code){
 
         // REPLACE ATTACHMENT
         $newfile    = "./temp/".$full_proj_code."_".$noext.".mp3";
+        echo 'newfile  ' . $newfile;
         $handle     = fopen($newfile, 'w');
         fwrite($handle, $response); 
     }else{
         //if the mp3 already exists just link it 
         $newfile    = "./temp/".$full_proj_code."_".$noext.".mp3";
+        echo '<br> ' . $newfile;
     }
 
     //check if transcription exists on database
@@ -832,9 +834,7 @@ function convertAudio($filename, $full_proj_code){
 
     if(!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename])){
         $trans = transcribeAudio($cFile,$filename);
-        // print_rr("RESULT ". $trans);
         if(!empty($trans["transcript"])){
-            // print_rr('i');
             $storage["transcriptions"][$filename]["text"] = $trans["transcript"];
             $storage["transcriptions"][$filename]["confidence"] = $trans["confidence"];
             $response   = doCurl($url, json_encode($storage), 'PUT');
@@ -847,14 +847,11 @@ function convertAudio($filename, $full_proj_code){
     $flac = explode(".",$filename);
     if(file_exists('./temp/'.$filename)){
         unlink('./temp/'.$filename);
-        // echo 'removing ' . './temp/'.$filename;
 
     if(file_exists('./temp/'.$flac[0].'.flac'))
         unlink('./temp/'.$flac[0].'.flac');
-        // echo ' removing ' . './temp/'.$flac[0].'.flac';
     }
-    // print_rr("RETURNING " . $newfile);
-    return $newfile;
+    return $newfile; //string representation of path to mp3
 }
 
 function transcribeAudio($cFile,$filename){
