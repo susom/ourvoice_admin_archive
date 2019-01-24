@@ -283,12 +283,12 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		if(isset($photo["audios"])){
 			foreach($photo["audios"] as $filename){
 				//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
-				print_rr('before page loads');
-				print_rr($filename);
+//				print_rr('before page loads');
+//				print_rr($filename);
 				$aud_id			= $doc["_id"] . "_" . $filename;
                 $attach_url 	= "passthru.php?_id=".$aud_id."&_file=$filename" . $old;
-				//$audio_src 		= getConvertedAudio($attach_url);
-				print_rr($attach_url);
+				$audio_src 		= getConvertedAudio($attach_url);
+//				print_rr($attach_url);
 				$confidence 	= appendConfidence($attach_url);
 				$script 		= !empty($confidence) ? "This audio was transcribed using Google's API at ".round($confidence*100,2)."% confidence" : "";
 				$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
@@ -314,7 +314,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			}
 		}else{
 			if(!empty($photo["audio"])){
-				print_rr("$$$$$$$");
+//				print_rr("$$$$$$$");
 				$ext   = $device == "iOS" ? "wav" : "amr";
 				for($j = 1 ; $j <= $photo["audio"]; $j++ ){
 					$filename = "audio_".$i."_".$j . "." .$ext;

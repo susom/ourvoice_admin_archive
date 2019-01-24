@@ -750,7 +750,7 @@ function getFullUrl($partialUrl){
 
 function getConvertedAudio($attach_url){
     //FIRST DOWNLOAD THE AUDIO FILE
-    print_rr('made to getCon');
+//    print_rr('made to getCon');
     $fullURL    = getFullUrl($attach_url);
     $ch         = curl_init($fullURL);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -1016,7 +1016,7 @@ function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
 		$scale_factor_y = imagesy($image) / $vertices['height_pic'];
 		// echo $scale_factor_x . " " . $scale_factor_y;
 		$scale_pixels = isset($pixel_count)? ($pixel_count*0.000005) : 15;
-		print_rr($scale_pixels);
+//		print_rr($scale_pixels);
 		$width = isset($vertices['width']) ? $vertices['width'] : -1;
 		$height = isset($vertices['height']) ? $vertices['height'] : -1;
 		if($width != -1 && $height != -1){
@@ -1034,7 +1034,7 @@ function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
 			$width = isset($faces[0]) && isset($faces[2]) ? $faces[2] - $faces[0] : 0;
 			$height = isset($faces[1]) && isset($faces[7]) ? $faces[7] - $faces[1] : 0;
 			$scale_pixels = isset($pixel_count)? ($pixel_count*0.000005) : 15;
-			print_rr($pixel_count);
+//			print_rr($pixel_count);
 			if($width != 0 && $height != 0){
 				//have to crop out the faces first then apply filter
 				$crop = imagecrop($image,['x'=>$faces[0],'y'=>$faces[1],'width'=>$width, 'height'=>$height]);
