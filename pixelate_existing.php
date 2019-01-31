@@ -78,8 +78,8 @@ function detectFaces($id, $old, $photo_name, $rev){
 		    $content_type   = 'image/jpeg';
 		    			$filepath = "./temp/$id";
 
-	    	print_rr($couchurl);
-			print_rr($filepath);
+//	    	print_rr($couchurl);
+//			print_rr($filepath);
 	//parse response into useable format : XY coordinates per face / IF 
 	if(!empty($resp['responses'][0])){
 		print_rr('detected face '. $id);
