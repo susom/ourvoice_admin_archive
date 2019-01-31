@@ -252,10 +252,14 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			$goodbad = "N/A";
 		}
 
-		$long 		= isset($photo["geotag"]["lng"]) ? $photo["geotag"]["lng"] : $photo["geotag"]["longitude"];
-		$lat 		= isset($photo["geotag"]["lat"]) ? $photo["geotag"]["lat"] : $photo["geotag"]["latitude"];
+        $timestamp = $long = $lat = "";
+		if(array_key_exists("geotag", $photo)){
+            $long 		= isset($photo["geotag"]["lng"])?  $photo["geotag"]["lng"] : $photo["geotag"]["longitude"];
+            $lat 		= isset($photo["geotag"]["lat"]) ? $photo["geotag"]["lat"] : $photo["geotag"]["latitude"];
+            $timestamp  = $photo["geotag"]["timestamp"];
+        }
 
-		$timestamp  = $photo["geotag"]["timestamp"];
+
 		if($lat != 0 | $long != 0){
             $time = time();
             $url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$long&timestamp=$time&key=AIzaSyDCH4l8Q6dVpYgCUyO_LROnCuSE1W9cwak";
@@ -278,7 +282,8 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$audio_attachments = "";
 		
 		$photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
-        $text_comment   = isset($photo["text_comment"]) ? "<div class='audio_clip keyboard'><p>".  $photo['text_comment']  ."</p></div>" : "";
+        $text_comment   = !empty($photo["text_comment"]) ? "<div class='audio_clip keyboard'><p>".  $photo['text_comment']  ."</p></div>" : "";
+
 
 		if(isset($photo["audios"])){
 			foreach($photo["audios"] as $filename){
