@@ -758,7 +758,7 @@ function getConvertedAudio($attach_url){
     $errors     = curl_error($ch);
     curl_close ($ch);
     $newAudioPath = "";
-    echo $errors;
+    // echo $errors;
     if(empty($errors)){
         //THEN EXTRACT THE FILE NAME
         $split              = explode("=",$attach_url);
@@ -772,7 +772,7 @@ function getConvertedAudio($attach_url){
             $filename       = $filename_or_old;
             $full_proj_code = explode("_audio",array_pop($split));
         }
-        echo $filename; //photo_0.jpg
+        // echo $filename; //audio1.amr
         //save to server as audio_x_x.wav/AMR
         //if(file_exists)
         $localfile  = "./temp/$filename";
