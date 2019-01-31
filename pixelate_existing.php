@@ -104,7 +104,7 @@ function detectFaces($id, $old, $photo_name, $rev){
 
 		    $couchurl       = $attach_url."/".$id."/".$photo_name."?rev=".$rev;
 		    $content_type   = 'image/jpeg';
-	    	print_rr($couchurl);
+//	    	print_rr($couchurl);
 			// $response       = uploadAttach($couchurl, $filepath, $content_type);
 			// if(isset("./temp/$id"))
 			// 	unset("./temp/$id");
