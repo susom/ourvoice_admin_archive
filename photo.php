@@ -277,8 +277,8 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$attach_url = "#";
 		$audio_attachments = "";
 		
-		$photo_tags = isset($photo["tags"]) ? $photo["tags"] : array();
-        $text_comment = "<div class='audio_clip keyboard'><p>".(isset($photo["text_comment"]) ? $photo['text_comment'] : "") ."</p></div>";
+		$photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
+        $text_comment   = isset($photo["text_comment"] ? "<div class='audio_clip keyboard'><p>".  $photo['text_comment']  ."</p></div>" : "";
 
 		if(isset($photo["audios"])){
 			foreach($photo["audios"] as $filename){
