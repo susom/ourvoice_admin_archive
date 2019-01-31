@@ -790,8 +790,8 @@ function convertAudio($filename, $full_proj_code){
     
     $split = explode("." , $filename);
     $noext = $split[0]; //audio_0_1 (ex)
-    echo '--------------' . "./temp/".$full_proj_code . '---------------';;
-    echo "_".$noext.".mp3" . '---------------';
+    // echo '--------------' . "./temp/".$full_proj_code . '---------------';;
+    // echo "_".$noext.".mp3" . '---------------';
     if (function_exists('curl_file_create')) { // php 5.5+
           $cFile = curl_file_create("./temp/".$filename);
         } else { // 
@@ -818,13 +818,13 @@ function convertAudio($filename, $full_proj_code){
 
         // REPLACE ATTACHMENT
         $newfile    = "./temp/".$full_proj_code."_".$noext.".mp3";
-        echo 'newfile  ' . $newfile;
+        // echo 'newfile  ' . $newfile;
         $handle     = fopen($newfile, 'w');
         fwrite($handle, $response); 
     }else{
         //if the mp3 already exists just link it 
         $newfile    = "./temp/".$full_proj_code."_".$noext.".mp3";
-        echo '<br> ' . $newfile;
+        // echo '<br> ' . $newfile;
     }
 
     //check if transcription exists on database
