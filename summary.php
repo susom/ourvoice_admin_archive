@@ -240,7 +240,9 @@ nav ul {
 <?php
 if( $active_project_id ){
     //FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
-    $response 		= getProjectSummaryData($active_pid);
+    $response 		= getProjectSummaryData($active_project_id);
+    $response_rows  = $response["rows"];
+
     $date_headers 	= [];
     $summ_buffer    = [];
     $summ_buffer[]  = "<div id='summary'>";
@@ -262,7 +264,7 @@ if( $active_project_id ){
 
     $total_photos = 0;
     $total_audios = 0;
-    foreach($response["rows"] as $i => $row){
+    foreach($response_rows as $i => $row){
         $walk   = $row["value"];
 
         $date   = Date($walk["date"]);

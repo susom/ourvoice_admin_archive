@@ -110,7 +110,6 @@ function cmp_date($a, $b){
         return (strtotime($a) < strtotime($b)) ? 1 : -1;
 }
 
-
 function getFullName($data, $abv){
     foreach($data["project_list"] as $in){
         if(isset($in["project_id"]) && $in["project_id"] == $abv){
@@ -438,7 +437,6 @@ function printPhotos($doc){
     return $codeblock;
 }
 
-
 function parseTime($data, $storage){
     if($data["rows"] == null)
         return false;
@@ -687,11 +685,8 @@ function filter_by_projid($view, $keys_array){ //keys array is the # integer of 
     return json_decode($response,1);
 }
 
-function getProjectSummaryData($startkey, $view="walk", $dd="summary"){
-    $endkey     = $startkey+1;
-//    $qs         = http_build_query(array( "startkey" => "['$startkey']" , "endkey" => "['$endkey']"));
-//    WOW, Must use single quotes or else it will be invalid json!
-    $qs         = http_build_query(array( 'startkey' => '["'.$endkey.'"]' , 'endkey' => '["'.$startkey.'"]', 'descending' => 'true'));
+function getProjectSummaryData($project_code, $view="walk", $dd="project"){
+    $qs         = http_build_query(array( 'keys' => '["'.$project_code.'"]' ,  'descending' => 'true'));
     $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
     $response   = doCurl($couch_url);
     return json_decode($response,1);

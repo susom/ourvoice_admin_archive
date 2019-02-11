@@ -61,7 +61,7 @@ h5{
 if( $active_project_id ){
     markPageLoadTime("BEGIN Project Walk Summary");
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
-    $response 		= getProjectSummaryData($active_pid);
+    $response 		= getProjectSummaryData($active_project_id);
 
     $html_buffer = [];
     $html_buffer[] = "<table id='summary'>";
