@@ -219,6 +219,8 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	$photo_i 	= $temp_2[0];
 	// $rotate 	= isset($doc['photos'][0]['rotate']) ? $doc['photos'][0]['rotate'] : 0;
 	$prevnext 	= [];
+
+	$lang       = $doc["lang"];
 	foreach($photos as $i => $photo){
 		if($i !== intval($photo_i)){
 			continue;
@@ -292,10 +294,11 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 //				print_rr($filename);
 				$aud_id			= $doc["_id"] . "_" . $filename;
                 $attach_url 	= "passthru.php?_id=".$aud_id."&_file=$filename" . $old;
-				$audio_src 		= getConvertedAudio($attach_url);
-//				print_rr($attach_url);
+
+                $audio_src 		= getConvertedAudio($attach_url, $lang);
 				$confidence 	= appendConfidence($attach_url);
 				$script 		= !empty($confidence) ? "This audio was transcribed using Google's API at ".round($confidence*100,2)."% confidence" : "";
+
 				$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
 				//Works for archaic saving scheme as well as the new one : 
 				if(isset($doc["transcriptions"][$filename]["text"])){
@@ -362,7 +365,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		<figure>
 		<a class='preview rotate' rev='$hasrotate' data-photo_i=$photo_i data-doc_id='".$doc["_id"]."' rel='google_map_0' data-long='$long' data-lat='$lat'>
 				<canvas class='covering_canvas'></canvas>
-				<img id = 'main_photo' src='$photo_uri'/><span></span>
+				<img id = 'main_photo' src='$photo_uri' data-lang='$lang'/><span></span>
 
 		</a>
 
@@ -406,7 +409,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			$text_comment
 			
 			$audio_attachments
-			<input type='submit' value='Save Transcriptions / Comments'/>
+			<input type='submit' value='Save Transcriptions'/>
 		</aside>";
 
 	if(count($prevnext)> 0){
@@ -436,7 +439,6 @@ include("inc/modal_tag.php");
 <!-- <script src = "js/jquery-ui.js"> //added -->
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo $gmaps_key; ?>"></script>
 <script src = "js/jquery-ui.js"></script>
-
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
 <script>
 function addmarker(latilongi,map_id) {
@@ -502,7 +504,6 @@ $(document).ready(function(){
 		$("#cover").css("background-color","rgba(248,247,216,0.7)").css("z-index","2");
 
 	}
-	
 
 	$("#pixelate").on("click", function(){
 		var doc_id 	= $(".preview span").parent().data("doc_id"); //AFUM23894572093482093.. etc
@@ -523,7 +524,6 @@ $(document).ready(function(){
 		}
 
 	});
-	
 
 	window.snd_o           = null;
 	$(".audio").click(function(){
@@ -618,6 +618,7 @@ $(document).ready(function(){
 		return false;
 	});
 });
+
 function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 	var canvas = $(".covering_canvas")[0];
 	var width_pic = $("#main_photo")[0].getBoundingClientRect().width;
@@ -693,14 +694,16 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 	});
 
 }
+
 function createAudioPath(){ //Fire ajax to dynamically load transcriptions after page load
 	var url = $("#main_photo").attr('src'); //
+    var lang =  $("#main_photo").data('lang');
+
 	var info = {};
-	console.log($("#main_photo").attr('src'));
 	$.ajax({
 		method: "POST",
 		url: "ajaxHandler.php",
-		data: {convertAudio: {url:url}},
+		data: {convertAudio: {url:url, lang:lang}},
 		success:function(response){
 			console.log(response);
 			// $(".mic").find('source').attr('src',response);

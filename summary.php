@@ -243,8 +243,6 @@ if( $active_project_id ){
     $response 		= getProjectSummaryData($active_project_id);
     $response_rows  = $response["rows"];
 
-
-
     $date_headers 	= [];
     $summ_buffer    = [];
     $summ_buffer[]  = "<div id='summary'>";

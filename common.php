@@ -758,7 +758,7 @@ function getFullUrl($partialUrl){
     return $fullpath . $partialUrl;
 }
 
-function getConvertedAudio($attach_url){
+function getConvertedAudio($attach_url, $lang){
     //FIRST DOWNLOAD THE AUDIO FILE
 //    print_rr('made to getCon');
     $fullURL    = getFullUrl($attach_url);
@@ -791,12 +791,12 @@ function getConvertedAudio($attach_url){
         fclose($file);
 
         //THEN CONVERT THE AUDIO
-        $newAudioPath = convertAudio($filename, $full_proj_code[0]); 
+        $newAudioPath = convertAudio($filename, $full_proj_code[0], $lang);
     }
     return $newAudioPath;
 }
 
-function convertAudio($filename, $full_proj_code){
+function convertAudio($filename, $full_proj_code , $lang){
     
     $split = explode("." , $filename);
     $noext = $split[0]; //audio_0_1 (ex)
@@ -841,8 +841,7 @@ function convertAudio($filename, $full_proj_code){
     $url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $full_proj_code;
     $response       = doCurl($url);
     $storage        = json_decode($response,1);
-
-    if(!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename])){
+    if($lang == "en" && (!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename]))){
         $trans = transcribeAudio($cFile,$filename);
         if(!empty($trans["transcript"])){
             $storage["transcriptions"][$filename]["text"] = $trans["transcript"];
