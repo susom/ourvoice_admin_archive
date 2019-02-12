@@ -89,6 +89,7 @@ if( isset($_POST["proj_idx"]) ){
 			,"project_email" 	=> $_POST["project_email"]
 			,"template_type"	=> $_POST["template_type"]
             ,"text_comments"    => $_POST["text_comments"]
+            ,"include_surveys"  => $_POST["include_surveys"]
 			,"thumbs"			=> isset($_POST["thumbs"]) ? $_POST["thumbs"] : 0
 			,"app_lang" 		=> $app_lang
 		);
@@ -215,9 +216,9 @@ if(!isset($_SESSION["discpw"])) {
 		$thumbs   = $p["thumbs"];
         $texts    = isset($p["text_comments"]) ? $p["text_comments"] : false;
 		$langs 	  = $p["app_lang"];
-		$template_type = isset($p["template_type"]) ? $p["template_type"] : "1";
-
-		$template_instructions = "";
+		$template_type      = isset($p["template_type"]) ? $p["template_type"] : "1";
+        $include_surveys    = isset($p["include_surveys"]) ? $p["include_surveys"] : true;
+        $template_instructions = "";
 		$template = false;
 		if($_GET["proj_idx"] == 99 || $_GET["proj_idx"] == 100){
 			$template = true;
@@ -245,6 +246,10 @@ if(!isset($_SESSION["discpw"])) {
 					<input type="checkbox" name="thumbs" <?php if($thumbs) echo "checked"; ?> value="2"/> Smilies 
 					<input type="checkbox" name="thumbs" <?php if(!$thumbs) echo "checked"; ?> value="1"/> Thumbs
 				</label>
+                <label><span>Use Surveys</span>
+                    <input type="radio" name="include_surveys" <?php if(!$include_surveys) echo "checked"; ?> value="0"/> No Walk End Survey
+                    <input type="radio" name="include_surveys" <?php if($include_surveys) echo "checked"; ?> value="1"/> Yes Walk End Survey
+                </label>
 				<label class="languages"><p><span>Languages</span> 
 					<!-- <a href='#' class='add_language'>+ Add Language</a> -->
 				</p>
