@@ -636,7 +636,7 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 	var scrollOffset = 0; //necessary for scaling pixels from top of page for Y coordinate
 
 	$("#pixelateSubmit").on("click",function(){
-			if(confirm('Are you sure you want to pixelate this area?')){
+			if(confirm('Are you sure you want to pixelate this area? This action cannot be undone.')){
 				$.ajax({
 			 		method: "POST",
 			  	 	url: "photo.php",

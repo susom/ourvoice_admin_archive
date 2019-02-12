@@ -118,15 +118,15 @@ function getFullName($data, $abv){
     }
 }
 
-function printRow($doc){
+function printRow($doc, $active_pid){
     global $project_meta, $ap;
 
-    $codeblock  = array();
-    $i          = $doc["_id"];
-    $photos     = $doc["photos"];
-    $geotags    = $doc["geotags"];
-    $survey     = $doc["survey"];
-    $processed  = $doc["data_processed"];
+    $codeblock      = array();
+    $i              = $doc["_id"];
+    $photos         = $doc["photos"];
+    $geotags        = $doc["geotags"];
+    $survey         = $doc["survey"];
+    $processed      = $doc["data_processed"];
 
     //TODO THIS IS FOR THE 3 VERSIONS OF ATTACHMENT STORAGE AND RETRIEVAL
     if(!empty($doc["_attachments"])){
@@ -142,8 +142,17 @@ function printRow($doc){
         }
     }
 
-    $forjsongeo = array();
-    $lang       = is_null($doc["lang"]) ? "EN" : $doc["lang"];
+    $forjsongeo     = array();
+    $lang           = is_null($doc["lang"]) ? "EN" : $doc["lang"];
+    $language_list  = $_SESSION["DT"]["project_list"][$active_pid]["app_lang"];
+    $full_language  = array_filter($language_list, function($v) use ($lang){
+        if($v["lang"] == $lang){
+            return $v;
+        }
+    });
+    if($fl = current($full_language)){
+        $lang = $fl["language"];
+    }
 
     // filter out low accuracy
     $forjsongeo = array_filter($geotags,function($tag){

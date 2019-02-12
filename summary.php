@@ -46,7 +46,7 @@ if(isset($_POST["active_pid"]) && $_POST["date"]){
 	$code_block 	= array();
 	foreach($response["rows"] as $row){
 		$doc 		= $row["value"];
-		$code_block = array_merge($code_block, printRow($doc));
+		$code_block = array_merge($code_block, printRow($doc,$active_pid));
 	}
 	echo implode("",$code_block);
 	exit;
@@ -243,6 +243,8 @@ if( $active_project_id ){
     $response 		= getProjectSummaryData($active_project_id);
     $response_rows  = $response["rows"];
 
+
+
     $date_headers 	= [];
     $summ_buffer    = [];
     $summ_buffer[]  = "<div id='summary'>";
@@ -365,7 +367,7 @@ if( $active_project_id ){
 				$doc        = $row["value"];
 //                markPageLoadTime("ONE PRINT ROW PROCESSED");
                 echo "<a name='".$doc["_id"]."'></a>";
-                echo implode("",printRow($doc));
+                echo implode("",printRow($doc,$active_pid));
             }
 			echo "</div>";
 			echo "</aside>";
