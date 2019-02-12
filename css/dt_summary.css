@@ -160,6 +160,14 @@ a.preview i{
 .audio.has {
 	display:inline-block;
 }
+
+.audio.keyboard{
+	background: url(../img/icon_keyboard.png) 0 -8px no-repeat;
+	background-size: 90%;
+	display: inline-block;
+	width: 40px;
+}
+
 .goodbad {
 	width:20px;
 	height:20px;

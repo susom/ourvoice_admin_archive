@@ -246,6 +246,11 @@ function printRow($doc, $active_pid){
 
         $attach_url = "#";
         $audio_attachments = "";
+        $text_comment      = "";
+
+        if(!empty($photo["text_comment"])){
+            $text_comment  = "<a class='audio keyboard'></a> ";
+        }
 
         if(!empty($photo["audio"])){
             $num_audios = intval($photo["audio"]);
@@ -279,6 +284,7 @@ function printRow($doc, $active_pid){
             <span class='time'>@".date("g:i a", floor($timestamp/1000))."</span>
             ".$goodbad."
             ".$audio_attachments."
+            ".$text_comment."
         </figcaption>
         </figure></li>";
     }
