@@ -264,10 +264,16 @@ if( $active_project_id ){
 
     $total_photos = 0;
     $total_audios = 0;
+
+    $dates      = array();
+    $sum_row    = array();
     foreach($response_rows as $i => $row){
         $walk   = $row["value"];
 
-        $date   = Date($walk["date"]);
+        $date    = $walk["date"];
+        $temp    = explode("-",$date);
+        $dateB   = $temp[2]."-".$temp[0]."-".$temp[1];
+
         if(array_key_exists($date, $date_headers)){ //if the date already exists in dateheaders
             $date_headers[$date]++;					// increment the counter
         }else{
@@ -299,21 +305,32 @@ if( $active_project_id ){
         }
         $uploaded       = $expect_cnt === 0 ? "Y" : "N ($expect_cnt files)";
         $data_processed = $processed ? "data_checked" : "";
-        $summ_buffer[] = "<tr>";
-        $summ_buffer[] = "<td>" . ($i+1) . "</td>";
-        $summ_buffer[] = "<td>" . $date . "</td>";
-        $summ_buffer[] = "<td><a href='#".$row["id"]."'>" . $_id . "</a></td>";
-        $summ_buffer[] = "<td>" . $device . "</td>";
-        $summ_buffer[] = "<td>" . $walk["photos"]. "</td>";
-        $summ_buffer[] = "<td>" . $walk["audios"]. "</td>";
-        $summ_buffer[] = "<td class='".$walk["maps"]."'>" . $walk["maps"]. "</td>";
-        $summ_buffer[] = "<td class='$uploaded'>" . $uploaded. "</td>";
-        $summ_buffer[] = "<td class='$data_processed'>" . ($processed ? "Y" : "") . "</td>";
-        $summ_buffer[] = "</tr>";
+
+        $sum_buffer_item = array();
+        $sum_buffer_item[] = "<tr>";
+        $sum_buffer_item[] = "<td>" . ($i+1) . "</td>";
+        $sum_buffer_item[] = "<td>" . $date . "</td>";
+        $sum_buffer_item[] = "<td><a href='#".$row["id"]."'>" . $_id . "</a></td>";
+        $sum_buffer_item[] = "<td>" . $device . "</td>";
+        $sum_buffer_item[] = "<td>" . $walk["photos"]. "</td>";
+        $sum_buffer_item[] = "<td>" . $walk["audios"]. "</td>";
+        $sum_buffer_item[] = "<td class='".$walk["maps"]."'>" . $walk["maps"]. "</td>";
+        $sum_buffer_item[] = "<td class='$uploaded'>" . $uploaded. "</td>";
+        $sum_buffer_item[] = "<td class='$data_processed'>" . ($processed ? "Y" : "") . "</td>";
+        $sum_buffer_item[] = "</tr>";
+
+
+        array_push($dates, $dateB);
+        array_push($sum_row,$sum_buffer_item);
 
         $total_photos += $walk["photos"];
         $total_audios += $walk["audios"];
     }
+    arsort($dates);
+    foreach($dates as $idx => $date){
+        $summ_buffer = array_merge($summ_buffer, $sum_row[$idx]);
+    }
+
     // FILL OUT REST OF TABLE EMPTY SPACE
     $x = $i;
     while($x < 10){
@@ -356,7 +373,7 @@ if( $active_project_id ){
 			echo "<aside>";
 			echo "<h4 class='day' rel='true' rev='$active_pid' data-toggle='collapse' data-target='#day_$date'>$date</h4>";
 			echo "<div id='day_$date' class='collapse in'>";
-			
+
 			//AUTOMATICALLY SHOW MOST RECENT DATE's DATA, AJAX THE REST
 			$response 	= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
 

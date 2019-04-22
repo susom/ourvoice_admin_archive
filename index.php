@@ -141,12 +141,8 @@ if(isset($_POST["discpw"])){
 	<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
   	<meta charset="utf-8">
 
-	<!-- <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-  --> 	
   	<script src="js/jquery-3.3.1.min.js"></script>
   	<script src="js/jquery-ui.js"></script>
-  	<!-- <script src="https://code.jquery.com/jquery-1.12.4.js"></script> -->
-  	<!-- <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> -->
 
     <link href="css/dt_common.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
     <link href="css/dt_index.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
@@ -234,10 +230,7 @@ if(!isset($_SESSION["discpw"])) {
 				<label><span>Project Name</span><input  type="text" name="project_name" value="<?php echo !$template ? $pname : ""; ?>"/></label>
 				<label><span>Project Pass</span><input type="text" name="project_pass" value="<?php echo $ppass; ?>"/></label>
 				<label><span>Portal Pass</span><input type="text" name="summ_pass" value="<?php echo $spass; ?>"/></label>
-				<label><span>Template Type</span>
-					<input type="radio" name="template_type" <?php if(!$template_type) echo "checked"; ?> value="0"/> Short Template 
-					<input type="radio" name="template_type" <?php if($template_type) echo "checked"; ?> value="1"/> Full Template
-				</label>
+                <input type="hidden" name="template_type" value="1"/>
                 <label><span>Text Comments</span>
                     <input type="radio" name="text_comments" <?php if(!$texts) echo "checked"; ?> value="0"/> No Texting
                     <input type="radio" name="text_comments" <?php if($texts) echo "checked"; ?> value="1"/> Allow Texting
@@ -246,11 +239,7 @@ if(!isset($_SESSION["discpw"])) {
 					<input type="checkbox" name="thumbs" <?php if($thumbs) echo "checked"; ?> value="2"/> Smilies 
 					<input type="checkbox" name="thumbs" <?php if(!$thumbs) echo "checked"; ?> value="1"/> Thumbs
 				</label>
-                <label><span>Use Surveys</span>
-                    <input type="radio" name="include_surveys" <?php if(!$include_surveys) echo "checked"; ?> value="0"/> No Walk End Survey
-                    <input type="radio" name="include_surveys" <?php if($include_surveys) echo "checked"; ?> value="1"/> Yes Walk End Survey
-                </label>
-				<label class="languages"><p><span>Languages</span> 
+				<label class="languages"><p><span>Languages</span>
 					<!-- <a href='#' class='add_language'>+ Add Language</a> -->
 				</p>
 				<?php
@@ -386,7 +375,6 @@ function sortTable(n){
 		    }
 		}
 }
-
 $(document).ready(function(){
 	pdata = <?php echo json_encode($ALL_PROJ_DATA);?>;
 	if($("#folderspace").length){
@@ -494,7 +482,6 @@ $(document).ready(function(){
 		return false;
 	});
 });
-
   function bindProperties(){
     $( ".ui-widget-drag").draggable({
       cursor: "move",
@@ -559,7 +546,6 @@ $(document).ready(function(){
 
     }); //ui-widget-drop
   }//bindProperties
-
   function appendProjectCounter(){
   	var pCounters = <?php echo json_encode($pCount); ?>;
   	for(var proj in pCounters){
@@ -567,8 +553,6 @@ $(document).ready(function(){
   		appendLoc.textContent += (pCounters[proj]);
   	}
   }
-
-
   function deleteprompt(){
       var value = confirm("Are you sure you want to delete this folder?");
       return value;
@@ -672,8 +656,7 @@ $(document).ready(function(){
 	}
 	console.log(deletion_data);
 	removeFromDB(JSON.stringify(deletion_data));
-  }	
-
+  }
   function createNode(data_key,class_name,text){
   	let div = document.createElement("div");
   	let p = document.createElement("p");
@@ -687,8 +670,6 @@ $(document).ready(function(){
     bindProperties();
     return div; 
   }
-
-
   function isValidElement(name,location,type){
   	let selection = (type=="class") ? "." : "#";
   	console.log(selection);
@@ -701,7 +682,6 @@ $(document).ready(function(){
   	}
   	return false;
   }//isValid
-
   function selectFolder(name){
   	let folders = $(".ui-widget-drop");
   	for(var i = 0 ; i < folders.length ; i++){
@@ -710,7 +690,6 @@ $(document).ready(function(){
   	}
   	return false;
   }
-  
   function addProject(key,dragBox_name,dropBox_name){
     let div = document.createElement("div");
     
@@ -726,8 +705,6 @@ $(document).ready(function(){
     let search = document.getElementById(dropBox_name);
     $(search).append(div);
   }
-
-
 </script>	
 </html>
 <style>
