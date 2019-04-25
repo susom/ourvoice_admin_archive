@@ -231,14 +231,11 @@ if(!isset($_SESSION["discpw"])) {
 				<label><span>Project Pass</span><input type="text" name="project_pass" value="<?php echo $ppass; ?>"/></label>
 				<label><span>Portal Pass</span><input type="text" name="summ_pass" value="<?php echo $spass; ?>"/></label>
                 <input type="hidden" name="template_type" value="1"/>
+                <input type="hidden" name="thumbs" value="2"/>
                 <label><span>Text Comments</span>
                     <input type="radio" name="text_comments" <?php if(!$texts) echo "checked"; ?> value="0"/> No Texting
                     <input type="radio" name="text_comments" <?php if($texts) echo "checked"; ?> value="1"/> Allow Texting
                 </label>
-				<label><span>Good or Bad Icons</span>
-					<input type="checkbox" name="thumbs" <?php if($thumbs) echo "checked"; ?> value="2"/> Smilies 
-					<input type="checkbox" name="thumbs" <?php if(!$thumbs) echo "checked"; ?> value="1"/> Thumbs
-				</label>
 				<label class="languages"><p><span>Languages</span>
 					<!-- <a href='#' class='add_language'>+ Add Language</a> -->
 				</p>
