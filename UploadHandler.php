@@ -49,6 +49,7 @@ class UploadHandler
             'input_stream' => 'php://input',
             'user_dirs' => false,
             'mkdir_mode' => 0777,
+            'overwrite' => false,
             'param_name' => 'files',
             // Set the following option to 'POST', if your server does not support
             // DELETE requests. This is a parameter sent to the client:
@@ -535,20 +536,39 @@ class UploadHandler
     }
 
     protected function get_file_name($file_path, $name, $size, $type, $error,
-            $index, $content_range) {
+                                     $index, $content_range) {
         $name = $this->trim_file_name($file_path, $name, $size, $type, $error,
             $index, $content_range);
-        return $this->get_unique_filename(
-            $file_path,
-            $this->fix_file_extension($file_path, $name, $size, $type, $error,
-                $index, $content_range),
-            $size,
-            $type,
-            $error,
-            $index,
-            $content_range
-        );
+        if($this->options['overwrite'])
+            return $name;
+        else
+            return $this->get_unique_filename(
+                $file_path,
+                $this->fix_file_extension($file_path, $name, $size, $type, $error,
+                    $index, $content_range),
+                $size,
+                $type,
+                $error,
+                $index,
+                $content_range
+            );
     }
+//    REPLACED THIS FUNCTION WITH ABOVE TO USE OVERWRITE ABILITY 5/14
+//    protected function get_file_name($file_path, $name, $size, $type, $error,
+//            $index, $content_range) {
+//        $name = $this->trim_file_name($file_path, $name, $size, $type, $error,
+//            $index, $content_range);
+//        return $this->get_unique_filename(
+//            $file_path,
+//            $this->fix_file_extension($file_path, $name, $size, $type, $error,
+//                $index, $content_range),
+//            $size,
+//            $type,
+//            $error,
+//            $index,
+//            $content_range
+//        );
+//    }
 
     protected function get_scaled_image_file_paths($file_name, $version) {
         $file_path = $this->get_upload_path($file_name);

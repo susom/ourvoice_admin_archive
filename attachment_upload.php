@@ -46,7 +46,8 @@ if( isset($_REQUEST["walk_id"]) ){
     $local_folder   = "temp/$walk_id/";
 
     require('UploadHandler.php');
-    $upload_handler = new UploadHandler(null,true,null,$local_folder);
+    $options = array('overwrite' => $overwrite);
+    $upload_handler = new UploadHandler($options,true,null,$local_folder);
 
     // WORKS SOMETIMES
     // if ($_FILES["attachment"]["error"] == UPLOAD_ERR_OK){
