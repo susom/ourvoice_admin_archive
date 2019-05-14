@@ -1105,3 +1105,61 @@ function pixelate($image, $pixelate_x = 12, $pixelate_y = 12){
         }
     }
 }
+
+
+function scanForBackUpFolders($backup_dir){
+    $backedup = array();
+    if ($folder = opendir($backup_dir)) {
+        while (false !== ($file = readdir($folder))) {
+            if($file == "." || $file == ".."){
+                continue;
+            }
+
+            if (is_dir("$backup_dir/".$file)) {
+                $backedup[] = $file;
+            }
+        }
+        closedir($folder);
+    }
+
+    return $backedup;
+}
+
+function scanForBackUpFiles($backedup, $backup_dir){
+    $backedup_attachments = array();
+    $parent_check         = array();  //THIS WILL BE USED IN THE POST HANDLER UGH
+    foreach($backedup as $backup){
+        //CHECK COUCH IF $backup exists in disc_users
+        //if not then put it to couch
+        $couch_url      = "http://".cfg::$couch_user.":".cfg::$couch_pw."@couchdb:5984";
+
+        $walk_json      = $couch_url . "/".cfg::$couch_users_db."/" . $backup ;
+        $check_walk_id  = get_head($walk_json);
+        if(array_key_exists("error", $check_walk_id)){
+            // DOESNT EXIST SO NEED TO UPLOAD TO disc_users
+        }
+
+        // for deleting
+        // "<form method='POST'><input type='hidden' name='deleteDir' value='temp/$backup'/><input type='submit' value='Delete Directory'/></form></h3>";
+
+        //check the photo attachments
+        //push to couch if not in disc_attachment
+
+        if ($folder = opendir('temp/'.$backup)) {
+            while (false !== ($file = readdir($folder))) {
+                if($file == "." || $file == ".."){
+                    continue;
+                }
+
+                if(!strpos($file,".json")){
+                    $backedup_attachments[] = $file;
+                    $parent_check[$file]    = $backup;
+                }
+                $html[] =  "<li><a href='temp/$backup/$file' target='blank'>";
+                $html[] =  $file;
+                $html[] =  "</a></li>";
+            }
+            closedir($folder);
+        }
+    }
+}

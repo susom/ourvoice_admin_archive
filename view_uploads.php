@@ -19,7 +19,7 @@ foreach($backedup as $backup){
     $html[] =  "<ul>";
         if ($folder = opendir('temp/'.$backup)) {
             while (false !== ($file = readdir($folder))) {
-                if($file == "." || $file == ".."){
+                if($file == "." || $file == ".." || $file == ".DS_Store"){
                     continue;
                 }
                 
