@@ -49,26 +49,6 @@ if( isset($_REQUEST["walk_id"]) ){
     $options = array('overwrite' => true);
     $upload_handler = new UploadHandler($options,true,null,$local_folder);
 
-    // WORKS SOMETIMES
-    // if ($_FILES["attachment"]["error"] == UPLOAD_ERR_OK){
-    //     // CHECK IF WALK DATA ALREADY EXISTS, NEED TO DELETE IT TO WRITE IT AGAIN, NO OVERWRITE FEATURE?
-    //     $file       = $_FILES["attachment"]["tmp_name"];
-
-    //     // how the fuck do i get this name properly? 
-    //     $name       = $_FILES["attachment"]["name"];
-        
-    //     $attachment = $local_folder."/".$name ;
-    //     if( file_exists($attachment) ){
-    //         unlink($attachment);
-    //     }
-
-    //     // now you have access to the file being uploaded
-    //     //perform the upload operation.
-    //     move_uploaded_file( $file, $attachment );
-    //     print_r(json_encode(array("$attachment saved to disk?!!!")));
-    // }else{
-    //     print_r(json_encode(array($attachment . " upload failed")));
-    // }
     exit;
 }
 

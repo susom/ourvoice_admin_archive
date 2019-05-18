@@ -3,29 +3,32 @@ require_once("common.php");
 
 $backedup = scanForBackUpFolders("temp");
 
-$html = array();
-$html[] =  "<h2>Our Voice Emergency Back Up Folder</h2>";
-$html[] =  "<ul>";
-$backedup_attachments = array();
-$parent_check         = array();  //THIS WILL BE USED IN THE POST HANDLER UGH
+$html                   = array();
+$html[]                 =  "<h2>Our Voice Emergency Back Up Folder</h2>";
+$html[]                 =  "<ul>";
+$backedup_attachments   = array();
+$parent_check           = array();  //THIS WILL BE USED IN THE POST HANDLER UGH
 foreach($backedup as $backup){
+    $backedup_attachments_walk   = array();
     //CHECK COUCH IF $backup exists in disc_users
     //if not then put it to couch
     
     //check the photo attachments 
     //push to couch if not in disc_attachment
-    
-    $html[] =  "<li><h3>$backup <form method='POST'><input type='hidden' name='deleteDir' value='temp/$backup'/><input type='submit' value='Delete Directory'/></form></h3>";
+    $html[] =  "<li><h3>$backup</h3>";
+    $html[] =  "<form method='POST'><input type='hidden' name='deleteDir' value='temp/$backup'/><input type='submit' value='Delete Directory'/></form>";
+
     $html[] =  "<ul>";
         if ($folder = opendir('temp/'.$backup)) {
             while (false !== ($file = readdir($folder))) {
-                if($file == "." || $file == ".." || $file == ".DS_Store"){
+                if($file == "." || $file == ".." || $file == ".DS_Store" || $file == "thumbnail"){
                     continue;
                 }
                 
                 if(!strpos($file,".json")){
-                    $backedup_attachments[] = $file;
-                    $parent_check[$file]    = $backup;
+                    $backedup_attachments[]         = $file;
+                    $backedup_attachments_walk[]    = $file;
+                    $parent_check[$file]            = $backup;
                 }
                 $html[] =  "<li><a href='temp/$backup/$file' target='blank'>";
                 $html[] =  $file;
@@ -35,13 +38,28 @@ foreach($backedup as $backup){
         }
     $html[] =  "</ul>";
     $html[] =  "</li>";
+
+    $backup_url         = cfg::$couch_url . "/" . cfg::$couch_users_db . "/_all_docs";
+    $backup_keys        = json_encode(array("keys" => $backup));
+    $backup_attach_url  = cfg::$couch_url . "/" . cfg::$couch_attach_db . "/_all_docs";
+    $backup_attach_keys = json_encode(array("keys" => $backedup_attachments_walk));
+
+    $html[] =  "<form method='POST'>";
+    $html[] =  "<input type='hidden' name='syncToCouch' value='1'/>";
+    $html[] =  "<input type='hidden' name='backups' value='$backup_keys'/>";
+    $html[] =  "<input type='hidden' name='backups_attach' value='$backup_attach_keys'/>";
+    $html[] =  "<input type='hidden' name='backups_url' value='$backup_url'/>";
+    $html[] =  "<input type='hidden' name='backups_attach_url' value='$backup_attach_url'/>";
+    $html[] =  "<input type='submit' value='save to couch'/>";
+    $html[] =  "</form>";
 }
 $html[] =  "</ul>";
 
 $backup_url         = cfg::$couch_url . "/" . cfg::$couch_users_db . "/_all_docs";
-$backup_keys        = json_encode(array("keys" => $backedup));
+$backup_keys        = json_encode(array("keys" => $backup));
 $backup_attach_url  = cfg::$couch_url . "/" . cfg::$couch_attach_db . "/_all_docs";
-$backup_attach_keys = json_encode(array("keys" => $backedup_attachments));
+$backup_attach_keys = json_encode(array("keys" => $backedup_attachments_walk));
+
 $html[] =  "<form method='POST'>";
 $html[] =  "<input type='hidden' name='syncToCouch' value='1'/>";
 $html[] =  "<input type='hidden' name='backups' value='$backup_keys'/>";

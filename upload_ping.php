@@ -140,6 +140,9 @@ if(!empty($uploaded_walk_id)){
     	}
     }
 
+    // Sending emails broke?  5/18/19
+    exit;
+
     $from_name      = "Stanford Our Voice";
     $from_email     = "irvins@stanford.edu";
     $email_subject  = count($failed_uploads) ? "Notification: [$project_id] New walk uploaded, possibly missing attachments" : "Notification: [$project_id] New walk uploaded!";
@@ -171,8 +174,6 @@ if(!empty($uploaded_walk_id)){
     $bcc                    = "irvins@stanford.edu, jmschultz@stanford.edu";
 	
     sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $email_msg, $from_name, $from_email, $to, $cc, $bcc);                                                            
-}else{
-    echo "why are you here?";
 }
 
 // if get head = succesful
