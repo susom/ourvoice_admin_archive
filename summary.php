@@ -179,7 +179,7 @@ nav ul {
     border-left:1px solid #000;
 }
 #summary td,#summary th {
-    width:114px;
+    width:128px;
     border-right:1px solid #000;
     border-bottom:1px solid #000;
     text-align:center;
@@ -248,7 +248,6 @@ if( $active_project_id ){
     $summ_buffer[]  = "<div id='summary'>";
     $summ_buffer[]  = "<table cellpadding='0' cellspacing='0' width='100%'>";
     $summ_buffer[]  = "<thead>";
-    $summ_buffer[]  = "<th>#</th>";
     $summ_buffer[]  = "<th>Date</th>";
     $summ_buffer[]  = "<th>Walk Id</th>";
     $summ_buffer[]  = "<th>Device</th>";
@@ -308,7 +307,6 @@ if( $active_project_id ){
 
         $sum_buffer_item = array();
         $sum_buffer_item[] = "<tr>";
-        $sum_buffer_item[] = "<td>" . ($i+1) . "</td>";
         $sum_buffer_item[] = "<td>" . $date . "</td>";
         $sum_buffer_item[] = "<td><a href='#".$row["id"]."'>" . $_id . "</a></td>";
         $sum_buffer_item[] = "<td>" . $device . "</td>";
@@ -335,7 +333,7 @@ if( $active_project_id ){
     $x = $i;
     while($x < 10){
         $summ_buffer[] = "<tr>";
-        $summ_buffer[] = "<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
+        $summ_buffer[] = "<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
         $summ_buffer[] = "</tr>";
         $x++;
     }
@@ -344,7 +342,6 @@ if( $active_project_id ){
     $summ_buffer[] = "</table>";
     $summ_buffer[] = "<table cellpadding='0' cellspacing='0' width='100%'>";
     $summ_buffer[] = "<tfoot>";
-    $summ_buffer[] = "<td></td>";
     $summ_buffer[] = "<td>Totals:</td>";
     $summ_buffer[] = "<td>".($i+1)." walks</td>";
     $summ_buffer[] = "<td></td>";
