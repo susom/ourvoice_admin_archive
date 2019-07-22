@@ -21,7 +21,8 @@ if( empty($_SESSION["DT"]) ){
 	$response 		= doCurl($couch_url);
 
 	//TURN IT INTO PHP ARRAY
-	$_SESSION["DT"] = json_decode(stripslashes($response),1);
+	$ap 			= json_decode(stripslashes($response),1);
+	$_SESSION["DT"] = $ap;
 }
 
 // NEXT GET SPECIFIC PROJECT DATA

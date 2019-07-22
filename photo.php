@@ -57,6 +57,8 @@ if( isset($_POST["doc_id"]) ){
             $ajax = true;
 			//SAVE TAG
 			$photo_tag 		= $_POST["tag_text"];
+			$photo_tag 		= str_replace('"',"'",$photo_tag);
+			
 			$json_response 	= array("new_photo_tag" => false, "new_project_tag" => false);
 			if(!isset($payload["photos"][$photo_i]["tags"])){
 				$payload["photos"][$photo_i]["tags"] = array();

@@ -56,6 +56,26 @@ if( isset($_POST["proj_idx"]) ){
         $msg = "Project " . $projects[$pidx] . " has been deleted";
 		header("location:index.php?msg=$msg");
 		exit;
+	}else if(isset($_POST["archive"])){
+		// due to unfreshness of SESSION multiple people saving and shit, we need to pull fresh version before pushing back up
+		$url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+	    $response 	= doCurl($url);
+		$payload 	= $_SESSION["DT"] = json_decode($response,1);
+		
+		$payload["project_list"][$proj_idx]["archived"] = $_POST["archive"];
+		
+        $response 	= doCurl($url, json_encode($payload), 'PUT');
+        $resp 		= json_decode($response,1);
+        if(isset($resp["rev"])){
+        	$payload["_rev"] = $resp["rev"];
+        	$ap = $_SESSION["DT"] = $payload;
+        	print_rr("yay sucess");
+        }else{
+        	echo "something went wrong:";
+        	print_rr($resp);
+        	print_rr($payload);
+        }
+		exit;
 	}else{
 	    // REDIRECT IF NO OTHER ACTION
 		$redi 		= false;
@@ -150,12 +170,12 @@ if(isset($_POST["discpw"])){
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 	<script src="js/common.js"></script>
-
 </head>
 <body id="main" class="configurator">
 <div id="box">
 <?php
 $projs 	= $ap["project_list"];
+$pCount = array();
 if(!isset($_SESSION["discpw"])) {
 	$show_alert 	= "";
 	$display_alert 	= "";
@@ -210,15 +230,21 @@ if(!isset($_SESSION["discpw"])) {
 		$ppass 	  = $p["project_pass"];
 		$spass 	  = isset($p["summ_pass"]) ? $p["summ_pass"] : "";
 		$thumbs   = $p["thumbs"];
-        $texts    = isset($p["text_comments"]) ? $p["text_comments"] : false;
-		$langs 	  = $p["app_lang"];
+        $texts    = isset($p["text_comments"]) ? $p["text_comments"] : true;
+        $available_langs 	= $projs[100]["app_lang"];
+		$langs 	  			= $p["app_lang"];
 		$template_type      = isset($p["template_type"]) ? $p["template_type"] : "1";
         $include_surveys    = isset($p["include_surveys"]) ? $p["include_surveys"] : true;
         $template_instructions = "";
 		$template = false;
+
+		$show_archive_btn = false;
 		if($_GET["proj_idx"] == 99 || $_GET["proj_idx"] == 100){
 			$template = true;
 			$template_instructions = "<strong class='tpl_instructions'>*Input a new Project ID & Name to create a new project</strong>";
+		}else{
+			$show_archive_btn = true;
+			$archive_class = isset($p["project_archived"]) && $p["project_archived"] ?  "archived" : "active";
 		}
 		?>
 		<form id="project_config" method="post" class='<?php echo $template ? "template" : ""?>'>
@@ -236,20 +262,41 @@ if(!isset($_SESSION["discpw"])) {
                     <input type="radio" name="text_comments" <?php if(!$texts) echo "checked"; ?> value="0"/> No Texting
                     <input type="radio" name="text_comments" <?php if($texts) echo "checked"; ?> value="1"/> Allow Texting
                 </label>
-				<label class="languages"><p><span>Languages</span>
-					<!-- <a href='#' class='add_language'>+ Add Language</a> -->
-				</p>
-				<?php
-				$lang_codes = array();
-				foreach($langs as $lang){
-					array_push($lang_codes,$lang["lang"]);
-					$readonly = "readonly";
-					$delete_button = $lang["lang"] !==  "en" ? "<a href='#' class='delete_parent'>- Delete Language</a>" : "";
-					echo "<div class='one_unit'><span class='code'>Code</span><input type='text' name='lang_code[]' value='".$lang["lang"]."' $readonly/> <span class='full'>Language</span> <input type='text' name='lang_full[]' value='".$lang["language"]."' $readonly/>" . $delete_button . "</div>";
-				}
+
+				<label class="languages">
+					<p><span>Languages</span>
+					</p>
+					<?php
+					$lang_codes = array();
+					
+					
+					foreach($langs as $lang){
+						array_push($lang_codes,$lang["lang"]);
+						$readonly = "readonly";
+						$delete_button = $lang["lang"] !==  "en" ? "<a href='#' class='delete_parent'>- Delete Language</a>" : "";
+						echo "<div class='one_unit'><span class='code'>Code</span><input type='text' name='lang_code[]' value='".$lang["lang"]."' $readonly/> <span class='full'>Language</span> <input type='text' name='lang_full[]' value='".$lang["language"]."' $readonly/>" . $delete_button . "</div>";
+					}
+					?>
+				</label>
+				<label>
+					<b>+ Add Language</b> 
+				<?php 
+					echo "<select id='add_language'>";
+					foreach($available_langs as $lang){
+						echo "<option data-code='".$lang["lang"]."'>".$lang["language"]."</option>\r\n";
+					}
+					echo "</select>";
 				?>
 				</label>
+
+
 				<a href="#" id="delete_project">Delete This Project</a>
+				
+				<?php 
+					if($show_archive_btn){
+						echo '<a href="#" id="active_archive" class="'.$archive_class.'"></a>';
+					}
+				?>
 			</fieldset>
 			<button type="submit" class="btn btn-primary">Save Project</button>
 			<?php echo '</form>'.'<form action="summary.php" form id="route_summary" method="get">';	?>
@@ -268,7 +315,7 @@ if(!isset($_SESSION["discpw"])) {
 		<form id="project_config" method="get">
 				    <div id = "folderspace">
 				      	<?php
-				      		$pCount = array();
+				      		
 				        	foreach ($ALL_PROJ_DATA["folders"] as $key => $value) { //populate folders inside working
 					        	$counter = 0;
 					        	echo "<div class = 'folder_entry'>";
@@ -456,9 +503,14 @@ $(document).ready(function(){
 		return false;
 	});
 
-	$(".add_language").click(function(){
-		var new_lang = "<div class='one_unit'><span class='code'>Code</span><input type='text' name='lang_code[]' value=''/> <span class='full'>Language</span> <input type='text' name='lang_full[]' value=''/><a href='#' class='delete_parent'>- Delete Language</a></div>";
-		$("label.languages").append(new_lang);
+	$("#add_language").change(function(){
+		var lang_code = $("#add_language option:selected").data("code");
+		var lang_name = $("#add_language option:selected").text();
+
+		if(!$('input[value="'+lang_code+'"]').length){
+			var new_lang = "<div class='one_unit'><span class='code'>Code</span><input type='text' name='lang_code[]' value='"+lang_code+"' readonly/> <span class='full'>Language</span> <input type='text' name='lang_full[]' readonly value='"+lang_name+"'/><a href='#' class='delete_parent'>- Delete Language</a></div>";
+			$("label.languages").append(new_lang);
+		}
 		return false;
 	});
 
@@ -476,6 +528,34 @@ $(document).ready(function(){
 		}else{
 			alert("Project IDs do not match.  No action taken.");			
 		}
+		return false;
+	});
+
+	$("#active_archive").click(function(){
+		var archived = $(this).hasClass("archived");
+		var action 	 = 0;
+		if(archived){
+			$(this).removeClass("archived");
+		}else{
+			$(this).addClass("archived");
+			action = 1;
+		}
+
+		var proj_idx  = $("input[name='proj_idx']").val();
+
+		$.ajax({
+          url:  "index.php",
+          type:'POST',
+          data: "&proj_idx=" + proj_idx + "&archive=" + action,
+          success:function(result){
+            console.log(result);
+          }        
+            //THIS JUST STORES IS 
+          },function(err){
+          console.log("ERRROR");
+          console.log(err);
+        });
+
 		return false;
 	});
 });
@@ -705,150 +785,180 @@ $(document).ready(function(){
 </script>	
 </html>
 <style>
+	label{
+		display:block;
+		max-width: 100%;
+		margin-bottom: 5px;
+		font-weight: 700;
+	}
 
-label{
-	display:block;
-	max-width: 100%;
-	margin-bottom: 5px;
-	font-weight: 700;
-}
+	hgroup{
+		border-bottom:1px solid #999;
+		padding:0 20px 10px;
+		overflow:hidden;
+	}
+	hgroup h1{
+		float:left; 
+		margin:0;
+	}
 
-hgroup{
-	border-bottom:1px solid #999;
-	padding:0 20px 10px;
-	overflow:hidden;
-}
-hgroup h1{
-	float:left; 
-	margin:0;
-}
+	#project_config{
+		overflow:hidden;
+		padding:20px;
+	}
 
-#project_config{
-	overflow:hidden;
-	padding:20px;
-}
-
-.btn-default{
-	
-	background-color:orange;
-}
-form.template #delete_project,
-.consent_trans,
-.survey_trans,
-.app_trans{
-	opacity:0;
-	position:absolute;
-	z-index:-1000;
-}
-.folder_entry{
-	display:inline-block;
-}
-.tpl_instructions {
-	color: red;
-    display: inline-block;
-    margin: 0 10px;
-    font-style: italic;
-    font-size: 130%;
-}
-
+	.btn-default{
+		
+		background-color:orange;
+	}
+	form.template #delete_project,
+	.consent_trans,
+	.survey_trans,
+	.app_trans{
+		opacity:0;
+		position:absolute;
+		z-index:-1000;
+	}
+	.folder_entry{
+		display:inline-block;
+	}
+	.tpl_instructions {
+		color: red;
+	    display: inline-block;
+	    margin: 0 10px;
+	    font-style: italic;
+	    font-size: 130%;
+	}
 
 
 
-#rec-table {
-	border-collapse: collapse;
-	position:relative;
-	width:49%;
-	float:right;
-	margin:0 0;
-	top:0;
-}
 
-#rec-table h3 {
-	margin:0 0 10px;
-}
-#rec-table .btn {
-	 float:right;
-	 margin-bottom:10px;
-}
-.tablehead{
-	cursor:pointer;
-}
-th{
-	border: 1px solid #dddddd;
-	text-align: left;
-	padding:8px;
-}
+	#rec-table {
+		border-collapse: collapse;
+		position:relative;
+		width:49%;
+		float:right;
+		margin:0 0;
+		top:0;
+	}
 
-input[readonly]{ 
-	background:#efefef;
-	color:#999;
-}
-.deleteArea{
-	max-width: 70px;
-	max-height: 70px;
-	float: right;
+	#rec-table h3 {
+		margin:0 0 10px;
+	}
+	#rec-table .btn {
+		 float:right;
+		 margin-bottom:10px;
+	}
+	.tablehead{
+		cursor:pointer;
+	}
+	th{
+		border: 1px solid #dddddd;
+		text-align: left;
+		padding:8px;
+	}
 
-
-}
+	input[readonly]{ 
+		background:#efefef;
+		color:#999;
+	}
+	.deleteArea{
+		max-width: 70px;
+		max-height: 70px;
+		float: right;
 
 
-
-.hiddenFolders{
-	display: none;
+	}
 
 
-}
+
+	.hiddenFolders{
+		display: none;
 
 
-#folderspace{
-	padding:20px;
-	display:inline-block;
-	float:left;
-	width:50%;
-	background: #efefef;
-    border-radius: 5px;
-    min-height:600px;
-}
-
-.ui-widget-drop{
-	width: 111px; height: 96px; padding: 0.5em; 
-	margin: 10px;
-	margin-left: 20px; 
-	text-align: center; 
-	background-image: url('img/FolderClose.svg');
-	background-color: transparent;
-	background-size: 100%;
-	line-height: 600%;
-	background-repeat: no-repeat;
-	font-size: 14px;
-	display:block;
-	-webkit-user-select:none;
+	}
 
 
-}
+	#folderspace{
+		padding:20px;
+		display:inline-block;
+		float:left;
+		width:50%;
+		background: #efefef;
+	    border-radius: 5px;
+	    min-height:600px;
+	}
 
-.ui-widget-drag, .foldercontents{
-	padding: 5px; 
-	float: left; 
-	margin: 0px 4px 4px; 
-	text-align: center;
-	border: transparent;
-	width: 80px;
-	font-size: 11px;
-	font-weight: bold;
-	border:1px solid cornflowerblue;
-	border-radius:3px;
-	background-color: azure;
-	display:inline-block;
-	cursor:pointer;
-} 
-.ui-widget-drag p{
-	margin:0;
-}
+	.ui-widget-drop{
+		width: 111px; height: 96px; padding: 0.5em; 
+		margin: 10px;
+		margin-left: 20px; 
+		text-align: center; 
+		background-image: url('img/FolderClose.svg');
+		background-color: transparent;
+		background-size: 100%;
+		line-height: 600%;
+		background-repeat: no-repeat;
+		font-size: 14px;
+		display:block;
+		-webkit-user-select:none;
 
 
-.ui-state-highlight{
-	background: transparent;
-}
+	}
 
+	.ui-widget-drag, .foldercontents{
+		padding: 5px; 
+		float: left; 
+		margin: 0px 4px 4px; 
+		text-align: center;
+		border: transparent;
+		width: 80px;
+		font-size: 11px;
+		font-weight: bold;
+		border:1px solid cornflowerblue;
+		border-radius:3px;
+		background-color: azure;
+		display:inline-block;
+		cursor:pointer;
+	} 
+	.ui-widget-drag p{
+		margin:0;
+	}
+
+
+	.ui-state-highlight{
+		background: transparent;
+	}
+
+	#active_archive{
+	    display: block;
+	    position: absolute;
+	    top: 110px;
+	    right: 30px;
+	    font-weight: Bold;
+	    text-decoration: none;
+		
+		width:140px;
+		height:54px;
+		background:url(img/button_toggle.png) top left no-repeat;
+		background-size:100%;
+	}
+	#active_archive.archived{
+		background-position:bottom left;
+	}
+
+	#active_archive:before{
+	    content: "Active";
+	    position: absolute;
+	    color: #fff;
+	    left: 30px;
+	    top: 15px;
+	}
+	#active_archive.archived:before{
+	    content: "Archived";
+	    position: absolute;
+	    color: #ccc;
+	    left: 56px;
+	    top: 15px;
+	}
 </style>

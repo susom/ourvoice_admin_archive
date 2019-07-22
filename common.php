@@ -292,11 +292,11 @@ function printRow($doc, $active_pid){
     $codeblock[] = "</div>";
     $codeblock[] = "</section>";
 
-    $codeblock[] = "<section class='survey_response'>";
-    $codeblock[] = "<h5>Survey Responses</h5>";
-    $codeblock[] = "<div class='survey'>";
-    if(empty($survey)){
-        $codeblock[] = "<p><i>No Survey Responses</i></p>";
+    
+    if(!empty($survey)){
+        $codeblock[] = "<section class='survey_response'>";
+        $codeblock[] = "<h5>Survey Responses</h5>";
+        $codeblock[] = "<div class='survey'>";
     }
     //WHOOO THIS IS NOT GREAT
     if(isset($project_meta["template_type"])) {
