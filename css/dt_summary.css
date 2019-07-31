@@ -623,6 +623,12 @@ label span {
 	bottom: 20px;
 }
 
+.export-photos{
+	right: 280px;
+	position: absolute;
+	bottom: 20px;
+}
+
 .data_processed + .export-pdf{
 	display:none;
 }

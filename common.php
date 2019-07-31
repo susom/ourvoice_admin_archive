@@ -186,7 +186,8 @@ function printRow($doc, $active_pid){
     if(!$processed){
         $codeblock[] = "<label class='data_processed' ><input type='checkbox' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'/> Data Processed?</label>";
     }
-    $codeblock[] = "<a href='#' class='btn btn-primary export-pdf' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'>Export as PDF</a>";
+    $codeblock[] = "<a href='#' class='btn btn-primary export-pdf' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'>Walk Data PDF</a>";
+    // $codeblock[] = "<a href='#' class='btn btn-info export-photos' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'>Download Photos</a>";
 
     $codeblock[] = "<h5>Photo Previews (".count($photos).")</h5>";
     $codeblock[] = "<div class='thumbs'>";
