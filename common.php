@@ -1025,7 +1025,7 @@ function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
 		$scale_factor_x = imagesx($image) / $vertices['width_pic']; //width_pic is the thumbnail size on the portal , imagesx returns FULL res
 		$scale_factor_y = imagesy($image) / $vertices['height_pic'];
 		// echo $scale_factor_x . " " . $scale_factor_y;
-		$scale_pixels = isset($pixel_count)? ($pixel_count*0.000005) : 15;
+		$scale_pixels = isset($pixel_count)? ($pixel_count*0.000015) : 20;
 //		print_rr($scale_pixels);
 		$width = isset($vertices['width']) ? $vertices['width'] : -1;
 		$height = isset($vertices['height']) ? $vertices['height'] : -1;
@@ -1043,7 +1043,7 @@ function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
 		foreach($vertices as $faces){
 			$width = isset($faces[0]) && isset($faces[2]) ? $faces[2] - $faces[0] : 0;
 			$height = isset($faces[1]) && isset($faces[7]) ? $faces[7] - $faces[1] : 0;
-			$scale_pixels = isset($pixel_count)? ($pixel_count*0.000005) : 15;
+			$scale_pixels = isset($pixel_count)? ($pixel_count*0.000015) : 20;
 //			print_rr($pixel_count);
 			if($width != 0 && $height != 0){
 				//have to crop out the faces first then apply filter
