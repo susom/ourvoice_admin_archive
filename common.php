@@ -337,8 +337,10 @@ function printRow($doc, $active_pid){
        // print_rr($oldname);
         $codeblock[] = "<li><i>".$oldname."</i> : <b>$v</b></li>";
         $codeblock[] = "</ul>";
-        $codeblock[] = "</div>";
-        $codeblock[] = "</section>";
+        if(!empty($survey)){
+            $codeblock[] = "</div>";
+            $codeblock[] = "</section>";
+        }
         $codeblock[] = "</div>";
         $codeblock[] = "<script> drawGMap($json_geo, '$i', 16); </script>";
         $codeblock[] = "<div class='$i' data-mapgeo='$json_geo'></div>";
@@ -350,8 +352,11 @@ function printRow($doc, $active_pid){
             $codeblock[] = "<li><i>".$tempsurvey[$name]["label"]."</i> : <b>$v</b></li>";
         }
         $codeblock[] = "</ul>";
-        $codeblock[] = "</div>";
-        $codeblock[] = "</section>";
+        
+        if(!empty($survey)){
+            $codeblock[] = "</div>";
+            $codeblock[] = "</section>";
+        }
         $codeblock[] = "</div>";
         $codeblock[] = "<script> drawGMap($json_geo, '$i', 16); </script>";
         $codeblock[] = "<div class='$i' data-mapgeo='$json_geo'></div>";

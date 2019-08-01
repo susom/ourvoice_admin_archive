@@ -623,6 +623,7 @@ $(document).ready(function(){
 	});
 
     $(".collapse").on("change",".data_processed input",function(e){
+    	console.log("data processed clicked");
         var el = $(this);
         el.prop("checked",true);
 
