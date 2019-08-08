@@ -276,77 +276,87 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 	
 	$pdf->StopTransform();
 	$pdf->writeHTMLCell(0,0,20,9.5, $htmlobj['date'] . " " .$htmlobj['time'],0,1,0, true, '',true);
-	if($scale > 1.4) #scale = 1.77 in this case 
+	if($scale > 1.4) {#scale = 1.77 in this case 
 		$basePixels = 60;
-	else
+	}else{
 		$basePixels = 80;
+	}
+
+	//make sure the image is whole (broken images wont have a resource id)
+	$resource_id 	= imagecreatefromstring($htmlphoto);
+	$image_is_gd 	= get_resource_type($resource_id);
 
 	if($landscape){ //Display Landscape
 		$pdf->writeHTMLCell(0, 0, '', 140, "<h2>Why did you take this picture?</h2>", 0, 1, 0, true, '', true);
-		if(isset($retTranscript[0]) && !empty($retTranscript[0]))
+		if(isset($retTranscript[0]) && !empty($retTranscript[0])){
 			foreach($retTranscript as $k => $trans) {
 				$type 		= $trans["type"];
 				$content 	= $trans["content"];
                 $typeicon 	= $type == "audio" ? "[<img src='./img/icon_mic'/> ".($k + 1)."]" : "[text]";
                 $pdf->writeHTMLCell(0, 0, '', ($k * 10) + 150, "<h3>$typeicon : '" . $content . "'</h3>", 0, 1, 0, true, '', true);
             }
-		else
-			$pdf->writeHTMLCell(0, 0, '', 150, "<h3>No Transcript Available</h3>", 0, 1, 0, true, '', true);
-		
-		if($rotation == 0){
-			$pdf->Image('@'.$htmlphoto,5, 20, $basePixels*$scale, $basePixels); //portrait
 		}else{
-			$pdf->StartTransform();
-			
-			if($rotation == 1){
-				$pdf->Rotate(270,20,20);
-				$pdf->Image('@'.$htmlphoto,20, -70, $basePixels*$scale, $basePixels); //portrait			
-			}elseif($rotation == 2){
-				$pdf->Rotate(180,20,20);
-				$pdf->Image('@'.$htmlphoto,-70, -60, $basePixels*$scale, $basePixels); //portrait	
-			}else{
-				$pdf->Rotate(90,20,20);
-				$pdf->Image('@'.$htmlphoto,-87, 15, $basePixels*$scale, $basePixels); //portrait	
-			}
-
-			$pdf->StopTransform();
-
+			$pdf->writeHTMLCell(0, 0, '', 150, "<h3>No Transcript Available</h3>", 0, 1, 0, true, '', true);
 		}
-			
+		
+		if($image_is_gd == "gd"){
+			if($rotation == 0){
+				$pdf->Image('@'.$htmlphoto,5, 20, $basePixels*$scale, $basePixels); //portrait
+			}else{
+				$pdf->StartTransform();
+				
+				if($rotation == 1){
+					$pdf->Rotate(270,20,20);
+					$pdf->Image('@'.$htmlphoto,20, -70, $basePixels*$scale, $basePixels); //portrait			
+				}elseif($rotation == 2){
+					$pdf->Rotate(180,20,20);
+					$pdf->Image('@'.$htmlphoto,-70, -60, $basePixels*$scale, $basePixels); //portrait	
+				}else{
+					$pdf->Rotate(90,20,20);
+					$pdf->Image('@'.$htmlphoto,-87, 15, $basePixels*$scale, $basePixels); //portrait	
+				}
+				$pdf->StopTransform();
+			}
+		}else{
+			$pdf->writeHTMLCell(0, 0, '', 150, "<h3>No Transcript Available</h3>", 0, 1, 0, true, '', true);
+		}
 	}else{ //Display Portrait
 		$pdf->writeHTMLCell(0, 0, '', 140, "<h2>Why did you take this picture?</h2>", 0, 1, 0, true, '', true);
-		if(isset($retTranscript[0]) && !empty($retTranscript[0]))
+		if(isset($retTranscript[0]) && !empty($retTranscript[0])){
 			foreach($retTranscript as $k => $trans){
                 $type 		= $trans["type"];
                 $content 	= $trans["content"];
                 $typeicon 	= $type == "audio" ? "[audio ".($k + 1)."]" : "[text]";
                 $pdf->writeHTMLCell(0, 0, '', ($k*10)+150, "<h3>$typeicon : '".$content."'</h3>", 0, 1, 0, true, '', true);
 			}
-		else
-			$pdf->writeHTMLCell(0, 0, '', 150, "<h3>No Transcript Available</h3>", 0, 1, 0, true, '', true);
-		
-		if($rotation == 0){
-			$pdf->Image('@'.$htmlphoto,16, 20, $basePixels, $basePixels*$scale); //portrait
 		}else{
-			$pdf->StartTransform();
-			
-			if($rotation == 1){
-				$pdf->Rotate(270,20,20);
-				$pdf->Image('@'.$htmlphoto,20, -70, $basePixels, $basePixels*$scale); //portrait			
-			}elseif($rotation == 2){
-				$pdf->Rotate(180,20,20);
-				$pdf->Image('@'.$htmlphoto,-55, -87, $basePixels, $basePixels*$scale); //portrait	
-			}else{
-				$pdf->Rotate(90,20,20);
-				$pdf->Image('@'.$htmlphoto,-60, 5, $basePixels, $basePixels*$scale); //portrait	
-			}
-
-			$pdf->StopTransform();
-
+			$pdf->writeHTMLCell(0, 0, '', 50, "<i>Image Not Available</i>", 0, 1, 0, true, '', true);
 		}
-			
-
+		
+		if($image_is_gd == "gd"){
+			if($rotation == 0){
+				$pdf->Image('@'.$htmlphoto,16, 20, $basePixels, $basePixels*$scale); //portrait
+			}else{
+				$pdf->StartTransform();
+				
+				if($rotation == 1){
+					$pdf->Rotate(270,20,20);
+					$pdf->Image('@'.$htmlphoto,20, -70, $basePixels, $basePixels*$scale); //portrait			
+				}elseif($rotation == 2){
+					$pdf->Rotate(180,20,20);
+					$pdf->Image('@'.$htmlphoto,-55, -87, $basePixels, $basePixels*$scale); //portrait	
+				}else{
+					$pdf->Rotate(90,20,20);
+					$pdf->Image('@'.$htmlphoto,-60, 5, $basePixels, $basePixels*$scale); //portrait	
+				}
+				$pdf->StopTransform();
+			}
+		}else{
+			$pdf->writeHTMLCell(0, 0, '', 50, "<i>Image Not Available</i>", 0, 1, 0, true, '', true);
+		}
 	}
+
+
 	$pdf->Image('@'.$gmapsPhoto,115,20,80,106);
 	$pdf->writeHTMLCell(0, 0, 146, 128, "Good or Bad for the Community?", 0, 1, 0, true, '', true);
 	$pdf->Image('./'.$goodbad,185,133,10,10);
