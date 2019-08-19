@@ -25,7 +25,7 @@ header('Content-Disposition: attachment; filename=maps_'.$active_pid.'.csv');
 $output = fopen('php://output', 'w');
 
 // output the column headings
-fputcsv($output, array('walk id', 'photo name', 'type', 'latitude', 'longitude','good/bad','date', 'transcription'));
+fputcsv($output, array('walk id', 'photo name', 'type', 'latitude', 'longitude','good/bad','date', 'transcription/text'));
 
 if( $active_pid ){
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
@@ -84,6 +84,11 @@ if( $active_pid ){
 						$transcript .= $sesh['value']['transcriptions']["$audios"];
 				}
 			}
+
+			if(!empty($photo["text_comment"])){
+				$transcript .= "[Text] " . $photo['text_comment'];
+			};
+
 
 			fputcsv($output, array($sesh_id, $photo['name'], 'photo', $lat, $long, $goodbad, $date, $transcript));
 			$transcript = "";

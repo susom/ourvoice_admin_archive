@@ -180,7 +180,7 @@ nav ul {
     border-left:1px solid #000;
 }
 #summary td,#summary th {
-    width:128px;
+    width:114px;
     border-right:1px solid #000;
     border-bottom:1px solid #000;
     text-align:center;
@@ -252,6 +252,7 @@ if( $active_project_id ){
     $summ_buffer[]  = "<th>Device</th>";
     $summ_buffer[]  = "<th>Photos #</th>";
     $summ_buffer[]  = "<th>Audios #</th>";
+    $summ_buffer[]  = "<th>Texts #</th>";
     $summ_buffer[]  = "<th>Map Available</th>";
     $summ_buffer[]  = "<th>Upload Complete</th>";
     $summ_buffer[]  = "<th>Processed</th>";
@@ -262,6 +263,7 @@ if( $active_project_id ){
 
     $total_photos = 0;
     $total_audios = 0;
+    $total_texts  = 0;
 
     $dates      = array();
     $sum_row    = array();
@@ -311,6 +313,7 @@ if( $active_project_id ){
         $sum_buffer_item[] = "<td>" . $device . "</td>";
         $sum_buffer_item[] = "<td>" . $walk["photos"]. "</td>";
         $sum_buffer_item[] = "<td>" . $walk["audios"]. "</td>";
+        $sum_buffer_item[] = "<td>" . $walk["texts"]. "</td>";
         $sum_buffer_item[] = "<td class='".$walk["maps"]."'>" . $walk["maps"]. "</td>";
         $sum_buffer_item[] = "<td class='$uploaded'>" . $uploaded. "</td>";
         $sum_buffer_item[] = "<td class='$data_processed'>" . ($processed ? "Y" : "") . "</td>";
@@ -322,6 +325,7 @@ if( $active_project_id ){
 
         $total_photos += $walk["photos"];
         $total_audios += $walk["audios"];
+        $total_texts  += $walk["texts"];
     }
     arsort($dates);
     foreach($dates as $idx => $date){
@@ -346,6 +350,7 @@ if( $active_project_id ){
     $summ_buffer[] = "<td></td>";
     $summ_buffer[] = "<td>$total_photos</td>";
     $summ_buffer[] = "<td>$total_audios</td>";
+    $summ_buffer[] = "<td>$total_texts</td>";
     $summ_buffer[] = "<td></td>";
     $summ_buffer[] = "<td></td>";
     $summ_buffer[] = "<td></td>";

@@ -359,6 +359,12 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 
 	$pdf->Image('@'.$gmapsPhoto,115,20,80,106);
 	$pdf->writeHTMLCell(0, 0, 146, 128, "Good or Bad for the Community?", 0, 1, 0, true, '', true);
+
+	if(strpos($goodbad,"icon_none")){
+		// this means both
+		$pdf->Image('./img/icon_smile.png',135,133,10,10);
+		$goodbad = "img/icon_frown.png";
+	}
 	$pdf->Image('./'.$goodbad,185,133,10,10);
 
 }
