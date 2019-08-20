@@ -216,9 +216,8 @@ function generatePhotoPage($pdf, $id, $pic, $rotation){
 	// print_rr($goodbad);
 	generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad);
 	///////////////////////////// END STATIC GOOGLE MAP /////////////////////////////
-
-	
 }
+
 function setup($pdf, $id){ //set page contents and function initially
 	$alpha = explode("_",$id)[0];
 	$numeric = substr($id,(strlen($id)-4),strlen($id));
@@ -256,6 +255,7 @@ function setup($pdf, $id){ //set page contents and function initially
 		$pdf->SetFont('dejavusans', '', 8, '', true);
 		$pdf->setTextShadow(array('enabled'=>true, 'depth_w'=>0.2, 'depth_h'=>0.2, 'color'=>array(196,196,196), 'opacity'=>1, 'blend_mode'=>'Normal'));
 }
+
 function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad){
 /* arguments: SORRY for list will clean up later.
 	pdf = export object
@@ -289,11 +289,18 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 	if($landscape){ //Display Landscape
 		$pdf->writeHTMLCell(0, 0, '', 140, "<h2>Why did you take this picture?</h2>", 0, 1, 0, true, '', true);
 		if(isset($retTranscript[0]) && !empty($retTranscript[0])){
+			$starting_v = 150; //arbitrary almost to sit under the photo;
 			foreach($retTranscript as $k => $trans) {
 				$type 		= $trans["type"];
 				$content 	= $trans["content"];
                 $typeicon 	= $type == "audio" ? "[<img src='./img/icon_mic'/> ".($k + 1)."]" : "[text]";
-                $pdf->writeHTMLCell(0, 0, '', ($k * 10) + 150, "<h3>$typeicon : '" . $content . "'</h3>", 0, 1, 0, true, '', true);
+                
+                $approx_lines   = ceil(strlen($content)/80);  //about 80 characters per line
+                $approx_vert    = 5; //approx height per line
+                $vert_offset    = $approx_lines * $approx_vert;
+
+                $pdf->writeHTMLCell(0, 0, '', $starting_v, "<h3>$typeicon : '" . $content . "'</h3>", 0, 1, 0, true, '', true);
+            	$starting_v = $starting_v + $vert_offset;
             }
 		}else{
 			$pdf->writeHTMLCell(0, 0, '', 150, "<h3>No Transcript Available</h3>", 0, 1, 0, true, '', true);
@@ -323,11 +330,18 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 	}else{ //Display Portrait
 		$pdf->writeHTMLCell(0, 0, '', 140, "<h2>Why did you take this picture?</h2>", 0, 1, 0, true, '', true);
 		if(isset($retTranscript[0]) && !empty($retTranscript[0])){
+			$starting_v = 150; //arbitrary almost to sit under the photo;
 			foreach($retTranscript as $k => $trans){
                 $type 		= $trans["type"];
                 $content 	= $trans["content"];
                 $typeicon 	= $type == "audio" ? "[audio ".($k + 1)."]" : "[text]";
-                $pdf->writeHTMLCell(0, 0, '', ($k*10)+150, "<h3>$typeicon : '".$content."'</h3>", 0, 1, 0, true, '', true);
+
+                $approx_lines   = ceil(strlen($content)/80);  //about 80 characters per line
+                $approx_vert    = 5; //approx height per line
+                $vert_offset    = $approx_lines * $approx_vert;
+
+                $pdf->writeHTMLCell(0, 0, '', $starting_v, "<h3>$typeicon : '".$content."'</h3>", 0, 1, 0, true, '', true);
+                $starting_v = $starting_v + $vert_offset;
 			}
 		}else{
 			$pdf->writeHTMLCell(0, 0, '', 50, "<i>Image Not Available</i>", 0, 1, 0, true, '', true);
@@ -362,7 +376,7 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 
 	if(strpos($goodbad,"icon_none")){
 		// this means both
-		$pdf->Image('./img/icon_smile.png',135,133,10,10);
+		$pdf->Image('./img/icon_smile.png',173,133,10,10);
 		$goodbad = "img/icon_frown.png";
 	}
 	$pdf->Image('./'.$goodbad,185,133,10,10);
