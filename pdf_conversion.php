@@ -398,19 +398,13 @@ function generateWalkMap($pdf, $_id){
 	$pdf->writeHTMLCell(0,0,0,250, "<small>Generated using the Stanford Discovery Tool, © Stanford University 2018</small>",0,1,0, true, '',true);
 	$pdf->StopTransform();
 
-	$walk_date = date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000));
-	$walk_time = date("g:i a", floor($doc["geotags"][0]/1000)) + " - " + date("g:i a", floor($doc["geotags"][$doc["geotags"].length - 1]/1000));
+	$walk_date 	= date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000));
+	$walk_time 	= date("g:ia", floor($doc["geotags"][0]["timestamp"]/1000)) . " - " . date("g:ia", floor($doc["geotags"][count($doc["geotags"]) - 1]["timestamp"]/1000));
 	$pdf->writeHTMLCell(0,0,20,9.5, $walk_date . " " .$walk_time,0,1,0, true, '',true);
-
-	if($scale > 1.4) {#scale = 1.77 in this case 
-		$basePixels = 60;
-	}else{
-		$basePixels = 80;
-	}
 
 	$geopoints = array();
 	foreach($doc["geotags"] as $geotag){
-		$geopoints[] = $geotag["lat"].",".$geotag["long"];
+		$geopoints[] = $geotag["lat"].",".$geotag["lng"];
 	}
 	$markers 	= implode("|",$geopoints);
 	$urlp 		= urlencode("|".$markers);
