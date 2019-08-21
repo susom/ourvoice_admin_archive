@@ -253,7 +253,7 @@ if(!isset($_SESSION["discpw"])) {
 			$template_instructions = "<strong class='tpl_instructions'>*Input a new Project ID & Name to create a new project</strong>";
 		}else{
 			$show_archive_btn = true;
-			$archive_class = isset($p["project_archived"]) && $p["project_archived"] ?  "archived" : "active";
+			$archive_class = isset($p["archived"]) && $p["archived"] ?  "archived" : "active";
 		}
 		?>
 		<form id="project_config" method="post" class='<?php echo $template ? "template" : ""?>'>
