@@ -412,7 +412,6 @@ function generateWalkMap($pdf, $_id){
 
 	$url 		= 'https://maps.googleapis.com/maps/api/staticmap?size=680x'.floor(533).'&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
 	$gmapsPhoto = doCurl($url);
-
-	$pdf->Image('@'.$gmapsPhoto,0,20,180,106);
+	$pdf->Image('@'.$gmapsPhoto,15,20,180,106);
 }
 ?>
