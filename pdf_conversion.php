@@ -6,6 +6,10 @@ require_once "vendor/tcpdf/tcpdf.php";
 if(isset($_GET["_id"]) && isset($_GET["_numPhotos"]) && isset($_GET["_rotationString"])){
 	$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 	setup($pdf, $_GET["_id"]);
+
+	// INCLUDE WALK AT THE TOP MAP
+	generateWalkMap($pdf, $_GET["_id"]);
+
 	for($i = 0 ; $i < $_GET["_numPhotos"]; $i++){ //not iterating right now. adding pages to wrong obj
 		$rotation = str_split($_GET["_rotationString"])[$i]; //get current rotation of picture
 		generatePhotoPage($pdf,$_GET["_id"], $i, $rotation);
@@ -212,7 +216,8 @@ function generatePhotoPage($pdf, $id, $pic, $rotation){
 
 	imagedestroy($imageResource);
 	$gmapsPhoto = doCurl($url);
-	$photo = imagecreatefromstring($gmapsPhoto);
+	
+	// $photo = imagecreatefromstring($gmapsPhoto);
 	// print_rr($goodbad);
 	generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad);
 	///////////////////////////// END STATIC GOOGLE MAP /////////////////////////////
@@ -257,7 +262,7 @@ function setup($pdf, $id){ //set page contents and function initially
 }
 
 function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad){
-/* arguments: SORRY for list will clean up later.
+	/* arguments: SORRY for list will clean up later.
 	pdf = export object
 	htmlobj = includes date, time for picture information
 	htmlphoto = walk photo from portal / one per page
@@ -267,7 +272,7 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 	scale = float that determines scale factor
 	rotation = int of 0-3 to determine which 90 degree offset to rotate
 	goodbad = img path to the correct smile icon
- */
+ 	*/
 	// print_rr($rotation);
 	$pdf->AddPage();
 	$pdf->StartTransform();
@@ -380,6 +385,40 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 		$goodbad = "img/icon_frown.png";
 	}
 	$pdf->Image('./'.$goodbad,185,133,10,10);
+}
 
+function generateWalkMap($pdf, $_id){
+	$url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
+    $response   = doCurl($url);
+	$doc 		= json_decode(stripslashes($response),1); //wtf this breaking certain ones? 
+
+	$pdf->AddPage();
+	$pdf->StartTransform();
+	$pdf->Rotate(90,0,250);
+	$pdf->writeHTMLCell(0,0,0,250, "<small>Generated using the Stanford Discovery Tool, © Stanford University 2018</small>",0,1,0, true, '',true);
+	$pdf->StopTransform();
+
+	$walk_date = date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000));
+	$walk_time = date("g:i a", floor($doc["geotags"][0]/1000)) + " - " + date("g:i a", floor($doc["geotags"][$doc["geotags"].length - 1]/1000));
+	$pdf->writeHTMLCell(0,0,20,9.5, $walk_date . " " .$walk_time,0,1,0, true, '',true);
+
+	if($scale > 1.4) {#scale = 1.77 in this case 
+		$basePixels = 60;
+	}else{
+		$basePixels = 80;
+	}
+
+	$geopoints = array();
+	foreach($doc["geotags"] as $geotag){
+		$geopoints[] = $geotag["lat"].",".$geotag["long"];
+	}
+	$markers 	= implode("|",$geopoints);
+	$urlp 		= urlencode("|".$markers);
+	$parameters = "markers=$urlp";
+
+	$url 		= 'https://maps.googleapis.com/maps/api/staticmap?size=680x'.floor(533).'&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
+	$gmapsPhoto = doCurl($url);
+
+	$pdf->Image('@'.$gmapsPhoto,0,20,180,106);
 }
 ?>
