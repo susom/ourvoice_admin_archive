@@ -101,6 +101,13 @@ if( isset($_POST["proj_idx"]) ){
 		if(isset($_POST["thumbs"]) && is_array($_POST["thumbs"])){
 			$_POST["thumbs"] = $_POST["thumbs"][1];
 		}
+
+		$expire_date = null;
+		if(!empty($_POST["expire_date"])){
+			$exp_time 		= strtotime($_POST["expire_date"]);
+			$expire_date 	= date('Y-m-d',$exp_time);
+		}
+
 		$updated_project = array(
 			 "project_id" 		=> strtoupper($_POST["project_id"])
 			,"project_name" 	=> $_POST["project_name"]
@@ -109,7 +116,8 @@ if( isset($_POST["proj_idx"]) ){
 			,"project_email" 	=> $_POST["project_email"]
 			,"template_type"	=> $_POST["template_type"]
             ,"text_comments"    => $_POST["text_comments"]
-            ,"include_surveys"  => $_POST["include_surveys"]
+            // ,"include_surveys"  => $_POST["include_surveys"]
+            ,"expire_date"  	=> $expire_date
 			,"thumbs"			=> isset($_POST["thumbs"]) ? $_POST["thumbs"] : 0
 			,"app_lang" 		=> $app_lang
 		);
@@ -231,10 +239,11 @@ if(!isset($_SESSION["discpw"])) {
 		$spass 	  = isset($p["summ_pass"]) ? $p["summ_pass"] : "";
 		$thumbs   = $p["thumbs"];
         $texts    = isset($p["text_comments"]) ? $p["text_comments"] : true;
+        $expire_date 		= isset($p["expire_date"]) ? $p["expire_date"] : "";
         $available_langs 	= $projs[100]["app_lang"];
 		$langs 	  			= $p["app_lang"];
 		$template_type      = isset($p["template_type"]) ? $p["template_type"] : "1";
-        $include_surveys    = isset($p["include_surveys"]) ? $p["include_surveys"] : true;
+        $include_surveys    = isset($p["include_surveys"]) ? $p["include_surveys"] : false;
         $template_instructions = "";
 		$template = false;
 
@@ -258,6 +267,26 @@ if(!isset($_SESSION["discpw"])) {
 				<label><span>Portal Pass</span><input type="text" name="summ_pass" value="<?php echo $spass; ?>"/></label>
                 <input type="hidden" name="template_type" value="1"/>
                 <input type="hidden" name="thumbs" value="2"/>
+                
+                <label>
+                	<span>Expire Project Date?</span><input name="expire_date"  type='text'  value="" id='datetimepicker1' />
+			        <script type="text/javascript">
+			            $(function () {
+			                $('#datetimepicker1').datetimepicker({
+				                format: 'MM/DD/YYYY'
+				                <?php if($expire_date){ echo ",defaultDate:'$expire_date'"; } ?>
+				            });
+			            });
+			        </script>
+			        <style>
+					.app_meta .bootstrap-datetimepicker-widget .table-condensed span{
+						width:initial ;
+					}
+			    	</style>
+					<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+					<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+                </label>
+
                 <label><span>Text Comments</span>
                     <input type="radio" name="text_comments" <?php if(!$texts) echo "checked"; ?> value="0"/> No Texting
                     <input type="radio" name="text_comments" <?php if($texts) echo "checked"; ?> value="1"/> Allow Texting
