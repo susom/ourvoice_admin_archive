@@ -407,7 +407,7 @@ function generateWalkMap($pdf, $_id){
 		$geopoints[] = $geotag["lat"].",".$geotag["lng"];
 	}
 	$markers 	= implode("|",$geopoints);
-	$urlp 		= urlencode("|".$markers);
+	$urlp 		= urlencode("icon:https://ourvoice-projects.med.stanford.edu/img/icon_small_blue_dot.png"."|".$markers);
 	$parameters = "markers=$urlp";
 
 	$url 		= 'https://maps.googleapis.com/maps/api/staticmap?size=680x'.floor(533).'&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
