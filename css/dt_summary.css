@@ -614,17 +614,17 @@ label span {
 .data_processed {
 	position: absolute;
 	bottom: 5px;
-	right: 200px;
+	right: 320px;
 }
 
 .export-pdf{
-	right: 155px;
+	right: 308px;
 	position: absolute;
 	bottom: 20px;
 }
 
 .export-photos{
-	right: 280px;
+	right: 160px;
 	position: absolute;
 	bottom: 20px;
 }
