@@ -16,9 +16,8 @@ if(array_key_exists("error",$doc)){
 	exit;
 }
 
-$photo_names = array();
-$baseurl 	= "http://". $_SERVER['SERVER_NAME']. $_SERVER["REQUEST_URI"];
-$baseurl 	= substr($baseurl,0,strrpos($baseurl,"/")+1);
+$photo_names 	= array();
+$baseurl        = "https://".$_SERVER["HTTP_HOST"]."/";
 foreach($doc["photos"] as $photo){
 	$filename 	= $photo["name"];
 	$ph_id 		= $doc["_id"]."_".$filename;
