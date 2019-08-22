@@ -12,7 +12,7 @@ $response   = doCurl($url);
 $doc 		= json_decode(stripslashes($response),1); 
 
 if(array_key_exists("error",$doc)){
-	header("location: https://ourvoice-projects.med.stanford.edu/summary.php");
+	header("location: ".$_SERVER["HTTP_HOST"]);
 	exit;
 }
 
