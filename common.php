@@ -183,11 +183,13 @@ function printRow($doc, $active_pid){
     $codeblock[] = "<section class='photo_previews'>";
     $codeblock[] = "<a href='#' class='btn btn-danger deletewalk' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'>Delete This Walk</a>";
 
+    $codeblock[] = "<a href='download_photos.php?doc_id=".$doc["_id"]."' class='btn btn-info export-photos' target='blank'>Download Photos</a>";
+    
     if(!$processed){
         $codeblock[] = "<label class='data_processed' ><input type='checkbox' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'/> Data Processed?</label>";
     }
     $codeblock[] = "<a href='#' class='btn btn-primary export-pdf' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'>Walk Data PDF</a>";
-    // $codeblock[] = "<a href='#' class='btn btn-info export-photos' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'>Download Photos</a>";
+
 
     $codeblock[] = "<h5>Photo Previews (".count($photos).")</h5>";
     $codeblock[] = "<div class='thumbs'>";
