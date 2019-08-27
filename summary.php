@@ -381,7 +381,6 @@ if( $active_project_id ){
 			$days_data 	    = rsort($response["rows"]);
 			foreach($response["rows"] as $row){
 				$doc        = $row["value"];
-//                markPageLoadTime("ONE PRINT ROW PROCESSED");
                 echo "<a name='".$doc["_id"]."'></a>";
                 echo implode("",printRow($doc,$active_pid));
             }
@@ -485,7 +484,6 @@ function bindHover(){
 		}
 	});
 }
-
 function checkLocationData(){
 	var visible_photos = $(".thumbs").find("figure").children("a");
 	var checkRepeated;
@@ -507,9 +505,8 @@ function checkLocationData(){
 $(document).ready(function(){
 	window.current_preview = null;
 	var timer;
-	checkLocationData();
-	bindHover();
-
+	// checkLocationData();
+	// bindHover();
 
 	$("#viewsumm").click(function(){
 	    if($("#summary").is(":visible")){
@@ -627,6 +624,7 @@ $(document).ready(function(){
 		return false;
 	});
 
+	//DATA PROCESSED?
     $(".collapse").on("change",".data_processed input",function(e){
     	console.log("data processed clicked");
         var el = $(this);
@@ -651,6 +649,7 @@ $(document).ready(function(){
         return false;
     });
 
+    //EXPORT AS PDF
 	$(".collapse").on("click",".export-pdf",function(e){
 		console.log("clicked button");
 		var _id 	= $(this).data("id");
@@ -689,9 +688,15 @@ $(document).ready(function(){
 		// console.log('pdf_conversion.php?_id='+_id+'&_numPhotos='+photoNames.length+'&_rotation='+rotationString);
 		window.open('pdf_conversion.php?_id='+_id+'&_numPhotos='+photoNames.length+'&_rotationString='+rotationString, '_blank');
 		//photo.php?_id=".$doc["_id"]."&_file=$photo_name
-
 	});
 
+	//reload live map
+	$(".collapse").on("click",".reload_map",function(e){
+		var json_geo 	= $(this).data("mapgeo");
+		var i 			= $(this).data("mapi");
+		drawGMap(json_geo, i, 16);
+		return false;
+	});
 });
 </script>
 </body>

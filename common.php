@@ -159,11 +159,23 @@ function printRow($doc, $active_pid){
         return $tag["accuracy"] <= 50;
     });
 
+    // use the unaccurate if nothing was marked high acc.
     if(empty($forjsongeo)){
         $forjsongeo = $geotags; 
     }
 
+    // get STATIC google map , performance
+    $geopoints = array();
+    foreach($forjsongeo as $geotag){
+        $geopoints[] = $geotag["lat"].",".$geotag["lng"];
+    
+    }
+    $markers    = implode("|",$geopoints);
+    $parameters = urlencode("icon:https://ourvoice-projects.med.stanford.edu/img/icon_small_blue_dot.png"."|".$markers);
+    $mapurl     = 'https://maps.googleapis.com/maps/api/staticmap?size=420x300&zoom=16&markers='.$parameters."&key=".cfg::$gvoice_key;
+    
     $json_geo    = json_encode($forjsongeo);
+
     $last4       = substr($doc["_id"],-4);
     $firstpart   = substr($doc["_id"],0, strlen($doc["_id"]) - 4);
     $walk_ts_sub = substr($doc["_id"],-13);
@@ -176,7 +188,7 @@ function printRow($doc, $active_pid){
     <i>$firstpart<strong>$last4</strong></i></h4>";
     $codeblock[] = "</hgroup>";
 
-    $codeblock[] = "<div id='google_map_$i' class='gmap'></div>";
+    $codeblock[] = "<div id='google_map_$i' class='gmap'><img src='$mapurl'/><a href='#' class='reload_map' data-mapgeo='$json_geo' data-mapi='$i'>Map look wrong?  Refresh with live map</a></div>";
     $codeblock[] = "<div class = 'location_alert_summary'></div>";
 
     
@@ -344,8 +356,6 @@ function printRow($doc, $active_pid){
             $codeblock[] = "</section>";
         }
         $codeblock[] = "</div>";
-        $codeblock[] = "<script> drawGMap($json_geo, '$i', 16); </script>";
-        $codeblock[] = "<div class='$i' data-mapgeo='$json_geo'></div>";
         return $codeblock;
     }else{
         foreach($unique as $name => $value){
@@ -360,8 +370,6 @@ function printRow($doc, $active_pid){
             $codeblock[] = "</section>";
         }
         $codeblock[] = "</div>";
-        $codeblock[] = "<script> drawGMap($json_geo, '$i', 16); </script>";
-        $codeblock[] = "<div class='$i' data-mapgeo='$json_geo'></div>";
         return $codeblock;
     }
 }
@@ -422,6 +430,8 @@ function printPhotos($doc){
             $filename   = $photo_name;
             $ph_id      = $doc["_id"];
         }
+
+
         if($lat != 0 | $long != 0){
             $time = time();
             $url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$long&timestamp=$time&key=AIzaSyDCH4l8Q6dVpYgCUyO_LROnCuSE1W9cwak";
