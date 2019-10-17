@@ -753,12 +753,6 @@ function getAggTranscriptions($pid, $view="filter", $dd="transcriptions"){
     return json_decode($response,1);
 }
 
-
-
-
-
-
-
 // PHOTO PAGE FUNCTIONS (AUDIO TRANSCRIPTION, FACE PIXELATION)
 function getFullUrl($partialUrl){
     $paths = explode("/",$_SERVER["SCRIPT_NAME"]);
@@ -778,7 +772,7 @@ function getFullUrl($partialUrl){
 
 function getConvertedAudio($attach_url, $lang){
     //FIRST DOWNLOAD THE AUDIO FILE
-//    print_rr('made to getCon');
+
     $fullURL    = getFullUrl($attach_url);
     $ch         = curl_init($fullURL);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -1043,7 +1037,7 @@ function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
 		$scale_factor_y = imagesy($image) / $vertices['height_pic'];
 		// echo $scale_factor_x . " " . $scale_factor_y;
 		$scale_pixels = isset($pixel_count)? ($pixel_count*0.000015) : 20;
-//		print_rr($scale_pixels);
+
 		$width = isset($vertices['width']) ? $vertices['width'] : -1;
 		$height = isset($vertices['height']) ? $vertices['height'] : -1;
 		if($width != -1 && $height != -1){
@@ -1061,7 +1055,6 @@ function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
 			$width = isset($faces[0]) && isset($faces[2]) ? $faces[2] - $faces[0] : 0;
 			$height = isset($faces[1]) && isset($faces[7]) ? $faces[7] - $faces[1] : 0;
 			$scale_pixels = isset($pixel_count)? ($pixel_count*0.000015) : 20;
-//			print_rr($pixel_count);
 			if($width != 0 && $height != 0){
 				//have to crop out the faces first then apply filter
 				$crop = imagecrop($image,['x'=>$faces[0],'y'=>$faces[1],'width'=>$width, 'height'=>$height]);
@@ -1179,5 +1172,27 @@ function scanForBackUpFiles($backedup, $backup_dir){
             }
             closedir($folder);
         }
+    }
+}
+
+/**
+ * Upload a file.
+ *
+ * @param string $bucketName the name of your Google Cloud bucket.
+ * @param string $objectName the name of the object.
+ * @param string $source the path to the file to upload.
+ *
+ * @return Psr\Http\Message\StreamInterface
+ */
+function upload_object($storageClient, $bucketName, $objectName, $source) {
+    if($file = file_get_contents($source)){
+        $bucket     = $storageClient->bucket($bucketName);
+        $object     = $bucket->upload($file, [
+            'name' => $objectName
+        ]);
+
+        return $object;
+    }else{
+        return false;
     }
 }
