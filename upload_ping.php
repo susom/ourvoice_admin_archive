@@ -18,7 +18,7 @@ $projectId          = '696489330177';
 $bucketName         = 'ov_walk_files';
 
 # manually copy auth.json file to server
-$keyPath            = [PATH_TO_AUTHjson];
+$keyPath            = [PATH_TO_AUTH_JSON];
 
 // ini_set('display_errors', 1);
 // ini_set('display_startup_errors', 1);
@@ -28,20 +28,6 @@ $keyPath            = [PATH_TO_AUTHjson];
 $uploaded_walk_id   = isset($_POST["uploaded_walk_id"]) ? $_POST["uploaded_walk_id"] : null;
 // $proccesed_thumb_ids    = isset($_POST["proccesed_thumb_ids"]) ?  $_POST["proccesed_thumb_ids"] : null;                  
 
-// $mail_relay_endpoint    = "https://redcap.stanford.edu/api/?type=module&prefix=email_relay&page=service&pid=13619";
-// $mail_api_token         = "XemWorYpUv";
-// $to                     = "irvins@stanford.edu";
-// $email_subject          = "Test Subject";
-// $email_msg              = "Test Body";
-// $from_name              = " ME Mario";
-// $from_email             = "irvins@stanford.edu";
-// $cc                     = "banchoff@stanford.edu";
-// $bcc                    = "irvins@stanford.edu, jmschultz@stanford.edu";
-// $result = sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $email_msg, $from_name, $from_email, $to);
-// print_rr($result);
-// exit;
-// 
-$uploaded_walk_id = isset($_REQUEST["test_walk_id"]) ? $_REQUEST["test_walk_id"] : $uploaded_walk_id  ;
 if(!empty($uploaded_walk_id)){ 
     $_id                = $uploaded_walk_id;  
     $email              = isset($_POST["project_email"]) ? $_POST["project_email"] : false;   
@@ -86,8 +72,10 @@ if(!empty($uploaded_walk_id)){
 
         // SCAN ./temp FOLDER FOR NEW FOLDERS!
         $backup_folder      = "temp/$_id";
+        // AT SOME POINT WILL HAVE TO DECOUPLE THIS FROM COUCHDB 10/17/19
         $backup_files       = scanBackUpFolder($backup_folder);
 
+        // NEED GRPC EXTENSION TO BE INSTALLED FUDGE!
         // Intanstiate FireStore Client
         // $firestore  = new FirestoreClient([
         //      'projectId'    => $overallProjectId
@@ -95,10 +83,11 @@ if(!empty($uploaded_walk_id)){
         // ]);
 
         // # Instantiates a Storage client
-        // $storageCLient = new StorageClient([
-        //     'keyFilePath'   => $keyPath,
-        //     'projectId'     => $projectId
-        // ]);
+        $storageCLient = new StorageClient([
+            'keyFilePath'   => $keyPath,
+            'projectId'     => $projectId
+        ]);
+
         foreach($backup_files as $file){
             $path = $backup_folder . "/" . $file;
             if(strpos($file,".json") > 0){
@@ -108,7 +97,7 @@ if(!empty($uploaded_walk_id)){
 
                 // STORE WALK DATA INTO FIRESTORE FORMAT
                 $old_walk_id    = str_replace(".json","",$file); 
-                // $fs_walk_id     = setWalkFireStore($old_walk_id, json_decode($payload,1), $firestore);
+                //$fs_walk_id     = setWalkFireStore($old_walk_id, json_decode($payload,1), $firestore);
             }else{
                 $attach_url = cfg::$couch_url . "/" . cfg::$couch_attach_db; 
                 // TWO STEPS
@@ -128,7 +117,7 @@ if(!empty($uploaded_walk_id)){
                 $response   = prepareAttachment($file,$rev,$_id,$attach_url); 
 
                 //UPLOAD TO GOOGLE BUCKET
-                // $uploaded   = uploadCloudStorage($file ,$_id ,$storageCLient);
+                $uploaded   = uploadCloudStorage($file ,$_id , $bucketName, $storageCLient);
             }
         }
 
@@ -271,7 +260,7 @@ function setWalkFireStore($old_id, $details,$firestore){
     return $walk_id;
 }
 
-function uploadCloudStorage($attach_id, $walk_id, $storageCLient){
+function uploadCloudStorage($attach_id, $walk_id, $bucketName,  $storageCLient){
     # UPLOAD TO CLOUD STORAGE
     $folder_components  = explode("_",$walk_id);
 
@@ -279,8 +268,8 @@ function uploadCloudStorage($attach_id, $walk_id, $storageCLient){
     $device_id          = $folder_components[1];
     $walk_ts            = $folder_components[3];
     $attachment_prefix  = "$project_id/$device_id/$walk_ts/";
-    $file_suffix        = str_replace($walk_id."_","",$attach_id);   
-
+    $file_suffix        = str_replace($walk_id."_","",$attach_id);
+    
     $filepath           = 'temp/'.$walk_id.'/'.$attach_id;
     $new_attach_id      = $attachment_prefix . $file_suffix;
 
