@@ -11,11 +11,16 @@ class ComposerStaticInit43b1f27605365100075f163c43490ce5
         'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
         'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
+        'decc78cc4436b1292c6c0d151b19445c' => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib/bootstrap.php',
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
         '5255c38a0faeba867671b61dfda6d864' => __DIR__ . '/..' . '/paragonie/random_compat/lib/random.php',
     );
 
     public static $prefixLengthsPsr4 = array (
+        'p' => 
+        array (
+            'phpseclib\\' => 10,
+        ),
         'S' => 
         array (
             'Symfony\\Polyfill\\Ctype\\' => 23,
@@ -131,6 +136,10 @@ class ComposerStaticInit43b1f27605365100075f163c43490ce5
     );
 
     public static $prefixDirsPsr4 = array (
+        'phpseclib\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
+        ),
         'Symfony\\Polyfill\\Ctype\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
@@ -519,6 +528,17 @@ class ComposerStaticInit43b1f27605365100075f163c43490ce5
                 0 => __DIR__ . '/..' . '/neutron/temporary-filesystem/src',
             ),
         ),
+        'G' => 
+        array (
+            'Google_Service_' => 
+            array (
+                0 => __DIR__ . '/..' . '/google/apiclient-services/src',
+            ),
+            'Google_' => 
+            array (
+                0 => __DIR__ . '/..' . '/google/apiclient/src',
+            ),
+        ),
         'F' => 
         array (
             'FFMpeg' => 
@@ -542,6 +562,11 @@ class ComposerStaticInit43b1f27605365100075f163c43490ce5
         ),
     );
 
+    public static $classMap = array (
+        'Google_Service_Exception' => __DIR__ . '/..' . '/google/apiclient/src/Google/Service/Exception.php',
+        'Google_Service_Resource' => __DIR__ . '/..' . '/google/apiclient/src/Google/Service/Resource.php',
+    );
+
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
@@ -549,6 +574,7 @@ class ComposerStaticInit43b1f27605365100075f163c43490ce5
             $loader->prefixDirsPsr4 = ComposerStaticInit43b1f27605365100075f163c43490ce5::$prefixDirsPsr4;
             $loader->fallbackDirsPsr4 = ComposerStaticInit43b1f27605365100075f163c43490ce5::$fallbackDirsPsr4;
             $loader->prefixesPsr0 = ComposerStaticInit43b1f27605365100075f163c43490ce5::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit43b1f27605365100075f163c43490ce5::$classMap;
 
         }, null, ClassLoader::class);
     }
