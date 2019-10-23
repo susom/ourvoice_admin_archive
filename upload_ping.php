@@ -286,7 +286,7 @@ function setWalkFireStore($old_id, $details, $firestore=null){
 
     $firestore_endpoint = "https://firestore.googleapis.com/v1/";
     $project_id         = "som-rit-ourvoice";
-    $collection         = "ov_test";
+    $collection         = "ov_walks";
     $object_unique_id   = $walk_id;
     $firestore_url      = $firestore_endpoint . "projects/".$project_id."/databases/(default)/documents/".$collection."/".$object_unique_id;
     $access_token       = $firestore;
