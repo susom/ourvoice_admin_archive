@@ -4,6 +4,10 @@ require_once "inc/class.mail.php";
 
 require 'vendor/autoload.php';
 
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
+
 # Imports the Google Cloud client library
 use Google\Cloud\Storage\StorageClient;
 use Google\Cloud\Firestore\FirestoreClient;
@@ -19,10 +23,8 @@ $bucketName         = 'ov_walk_files';
 
 # manually copy auth.json file to server
 $keyPath            = [PATH_TO_AUTH_JSON];
-
-// ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
+$scope              = "https://www.googleapis.com/auth/datastore";
+$access_token       = getGCPRestToken($keyPath, $scope);
 
 // GET WALK ID , FROM THE PING
 $uploaded_walk_id   = isset($_POST["uploaded_walk_id"]) ? $_POST["uploaded_walk_id"] : null;
@@ -75,7 +77,7 @@ if(!empty($uploaded_walk_id)){
         // AT SOME POINT WILL HAVE TO DECOUPLE THIS FROM COUCHDB 10/17/19
         $backup_files       = scanBackUpFolder($backup_folder);
 
-        // NEED GRPC EXTENSION TO BE INSTALLED FUDGE!
+        // NEED GRPC EXTENSION TO BE INSTALLED FUDGE!, USE REST API INSTEAD 
         // Intanstiate FireStore Client
         // $firestore  = new FirestoreClient([
         //      'projectId'    => $overallProjectId
@@ -97,7 +99,7 @@ if(!empty($uploaded_walk_id)){
 
                 // STORE WALK DATA INTO FIRESTORE FORMAT
                 $old_walk_id    = str_replace(".json","",$file); 
-                //$fs_walk_id     = setWalkFireStore($old_walk_id, json_decode($payload,1), $firestore);
+                $fs_walk_id     = setWalkFireStore($old_walk_id, json_decode($payload,1), $access_token);
             }else{
                 $attach_url = cfg::$couch_url . "/" . cfg::$couch_attach_db; 
                 // TWO STEPS
@@ -183,7 +185,7 @@ if(!empty($uploaded_walk_id)){
 // if get head = fail
 // {"error":"not_found","reason":"missing"}
 
-function setWalkFireStore($old_id, $details,$firestore){
+function setWalkFireStore($old_id, $details, $firestore=null){
     // CURRENT COUCH FORMAT of the Walk Id
     $walk_parts     = explode("_",$old_id);
 
@@ -196,12 +198,15 @@ function setWalkFireStore($old_id, $details,$firestore){
     }
 
     // GET COMPONENT PIECES TO START REFORMAT DATA MODEL FOR FIRESTORE
+
     $pid            = $walk_parts[0];
+    $lang           = array_key_exists("lang", $details) ? $details["lang"] : null ;
+    
     $device         = array_key_exists("device", $details) ? $details["device"] : array() ; 
     $device["uid"]  = $walk_parts[1]; 
-    $lang           = array_key_exists("lang", $details) ? $details["lang"] : null ;
 
     $survey         = array_key_exists("survey", $details) ? $details["survey"] : array();
+
     $txn            = array_key_exists("transcriptions", $details) ? $details["transcriptions"] : array();
     $photos         = $details["photos"];
 
@@ -212,7 +217,7 @@ function setWalkFireStore($old_id, $details,$firestore){
         $temp["name"]           = array_key_exists("name", $photo)          ? $photo["name"]            : null;
         $temp["rotate"]         = array_key_exists("rotate", $photo)        ? $photo["rotate"]          : null;
         $temp["text_comment"]   = array_key_exists("text_comment", $photo)  ? $photo["text_comment"]    : null;
-        $temp["geotag"]         = array_key_exists("geotag", $photo)        ? $photo["geotag"]          : null;
+        $temp["geotag"]         = array_key_exists("geotag", $photo)        ? $photo["geotag"]          : array();
         $audios                 = array_key_exists("audios", $photo)        ? $photo["audios"]          : array();
         
         $temp["audios"]         = array();
@@ -220,18 +225,98 @@ function setWalkFireStore($old_id, $details,$firestore){
             $temp["audios"][$audio_name] = array_key_exists($audio_name, $txn) ? $txn[$audio_name] : array() ;
         }
 
-        $new_photos[] = $temp;
+        $fields                     = array();
+        $fields["goodbad"]          = array_key_exists("goodbad", $photo) && !is_null($photo["goodbad"])            ? array("integerValue" => $photo["goodbad"])    : array("nullValue" => null);
+        $fields["name"]             = array_key_exists("name", $photo) && !is_null($photo["name"])                  ? array("stringValue" => $photo["name"])        : array("nullValue" => null);
+        $fields["rotate"]           = array_key_exists("rotate", $photo) && !is_null($photo["rotate"])              ? array("integerValue" => $photo["rotate"] )    : array("nullValue" => null);
+        $fields["text_comment"]     = array_key_exists("text_comment", $photo) && !is_null($photo["text_comment"])  ? array("stringValue" => $photo["text_comment"]): array("nullValue" => null);
+
+        $geoFields = array();
+        foreach($temp["geotag"] as $key => $val){
+            $geoFields[$key] = array("doubleValue" => $val);
+        }
+        $fields["geotag"]           = array("mapValue" => array("fields" => $geoFields));
+
+        $audioFields = array();
+        foreach($temp["audios"] as $key => $val){
+            $audioFields[$key] = array("mapValue" => array("fields" => array("text" => array("stringValue" => $val["text"]) ) ));
+        }
+        $fields["audios"]           = array("mapValue" => array("fields" => $audioFields));
+
+        // $new_photos[] = $temp;
+        $new_photos[] = array("mapValue" => array("fields" => $fields));
     }
 
     $geotags        = array_key_exists("geotags", $details) ? $details["geotags"] : array() ; 
     $culled_geos    = array();
     foreach($geotags as $geotag){
-        if($geotag["accuracy"] <= 50){
+        if($geotag["accuracy"]){
             $culled_geos[] = array_intersect_key($geotag,$keep_these);
         }
     }
 
+    // NEED TO FORMAT PROPERLY TO PUSH TO FIRESTORE
+    $fs_pid     = ["stringValue" => $pid];
+    $fs_lang    = !is_null($lang) ? ["stringValue" => $lang] : ["nullValue" => null];
+    $fs_ts      = ["integerValue"   => $walk_parts[3]];
+
+    // map device array
+    $temp = array();
+    foreach($device as $key => $val){
+        $temp[$key] = array("stringValue" => $val);
+    }
+    $fs_device  = array("mapValue" => array("fields" => $temp));
+
+    // map survey array , the app no longer records surveys
+    $fs_survey  = array("arrayValue" => array("values" => array()));
+    
+    // map photos array
+    $fs_photos  = array("arrayValue" => array("values" => $new_photos));
+
+    $firestore_data = [
+             'project_id'   => $fs_pid
+            ,'lang'         => $fs_lang
+            ,'timestamp'    => $fs_ts
+            ,'device'       => $fs_device
+            ,'survey'       => $fs_survey
+            ,'photos'       => $fs_photos
+        ];
+    $data = ["fields" => (object)$firestore_data];
+    $json = json_encode($data);
+
+    $firestore_endpoint = "https://firestore.googleapis.com/v1/";
+    $project_id         = "som-rit-ourvoice";
+    $collection         = "ov_test";
+    $object_unique_id   = $walk_id;
+    $firestore_url      = $firestore_endpoint . "projects/".$project_id."/databases/(default)/documents/".$collection."/".$object_unique_id;
+    $access_token       = $firestore;
+
+    //PUSH THE ORIGINAL WALK DATA DOCUMENT
+    $response           = restPushFireStore($firestore_url, $json, $access_token);
+
+    // NOW PUSH A NEW DOCUMENT FOR EACH GEOTAG TO THE SUBCOLLECTION FOR THE WALK 
+    $firestore_url_sub  = $firestore_endpoint . "projects/".$project_id."/databases/(default)/documents/".$collection."/".$object_unique_id."/geotags/";
+    foreach($culled_geos as $i => $geotag){
+        $geoFields = array();
+        foreach($geotag as $key => $val){
+            $geoFields[$key] = array("doubleValue" => $val);
+        }
+
+        $fs_geo         = array("mapValue" => array("fields" => $geoFields));
+        $temp_url       = $firestore_url_sub . $i;
+
+        $firestore_data = [$fs_geo];
+        $data           = ["fields" => (object)$firestore_data];
+        $json           = json_encode($data);
+        $response       = restPushFireStore($temp_url, $json, $access_token);
+        set_time_limit(5);
+    }
+
+    return $walk_id;
+
+    // THIS IS FOR IF THE GRPC EXTENSION GETS INSTALLED
     try {
+        // CREATE THE PARENT DOC
         $docRef = $firestore->collection($collection)->document($walk_id);
         $docRef->set([
              'project_id'   => $pid
@@ -242,6 +327,7 @@ function setWalkFireStore($old_id, $details,$firestore){
             ,'survey'       => $survey
         ]);
         
+        // ADD GEOTAGS AS SUBCOLLECTION AND INDIVIDUAL DOCS
         $subCollectionRef = $docRef->collection("geotags");
         foreach($culled_geos as $i => $geotag){
             try{
@@ -305,25 +391,3 @@ function sendMailRelay($mail_relay_endpoint, $mail_api_token, $email_subject, $e
 
     return $result;
 } 
-
-// /**
-//  * Upload a file.
-//  *
-//  * @param string $bucketName the name of your Google Cloud bucket.
-//  * @param string $objectName the name of the object.
-//  * @param string $source the path to the file to upload.
-//  *
-//  * @return Psr\Http\Message\StreamInterface
-//  */
-// function upload_object($storageClient, $bucketName, $objectName, $source) {
-//     if($file = file_get_contents($source)){
-//         $bucket     = $storageClient->bucket($bucketName);
-//         $object     = $bucket->upload($file, [
-//             'name' => $objectName
-//         ]);
-
-//         return $object;
-//     }else{
-//         return false;
-//     }
-// }
