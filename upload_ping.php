@@ -239,7 +239,7 @@ function setWalkFireStore($old_id, $details, $firestore=null){
 
         $audioFields = array();
         foreach($temp["audios"] as $key => $val){
-            $audioFields[$key] = array("mapValue" => array("fields" => array("text" => array("stringValue" => $val["text"]) ) ));
+            $audioFields[$key] = array("mapValue" => array("fields" => array("text" => array("stringValue" => "") ) ));
         }
         $fields["audios"]           = array("mapValue" => array("fields" => $audioFields));
 
@@ -251,7 +251,7 @@ function setWalkFireStore($old_id, $details, $firestore=null){
     $culled_geos    = array();
     foreach($geotags as $geotag){
         if($geotag["accuracy"]){
-            $culled_geos[] = array_intersect_key($geotag,$keep_these);
+            $culled_geos[] = $geotag;//array_intersect_key($geotag,$keep_these);
         }
     }
 
@@ -295,7 +295,7 @@ function setWalkFireStore($old_id, $details, $firestore=null){
     $response           = restPushFireStore($firestore_url, $json, $access_token);
 
     // NOW PUSH A NEW DOCUMENT FOR EACH GEOTAG TO THE SUBCOLLECTION FOR THE WALK 
-    $firestore_url_sub  = $firestore_endpoint . "projects/".$project_id."/databases/(default)/documents/".$collection."/".$object_unique_id."/geotags/";
+    $firestore_url_sub  = $firestore_url . "/geotags/";
     foreach($culled_geos as $i => $geotag){
         $geoFields = array();
         foreach($geotag as $key => $val){
