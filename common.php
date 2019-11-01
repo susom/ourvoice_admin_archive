@@ -1280,7 +1280,9 @@ function formatUpdateWalkPhotos($photos,$transcriptions){
             if(empty($val)){
                 $audioFields[$key] = array("arrayValue" => array("values" => $val) );
             }else{
-                $audioFields[$key] = array("mapValue" => array("fields" => array("text" => array("stringValue" => $val["text"]), "confidence" => array("doubleValue" => $val["confidence"])     ) ));
+                $audio_text = isset($val["text"]) ? $val["text"] : "";
+                $audio_confidence = isset($val["confidence"]) ? $val["confidence"] : 0;
+                $audioFields[$key] = array("mapValue" => array("fields" => array("text" => array("stringValue" => $audio_text), "confidence" => array("doubleValue" => $audio_confidence)     ) ));
             }
         }
         $fields["audios"]           = array("mapValue" => array("fields" => $audioFields));
