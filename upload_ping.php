@@ -183,7 +183,10 @@ if(!empty($uploaded_walk_id)){
 
 function setWalkFireStore($old_id, $details, $firestore=null){
     // FIRESTORE FORMAT walk_id
-    $walk_id        = convertFSwalkId($old_id);
+    $walk_parts     = explode("_",$old_id);
+
+    // FIRESTORE FORMAT walk_id
+    $walk_id        = $walk_parts[0] ."_" . $walk_parts[1] . "_" . $walk_parts[3];
 
     // IF NO PHOTOS, THEN ITS NOT A COMPLETE WALK 
     if(!array_key_exists("photos", $details)){
