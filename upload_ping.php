@@ -182,11 +182,8 @@ if(!empty($uploaded_walk_id)){
 // {"error":"not_found","reason":"missing"}
 
 function setWalkFireStore($old_id, $details, $firestore=null){
-    // CURRENT COUCH FORMAT of the Walk Id
-    $walk_parts     = explode("_",$old_id);
-
     // FIRESTORE FORMAT walk_id
-    $walk_id        = $walk_parts[0] ."_" . $walk_parts[1] . "_" . $walk_parts[3];
+    $walk_id        = convertFSwalkId($old_id);
 
     // IF NO PHOTOS, THEN ITS NOT A COMPLETE WALK 
     if(!array_key_exists("photos", $details)){
@@ -245,9 +242,6 @@ function setWalkFireStore($old_id, $details, $firestore=null){
     $data = ["fields" => (object)$firestore_data];
     $json = json_encode($data);
 
-    $firestore_endpoint = "https://firestore.googleapis.com/v1/";
-    $project_id         = "som-rit-ourvoice";
-    $collection         = "ov_walks";
     $object_unique_id   = $walk_id;
     $firestore_url      = cfg::$firestore_endpoint . "projects/".cfg::$gcp_project_id."/databases/(default)/documents/".cfg::$firestore_collection."/".$object_unique_id;
     $access_token       = $firestore;
