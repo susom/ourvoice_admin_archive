@@ -12,19 +12,15 @@ require 'vendor/autoload.php';
 use Google\Cloud\Storage\StorageClient;
 use Google\Cloud\Firestore\FirestoreClient;
 
-$overallProjectId   ='som-rit-ourvoice';
-
-# Firestore collection for walk data
-$collection         = "ov_walks";
-
-# Your Google Cloud Storage project ID and The name for the attachment buckets
-$projectId          = '696489330177';
-$bucketName         = 'ov_walk_files';
-
-# manually copy auth.json file to server
-$keyPath            = [PATH_TO_AUTH_JSON];
-$scope              = "https://www.googleapis.com/auth/datastore";
-$access_token       = getGCPRestToken($keyPath, $scope);
+// FIRESTORE details
+$keyPath            = cfg::$FireStorekeyPath;
+$gcp_project_id     = cfg::$gcp_project_id; 
+$walks_collection   = cfg::$firestore_collection; 
+$firestore_endpoint = cfg::$firestore_endpoint; 
+$firestore_scope    = cfg::$firestore_scope; 
+$gcp_bucketID       = cfg::$gcp_bucketID; 
+$gcp_bucketName     = cfg::$gcp_bucketName; 
+$access_token       = getGCPRestToken($keyPath, $firestore_scope);
 
 // GET WALK ID , FROM THE PING
 $uploaded_walk_id   = isset($_POST["uploaded_walk_id"]) ? $_POST["uploaded_walk_id"] : null;
@@ -87,7 +83,7 @@ if(!empty($uploaded_walk_id)){
         // # Instantiates a Storage client
         $storageCLient = new StorageClient([
             'keyFilePath'   => $keyPath,
-            'projectId'     => $projectId
+            'projectId'     => $gcp_bucketID
         ]);
 
         foreach($backup_files as $file){
@@ -119,7 +115,7 @@ if(!empty($uploaded_walk_id)){
                 $response   = prepareAttachment($file,$rev,$_id,$attach_url); 
 
                 //UPLOAD TO GOOGLE BUCKET
-                $uploaded   = uploadCloudStorage($file ,$_id , $bucketName, $storageCLient);
+                $uploaded   = uploadCloudStorage($file ,$_id , $gcp_bucketName, $storageCLient);
             }
         }
 
@@ -210,42 +206,7 @@ function setWalkFireStore($old_id, $details, $firestore=null){
     $txn            = array_key_exists("transcriptions", $details) ? $details["transcriptions"] : array();
     $photos         = $details["photos"];
 
-    $new_photos     = array();
-    foreach($photos as $photo){
-        $temp                   = array();
-        $temp["goodbad"]        = array_key_exists("goodbad", $photo)       ? $photo["goodbad"]         : null;
-        $temp["name"]           = array_key_exists("name", $photo)          ? $photo["name"]            : null;
-        $temp["rotate"]         = array_key_exists("rotate", $photo)        ? $photo["rotate"]          : null;
-        $temp["text_comment"]   = array_key_exists("text_comment", $photo)  ? $photo["text_comment"]    : null;
-        $temp["geotag"]         = array_key_exists("geotag", $photo)        ? $photo["geotag"]          : array();
-        $audios                 = array_key_exists("audios", $photo)        ? $photo["audios"]          : array();
-        
-        $temp["audios"]         = array();
-        foreach($audios as $audio_name){
-            $temp["audios"][$audio_name] = array_key_exists($audio_name, $txn) ? $txn[$audio_name] : array() ;
-        }
-
-        $fields                     = array();
-        $fields["goodbad"]          = array_key_exists("goodbad", $photo) && !is_null($photo["goodbad"])            ? array("integerValue" => $photo["goodbad"])    : array("nullValue" => null);
-        $fields["name"]             = array_key_exists("name", $photo) && !is_null($photo["name"])                  ? array("stringValue" => $photo["name"])        : array("nullValue" => null);
-        $fields["rotate"]           = array_key_exists("rotate", $photo) && !is_null($photo["rotate"])              ? array("integerValue" => $photo["rotate"] )    : array("nullValue" => null);
-        $fields["text_comment"]     = array_key_exists("text_comment", $photo) && !is_null($photo["text_comment"])  ? array("stringValue" => $photo["text_comment"]): array("nullValue" => null);
-
-        $geoFields = array();
-        foreach($temp["geotag"] as $key => $val){
-            $geoFields[$key] = array("doubleValue" => $val);
-        }
-        $fields["geotag"]           = array("mapValue" => array("fields" => $geoFields));
-
-        $audioFields = array();
-        foreach($temp["audios"] as $key => $val){
-            $audioFields[$key] = array("mapValue" => array("fields" => array("text" => array("stringValue" => "") ) ));
-        }
-        $fields["audios"]           = array("mapValue" => array("fields" => $audioFields));
-
-        // $new_photos[] = $temp;
-        $new_photos[] = array("mapValue" => array("fields" => $fields));
-    }
+    $new_photos     = formatUpdateWalkPhotos($photos,$txn);
 
     $geotags        = array_key_exists("geotags", $details) ? $details["geotags"] : array() ; 
     $culled_geos    = array();
@@ -288,7 +249,7 @@ function setWalkFireStore($old_id, $details, $firestore=null){
     $project_id         = "som-rit-ourvoice";
     $collection         = "ov_walks";
     $object_unique_id   = $walk_id;
-    $firestore_url      = $firestore_endpoint . "projects/".$project_id."/databases/(default)/documents/".$collection."/".$object_unique_id;
+    $firestore_url      = cfg::$firestore_endpoint . "projects/".cfg::$gcp_project_id."/databases/(default)/documents/".cfg::$firestore_collection."/".$object_unique_id;
     $access_token       = $firestore;
 
     //PUSH THE ORIGINAL WALK DATA DOCUMENT
@@ -317,7 +278,7 @@ function setWalkFireStore($old_id, $details, $firestore=null){
     // THIS IS FOR IF THE GRPC EXTENSION GETS INSTALLED
     try {
         // CREATE THE PARENT DOC
-        $docRef = $firestore->collection($collection)->document($walk_id);
+        $docRef = $firestore->collection(cfg::$firestore_collection)->document($walk_id);
         $docRef->set([
              'project_id'   => $pid
             ,'lang'         => $lang

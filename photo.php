@@ -4,9 +4,16 @@
 // error_reporting(E_ALL);
 ini_set('memory_limit','256M'); //necessary for picture processing.
 require_once "common.php";
-$gmaps_key 	= cfg::$gmaps_key;
-$projlist 	= $_SESSION["DT"]["project_list"]; 
+require 'vendor/autoload.php';
+$gmaps_key 			= cfg::$gmaps_key;
+$projlist 			= $_SESSION["DT"]["project_list"]; 
 
+// FIRESTORE details
+$keyPath 			= cfg::$FireStorekeyPath;
+$gcp_project_id 	= cfg::$gcp_project_id; 
+$walks_collection 	= cfg::$firestore_collection; 
+$firestore_endpoint	= cfg::$firestore_endpoint; 
+$firestore_scope 	= cfg::$firestore_scope; 
 
 // AJAX HANDLING
 if( isset($_POST["doc_id"]) ){
@@ -26,7 +33,7 @@ if( isset($_POST["doc_id"]) ){
             $ajax = true;
 			//SAVE ROTATION
 			$rotate = $_POST["rotate"]; 
-			$payload["photos"][$photo_i]["rotate"] = $rotate;
+			$payload["photos"][$photo_i]["rotate"] = $rotate;		
 		}elseif(isset($_POST["delete"])){
             $ajax = true;
 			$photo_name 	= "photo_".$photo_i.".jpg";
@@ -109,6 +116,7 @@ if( isset($_POST["doc_id"]) ){
                 $payload["photos"][$photo_i]["text_comment"] = $txns;
             }
         }
+
         //SAVE TRANSCRIPTIONs
         if(isset($_POST["transcriptions"])){
             foreach($_POST["transcriptions"] as $audio_name => $transcription){
@@ -117,6 +125,23 @@ if( isset($_POST["doc_id"]) ){
             }
         }
 
+        // to update via firestore, must send entire thing top level Field Value  ie $payload["photos"]
+        // ALL UPDATES AFFECT Photos array MAKE UPDATES TO FIRESTORE AS WELL
+    	$access_token 		= getGCPRestToken($keyPath, $firestore_scope);
+		$object_unique_id 	= convertFSwalkId($_id);
+		$firestore_url 		= $firestore_endpoint . "projects/".$gcp_project_id."/databases/(default)/documents/".$walks_collection."/".$object_unique_id."?updateMask.fieldPaths=photos";
+
+		// FORMAT JUST THE PHOTOS FOR FIRESTORE (WILL NEED transcriptions)
+		$photos     	= $payload["photos"];
+		$txn    		= array_key_exists("transcriptions", $payload) ? $payload["transcriptions"] : array();
+		$new_photos 	= formatUpdateWalkPhotos($photos,$txn);
+
+		// SEND IT TO FIRESTORE
+		$firestore_data = ["photos" => array("arrayValue" => array("values" => $new_photos))];
+		$data           = ["fields" => (object)$firestore_data];
+		$json           = json_encode($data);
+		$response       = restPushFireStore($firestore_url, $json, $access_token);
+		//UPDATES
         if($ajax) {
             $response = doCurl($url, json_encode($payload), "PUT");
             exit;
@@ -550,9 +575,15 @@ $(document).ready(function(){
 		  method: "POST",
 		  url: "photo.php",
 		  data: { doc_id: doc_id, photo_i: photo_i, rotate: rotate },
-		  dataType: "JSON"
+		  dataType: "text",
+		  success:function(result){
+	      	console.log(result);
+	      },
+	      error:function(e){
+	      	console.log(e);
+	      }
 		}).done(function( msg ) {
-			alert( "Data Saved: " + msg );
+			// alert( "Data Saved: " + msg );
 		});
 		
 		return false;

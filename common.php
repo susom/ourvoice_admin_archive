@@ -1198,9 +1198,10 @@ function upload_object($storageClient, $bucketName, $objectName, $source) {
 }
 
 function getGCPRestToken($keyPath, $scope){
-    putenv('GOOGLE_APPLICATION_CREDENTIALS='.$keyPath);
+    // putenv('GOOGLE_APPLICATION_CREDENTIALS='.$keyPath);
     $client             = new Google_Client();
-    $client->useApplicationDefaultCredentials();
+    $client->setAuthConfigFile($keyPath);
+    // $client->useApplicationDefaultCredentials();
     $client->addScope($scope);
     $auth               = $client->fetchAccessTokenWithAssertion();
     $access_token       = $auth["access_token"];
@@ -1225,4 +1226,73 @@ function restPushFireStore($firestore_url, $json_payload, $access_token){
     curl_close($curl);
 
     return $response;
+}
+
+function restDeleteFireStore($firestore_url, $access_token){
+    $curl               = curl_init($firestore_url);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, array( "Content-Type: application/json"
+                                                , "Authorization: Bearer $access_token"
+                                                , "X-HTTP-Method-Override: DELETE"
+                                                )
+                );
+    curl_setopt($curl, CURLOPT_USERAGENT, "cURL");
+    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    $getinfo     = curl_getinfo($curl);
+    $error       = curl_error($curl);
+    $response   = curl_exec($curl);
+    curl_close($curl);
+
+    return $response;
+}
+
+function formatUpdateWalkPhotos($photos,$transcriptions){
+    $new_photos     = array();
+    foreach($photos as $photo){
+        $temp                   = array();
+        $temp["goodbad"]        = array_key_exists("goodbad", $photo)       ? $photo["goodbad"]         : null;
+        $temp["name"]           = array_key_exists("name", $photo)          ? $photo["name"]            : null;
+        $temp["rotate"]         = array_key_exists("rotate", $photo)        ? $photo["rotate"]          : null;
+        $temp["text_comment"]   = array_key_exists("text_comment", $photo)  ? $photo["text_comment"]    : null;
+        $temp["geotag"]         = array_key_exists("geotag", $photo)        ? $photo["geotag"]          : array();
+        $temp["tags"]           = array_key_exists("tags", $photo)          ? $photo["tags"]            : array();
+        $audios                 = array_key_exists("audios", $photo)        ? $photo["audios"]          : array();
+        
+        $temp["audios"]         = array();
+        foreach($audios as $audio_name){
+            $temp["audios"][$audio_name] = array_key_exists($audio_name, $transcriptions) ? $transcriptions[$audio_name] : array() ;
+        }
+
+        $fields                     = array();
+        $fields["goodbad"]          = array_key_exists("goodbad", $photo) && !is_null($photo["goodbad"])            ? array("integerValue" => $photo["goodbad"])    : array("nullValue" => null);
+        $fields["name"]             = array_key_exists("name", $photo) && !is_null($photo["name"])                  ? array("stringValue" => $photo["name"])        : array("nullValue" => null);
+        $fields["rotate"]           = array_key_exists("rotate", $photo) && !is_null($photo["rotate"])              ? array("integerValue" => $photo["rotate"] )    : array("nullValue" => null);
+        $fields["text_comment"]     = array_key_exists("text_comment", $photo) && !is_null($photo["text_comment"])  ? array("stringValue" => $photo["text_comment"]): array("nullValue" => null);
+
+        $geoFields = array();
+        foreach($temp["geotag"] as $key => $val){
+            $geoFields[$key] = array("doubleValue" => $val);
+        }
+        $fields["geotag"]           = array("mapValue" => array("fields" => $geoFields));
+
+        $audioFields = array();
+        foreach($temp["audios"] as $key => $val){
+            $audioFields[$key] = array("mapValue" => array("fields" => array("text" => array("stringValue" => $val["text"]), "confidence" => array("doubleValue" => $val["confidence"])     ) ));
+        }
+        $fields["audios"]           = array("mapValue" => array("fields" => $audioFields));
+
+        $tagFields = array();
+        foreach($temp["tags"] as $tag){
+            $tagFields[]  = array("stringValue" => $tag);
+        }
+        $fields["tags"] = array("arrayValue" => array("values" => $tagFields));
+        $new_photos[]   = array("mapValue" => array("fields" => $fields));
+    }
+
+    return $new_photos;
+}
+
+function convertFSwalkId($old_id){
+    $walk_parts     = explode("_",$old_id);
+    return $walk_parts[0] ."_" . $walk_parts[1] . "_" . $walk_parts[3];
 }
