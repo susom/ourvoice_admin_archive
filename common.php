@@ -861,11 +861,10 @@ function convertAudio($filename, $full_proj_code , $lang){
             $response   = doCurl($url, json_encode($storage), 'PUT');
             $resp       = json_decode($response,1);
 
-
             $_id                = $full_proj_code;
             $access_token       = getGCPRestToken(cfg::$FireStorekeyPath, cfg::$firestore_scope);
             $object_unique_id   = convertFSwalkId($_id);
-            $firestore_url      = $firestore_endpoint . "projects/".cfg::$gcp_project_id."/databases/(default)/documents/".cfg::$firestore_collection."/".$object_unique_id."?updateMask.fieldPaths=photos";
+            $firestore_url      = cfg::$firestore_endpoint . "projects/".cfg::$gcp_project_id."/databases/(default)/documents/".cfg::$firestore_collection."/".$object_unique_id."?updateMask.fieldPaths=photos";
 
             // SEND IT TO FIRESTORE
             $payload            = $storage;
