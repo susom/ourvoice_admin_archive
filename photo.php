@@ -327,8 +327,6 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		if(isset($photo["audios"])){
 			foreach($photo["audios"] as $filename){
 				//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
-//				print_rr('before page loads');
-//				print_rr($filename);
 				$aud_id			= $doc["_id"] . "_" . $filename;
                 $attach_url 	= "passthru.php?_id=".$aud_id."&_file=$filename" . $old;
 
@@ -359,7 +357,6 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 			}
 		}else{
 			if(!empty($photo["audio"])){
-//				print_rr("$$$$$$$");
 				$ext   = $device == "iOS" ? "wav" : "amr";
 				for($j = 1 ; $j <= $photo["audio"]; $j++ ){
 					$filename = "audio_".$i."_".$j . "." .$ext;
@@ -736,7 +733,6 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 	        ctx.stroke();
     	}
 	});
-
 }
 
 function createAudioPath(){ //Fire ajax to dynamically load transcriptions after page load
