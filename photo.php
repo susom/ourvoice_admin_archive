@@ -5,6 +5,8 @@
 ini_set('memory_limit','256M'); //necessary for picture processing.
 require_once "common.php";
 require 'vendor/autoload.php';
+use Google\Cloud\Storage\StorageClient;
+
 $gmaps_key 			= cfg::$gmaps_key;
 $projlist 			= $_SESSION["DT"]["project_list"]; 
 
@@ -182,7 +184,6 @@ if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordin
 	$pixel_count 	= (imagesx($new)*imagesy($new)); //scale pixel to % image size
 	$altered_image 	= filterFaces($face_coord, $new, $_id, $pixel_count, $rotationOffset);
 	if(isset($altered_image) && $altered_image){
-		echo "./temp/$_id.jpg";
 		$filepath = "./temp/$_id.jpg";
 		if(file_exists($filepath)){
 			unlink("./temp/$_id.jpg");
@@ -198,8 +199,6 @@ if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordin
 	    $couchurl       = $attach_url."/".$id."/".$photo_num."?rev=".$rev;
 	    $content_type   = 'image/jpeg';
 		$response       = uploadAttach($couchurl, $filepath, $content_type);
-		echo $response;
-
 
 		$storageCLient = new StorageClient([
             'keyFilePath'   => $keyPath,
@@ -687,6 +686,7 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 			  	 	url: "photo.php",
 			  	 	data: { pic_id: doc_id, photo_num: photo_i, coordinates: data, rotation: rotationOffset},
 			  	 	success:function(response){
+			  	 		console.log(response);
 			  			window.location.reload(true);
 			 	 	}
 				});
