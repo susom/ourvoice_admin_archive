@@ -10,6 +10,7 @@ $projlist 			= $_SESSION["DT"]["project_list"];
 
 // FIRESTORE details
 $keyPath 			= cfg::$FireStorekeyPath;
+$gcp_bucketName 	= cfg::$gcp_bucketName;
 $gcp_project_id 	= cfg::$gcp_project_id; 
 $walks_collection 	= cfg::$firestore_collection; 
 $firestore_endpoint	= cfg::$firestore_endpoint; 
@@ -132,15 +133,15 @@ if( isset($_POST["doc_id"]) ){
 		$firestore_url 		= $firestore_endpoint . "projects/".$gcp_project_id."/databases/(default)/documents/".$walks_collection."/".$object_unique_id."?updateMask.fieldPaths=photos";
 
 		// FORMAT JUST THE PHOTOS FOR FIRESTORE (WILL NEED transcriptions)
-		$photos     	= $payload["photos"];
-		$txn    		= array_key_exists("transcriptions", $payload) ? $payload["transcriptions"] : array();
-		$new_photos 	= formatUpdateWalkPhotos($photos,$txn);
+		$photos     		= $payload["photos"];
+		$txn    			= array_key_exists("transcriptions", $payload) ? $payload["transcriptions"] : array();
+		$new_photos 		= formatUpdateWalkPhotos($photos,$txn);
 
 		// SEND IT TO FIRESTORE
-		$firestore_data = ["photos" => array("arrayValue" => array("values" => $new_photos))];
-		$data           = ["fields" => (object)$firestore_data];
-		$json           = json_encode($data);
-		$response       = restPushFireStore($firestore_url, $json, $access_token);
+		$firestore_data 	= ["photos" => array("arrayValue" => array("values" => $new_photos))];
+		$data           	= ["fields" => (object)$firestore_data];
+		$json           	= json_encode($data);
+		$response       	= restPushFireStore($firestore_url, $json, $access_token);
 		//UPDATES
         if($ajax) {
             $response = doCurl($url, json_encode($payload), "PUT");
@@ -159,44 +160,54 @@ if( isset($_POST["doc_id"]) ){
 
 //ajax response to pixelation via portal tool
 if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordinates'])){
-	$face_coord = json_decode($_POST["coordinates"],1);
-	$id = ($_POST["pic_id"]);
-	$photo_num = ($_POST["photo_num"]);
+	$face_coord 	= json_decode($_POST["coordinates"],1);
+	$_id 			= ($_POST["pic_id"]);
+	$photo_num 		= ($_POST["photo_num"]);
 	$rotationOffset = $_POST["rotation"];
-	$photo_num = 'photo_'.$photo_num . '.jpg';
-	$id = $id."_".$photo_num;
+	$photo_num 		= 'photo_'.$photo_num . '.jpg';
+	$id 			= $_id."_".$photo_num;
+
 	//find rev by curling to couch
-	$url = cfg::$couch_url . "/". cfg::$couch_attach_db . "/" .$id;
-	$result = doCurl($url);
-	$result = json_decode($result,1);
-	$rev = ($result['_rev']);
-	$id = ($_POST["pic_id"]);
+	$url 			= cfg::$couch_url . "/". cfg::$couch_attach_db . "/" .$id;
+	$result 		= doCurl($url);
+	$result 		= json_decode($result,1);
+	$rev 			= ($result['_rev']);
+
 	//find the offset so canvas can be specified for each image based on portal rotation
 	// $rOffset = findRotationOffset(cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $id);
 	// 0 = none, 1 = base, 2 = 90 degree rotation
 
-	$picture = doCurl($url . '/' . $photo_num); //returns the actual image in string format
-	$new = imagecreatefromstring($picture); //set the actual picture for editing
-	$pixel_count = (imagesx($new)*imagesy($new)); //scale pixel to % image size
-	$altered_image = filterFaces($face_coord, $new, $id, $pixel_count, $rotationOffset);
+	$picture 		= doCurl($url . '/' . $photo_num); //returns the actual image in string format
+	$new 			= imagecreatefromstring($picture); //set the actual picture for editing
+	$pixel_count 	= (imagesx($new)*imagesy($new)); //scale pixel to % image size
+	$altered_image 	= filterFaces($face_coord, $new, $_id, $pixel_count, $rotationOffset);
 	if(isset($altered_image) && $altered_image){
-		echo "./temp/$id.jpg";
-		$filepath = "./temp/$id.jpg";
-		if(file_exists($filepath))
-			unlink("./temp/$id.jpg");
-			// echo "exists";
-		
+		echo "./temp/$_id.jpg";
+		$filepath = "./temp/$_id.jpg";
+		if(file_exists($filepath)){
+			unlink("./temp/$_id.jpg");
+		}
+
 		// if(file_exists($filepath))
 		// 	unset($filepath);
 
 		imagejpeg($altered_image, $filepath); //save it 
 		imagedestroy($altered_image);
 		$content_type   = 'image/jpeg';
-	 	$attach_url = cfg::$couch_url . "/" . cfg::$couch_attach_db;
-	    $couchurl       = $attach_url."/".$id."_$photo_num/".$photo_num."?rev=".$rev;
+	 	$attach_url 	= cfg::$couch_url . "/" . cfg::$couch_attach_db;
+	    $couchurl       = $attach_url."/".$id."/".$photo_num."?rev=".$rev;
 	    $content_type   = 'image/jpeg';
 		$response       = uploadAttach($couchurl, $filepath, $content_type);
 		echo $response;
+
+
+		$storageCLient = new StorageClient([
+            'keyFilePath'   => $keyPath,
+            'projectId'     => $gcp_bucketID
+        ]);
+
+        //UPLOAD TO GOOGLE BUCKET
+        $uploaded   	= uploadCloudStorage($id ,$_id , $gcp_bucketName, $storageCLient,  $filepath);
 		//refresh page
 	}
 	exit();

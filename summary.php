@@ -2,6 +2,14 @@
 require_once "common.php";
 
 //markPageLoadTime("Summary Page Start Loading");
+require 'vendor/autoload.php';
+
+// FIRESTORE details
+$keyPath 			= cfg::$FireStorekeyPath;
+$gcp_project_id 	= cfg::$gcp_project_id; 
+$walks_collection 	= cfg::$firestore_collection; 
+$firestore_endpoint	= cfg::$firestore_endpoint; 
+$firestore_scope 	= cfg::$firestore_scope; 
 
 // FOR DIRECT LINKING TO SUMMARY PAGE FROM INDEX PAGES
 
@@ -68,6 +76,11 @@ if(isset($_POST["for_delete"]) && $_POST["for_delete"]){
 	// Bulk update docs
     $couch_url 	= cfg::$couch_url . "/" . cfg::$couch_users_db . "/_bulk_docs";
     $response 	= doCurl($couch_url, json_encode(array("docs" => $fordelete)), "POST");
+
+    $access_token 		= getGCPRestToken($keyPath, $firestore_scope);
+	$object_unique_id 	= convertFSwalkId($_id);
+	$firestore_url 		= $firestore_endpoint . "projects/".$gcp_project_id."/databases/(default)/documents/".$walks_collection."/".$object_unique_id;
+    $deleted 			= restDeleteFireStore($firestore_url ,$access_token);
 	exit;
 }
 
@@ -81,9 +94,17 @@ if(isset($_POST["data_procesed"]) && isset($_POST["doc_id"])){
     $payload 	= $doc;
     $payload["data_processed"] = true;
     $response = doCurl($url, json_encode($payload), "PUT");
+
+    $access_token 		= getGCPRestToken($keyPath, $firestore_scope);
+	$object_unique_id 	= convertFSwalkId($_id);
+	$firestore_url 		= $firestore_endpoint . "projects/".$gcp_project_id."/databases/(default)/documents/".$walks_collection."/".$object_unique_id."?updateMask.fieldPaths=data_processed";
+
+	$firestore_data 	= ["data_processed" => array("integerValue" => 1)];
+	$data           	= ["fields" => (object)$firestore_data];
+	$json           	= json_encode($data);
+	$response       	= restPushFireStore($firestore_url, $json, $access_token);
     exit;
 }
-
 
 //NOW LOGIN TO YOUR PROJECT
 if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
