@@ -1,4 +1,6 @@
 _config.php
 img/thumbs/*
 nohup*
+temp/*
 scratch.php
+.idea/*
