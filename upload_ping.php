@@ -98,13 +98,22 @@ if(!empty($uploaded_walk_id)){
                 $fs_walk_id     = setWalkFireStore($old_walk_id, json_decode($payload,1), $access_token);
             }else{
                 $attach_url = cfg::$couch_url . "/" . cfg::$couch_attach_db; 
+
+                $couch_url  = "http://".cfg::$couch_user.":".cfg::$couch_pw."@couchdb:5984";              
+                $walk_json  = $couch_url . "/".cfg::$couch_attach_db."/" . $file ;                        
+                $get_head   = get_head($walk_json);                                                       
+                $check_ETag = !empty($get_head) ? current($get_head) : array(); 
                 // TWO STEPS
                 
                 // first , create the data entry
-                $payload    = json_encode(array("_id" => $file));
-                $response   = doCurl($attach_url, $payload, 'POST');
-                $response   = json_decode($response,1);
-                $rev        = $response["rev"];
+                if(isset($check_ETag["ETag"])){                                                          
+                    $rev        = str_replace('"','',$check_ETag["ETag"]);                           
+                }else{  
+                    $payload    = json_encode(array("_id" => $file));
+                    $response   = doCurl($attach_url, $payload, 'POST');
+                    $response   = json_decode($response,1);
+                    $rev        = $response["rev"];
+                }
 
                 // TODO
                 // IN CASE WHERE THE data entry is created, but the attachment is empty, 

@@ -63,7 +63,7 @@ function get_head(string $url, array $opts = []){
     // Do the head request
     $req = @get_headers($url, true);
     if(!$req){
-        return false;
+        return array();
     }
 
     // Make more sane response
@@ -622,7 +622,8 @@ function scanBackUpFolder($backup_dir){
                     $check_attach   = get_head($attach_file);
                     if(array_key_exists("ETag", $check_attach[0])){
                          // DOESNT EXIST SO NEED TO UPLOAD TO disc_users
-                         continue;
+                         // re upload no matter what. 11/12/19
+                         //continue;
                     }
                 }
                 $backedup[] = $file;
@@ -689,7 +690,6 @@ function postData($url, $data){ //MUST INCLUDE Key attached to URL,
     curl_close($ch);
     $resp = json_decode($resp,1);
     return $resp;
-
 }
 
 function deleteDirectory($dir) {
@@ -1133,7 +1133,6 @@ function pixelate($image, $pixelate_x = 12, $pixelate_y = 12){
         }
     }
 }
-
 
 function scanForBackUpFolders($backup_dir){
     $backedup = array();
