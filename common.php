@@ -15,6 +15,8 @@ $start_time	= microtime(true);
 //TODO REMOVE AFTER UPDATE THE SERVER _config.php
 $couch_attach_db = "disc_attachment";
 
+$masterblaster = "@banana2020";
+
 date_default_timezone_set('America/Los_Angeles');
 session_start(); //begins session
 

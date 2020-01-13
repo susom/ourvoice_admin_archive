@@ -154,7 +154,7 @@ if(isset($_POST["discpw"])){
 		$alerts[] = "Please check the box to indicate you are authorized to view these data.";
 	}else{
 		$discpw 	= $_POST["discpw"];
-		if(strtolower($discpw) !== "annban"){
+		if(strtolower($discpw) !== $masterblaster){
 			$alerts[] = "Director Password is incorrect. Please try again.";
 		}else{
 			$_SESSION["discpw"] = $discpw;
