@@ -337,6 +337,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
                 $attach_url 	= "passthru.php?_id=".$aud_id."&_file=$filename" . $old;
 
                 $audio_src 		= getConvertedAudio($attach_url, $lang);
+                $just_file 		= str_replace("./temp","",$audio_src);
 				$confidence 	= appendConfidence($attach_url);
 				$script 		= !empty($confidence) ? "This audio was transcribed using Google's API at ".round($confidence*100,2)."% confidence" : "";
 
@@ -355,7 +356,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 											<audio controls>
 												<source src='$audio_src'/>
 											</audio> 
-											<a class='refresh_audio' href='$audio_src' title='Audio not working?  Click to refresh.'>&#8635;</a> 
+											<a class='refresh_audio' href='$just_file' title='Audio not working?  Click to refresh.'>&#8635;</a> 
 											<div class='forprint'>$transcription</div>
 											<textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
 											<p id = 'confidence_exerpt'>$script</p>
