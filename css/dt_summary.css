@@ -479,6 +479,16 @@ label span {
     display:none;
 }
 
+.refresh_audio{
+	display: inline-block;
+    vertical-align: top;
+    text-decoration: none;
+    transform: rotate(270deg);
+    font-size: 240%;
+    color: red;
+    margin-top: 5px;
+}
+
 .print_only{
 	display:none;
 }

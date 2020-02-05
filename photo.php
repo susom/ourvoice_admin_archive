@@ -63,6 +63,9 @@ if( isset($_POST["doc_id"]) ){
 					}
 				}
 			}
+
+			$backup_folder      = "temp/$_id";
+	        $backup_files       = scanBackUpFolder($backup_folder);
 		}elseif(isset($_POST["tag_text"])){
             $ajax = true;
 			//SAVE TAG
@@ -159,7 +162,10 @@ if( isset($_POST["doc_id"]) ){
 		echo "something went wrong:";
 	}
 }
-
+if( isset($_POST["delete_mp3"]) ){
+	print_rr($_POST["delete_mp3"]);
+	exit;
+}
 //ajax response to pixelation via portal tool
 if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordinates'])){
 	$face_coord 	= json_decode($_POST["coordinates"],1);
@@ -349,13 +355,14 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 											<audio controls>
 												<source src='$audio_src'/>
 											</audio> 
-											<a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
+											<a class='refresh_audio' href='$audio_src' title='Audio not working?  Click to refresh.'>&#8635;</a> 
 											<div class='forprint'>$transcription</div>
 											<textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
 											<p id = 'confidence_exerpt'>$script</p>
 										</div>";
 			}
 		}else{
+			// OLD STYLE, SHOULD MIGRATE OLD STYLE DATA INTO NEW FORMAT AND BLOW AWAY THIS CODE
 			if(!empty($photo["audio"])){
 				$ext   = $device == "iOS" ? "wav" : "amr";
 				for($j = 1 ; $j <= $photo["audio"]; $j++ ){
@@ -656,6 +663,24 @@ $(document).ready(function(){
 		$("#newtag").fadeIn("fast");
 	
 		return false;
+	});
+
+	$(".refresh_audio").click(function(e){
+		var file = $(this).attr("href");
+		// DELETE .mp3 file
+		
+		$.ajax({
+	 		method: "POST",
+	  	 	url: "photo.php",
+	  	 	data: { delete_mp3: file },
+	  	 	success:function(response){
+	  	 		console.log(response);
+
+	  	 		// refresh browser
+	  	 		// location.reload();
+	 	 	}
+		});
+		e.preventDefault();
 	});
 });
 
