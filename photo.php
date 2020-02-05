@@ -163,7 +163,12 @@ if( isset($_POST["doc_id"]) ){
 	}
 }
 if( isset($_POST["delete_mp3"]) ){
-	print_rr($_POST["delete_mp3"]);
+	$file_pointer = "./temp/". $_POST["delete_mp3"];
+	if(!unlink($file_pointer)){
+		echo 0;
+	}else{
+		echo 1;
+	}
 	exit;
 }
 //ajax response to pixelation via portal tool
@@ -337,7 +342,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
                 $attach_url 	= "passthru.php?_id=".$aud_id."&_file=$filename" . $old;
 
                 $audio_src 		= getConvertedAudio($attach_url, $lang);
-                $just_file 		= str_replace("./temp","",$audio_src);
+                $just_file 		= str_replace("./temp/","",$audio_src);
 				$confidence 	= appendConfidence($attach_url);
 				$script 		= !empty($confidence) ? "This audio was transcribed using Google's API at ".round($confidence*100,2)."% confidence" : "";
 
@@ -675,10 +680,13 @@ $(document).ready(function(){
 	  	 	url: "photo.php",
 	  	 	data: { delete_mp3: file },
 	  	 	success:function(response){
-	  	 		console.log(response);
-
-	  	 		// refresh browser
-	  	 		// location.reload();
+	  	 		var result = parseInt(response);
+	  	 		if(result){
+	  	 			// refresh browser
+	  	 			location.reload();
+	  	 		}else{
+	  	 			alert("Error: Reload page and try again or contact Administrator.");
+	  	 		}
 	 	 	}
 		});
 		e.preventDefault();
@@ -771,7 +779,7 @@ function createAudioPath(){ //Fire ajax to dynamically load transcriptions after
 		url: "ajaxHandler.php",
 		data: {convertAudio: {url:url, lang:lang}},
 		success:function(response){
-			console.log(response);
+			// console.log(response);
 			// $(".mic").find('source').attr('src',response);
 			// console.log($(".mic").find('source').attr('src'));
 		}
