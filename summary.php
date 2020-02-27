@@ -475,6 +475,7 @@ function addmarker(latilongi,map_id) {
     _GMARKERS.push(marker);
 }
 function bindHover(){
+    return;
 	$(".thumbs").find("li").on({
 		mouseenter: function(){
 			var loading_bar = $(this).find(".progress");
