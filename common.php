@@ -187,7 +187,7 @@ function printRow($doc, $active_pid){
     $codeblock[] = "<hgroup>";
     $codeblock[] = "<h4>(". $lang .") : 
     <b>".$date_ts."</b> 
-    <i>$firstpart<strong>$last4</strong></i></h4>";
+    <i><strong>$last4</strong></i></h4>";
     $codeblock[] = "</hgroup>";
 
     $codeblock[] = "<div id='google_map_$i' class='gmap'><img src='$mapurl'/><a href='#' class='reload_map' data-mapgeo='$json_geo' data-mapi='$i'>Map look wrong?  Refresh with live map</a></div>";

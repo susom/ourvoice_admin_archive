@@ -402,7 +402,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 	echo "<hgroup>";
 	echo "<h4>Photo Detail : 
 	<b>".date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000))." <span class='time'>@".date("g:i a", floor($timestamp/1000))."</span></b> 
-	<i>".$doc["_id"]."</i></h4>";
+	<i>".substr($doc["_id"],-4,0)."</i></h4>";
 	echo "</hgroup>";
 
 	echo "<div class='photobox'>";

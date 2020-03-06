@@ -305,7 +305,8 @@ if( $active_project_id ){
         $_id    = substr($row["id"] , -4);
         $uuid   = substr($row["id"], strpos($row["id"],"_")+1,5);
 
-        $device     = "uuid $uuid ...<br>" . $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
+        // $device     = "uuid $uuid ...<br>" . $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
+        $device     = $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
         $processed  = isset($walk["data_processed"]) ? $walk["data_processed"] : false;
 
         //check for attachment ids existing
