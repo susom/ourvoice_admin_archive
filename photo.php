@@ -332,7 +332,7 @@ if(isset($_GET["_id"]) && isset($_GET["_file"])){
 		$audio_attachments = "";
 		
 		$photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
-        $text_comment   = !empty($photo["text_comment"]) ? "<div class='audio_clip keyboard'><p>".  $photo['text_comment']  ."</p></div>" : "";
+        $text_comment   = !empty($photo["text_comment"]) ? "<textarea name='text_comment' class='audio_clip keyboard'>".  $photo['text_comment']  ."</textarea>" : "";
 
 
 		if(isset($photo["audios"])){
