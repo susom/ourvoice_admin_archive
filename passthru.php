@@ -50,7 +50,7 @@ if(!empty($result['_attachments'][$file])) {
 		// Okay, the browser already has the latest version of our file in his cache.
 	    // So just tell it that the page was not modified and DON'T send the content
 	    header('HTTP/1.1 304 Not Modified', true, 304);
-	    header('Cache-Control: max-age='.$cache_age);    //Need this and Etag
+	    header('Cache-Control: no-cache');    //Need this and Etag
        	header('ETag: ' . $sEtag);    // send a ETag again with the response
 
 	    header_remove("Pragma");
@@ -59,7 +59,7 @@ if(!empty($result['_attachments'][$file])) {
 	    // It is important to specify  Cache-Control max-age, and ETag, for all cacheable resources.
 	    // Set download headers MUST BE IN THIS ORDER
 	    header('HTTP/1.1 200 OK', true, 200);
-	    header('Cache-Control: max-age='.$cache_age.', public');
+	    header('Cache-Control: no-cache');
 	    header('ETag: ' . $sEtag);
 	    header('Content-Type:  ' . $content_type);
 
