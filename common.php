@@ -126,7 +126,7 @@ function printRow($doc, $active_pid){
     $codeblock      = array();
     $i              = $doc["_id"];
     $photos         = $doc["photos"];
-    $geotags        = $doc["geotags"];
+    $geotags        = !empty($doc["geotags"]) ? $doc["geotags"] : array();
     $survey         = $doc["survey"];
     $processed      = $doc["data_processed"];
 
@@ -154,6 +154,16 @@ function printRow($doc, $active_pid){
     });
     if($fl = current($full_language)){
         $lang = $fl["language"];
+    }
+
+    // if no walk geo, but has some for indy  photos (indpendent api calls)
+    if (empty($geotags)){
+        foreach($photos as $photo){
+            if(!empty($photo["geotag"])){
+                $geotags[] = $photo["geotag"];
+                break;
+            }
+        }
     }
 
     // filter out low accuracy
