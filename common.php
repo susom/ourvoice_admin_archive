@@ -178,20 +178,17 @@ function printRow($doc, $active_pid){
     // get STATIC google map , performance, there a limite to how many markers can be passed to static api (_GET) so figure out how much to spread out the points
     $geopoints      = array();
     $point_count    = count($forjsongeo);
-    // WHAT THE FUk?
-    // $i_jump         = $point_count > 500 ? ceil($point_count/500) : 1;  //500 is about the max 
-    // $i              = 0;
+    $n_jump         = $point_count > 500 ? ceil($point_count/500) : 1;  //500 is about the max 
+    $n              = 0;
     $path_coords    = array();
     foreach($forjsongeo as $geotag){
-        // $coord = $geotag["lat"].",".$geotag["lng"];
-        // if($i%$i_jump == 0){
-        //     $path_coords[] = $coord;
-        // }
-        // $geopoints[] = $coord;
-        $geopoints[] = $geotag["lat"].",".$geotag["lng"];
-        // $i++;
+        $coord = $geotag["lat"].",".$geotag["lng"];
+        if($n%$n_jump == 0){
+            $path_coords[] = $coord;
+        }
+        $geopoints[] = $coord;
+        $n++;
     }
-    $path_coords    = array_slice($geopoints,0,500);
     $spread         = implode("|",$path_coords);
     $mapurl         = 'https://maps.googleapis.com/maps/api/staticmap?key='.cfg::$gmaps_key.'&size=420x300&zoom=16&path=color:0x0000FFd7|weight:3|' . $spread;
 
