@@ -37,11 +37,26 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
         });
     }
 
-    var gmarkers       = [];
+    var good_bad_neutral    = "";
+    var gmarkers            = [];
     if(geotags){
     	for(var i in geotags) {
+            switch(parseInt(geotags[i]["goodbad"])){
+                case 3:
+                    good_bad_neutral  = "orange";
+                    break;
+                case 2:
+                    good_bad_neutral  = "green";
+                    break;
+                case 1:
+                    good_bad_neutral  = "red";
+                    break;
+                default:
+                    good_bad_neutral  = "gray";
+                    break;
+            }
             if(map_id == "google_map_photos"){
-                var icon    = "img/marker_blue.png";
+                var icon    = "img/marker_"+good_bad_neutral+".png";
                 var scale   = 5;
             }else{
                 var scale   = 1

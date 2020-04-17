@@ -17,7 +17,7 @@ $couch_attach_db    = "disc_attachment";
 $masterblaster      = cfg::$master_pw;
 
 date_default_timezone_set('America/Los_Angeles');
-session_start(); //begins session
+session_start(); 
 
 function doCurl($url, $data = null, $method = null, $username = null, $password = null) {
     if (empty($username)) $username = cfg::$couch_user;
@@ -310,7 +310,7 @@ function printRow($doc, $active_pid){
         </div>
 
         <figure>
-        <a href='$detail_url' target='_blank' rel='google_map_$i' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate' rev='$rotate'><img src='$photo_uri' /><span></span><b></b></a>
+        <a href='$detail_url' rel='google_map_$i' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate' rev='$rotate'><img src='$photo_uri' /><span></span><b></b></a>
         <figcaption>
 
             <span class='time'>@".date("g:i a", floor($timestamp/1000))."</span>

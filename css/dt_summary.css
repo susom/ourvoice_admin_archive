@@ -1,12 +1,13 @@
 #main {
-	padding:20px 40px;
+	padding:0;
 }
 .user_entry {
-	border-radius:10px; 
-	background:#efefef;
-	padding:20px; 
+	border-radius:5px; 
+	border:1px solid #999;
+	background:#f9f9f9;
+	padding:10px 20px; 
 	margin-bottom:20px;
-	box-shadow:0 0 3px #888;
+	box-shadow:0 0 1px #ccc;
 	overflow:hidden; 
 	position:relative;
 	min-height:430px;
@@ -40,12 +41,105 @@
 	width:420px;
 	height:300px;
 	float:right;
-	margin:20px 0;
+	margin:10px 0 20px;
 }
 .deletewalk {
 	position:absolute;
 	bottom:20px; right:20px;
 }
+
+
+
+
+
+h1{
+	padding-top:20px; 
+	clear:both; 
+}
+
+h4[data-toggle="collapse"]{
+	padding-bottom:5px;
+	margin-top:20px;
+	border-bottom:1px solid #999;
+	cursor:pointer;
+	font-size:150%;
+	font-weight:normal;
+}
+
+
+
+.allwalks #viewsumm:after{
+	display:none;
+}
+#viewsumm {
+    margin: 0 0 15px;
+    text-shadow: 1px 1px 1px #ccc;
+    position:relative;
+}
+#viewsumm:after{
+    content: "+View Walks Summary";
+    font-size: 55%;
+    margin-left: 20px;
+    color: #A61282;
+    cursor: pointer;
+	text-shadow:none;
+    position: absolute;
+    right: 0;
+    top: 40px;
+}
+#viewsumm.open:after{
+    content: "-Close Walks Summary";
+}
+#summary{
+    display:none;
+}
+#summary table {
+    width:1024px;
+    margin: 0 auto;
+    border-top:1px solid #000;
+    border-left:1px solid #000;
+}
+#summary td,#summary th {
+    width:114px;
+    border-right:1px solid #000;
+    border-bottom:1px solid #000;
+    text-align:center;
+    margin:0;
+    padding:5px 0;
+}
+#summary tfoot td{
+    padding:2px 0;
+    font-weight:bold;
+}
+#summary th {
+    border-bottom:none;
+}
+#summary tfoot td:not(:last-child){
+    border-right:none;
+}
+#summary table thead,
+#summary table tfoot{
+    background:#efefef;
+}
+#summary table tbody {
+    display:block;
+    height:325px;
+    overflow-y:scroll;
+}
+#summary td.Y{
+    font-weight:bold;
+    color:limegreen;
+}
+#summary td.N{
+    font-weight:bold;
+    color:red;
+}
+#summary td.data_checked {
+    font-weight:bold;
+    color:limegreen;
+}
+
+
 
 
 
@@ -57,10 +151,10 @@ h4, p{
 section{
 	float:left;
 	width: calc(100% - 440px);
-	margin:20px 0;
+	margin:10px 0 20px;
 }
 section h5{
-	margin:0 10px 10px;
+	margin:0 0 10px;
 	font-size:92%;
 }
 
@@ -126,6 +220,7 @@ a.preview i{
 	max-height:140px;
 	transform: rotate(0) translate(0,0);
 	image-orientation: from-image;
+	border-radius: 5px;
 }
 .thumbs .rotate[rev='1'] img {
 	margin-top: 15px;
@@ -222,8 +317,7 @@ label span {
 
 
 .photo_detail .user_entry {
-	margin:0 auto;
-	width:1180px;
+	margin:30px auto;
 }	
 
 .photo_detail figure{
@@ -245,22 +339,6 @@ label span {
 	max-height:700px;
 	transform:rotate(90deg) translate(90px,0);
 }
-/*.photo_detail .rotate img {
-	transform: rotate(0) translate(150px,0);
-	image-orientation: from-image;
-}
-.photo_detail .rotate[rev='1'] img {
-	transform: rotate(90deg) translate(0,-150px);
-	image-orientation: from-image;
-}
-.photo_detail .rotate[rev='2'] img {
-	transform: rotate(180deg) translate(-150px,0);
-	image-orientation: from-image;
-}
-.photo_detail .rotate[rev='3'] img {
-	transform: rotate(270deg) translate(0,150px);
-	image-orientation: from-image;
-}*/
 
 .photo_detail .rotate img {
 	transform: rotate(0) translate(0,0);
@@ -336,9 +414,6 @@ label span {
 	z-index:10;
 }
 
-.photo_detail div{
-	margin-bottom:10px;
-}
 .photo_detail textarea{
 	display:inline-block;
 	width:80%;
@@ -423,7 +498,7 @@ label span {
 
 #project_summary {
 	position:relative;
-	padding-top:30px;
+	padding-top:10px;
 }
 
 .forprint{
@@ -667,7 +742,7 @@ label span {
 }
 
 .collapse {
-	margin:20px auto;
+	margin:10px auto 30px;
 }
 
 .nogeo{
@@ -855,7 +930,7 @@ label span {
 	width:420px;
 	height:300px;
 	right:20px;
-	top:62px;
+	top:42px;
 	z-index: -1;
 }
 .location_alert_summary p{

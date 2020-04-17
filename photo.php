@@ -7,7 +7,6 @@ require_once "common.php";
 require 'vendor/autoload.php';
 use Google\Cloud\Storage\StorageClient;
 
-$gmaps_key 			= cfg::$gmaps_key;
 $projlist 			= $_SESSION["DT"]["project_list"]; 
 
 // FIRESTORE details
@@ -222,270 +221,277 @@ if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordin
 	}
 	exit();
 }
+
+$page = "photo_detail";
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"/>
+<link href="css/dt_common.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 <link href="css/dt_summary.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 <link href="css/dt_photo_print.css?v=<?php echo time();?>"  rel="stylesheet" type="text/css" media="print" />
 </head>
-<body id="main" class="photo_detail">
-<div class='print_logo'></div>
-<?php
-if(isset($_GET["_id"]) && isset($_GET["_file"])){
-	$_id 		= trim($_GET["_id"]);
-	$_file 		= $_GET["_file"];
+<body id="main" class="<?php echo $page ?>">
+<div id="content">
+	<?php include("inc/gl_nav.php"); ?>
 
-    $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
-    $response   = doCurl($url);
+	<div id="main_box">
+		<div class='print_logo'></div>
+		<?php
+		if(isset($_GET["_id"]) && isset($_GET["_file"])){
+			$_id 		= trim($_GET["_id"]);
+			$_file 		= $_GET["_file"];
 
-	$doc 		= json_decode(stripslashes($response),1); //wtf this breaking certain ones? 
-	$_rev 		= $doc["_rev"];
-	$proj_idx 	= $doc["project_id"];
+		    $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
+		    $response   = doCurl($url);
 
-	if(!isset($_SESSION["DT"]["project_list"][$proj_idx]["tags"])){
-		$_SESSION["DT"]["project_list"][$proj_idx]["tags"] = array();
-	}
+			$doc 		= json_decode(stripslashes($response),1); //wtf this breaking certain ones? 
+			$_rev 		= $doc["_rev"];
+			$proj_idx 	= $doc["project_id"];
 
-	// filter out low accuracy
-    $forjsongeo = array_filter($doc["geotags"],function($tag){
-        return $tag["accuracy"] <= 50;
-    });
-
-    if(empty($forjsongeo)){
-        $forjsongeo = $doc["geotags"]; 
-    }
-
-    $walk_geo 	= json_encode($forjsongeo);
-
-	$photos 	= $doc["photos"];
-	$device 	= $doc["device"]["platform"];
-	$old 		= isset($doc["_attachments"]) ? "&_old=1" : "";
-	$temp_1 	= explode("_",$_file);
-	$temp_2 	= explode(".",$temp_1[1]);
-	$photo_i 	= $temp_2[0];
-	// $rotate 	= isset($doc['photos'][0]['rotate']) ? $doc['photos'][0]['rotate'] : 0;
-	$prevnext 	= [];
-
-	$lang       = $doc["lang"];
-	foreach($photos as $i => $photo){
-		if($i !== intval($photo_i)){
-			continue;
-		}
-
-        $hidden_photo_i = $i;
-		if(!$old && !isset($photo["audios"])){
-			$old = "&_old=2";
-		}
-
-		//PREV NEXT
-		if(isset($photos[$i-1])){
-			$prevnext[0] = "photo.php?_id=" . $doc["_id"] . "&_file=photo_" . ($i - 1) . ".jpg";
-		}
-		if(isset($photos[$i+1])){
-			$prevnext[1] = "photo.php?_id=" . $doc["_id"] . "&_file=photo_" . ($i + 1) . ".jpg";
-		}
-
-		$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
-		$hasrotate 	= isset($photo["rotate"]) ? $photo["rotate"] : 0;
-		$goodbad 	= "";
-		if($photo["goodbad"] > 1){
-			$goodbad  .= "<span class='goodbad good'></span>";
-		}
-
-		if($photo["goodbad"] == 1 || $photo["goodbad"] == 3){
-			$goodbad  .= "<span class='goodbad bad'></span>";
-		}
-
-		if(!$photo["goodbad"]){
-			$goodbad = "N/A";
-		}
-
-        $timestamp = $long = $lat = "";
-		if(array_key_exists("geotag", $photo)){
-            $long 		= isset($photo["geotag"]["lng"])?  $photo["geotag"]["lng"] : $photo["geotag"]["longitude"];
-            $lat 		= isset($photo["geotag"]["lat"]) ? $photo["geotag"]["lat"] : $photo["geotag"]["latitude"];
-            $timestamp  = $photo["geotag"]["timestamp"];
-        }
-
-
-		if($lat != 0 | $long != 0){
-            $time = time();
-            $url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$long&timestamp=$time&key=AIzaSyDCH4l8Q6dVpYgCUyO_LROnCuSE1W9cwak";
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            $responseJson = curl_exec($ch);
-            curl_close($ch);
-             
-            $response = json_decode($responseJson);
-            date_default_timezone_set($response->timeZoneId); 
-        }
-
-    	$photo_name = $old ? "photo_" . $i . ".jpg" : $photo["name"];
-		$ph_id 		= $old ? $_id : $_id . "_" . $photo_name;
-		$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$photo_name" . $old;
-		// detectFaces($ph_id,$old, $photo_name);
-
-		$attach_url = "#";
-		$audio_attachments = "";
-		
-		$photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
-        $text_comment   = !empty($photo["text_comment"]) ? "<textarea name='text_comment' class='audio_clip keyboard'>".  $photo['text_comment']  ."</textarea>" : "";
-
-
-		if(isset($photo["audios"])){
-			foreach($photo["audios"] as $filename){
-				//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
-				$aud_id			= $doc["_id"] . "_" . $filename;
-                $attach_url 	= "passthru.php?_id=".$aud_id."&_file=$filename" . $old;
-
-                $audio_src 		= getConvertedAudio($attach_url, $lang);
-                $just_file 		= str_replace("./temp/","",$audio_src);
-				$confidence 	= appendConfidence($attach_url);
-				$script 		= !empty($confidence) ? "This audio was transcribed using Google's API at ".round($confidence*100,2)."% confidence" : "";
-
-				$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
-				//Works for archaic saving scheme as well as the new one : 
-				if(isset($doc["transcriptions"][$filename]["text"])){
-					$txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]);
-					$transcription = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]);
-				}else if(isset($doc["transcriptions"][$filename])){
-					$txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]);
-					$transcription = str_replace('&#34;','"', $doc["transcriptions"][$filename]);
-				}else{
-					$transcription = "";
-				}
-				$audio_attachments .=   "<div class='audio_clip mic'>
-											<audio controls>
-												<source src='$audio_src'/>
-											</audio> 
-											<a class='refresh_audio' href='$just_file' title='Audio not working?  Click to refresh.'>&#8635;</a> 
-											<div class='forprint'>$transcription</div>
-											<textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
-											<p id = 'confidence_exerpt'>$script</p>
-										</div>";
+			if(!isset($_SESSION["DT"]["project_list"][$proj_idx]["tags"])){
+				$_SESSION["DT"]["project_list"][$proj_idx]["tags"] = array();
 			}
-		}else{
-			// OLD STYLE, SHOULD MIGRATE OLD STYLE DATA INTO NEW FORMAT AND BLOW AWAY THIS CODE
-			if(!empty($photo["audio"])){
-				$ext   = $device == "iOS" ? "wav" : "amr";
-				for($j = 1 ; $j <= $photo["audio"]; $j++ ){
-					$filename = "audio_".$i."_".$j . "." .$ext;
 
-					//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
-	                $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename" . $old;
-					//$audio_src 		= getConvertedAudio($attach_url); //Serving AJAX instead of before page load.
+			// filter out low accuracy
+		    $forjsongeo = array_filter($doc["geotags"],function($tag){
+		        return $tag["accuracy"] <= 50;
+		    });
 
-					$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $doc["_id"] . "/". $filename;
-					$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$audio_name]) : "";
-					$audio_attachments .=   "<div class='audio_clip'>
-											<audio controls>
-												<source src='$audio_src'/>
-											</audio> 
-											<a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
-											<div class='forprint'>$transcription</div>
-											<textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
-											<p id = 'confidence_exerpt'>$script</p>
-										</div>";
+		    if(empty($forjsongeo)){
+		        $forjsongeo = $doc["geotags"]; 
+		    }
+
+		    $walk_geo 	= json_encode($forjsongeo);
+
+			$photos 	= $doc["photos"];
+			$device 	= $doc["device"]["platform"] ?? null;
+			$old 		= isset($doc["_attachments"]) ? "&_old=1" : "";
+			$temp_1 	= explode("_",$_file);
+			$temp_2 	= explode(".",$temp_1[1]);
+			$photo_i 	= $temp_2[0];
+			$prevnext 	= [];
+
+			$lang       = $doc["lang"];
+			foreach($photos as $i => $photo){
+				if($i !== intval($photo_i)){
+					continue;
 				}
-			}
-		}
-		break;
-	}
-	// rotate= '$doc['photos'][0]['rotate'])'
-	echo "<form id='photo_detail' method='POST'>";
-	echo "<input type='hidden' name='doc_id' value='".$doc["_id"]."'/>";
-    echo "<input type='hidden' name='photo_i' value='$hidden_photo_i'/>";
-	echo "<div class='user_entry'>";
-	echo "<hgroup>";
-	echo "<h4>Photo Detail : 
-	<b>".date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000))." <span class='time'>@".date("g:i a", floor($timestamp/1000))."</span></b> 
-	<i>".substr($doc["_id"],-4)."</i></h4>";
-	echo "</hgroup>";
 
-	echo "<div class='photobox'>";
-	echo 	"<section class='photo_previews'>";
-	echo 		"<div>";	
-	echo "
-		<figure>
-		<a class='preview rotate' rev='$hasrotate' data-photo_i=$photo_i data-doc_id='".$doc["_id"]."' rel='google_map_0' data-long='$long' data-lat='$lat'>
-				<canvas class='covering_canvas'></canvas>
-				<img id = 'main_photo' src='$photo_uri' data-lang='$lang'/><span></span>
+		        $hidden_photo_i = $i;
+				if(!$old && !isset($photo["audios"])){
+					$old = "&_old=2";
+				}
 
-		</a>
+				//PREV NEXT
+				if(isset($photos[$i-1])){
+					$prevnext[0] = "photo.php?_id=" . $doc["_id"] . "&_file=photo_" . ($i - 1) . ".jpg";
+				}
+				if(isset($photos[$i+1])){
+					$prevnext[1] = "photo.php?_id=" . $doc["_id"] . "&_file=photo_" . ($i + 1) . ".jpg";
+				}
 
-		</figure>";
-		
-		$geotags   = array();
-		$geotags[] = array("lat" => $lat, "lng" => $long);
-		$json_geo  = json_encode($geotags);
-		$gmaps[]   = "drawGMap($json_geo, 0, 16, $walk_geo);\n";
+				$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
+				$hasrotate 	= isset($photo["rotate"]) ? $photo["rotate"] : 0;
+				$goodbad 	= "";
+				if($photo["goodbad"] > 1){
+					$goodbad  .= "<span class='goodbad good'></span>";
+				}
 
-	echo 		"</div>";
-	
-	echo 		"<div id='tags'>";
-	echo 			"<h4>Photo Tags:</h4>";
-	echo 			"<ul class='photopage'>";
-					foreach($photo_tags as $idx => $tag){
-						echo "<li>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='$_id' data-photo_i='$photo_i'>x</a></li>";
+				if($photo["goodbad"] == 1 || $photo["goodbad"] == 3){
+					$goodbad  .= "<span class='goodbad bad'></span>";
+				}
+
+				if(!$photo["goodbad"]){
+					$goodbad = "N/A";
+				}
+
+		        $timestamp = $long = $lat = "";
+				if(array_key_exists("geotag", $photo)){
+		            $long 		= isset($photo["geotag"]["lng"])?  $photo["geotag"]["lng"] : $photo["geotag"]["longitude"];
+		            $lat 		= isset($photo["geotag"]["lat"]) ? $photo["geotag"]["lat"] : $photo["geotag"]["latitude"];
+		            $timestamp  = $photo["geotag"]["timestamp"];
+		        }
+
+
+				if($lat != 0 | $long != 0){
+		            $time = time();
+		            $url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$long&timestamp=$time&key=" .cfg::$gmaps_key;
+		            $ch = curl_init();
+		            curl_setopt($ch, CURLOPT_URL, $url);
+		            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		            $responseJson = curl_exec($ch);
+		            curl_close($ch);
+		             
+		            $response = json_decode($responseJson);
+		            date_default_timezone_set($response->timeZoneId); 
+		        }
+
+		    	$photo_name = $old ? "photo_" . $i . ".jpg" : $photo["name"];
+				$ph_id 		= $old ? $_id : $_id . "_" . $photo_name;
+				$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$photo_name" . $old;
+				// detectFaces($ph_id,$old, $photo_name);
+
+				$attach_url = "#";
+				$audio_attachments = "";
+				
+				$photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
+		        $text_comment   = !empty($photo["text_comment"]) ? "<textarea name='text_comment' class='audio_clip keyboard'>".  $photo['text_comment']  ."</textarea>" : "";
+
+
+				if(isset($photo["audios"])){
+					foreach($photo["audios"] as $filename){
+						//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
+						$aud_id			= $doc["_id"] . "_" . $filename;
+		                $attach_url 	= "passthru.php?_id=".$aud_id."&_file=$filename" . $old;
+
+		                $audio_src 		= getConvertedAudio($attach_url, $lang);
+		                $just_file 		= str_replace("./temp/","",$audio_src);
+						$confidence 	= appendConfidence($attach_url);
+						$script 		= !empty($confidence) ? "This audio was transcribed using Google's API at ".round($confidence*100,2)."% confidence" : "";
+
+						$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $aud_id . "/". $filename;
+						//Works for archaic saving scheme as well as the new one : 
+						if(isset($doc["transcriptions"][$filename]["text"])){
+							$txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]);
+							$transcription = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]);
+						}else if(isset($doc["transcriptions"][$filename])){
+							$txns = str_replace('&#34;','"', $doc["transcriptions"][$filename]["text"]);
+							$transcription = str_replace('&#34;','"', $doc["transcriptions"][$filename]);
+						}else{
+							$transcription = "";
+						}
+						$audio_attachments .=   "<div class='audio_clip mic'>
+													<audio controls>
+														<source src='$audio_src'/>
+													</audio> 
+													<a class='refresh_audio' href='$just_file' title='Audio not working?  Click to refresh.'>&#8635;</a> 
+													<div class='forprint'>$transcription</div>
+													<textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
+													<p id = 'confidence_exerpt'>$script</p>
+												</div>";
 					}
-					echo "<li class='noback'><a href='#' class='opentag' data-photo_i='$photo_i'>+ Add New Tag</a></li>";
-	echo 			"</ul>";
-	echo		"</div>";
-	echo 	"</section>";
+				}else{
+					// OLD STYLE, SHOULD MIGRATE OLD STYLE DATA INTO NEW FORMAT AND BLOW AWAY THIS CODE
+					if(!empty($photo["audio"])){
+						$ext   = $device == "iOS" ? "wav" : "amr";
+						for($j = 1 ; $j <= $photo["audio"]; $j++ ){
+							$filename = "audio_".$i."_".$j . "." .$ext;
 
-	echo "<section class='side'>";
-	echo "<button type = 'button' id = 'pixelateSubmit' class = 'hidden' style='float:right'>Submit</button>";
-	echo "<button type = 'button' id = 'pixelate' style='float:right'>Select Area for Pixelation</button>";
+							//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
+			                $attach_url 	= "passthru.php?_id=".$doc["_id"]."&_file=$filename" . $old;
+							$audio_src 		= "";
+			                $script 		= "";
 
-	echo "<aside>
-			<b id = 'lat' value = '$lat'>lat: $lat</b>
-			<b id = 'long' value = '$long'>long: $long</b>
-			<div id ='cover' class = 'gmap location_alert'></div>
-			<div id='google_map_0' class='gmap'></div>
-		</aside>";
-	echo "<aside class='forcommunity'>
-			<h4>Good or bad for the community?</h4>
-			$goodbad
-		</aside>";
-
-	echo "<aside>
-			<h4>Why did you take this picture?</h4>
-			$text_comment
+							$download 		= cfg::$couch_url . "/".$couch_attach_db."/" . $doc["_id"] . "/". $filename;
+							$transcription 	= isset($doc["transcriptions"][$filename]) ? $txns = str_replace('&#34;','"', $doc["transcriptions"][$audio_name]) : "";
+							$audio_attachments .=   "<div class='audio_clip'>
+													<audio controls>
+														<source src='$audio_src'/>
+													</audio> 
+													<a class='download' href='$download' title='right click and save as link to download'>&#8676;</a> 
+													<div class='forprint'>$transcription</div>
+													<textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
+													<p id = 'confidence_exerpt'>$script</p>
+												</div>";
+						}
+					}
+				}
+				break;
+			}
+			echo "<form id='photo_detail' method='POST'>";
+			echo "<input type='hidden' name='doc_id' value='".$doc["_id"]."'/>";
+		    echo "<input type='hidden' name='photo_i' value='$hidden_photo_i'/>";
 			
-			$audio_attachments
-			<input type='submit' value='Save Transcriptions'/>
-		</aside>";
+			echo "<div class='user_entry'>";
+			echo "<hgroup>";
+			echo "<h4>Photo Detail : 
+			<b>".date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000))." <span class='time'>@".date("g:i a", floor($timestamp/1000))."</span></b> 
+			<i>".substr($doc["_id"],-4)."</i></h4>";
+			echo "</hgroup>";
 
-	if(count($prevnext)> 0){
-		echo "<aside>";
-		if(isset($prevnext[0])){
-			echo "<a href='".$prevnext[0]."' class='prev'>Previous Photo</a>";
-		}	
-		if(isset($prevnext[1])){
-			echo "<a href='".$prevnext[1]."' class='next'>Next Photo</a>";
+			echo "<div class='photobox'>";
+			echo 	"<section class='photo_previews'>";
+			echo 		"<div>";	
+			echo "
+				<figure>
+				<a class='preview rotate' rev='$hasrotate' data-photo_i=$photo_i data-doc_id='".$doc["_id"]."' rel='google_map_0' data-long='$long' data-lat='$lat'>
+						<canvas class='covering_canvas'></canvas>
+						<img id = 'main_photo' src='$photo_uri' data-lang='$lang'/><span></span>
+				</a>
+
+				</figure>";
+				
+				$geotags   = array();
+				$geotags[] = array("lat" => $lat, "lng" => $long);
+				$json_geo  = json_encode($geotags);
+				$gmaps[]   = "drawGMap($json_geo, 0, 16, $walk_geo);\n";
+
+			echo 		"</div>";
+			
+			echo 		"<div id='tags'>";
+			echo 			"<h4>Photo Tags:</h4>";
+			echo 			"<ul class='photopage'>";
+							foreach($photo_tags as $idx => $tag){
+								echo "<li>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='$_id' data-photo_i='$photo_i'>x</a></li>";
+							}
+							echo "<li class='noback'><a href='#' class='opentag' data-photo_i='$photo_i'>+ Add New Tag</a></li>";
+			echo 			"</ul>";
+			echo		"</div>";
+			echo 	"</section>";
+
+			echo "<section class='side'>";
+			echo "<button type = 'button' id = 'pixelateSubmit' class = 'hidden' style='float:right'>Submit</button>";
+			echo "<button type = 'button' id = 'pixelate' style='float:right'>Select Area for Pixelation</button>";
+
+			echo "<aside>
+					<b id = 'lat' value = '$lat'>lat: $lat</b>
+					<b id = 'long' value = '$long'>long: $long</b>
+					<div id ='cover' class = 'gmap location_alert'></div>
+					<div id='google_map_0' class='gmap'></div>
+				</aside>";
+			echo "<aside class='forcommunity'>
+					<h4>Good or bad for the community?</h4>
+					$goodbad
+				</aside>";
+
+			echo "<aside>
+					<h4>Why did you take this picture?</h4>
+					$text_comment
+					
+					$audio_attachments
+					<input type='submit' value='Save Transcriptions'/>
+				</aside>";
+
+			if(count($prevnext)> 0){
+				echo "<aside>";
+				if(isset($prevnext[0])){
+					echo "<a href='".$prevnext[0]."' class='prev'>Previous Photo</a>";
+				}	
+				if(isset($prevnext[1])){
+					echo "<a href='".$prevnext[1]."' class='next'>Next Photo</a>";
+				}
+				echo "</aside>";
+			}
+			echo "<i class='print_only'>Data gathered using the Stanford Healthy Neighborhood Discovery Tool, © Stanford University 2017</i>";
+			echo "</section>";
+			echo "</div>";
+			echo "</div>";
+			echo "</form>";
 		}
 
-
-		echo "</aside>";
-	}
-	echo "<i class='print_only'>Data gathered using the Stanford Healthy Neighborhood Discovery Tool, © Stanford University 2017</i>";
-	echo "</section>";
-	echo "</div>";
-	echo "</div>";
-	echo "</form>";
-}
-
-$project_tags = $_SESSION["DT"]["project_list"][$proj_idx]["tags"];
-include("inc/modal_tag.php");
-?>
+		$project_tags = $_SESSION["DT"]["project_list"][$proj_idx]["tags"];
+		include("inc/modal_tag.php");
+		?>
+	</div>
+	<?php include("inc/gl_footer.php"); ?>
+</div>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/autosize.js/3.0.20/autosize.js"></script>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-<!-- <script src = "js/jquery-ui.js"> //added -->
-<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo $gmaps_key; ?>"></script>
-<script src = "js/jquery-ui.js"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>"></script>
+<script src="js/jquery-ui.js"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
 <script>
 function addmarker(latilongi,map_id) {

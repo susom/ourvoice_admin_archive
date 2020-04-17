@@ -63,6 +63,8 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 		}
 	}
 }
+
+$page = "allwalks";
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -77,102 +79,96 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
 </head>
-<body id="main">
-	<nav>
-		<?php if( $active_project_id ){ ?>
-		<ul>
-			<li class="pull-left"><a class='btn btn-default' href="summary.php?clearsession=1">Refresh Project Data</a></li>
-			<li class="pull-left"><a class="inproject btn btn-default" href="index.php">Back to project overview</a></li>
-		</ul>
-		<!-- <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Aggregate Project Data<span class="caret"></span></button> -->
-		<ul>
-			<li><a target="_blank" class="inproject btn btn-success" href="project_map_csv.php?active_project_id=<?php echo $active_project_id ?>&pid=<?php echo $active_pid?>">Download Maps Data (.csv)</a></li>
-			<li><a target="_blank" class="inproject btn btn-info" href="project_transcriptions.php?active_project_id=<?php echo $active_project_id?>&pid=<?php echo $active_pid?>">All Transcriptions</a></li>
-			<li><a target="_blank" class="inproject btn btn-warning" href="project_agg_surveys.php?active_project_id=<?php echo $active_project_id?>&pid=<?php echo $active_pid?>">All Survey Answers</a></li>
-			<li><a target="_blank" class="inproject btn btn-danger" href="project_agg_photos.php?active_project_id=<?php echo $active_project_id?>&pid=<?php echo $active_pid?>">All Walk Photos</a></li>
-		</ul>
-		<?php } ?>
-	</nav>
-<?php
-if( $active_project_id ){
-	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
-    $response 		= filter_by_projid("get_data_ts","[\"$active_pid\"]");
-
-	//ORDER AND SORT BY DATES
-	$date_headers 	= [];
+<body id="main" class="<?php echo $page ?>">
+<div id="content">
+	<?php include("inc/gl_nav.php"); ?>
 	
-	foreach($response["rows"] as $row){
-		$date = Date($row["value"]);
+	<div id="main_box">
+		<?php
+		if( $active_project_id ){
+			//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
+		    $response 		= filter_by_projid("get_data_ts","[\"$active_pid\"]");
 
-		if(array_key_exists($date, $date_headers)){ //if the date already exists in dateheaders
-			$date_headers[$date]++;					// increment the counter
-		}else{
-			$date_headers[$date] = 1;				//otherwise create an element [date -> #occurrences]
-		}
-	}
-	
-	uksort($date_headers, "cmp_date"); //sorts date headers in reverse order starting with date
+			//ORDER AND SORT BY DATES
+			$date_headers 	= [];
+			
+			foreach($response["rows"] as $row){
+				$date = Date($row["value"]);
 
-
-	//PRINT TO SCREEN
-	echo "<h1 class = 'title'>Discovery Tool Data Summary for $active_project_id</h1>";
-	echo "<div id = 'main-container'>";
-	echo "<div id='google_map_photos' class='gmap'></div>";
-	$project_meta 	= $ap["project_list"][$active_pid];
-	$photo_geos 	= array();
-	$code_block = array();
-	foreach($date_headers as $date => $record_count){
-		//AUTOMATICALLY SHOW MOST RECENT DATE's DATA, AJAX THE REST
-		$response 	= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
-		$days_data 	= rsort($response["rows"]); 
-
-		foreach($response["rows"] as $row){
-			$doc = $row["value"];
-			if(!empty($doc["_attachments"])){
-		        //original attachments stored with walk sessions
-		        $old = "&_old=1";
-		    }else{
-		        if(array_key_exists("name",$doc["photos"][0])){
-		            //newest and "final" method atomic attachment storage
-		            $old = "";
-		        }else{
-		            //all attachments in seperate data entry
-		            $old = "&_old=2";
-		        }
-		    }
-			foreach($doc["photos"] as $n => $photo){
-				if(!empty($photo["geotag"])){
-					$photo_name = "photo_".$n.".jpg";
-
-			        if(array_key_exists("name",$photo)){
-			            $filename   = $photo["name"];
-			            $ph_id      = $doc["_id"] . "_" .$filename;
-			        }else{
-			            $filename   = $photo_name;
-			            $ph_id      = $doc["_id"];
-			        }
-
-			        $file_uri   	= "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
-			        $photo_uri 		= $file_uri;
-			        $photo_uri  	= "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-			        $photo["geotag"]["photo_src"] = $photo_uri;
-			        $photo["geotag"]["photo_id"]  = $doc["_id"]. "_" . "photo_".$n;
-					
-					array_push($photo_geos, $photo["geotag"]);
+				if(array_key_exists($date, $date_headers)){ //if the date already exists in dateheaders
+					$date_headers[$date]++;					// increment the counter
+				}else{
+					$date_headers[$date] = 1;				//otherwise create an element [date -> #occurrences]
 				}
 			}
-			$code_block = array_merge($code_block,printPhotos($doc));
+			
+			uksort($date_headers, "cmp_date"); //sorts date headers in reverse order starting with date
+
+
+			//PRINT TO SCREEN
+			echo "<h1 id='viewsumm'>Discovery Tool Data Summary for $active_project_id</h1>";
+			echo "<div id = 'main-container'>";
+			echo "<div id='google_map_photos' class='gmap'></div>";
+			$project_meta 	= $ap["project_list"][$active_pid];
+			$photo_geos 	= array();
+			$code_block 	= array();
+			foreach($date_headers as $date => $record_count){
+				//AUTOMATICALLY SHOW MOST RECENT DATE's DATA, AJAX THE REST
+				$response 	= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
+				$days_data 	= rsort($response["rows"]); 
+
+				foreach($response["rows"] as $row){
+					$doc = $row["value"];
+					if(!empty($doc["_attachments"])){
+				        //original attachments stored with walk sessions
+				        $old = "&_old=1";
+				    }else{
+				        if(array_key_exists("name",$doc["photos"][0])){
+				            //newest and "final" method atomic attachment storage
+				            $old = "";
+				        }else{
+				            //all attachments in seperate data entry
+				            $old = "&_old=2";
+				        }
+				    }
+					foreach($doc["photos"] as $n => $photo){
+						if(!empty($photo["geotag"])){
+							$photo_name = "photo_".$n.".jpg";
+
+					        if(array_key_exists("name",$photo)){
+					            $filename   = $photo["name"];
+					            $ph_id      = $doc["_id"] . "_" .$filename;
+					        }else{
+					            $filename   = $photo_name;
+					            $ph_id      = $doc["_id"];
+					        }
+
+					        $file_uri   	= "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+					        $photo_uri 		= $file_uri;
+					        $photo_uri  	= "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+					        $photo["geotag"]["photo_src"] 	= $photo_uri;
+					        $photo["geotag"]["goodbad"] 	= $photo["goodbad"];
+					        $photo["geotag"]["photo_id"]  	= $doc["_id"]. "_" . "photo_".$n;
+							
+							array_push($photo_geos, $photo["geotag"]);
+						}
+					}
+					$code_block = array_merge($code_block,printPhotos($doc));
+				}
+			}
+			echo "<div class='thumbs all-photos'><ul class='collapse' id='tags'>";
+			echo implode("\r",$code_block); //join elements with the "" string separating.
+			echo "</ul></div></div>";
+
+
+			$project_tags = $_SESSION["DT"]["project_list"][$active_pid]["tags"] ?? array();
+			include("inc/fixed_tags.php");
 		}
-	}
-	echo "<div class='thumbs all-photos'><ul class='collapse' id='tags'>";
-	echo implode("\r",$code_block); //join elements with the "" string separating.
-	echo "</ul></div></div>";
+		?>
+	</div>
 
-
-	$project_tags = $_SESSION["DT"]["project_list"][$active_pid]["tags"];
-	include("inc/fixed_tags.php");
-}
-?>
+    <?php include("inc/gl_footer.php"); ?>
+<div>
 </body>
 </html>
 <style>
@@ -189,10 +185,6 @@ h4[data-toggle="collapse"]{
 	font-size:250%;
 	font-weight:normal;
 }
-.btn {
-	float:right;
-	margin-right:10px;
-}
 
 nav {
 	overflow:hidden;
@@ -202,7 +194,6 @@ nav ul {
 	padding:0;
 }
 #main-container{
-	position:absolute;
 }
 #google_map_photos {
 	box-shadow:0 0 3px  #888; 
@@ -260,7 +251,22 @@ function addmarker(latilongi,map_id) {
 }
 function normalIcon() {
   return {
-    url: 'img/marker_blue.png'
+    url: 'img/marker_green.png'
+  };
+}
+function goodIcon() {
+  return {
+    url: 'img/marker_green.png'
+  };
+}
+function badIcon() {
+  return {
+    url: 'img/marker_red.png'
+  };
+}
+function nuetralIcon() {
+  return {
+    url: 'img/marker_orange.png'
   };
 }
 function highlightedIcon() {
@@ -270,17 +276,19 @@ function highlightedIcon() {
 }
 function bindMapFunctionality(gmarkers){
 	$.each(gmarkers, function(){
-		var el = this;
+		var el 				= this;
+		var starting_icon 	= el.getIcon();
 		$("#" + this.extras["photo_id"]).hover(function(){
 			 el.setIcon(highlightedIcon());
 		},function(){
-			 el.setIcon(normalIcon());
+			 el.setIcon({url:starting_icon});
 		});
 	});
 
 	for(var i in gmarkers){
 		// add event to the images
 		google.maps.event.addListener(gmarkers[i], 'mouseover', function(event) {
+			this.starting_icon = this.getIcon();
 			var photo_id = this.extras["photo_id"];
 			var icon = {
 			    url: this.extras["photo_src"], // url
@@ -291,7 +299,8 @@ function bindMapFunctionality(gmarkers){
         });
         google.maps.event.addListener(gmarkers[i], 'mouseout', function(event) {
 			var photo_id = this.extras["photo_id"];
-			this.setIcon(normalIcon());
+			var starting_icon = this.starting_icon.hasOwnProperty("url") ? this.starting_icon.url : this.starting_icon;
+			this.setIcon({url:starting_icon});
 			$("#" + photo_id).removeClass("photoOn");
         });
 	}
@@ -315,19 +324,20 @@ $(document).ready(function(){
 	bindProperties();
 	var pins = <?php echo json_encode($photo_geos) ?>;
 	var gmarkers = drawGMap(<?php echo json_encode($photo_geos) ?>, 'photos', 16);
+
 	bindMapFunctionality(gmarkers);
 
 	//HOVER ON MAP SPOT
-	$(document).on({
-	    mouseenter: function () {
-	    	// console.log("photo on ");
-	        // markers[2].setIcon(highlightedIcon());
-	    },
-	    mouseleave: function () {
-	    	// console.log("photo off ");
-	    	// markers[2].setIcon(normalIcon());
-	    }
-	}, ".preview");
+	// $(document).on({
+	//     mouseenter: function () {
+	//     	// console.log("photo on ");
+	//         // markers[2].setIcon(highlightedIcon());
+	//     },
+	//     mouseleave: function () {
+	//     	// console.log("photo off ");
+	//     	// markers[2].setIcon(normalIcon());
+	//     }
+	// }, ".preview");
 	
 	//ROTATE
 	$(".collapse").on("click",".preview span",function(){
@@ -648,5 +658,9 @@ li[class*="hide_"]{
 	background-color: azure;
 }
 </style>
+<?php //markPageLoadTime("Summary Page Loaded") ?>
+
+
+
 
 

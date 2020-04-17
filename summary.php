@@ -11,16 +11,9 @@ $walks_collection 	= cfg::$firestore_collection;
 $firestore_endpoint	= cfg::$firestore_endpoint; 
 $firestore_scope 	= cfg::$firestore_scope; 
 
-// FOR DIRECT LINKING TO SUMMARY PAGE FROM INDEX PAGES
-
-if(isset($_GET["id"])){
-	$_POST["proj_id"] 		= $_GET["id"];
-	$_POST["summ_pw"] 		= $_SESSION["discpw"];
-	$_POST["authorized"] 	= $_SESSION["authorized"];
-}
-
 if(isset($_GET["clearsession"])){
 	$_SESSION = null;
+    header("location:summary.php");
 }
 
 if( empty($_SESSION["DT"]) ){
@@ -106,15 +99,22 @@ if(isset($_POST["data_procesed"]) && isset($_POST["doc_id"])){
     exit;
 }
 
-//NOW LOGIN TO YOUR PROJECT
+//NOW LOGIN TO YOUR PROJECT 
+if((!empty($_SESSION["proj_id"]) OR !empty($_GET["id"])) && !empty($_SESSION["summ_pw"]) && !empty($_SESSION["authorized"])){
+    // FIRST CHECK IF LOGIN IS IN SESSION, _GET FOR DIRECT LINKING TO SUMMARY PAGE FROM INDEX PAGES
+    $_POST["proj_id"]       =  !empty($_GET["id"]) ? $_GET["id"] : $_SESSION["proj_id"];
+    $_POST["summ_pw"]       = $_SESSION["summ_pw"];
+    $_POST["authorized"]    = $_SESSION["authorized"];
+}
 if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 	if(!isset($_POST["authorized"])){
 		$alerts[] = "Please check the box to indicate you are authorized to view these data.";
 	}else{
-		$proj_id 	= trim(strtoupper($_POST["proj_id"]));
-		$summ_pw 	= $_POST["summ_pw"];
-		$_SESSION["proj_id"]  = $proj_id;
-		$_SESSION["summ_pw"]  = $summ_pw;
+		$proj_id 	              = trim(strtoupper($_POST["proj_id"]));
+		$summ_pw 	              = $_POST["summ_pw"];
+		$_SESSION["proj_id"]      = $proj_id;
+		$_SESSION["summ_pw"]      = $summ_pw;
+        $_SESSION["authorized"]   = $_POST["authorized"];
 
 		$found  	= false;
 		foreach($projs as $pid => $proj){
@@ -131,6 +131,8 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 		}
 	}
 }
+
+$page = "summary";
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -139,320 +141,213 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"/>
 <link href="css/dt_common.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 <link href="css/dt_summary.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
-<!-- <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script> -->
 <script src="js/jquery-3.3.1.min.js"></script>
 <script src="js/jquery-ui.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
-<style>
-    h1{
-    	padding-top:20px; 
-    	clear:both; 
-    }
-
-    h4[data-toggle="collapse"]{
-    	padding-bottom:5px;
-    	margin-bottom:20px;
-    	border-bottom:1px solid #999;
-    	cursor:pointer;
-    	font-size:250%;
-    	font-weight:normal;
-    }
-    .btn {
-    	float:right;
-    	margin-right:10px;
-    }
-
-    nav {
-    	overflow:hidden;
-    }
-    nav ul {
-    	margin:0;
-    	padding:0;
-    }
-
-
-    #viewsumm {
-        padding-bottom:30px;
-    }
-    #viewsumm:after{
-        content: "+View Walks Summary";
-        font-size: 65%;
-        margin-left: 20px;
-        color: deepskyblue;
-        text-shadow:1px 1px 1px darkgreen;
-        cursor: pointer;
-
-        position: absolute;
-        left: 25px;
-        top: 135px;
-    }
-    #viewsumm.open:after{
-        content: "-Close Walks Summary";
-    }
-    #summary{
-        display:none;
-    }
-    #summary table {
-        width:1024px;
-        margin: 0 auto;
-        border-top:1px solid #000;
-        border-left:1px solid #000;
-    }
-    #summary td,#summary th {
-        width:114px;
-        border-right:1px solid #000;
-        border-bottom:1px solid #000;
-        text-align:center;
-        margin:0;
-        padding:5px 0;
-    }
-    #summary tfoot td{
-        padding:2px 0;
-        font-weight:bold;
-    }
-    #summary th {
-        border-bottom:none;
-    }
-    #summary tfoot td:not(:last-child){
-        border-right:none;
-    }
-    #summary table thead,
-    #summary table tfoot{
-        background:#efefef;
-    }
-    #summary table tbody {
-        display:block;
-        height:325px;
-        overflow-y:scroll;
-    }
-    #summary td.Y{
-        font-weight:bold;
-        color:limegreen;
-    }
-    #summary td.N{
-        font-weight:bold;
-        color:red;
-    }
-    #summary td.data_checked {
-        font-weight:bold;
-        color:limegreen;
-    }
-</style>
 </head>
-<body id="main">
-	<nav>
-		<ul>
-			<li class="pull-left"><a class='btn btn-default' href="summary.php?clearsession=1">Refresh Project Data</a></li>
-			<li class="pull-left"><a class="inproject btn btn-default" href="index.php">Back to project overview</a></li>
-		</ul>
-		<!-- <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Aggregate Project Data<span class="caret"></span></button> -->
-		<ul>
-			<?php
-			if( $active_project_id ){
-				echo '<li><a target="_blank" class="inproject btn btn-success" href="project_map_csv.php?i='.$active_project_id.'&pid='.$active_pid.'">Download Project Data (.csv)</a></li>';
-				echo '<li><a target="_blank" class="inproject btn btn-danger" href="project_agg_photos.php?id='.$active_project_id.'">All Walk Photos</a></li>';
-			}
-			?>
-		</ul>
-	</nav>
-<?php
-if( $active_project_id ){
-    //FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
-    $response 		= getProjectSummaryData($active_project_id);
-    $response_rows  = $response["rows"];
+<body id="main" class="<?php echo $page ?>">
+<div id="content">
+	<?php include("inc/gl_nav.php"); ?>
 
-    $date_headers 	= [];
-    $summ_buffer    = [];
-    $summ_buffer[]  = "<div id='summary'>";
-    $summ_buffer[]  = "<table cellpadding='0' cellspacing='0' width='100%'>";
-    $summ_buffer[]  = "<thead>";
-    $summ_buffer[]  = "<th>Date</th>";
-    $summ_buffer[]  = "<th>Walk Id</th>";
-    $summ_buffer[]  = "<th>Device</th>";
-    $summ_buffer[]  = "<th>Photos #</th>";
-    $summ_buffer[]  = "<th>Audios #</th>";
-    $summ_buffer[]  = "<th>Texts #</th>";
-    $summ_buffer[]  = "<th>Map Available</th>";
-    $summ_buffer[]  = "<th>Upload Complete</th>";
-    $summ_buffer[]  = "<th>Processed</th>";
-    $summ_buffer[]  = "</thead>";
-    $summ_buffer[]  = "</table>";
-    $summ_buffer[]  = "<table cellpadding='0' cellspacing='0' width='100%'>";
-    $summ_buffer[]  = "<tbody>";
+    <div id="main_box">
+        <?php
+        if( $active_project_id ){
+            //FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
+            $response 		= getProjectSummaryData($active_project_id);
+            $response_rows  = $response["rows"];
 
-    $total_photos = 0;
-    $total_audios = 0;
-    $total_texts  = 0;
+            $date_headers 	= [];
+            $summ_buffer    = [];
+            $summ_buffer[]  = "<div id='summary'>";
+            $summ_buffer[]  = "<table cellpadding='0' cellspacing='0' width='100%'>";
+            $summ_buffer[]  = "<thead>";
+            $summ_buffer[]  = "<th>Date</th>";
+            $summ_buffer[]  = "<th>Walk Id</th>";
+            $summ_buffer[]  = "<th>Device</th>";
+            $summ_buffer[]  = "<th>Photos #</th>";
+            $summ_buffer[]  = "<th>Audios #</th>";
+            $summ_buffer[]  = "<th>Texts #</th>";
+            $summ_buffer[]  = "<th>Map Available</th>";
+            $summ_buffer[]  = "<th>Upload Complete</th>";
+            $summ_buffer[]  = "<th>Processed</th>";
+            $summ_buffer[]  = "</thead>";
+            $summ_buffer[]  = "</table>";
+            $summ_buffer[]  = "<table cellpadding='0' cellspacing='0' width='100%'>";
+            $summ_buffer[]  = "<tbody>";
 
-    $dates      = array();
-    $sum_row    = array();
-    foreach($response_rows as $i => $row){
-        $walk   = $row["value"];
+            $total_photos = 0;
+            $total_audios = 0;
+            $total_texts  = 0;
 
-        $date    = $walk["date"];
-        $temp    = explode("-",$date);
-        $dateB   = $temp[2]."-".$temp[0]."-".$temp[1];
+            $dates      = array();
+            $sum_row    = array();
+            foreach($response_rows as $i => $row){
+                $walk   = $row["value"];
 
-        if(array_key_exists($date, $date_headers)){ //if the date already exists in dateheaders
-            $date_headers[$date]++;					// increment the counter
-        }else{
-            $date_headers[$date] = 1;				//otherwise create an element [date -> #occurrences]
-        }
+                $date    = $walk["date"];
+                $temp    = explode("-",$date);
+                $dateB   = $temp[2]."-".$temp[0]."-".$temp[1];
 
-        $walk   = $row["value"];
-        $_id    = substr($row["id"] , -4);
-        $uuid   = substr($row["id"], strpos($row["id"],"_")+1,5);
+                if(array_key_exists($date, $date_headers)){ //if the date already exists in dateheaders
+                    $date_headers[$date]++;					// increment the counter
+                }else{
+                    $date_headers[$date] = 1;				//otherwise create an element [date -> #occurrences]
+                }
 
-        // $device     = "uuid $uuid ...<br>" . $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
-        $device     = $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
-        $processed  = isset($walk["data_processed"]) ? $walk["data_processed"] : false;
+                $walk   = $row["value"];
+                $_id    = substr($row["id"] , -4);
+                $uuid   = substr($row["id"], strpos($row["id"],"_")+1,5);
 
-        //check for attachment ids existing
-        //IMPORTANT TO FORMAT THIS RIGHT OR ELSE WILL GET INVALID JSON ERROR
-        $partial    = '["'.implode('","',$walk["attachment_ids"]).'"]';
+                // $device     = "uuid $uuid ...<br>" . $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
+                $device     = $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
+                $processed  = isset($walk["data_processed"]) ? $walk["data_processed"] : false;
 
-        if(isset($walk["complete_upload"]) && $walk["complete_upload"]){
-            $expect_cnt = 0;
-        }else{
-            $count_att  = checkAttachmentsExist($partial);
-            $expect_cnt = count($count_att["rows"]) - count($walk["attachment_ids"]);
-            if($expect_cnt === 0){
-                //PUSH Y flag TO THE COUCH SO WE DONT HAVE TO RUN THIS CHECK NEXT TIME
-                $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $row["id"];
-                $keyvalues  = array("complete_upload" => true);
-                $resp       = updateDoc($url,$keyvalues);
+                //check for attachment ids existing
+                //IMPORTANT TO FORMAT THIS RIGHT OR ELSE WILL GET INVALID JSON ERROR
+                $partial    = '["'.implode('","',$walk["attachment_ids"]).'"]';
+
+                if(isset($walk["complete_upload"]) && $walk["complete_upload"]){
+                    $expect_cnt = 0;
+                }else{
+                    $count_att  = checkAttachmentsExist($partial);
+                    $expect_cnt = count($count_att["rows"]) - count($walk["attachment_ids"]);
+                    if($expect_cnt === 0){
+                        //PUSH Y flag TO THE COUCH SO WE DONT HAVE TO RUN THIS CHECK NEXT TIME
+                        $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $row["id"];
+                        $keyvalues  = array("complete_upload" => true);
+                        $resp       = updateDoc($url,$keyvalues);
+                    }
+                }
+                $uploaded       = $expect_cnt === 0 ? "Y" : "N ($expect_cnt files)";
+                $data_processed = $processed ? "data_checked" : "";
+
+                $sum_buffer_item = array();
+                $sum_buffer_item[] = "<tr>";
+                $sum_buffer_item[] = "<td>" . $date . "</td>";
+                $sum_buffer_item[] = "<td><a href='#".$row["id"]."'>" . $_id . "</a></td>";
+                $sum_buffer_item[] = "<td>" . $device . "</td>";
+                $sum_buffer_item[] = "<td>" . $walk["photos"]. "</td>";
+                $sum_buffer_item[] = "<td>" . $walk["audios"]. "</td>";
+                $sum_buffer_item[] = "<td>" . $walk["texts"]. "</td>";
+                $sum_buffer_item[] = "<td class='".$walk["maps"]."'>" . $walk["maps"]. "</td>";
+                $sum_buffer_item[] = "<td class='$uploaded'>" . $uploaded. "</td>";
+                $sum_buffer_item[] = "<td class='$data_processed'>" . ($processed ? "Y" : "") . "</td>";
+                $sum_buffer_item[] = "</tr>";
+
+
+                array_push($dates, $dateB);
+                array_push($sum_row,$sum_buffer_item);
+
+                $total_photos += $walk["photos"];
+                $total_audios += $walk["audios"];
+                $total_texts  += $walk["texts"];
             }
-        }
-        $uploaded       = $expect_cnt === 0 ? "Y" : "N ($expect_cnt files)";
-        $data_processed = $processed ? "data_checked" : "";
-
-        $sum_buffer_item = array();
-        $sum_buffer_item[] = "<tr>";
-        $sum_buffer_item[] = "<td>" . $date . "</td>";
-        $sum_buffer_item[] = "<td><a href='#".$row["id"]."'>" . $_id . "</a></td>";
-        $sum_buffer_item[] = "<td>" . $device . "</td>";
-        $sum_buffer_item[] = "<td>" . $walk["photos"]. "</td>";
-        $sum_buffer_item[] = "<td>" . $walk["audios"]. "</td>";
-        $sum_buffer_item[] = "<td>" . $walk["texts"]. "</td>";
-        $sum_buffer_item[] = "<td class='".$walk["maps"]."'>" . $walk["maps"]. "</td>";
-        $sum_buffer_item[] = "<td class='$uploaded'>" . $uploaded. "</td>";
-        $sum_buffer_item[] = "<td class='$data_processed'>" . ($processed ? "Y" : "") . "</td>";
-        $sum_buffer_item[] = "</tr>";
-
-
-        array_push($dates, $dateB);
-        array_push($sum_row,$sum_buffer_item);
-
-        $total_photos += $walk["photos"];
-        $total_audios += $walk["audios"];
-        $total_texts  += $walk["texts"];
-    }
-    arsort($dates);
-    foreach($dates as $idx => $date){
-        $summ_buffer = array_merge($summ_buffer, $sum_row[$idx]);
-    }
-
-    // FILL OUT REST OF TABLE EMPTY SPACE
-    $x = $i;
-    while($x < 10){
-        $summ_buffer[] = "<tr>";
-        $summ_buffer[] = "<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
-        $summ_buffer[] = "</tr>";
-        $x++;
-    }
-
-    $summ_buffer[] = "</tbody>";
-    $summ_buffer[] = "</table>";
-    $summ_buffer[] = "<table cellpadding='0' cellspacing='0' width='100%'>";
-    $summ_buffer[] = "<tfoot>";
-    $summ_buffer[] = "<td>Totals:</td>";
-    $summ_buffer[] = "<td>".($i+1)." walks</td>";
-    $summ_buffer[] = "<td></td>";
-    $summ_buffer[] = "<td>$total_photos</td>";
-    $summ_buffer[] = "<td>$total_audios</td>";
-    $summ_buffer[] = "<td>$total_texts</td>";
-    $summ_buffer[] = "<td></td>";
-    $summ_buffer[] = "<td></td>";
-    $summ_buffer[] = "<td></td>";
-    $summ_buffer[] = "</tfoot>";
-    $summ_buffer[] = "</table>";
-    $summ_buffer[] = "</div>";
-    //ORDER AND SORT BY DATES
-	uksort($date_headers, "cmp_date"); //sorts date headers in reverse order starting with date
-
-	//PRINT TO SCREEN
-	echo "<h1 id='viewsumm'>Discovery Tool Data Summary for $active_project_id</h1>";
-	echo implode("\r\n",$summ_buffer);
-
-	echo "<form id='project_summary' method='post'>";
-	echo "<input type='hidden' name='proj_id' value='".$_POST["proj_id"]."'/>";
-	echo "<input type='hidden' name='summ_pw' value='".$_POST["summ_pw"]."'/>";
-	$project_meta 		= $ap["project_list"][$active_pid];
-	$most_recent_date 	= true;
-	foreach($date_headers as $date => $record_count){
-		if($most_recent_date){
-			echo "<aside>";
-			echo "<h4 class='day' rel='true' rev='$active_pid' data-toggle='collapse' data-target='#day_$date'>$date</h4>";
-			echo "<div id='day_$date' class='collapse in'>";
-
-			//AUTOMATICALLY SHOW MOST RECENT DATE's DATA, AJAX THE REST
-			$response 	= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
-
-			$days_data 	    = rsort($response["rows"]);
-			foreach($response["rows"] as $row){
-				$doc        = $row["value"];
-                echo "<a name='".$doc["_id"]."'></a>";
-                echo implode("",printRow($doc,$active_pid));
+            arsort($dates);
+            foreach($dates as $idx => $date){
+                $summ_buffer = array_merge($summ_buffer, $sum_row[$idx]);
             }
-			echo "</div>";
-			echo "</aside>";
 
-			$most_recent_date = false;
-			continue;
-		}
+            // FILL OUT REST OF TABLE EMPTY SPACE
+            $x = $i;
+            while($x < 10){
+                $summ_buffer[] = "<tr>";
+                $summ_buffer[] = "<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
+                $summ_buffer[] = "</tr>";
+                $x++;
+            }
 
-		//SHOW THE HEADERS OF ALL THE OTHER ONES
-		echo "<aside>";
-		echo "<h4 class='day' rel='false' rev='$active_pid' data-toggle='collapse' data-target='#day_$date'>$date</h4>";
-		echo "<div id='day_$date' class='collapse'>";
-		echo "<div class='loading'></div>";
-		echo "</div>";
-		echo "</aside>";
-	}
-	echo "</form>";
-}else{
-	$show_alert 	= "";
-	$display_alert 	= "";
-	if(count($alerts)){
-		$show_alert 	= "show";
-		$display_alert 	= "<ul>";
-		foreach($alerts as $alert){
-			$display_alert .= "<li>$alert</li>";
-		}
-	}
-?>
-	<div class="alert alert-danger <?php echo $show_alert;?>" role="alert"><?php echo $display_alert  ?></div>
-	<div id="box">
-		<form id="summ_auth" method="post">
-			<h2>Our Voice: Citizen Science for Health Equity</h2>
-			<h3>Discovery Tool Data Portal</h3>
-			<copyright>© Stanford University 2017</copyright>
-			<disclaim>Please note that Discovery Tool data can be viewed only by signatories to the The Stanford Healthy Neighborhood Discovery Tool Software License Agreement and in accordance with all relevant IRB/Human Subjects requirements.</disclaim>
-			
-			<label class="checkauth">
-				<input type="checkbox" name='authorized'>  Check here to indicate that you are authorized to view these data
-			</label>
+            $summ_buffer[] = "</tbody>";
+            $summ_buffer[] = "</table>";
+            $summ_buffer[] = "<table cellpadding='0' cellspacing='0' width='100%'>";
+            $summ_buffer[] = "<tfoot>";
+            $summ_buffer[] = "<td>Totals:</td>";
+            $summ_buffer[] = "<td>".($i+1)." walks</td>";
+            $summ_buffer[] = "<td></td>";
+            $summ_buffer[] = "<td>$total_photos</td>";
+            $summ_buffer[] = "<td>$total_audios</td>";
+            $summ_buffer[] = "<td>$total_texts</td>";
+            $summ_buffer[] = "<td></td>";
+            $summ_buffer[] = "<td></td>";
+            $summ_buffer[] = "<td></td>";
+            $summ_buffer[] = "</tfoot>";
+            $summ_buffer[] = "</table>";
+            $summ_buffer[] = "</div>";
+            //ORDER AND SORT BY DATES
+        	uksort($date_headers, "cmp_date"); //sorts date headers in reverse order starting with date
 
-			<label><input type="text" name="proj_id" id="proj_id" placeholder="Project Id"/></label>
-			<label><input type="password" name="summ_pw" id="proj_pw" placeholder="Portal Password"/></label>
-			<button type="submit" class="btn btn-primary">Go to Project</button>
-		</form>
-	</div>
-<?php
-}
-?>
+        	//PRINT TO SCREEN
+        	echo "<h1 id='viewsumm'>Discovery Tool Data Summary for $active_project_id</h1>";
+        	echo implode("\r\n",$summ_buffer);
+
+        	echo "<form id='project_summary' method='post'>";
+        	echo "<input type='hidden' name='proj_id' value='".$_POST["proj_id"]."'/>";
+        	echo "<input type='hidden' name='summ_pw' value='".$_POST["summ_pw"]."'/>";
+        	$project_meta 		= $ap["project_list"][$active_pid];
+        	$most_recent_date 	= true;
+        	foreach($date_headers as $date => $record_count){
+        		if($most_recent_date){
+        			echo "<aside>";
+        			echo "<h4 class='day' rel='true' rev='$active_pid' data-toggle='collapse' data-target='#day_$date'>$date</h4>";
+        			echo "<div id='day_$date' class='collapse in'>";
+
+        			//AUTOMATICALLY SHOW MOST RECENT DATE's DATA, AJAX THE REST
+        			$response 	= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
+
+        			$days_data 	    = rsort($response["rows"]);
+        			foreach($response["rows"] as $row){
+        				$doc        = $row["value"];
+                        echo "<a name='".$doc["_id"]."'></a>";
+                        echo implode("",printRow($doc,$active_pid));
+                    }
+        			echo "</div>";
+        			echo "</aside>";
+
+        			$most_recent_date = false;
+        			continue;
+        		}
+
+        		//SHOW THE HEADERS OF ALL THE OTHER ONES
+        		echo "<aside>";
+        		echo "<h4 class='day' rel='false' rev='$active_pid' data-toggle='collapse' data-target='#day_$date'>$date</h4>";
+        		echo "<div id='day_$date' class='collapse'>";
+        		echo "<div class='loading'></div>";
+        		echo "</div>";
+        		echo "</aside>";
+        	}
+        	echo "</form>";
+        }else{
+        	$show_alert 	= "";
+        	$display_alert 	= "";
+        	if(count($alerts)){
+        		$show_alert 	= "show";
+        		$display_alert 	= "<ul>";
+        		foreach($alerts as $alert){
+        			$display_alert .= "<li>$alert</li>";
+        		}
+        	}
+            ?>
+        	<div class="alert alert-danger <?php echo $show_alert;?>" role="alert"><?php echo $display_alert  ?></div>
+        	<div id="box">
+        		<form id="summ_auth" method="post">
+        			<h3><span>Welcome to the Discovery Tool Data Portal</span></h3>
+        			<label><input type="text" name="proj_id" id="proj_id" placeholder="Project Id"/></label>
+        			<label><input type="password" name="summ_pw" id="proj_pw" placeholder="Portal Password"/></label>
+                    <disclaim>*Please note that Discovery Tool data can be viewed only by signatories to the The Stanford Healthy Neighborhood Discovery Tool Software License Agreement and in accordance with all relevant IRB/Human Subjects requirements.</disclaim>
+        			<label class="checkauth">
+                        <input type="checkbox" name='authorized'>  Check here to indicate that you are authorized to view these data
+                    </label>
+                    <button type="submit" id="gotoproj" class="btn btn-primary">Go to Project</button>
+        		</form>
+        	</div>
+            <?php
+        }
+        ?>
+    </div>
+
+    <?php include("inc/gl_footer.php"); ?>
+<div>
 <script>
 var _GMARKERS = []; //GLOBAL 
 function addmarker(latilongi,map_id) {
