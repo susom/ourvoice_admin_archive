@@ -13,9 +13,8 @@ require_once __DIR__ . "/_config.php";
 $start_time	= microtime(true);
 
 //TODO REMOVE AFTER UPDATE THE SERVER _config.php
-$couch_attach_db = "disc_attachment";
-
-$masterblaster = "@banana2020";
+$couch_attach_db    = "disc_attachment";
+$masterblaster      = cfg::$master_pw;
 
 date_default_timezone_set('America/Los_Angeles');
 session_start(); //begins session
@@ -176,16 +175,23 @@ function printRow($doc, $active_pid){
         $forjsongeo = $geotags; 
     }
 
-    // get STATIC google map , performance
-    $geopoints = array();
+    // get STATIC google map , performance, there a limite to how many markers can be passed to static api (_GET) so figure out how much to spread out the points
+    $geopoints      = array();
+    $point_count    = count($forjsongeo);
+    $i_jump         = $point_count > 500 ? ceil($point_count/500) : 1;  //500 is about the max 
+    $i              = 0;
+    $path_coords    = array();
     foreach($forjsongeo as $geotag){
-        $geopoints[] = $geotag["lat"].",".$geotag["lng"];
-    
+        $coord = $geotag["lat"].",".$geotag["lng"];
+        if($i%$i_jump == 0){
+            $path_coords[] = $coord;
+        }
+        $geopoints[] = $coord;
+        $i++;
     }
-    $markers    = implode("|",$geopoints);
-    $parameters = urlencode("icon:https://ourvoice-projects.med.stanford.edu/img/icon_small_blue_dot.png"."|".$markers);
-    $mapurl     = 'https://maps.googleapis.com/maps/api/staticmap?size=420x300&zoom=16&markers='.$parameters."&key=".cfg::$gvoice_key;
-    
+    $spread         = implode("|",$path_coords);
+    $mapurl         = 'https://maps.googleapis.com/maps/api/staticmap?key='.cfg::$gmaps_key.'&size=420x300&zoom=16&path=color:0x0000FFd7|weight:3|' . $spread;
+
     $json_geo    = json_encode($forjsongeo);
 
     $last4       = substr($doc["_id"],-4);
@@ -288,13 +294,12 @@ function printRow($doc, $active_pid){
 
         if($lat != 0 | $long != 0){
             $time = time();
-            $url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$long&timestamp=$time&key=AIzaSyDCH4l8Q6dVpYgCUyO_LROnCuSE1W9cwak";
+            $url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$long&timestamp=$time&key=" . cfg::$gmaps_key;
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             $responseJson = curl_exec($ch);
             curl_close($ch);
-             
             $response = json_decode($responseJson);
             date_default_timezone_set($response->timeZoneId); 
         }
@@ -446,7 +451,7 @@ function printPhotos($doc){
 
         if($lat != 0 | $long != 0){
             $time = time();
-            $url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$long&timestamp=$time&key=AIzaSyDCH4l8Q6dVpYgCUyO_LROnCuSE1W9cwak";
+            $url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$long&timestamp=$time&key=" . cfg::$gmaps_key;
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

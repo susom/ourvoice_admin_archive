@@ -146,99 +146,99 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
 <style>
-h1{
-	padding-top:20px; 
-	clear:both; 
-}
+    h1{
+    	padding-top:20px; 
+    	clear:both; 
+    }
 
-h4[data-toggle="collapse"]{
-	padding-bottom:5px;
-	margin-bottom:20px;
-	border-bottom:1px solid #999;
-	cursor:pointer;
-	font-size:250%;
-	font-weight:normal;
-}
-.btn {
-	float:right;
-	margin-right:10px;
-}
+    h4[data-toggle="collapse"]{
+    	padding-bottom:5px;
+    	margin-bottom:20px;
+    	border-bottom:1px solid #999;
+    	cursor:pointer;
+    	font-size:250%;
+    	font-weight:normal;
+    }
+    .btn {
+    	float:right;
+    	margin-right:10px;
+    }
 
-nav {
-	overflow:hidden;
-}
-nav ul {
-	margin:0;
-	padding:0;
-}
+    nav {
+    	overflow:hidden;
+    }
+    nav ul {
+    	margin:0;
+    	padding:0;
+    }
 
 
-#viewsumm {
-    padding-bottom:30px;
-}
-#viewsumm:after{
-    content: "+View Walks Summary";
-    font-size: 65%;
-    margin-left: 20px;
-    color: deepskyblue;
-    text-shadow:1px 1px 1px darkgreen;
-    cursor: pointer;
+    #viewsumm {
+        padding-bottom:30px;
+    }
+    #viewsumm:after{
+        content: "+View Walks Summary";
+        font-size: 65%;
+        margin-left: 20px;
+        color: deepskyblue;
+        text-shadow:1px 1px 1px darkgreen;
+        cursor: pointer;
 
-    position: absolute;
-    left: 25px;
-    top: 135px;
-}
-#viewsumm.open:after{
-    content: "-Close Walks Summary";
-}
-#summary{
-    display:none;
-}
-#summary table {
-    width:1024px;
-    margin: 0 auto;
-    border-top:1px solid #000;
-    border-left:1px solid #000;
-}
-#summary td,#summary th {
-    width:114px;
-    border-right:1px solid #000;
-    border-bottom:1px solid #000;
-    text-align:center;
-    margin:0;
-    padding:5px 0;
-}
-#summary tfoot td{
-    padding:2px 0;
-    font-weight:bold;
-}
-#summary th {
-    border-bottom:none;
-}
-#summary tfoot td:not(:last-child){
-    border-right:none;
-}
-#summary table thead,
-#summary table tfoot{
-    background:#efefef;
-}
-#summary table tbody {
-    display:block;
-    height:325px;
-    overflow-y:scroll;
-}
-#summary td.Y{
-    font-weight:bold;
-    color:limegreen;
-}
-#summary td.N{
-    font-weight:bold;
-    color:red;
-}
-#summary td.data_checked {
-    font-weight:bold;
-    color:limegreen;
-}
+        position: absolute;
+        left: 25px;
+        top: 135px;
+    }
+    #viewsumm.open:after{
+        content: "-Close Walks Summary";
+    }
+    #summary{
+        display:none;
+    }
+    #summary table {
+        width:1024px;
+        margin: 0 auto;
+        border-top:1px solid #000;
+        border-left:1px solid #000;
+    }
+    #summary td,#summary th {
+        width:114px;
+        border-right:1px solid #000;
+        border-bottom:1px solid #000;
+        text-align:center;
+        margin:0;
+        padding:5px 0;
+    }
+    #summary tfoot td{
+        padding:2px 0;
+        font-weight:bold;
+    }
+    #summary th {
+        border-bottom:none;
+    }
+    #summary tfoot td:not(:last-child){
+        border-right:none;
+    }
+    #summary table thead,
+    #summary table tfoot{
+        background:#efefef;
+    }
+    #summary table tbody {
+        display:block;
+        height:325px;
+        overflow-y:scroll;
+    }
+    #summary td.Y{
+        font-weight:bold;
+        color:limegreen;
+    }
+    #summary td.N{
+        font-weight:bold;
+        color:red;
+    }
+    #summary td.data_checked {
+        font-weight:bold;
+        color:limegreen;
+    }
 </style>
 </head>
 <body id="main">
@@ -719,7 +719,7 @@ $(document).ready(function(){
 </script>
 </body>
 </html>
-<?php markPageLoadTime("Summary Page Loaded") ?>
+<?php //markPageLoadTime("Summary Page Loaded") ?>
 
 
 
