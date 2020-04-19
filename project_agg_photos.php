@@ -140,9 +140,9 @@ $page = "allwalks";
 			<div class="innerbox">
 				<ul class='collapse' id='tags'>
 					<?php
-						$perchunk	= 22; 
+						$perchunk	= 16; 
 						$chunk 		= ceil(count($code_block)/$perchunk);
-						$req_width 	= $chunk*1310;
+						$req_width 	= $chunk*1200;
 						$req_width .= "px";
 						$chunks 	= array_chunk($code_block, $perchunk);
 
@@ -220,7 +220,7 @@ $page = "allwalks";
 	}
 
 	#tags > div {
-		width: 1310px;
+		width: 1200px;
 		float:left;
 	}
 	#tags .deletetag{
