@@ -397,7 +397,7 @@ function printPhotos($doc){
 
     //fuck
     $old        = "";
-    if(array_key_exists("_attachments",$doc)){
+    if(isset($doc["_attachments"])){
         //original attachments stored with walk sessions
         $old = "&_old=1";
     }else{

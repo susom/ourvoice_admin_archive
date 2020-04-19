@@ -92,7 +92,7 @@ $page = "allwalks";
 			$doc = $row["value"];
 			$old = "";
 			// I DID THIS TO MYSELF
-			if(array_key_exists("_attachments",$doc)){
+			if(isset($doc["_attachments"])){
 		        //original attachments stored with walk sessions
 		        $old = "&_old=1";
 		    }else{
@@ -119,7 +119,7 @@ $page = "allwalks";
 				}
 			}
 
-			// GENERATE an <li> for every photo in the project
+			// Massage a block for each photo in the project
 			$code_block = array_merge($code_block,printPhotos($doc));
 		}
 
