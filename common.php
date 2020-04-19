@@ -392,99 +392,88 @@ function printRow($doc, $active_pid){
 }
 
 function printPhotos($doc){
-    global $project_meta, $ap;
-
     $codeblock  = array();
-    $i          = $doc["_id"];
-    $photos     = $doc["photos"];
+    $_id        = $doc["_id"];
 
-    //TODO THIS IS FOR THE 3 VERSIONS OF ATTACHMENT STORAGE AND RETRIEVAL
-    if(!empty($doc["_attachments"])){
+    //fuck
+    $old        = "";
+    if(array_key_exists("_attachments",$doc)){
         //original attachments stored with walk sessions
         $old = "&_old=1";
     }else{
-        if(array_key_exists("name",$doc["photos"][0])){
-            //newest and "final" method atomic attachment storage
-            $old = "";
-        }else{
+        if(!array_key_exists("name",$doc["photos"][0])){
             //all attachments in seperate data entry
             $old = "&_old=2";
         }
     }
 
-    $forjsongeo = array();
-    $lang       = is_null($doc["lang"]) ? "EN" : $doc["lang"];
-
-    // filter out low accuracy
-    $last4       = substr($doc["_id"],-4);
-    $firstpart   = substr($doc["_id"],0, strlen($doc["_id"]) - 4);
     $walk_ts_sub = substr($doc["_id"],-13);
-    
     $date_ts     = date("F j, Y", floor($walk_ts_sub/1000)) ;
     $host        = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : "";
     $url_path    = $host .dirname($_SERVER['PHP_SELF']); 
-    if($url_path != '/') //if its empty then we dont want to add the additional / 
-        $url_path = $host .dirname($_SERVER['PHP_SELF']) . '/';               
+    if($url_path != '/'){
+        $url_path .= '/';               
+    }
 
-    foreach($photos as $n => $photo){
+    foreach($doc["photos"] as $n => $photo){
+        $photoblock = array();
+
         if(is_null($photo)){
             continue;
         }
 
         $nogeo      = empty($photo["geotag"]) ? "nogeo" : "";
-        $long       = isset($photo["geotag"]["longitude"]) ? $photo["geotag"]["longitude"] : null;
-        $lat        = isset($photo["geotag"]["latitude"])  ? $photo["geotag"]["latitude"]  : null;
-        $timestamp  = isset($photo["geotag"]["timestamp"]) ? $photo["geotag"]["timestamp"] : null;
+        $long       = isset($photo["geotag"]["lng"])        ? $photo["geotag"]["lng"] : null;
+        $lat        = isset($photo["geotag"]["lat"])        ? $photo["geotag"]["lat"]  : null;
+        $timestamp  = isset($photo["geotag"]["timestamp"])  ? $photo["geotag"]["timestamp"] : null;
 
         $rotate     = isset($photo["rotate"]) ? $photo["rotate"] : 0;
-        $photo_name = "photo_".$n.".jpg";
+        $filename   = array_key_exists("name",$photo) ? $photo["name"] : "photo_".$n.".jpg";
+        $ph_id      = $_id;
 
-        //TODO FOR MULTIPLE VERSIONS OF ATTACHMENT STORAGE
         if(array_key_exists("name",$photo)){
-            $filename   = $photo["name"];
-            $ph_id      = $i . "_" .$filename;
-        }else{
-            $filename   = $photo_name;
-            $ph_id      = $doc["_id"];
+            $ph_id .= "_" .$filename;
         }
 
-
-        if($lat != 0 | $long != 0){
-            $time = time();
-            $url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$long&timestamp=$time&key=" . cfg::$gmaps_key;
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            $responseJson = curl_exec($ch);
-            curl_close($ch);
-             
-            $response = json_decode($responseJson);
-            date_default_timezone_set($response->timeZoneId); 
-        }
-
-        $img_id         = $doc["_id"]."_".$photo_name;
-        
         $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
         $thumb_uri      = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
- 
-        $photo_uri      = getThumb($img_id,$thumb_uri,$file_uri);
-        $blur_coord     = "facial_detection.php?uri=".$photo_uri;
-        $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
-        $attach_url     = "#";
+        $photo_uri      = getThumb($ph_id,$thumb_uri,$file_uri);
+
+        $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$filename";
         $pic_time       = date("g:i a", floor($timestamp/1000));
-        
         $photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
-        $codeblock[]    = "<li id='".$doc["_id"]."_"."photo_".$n."' class = 'ui-widget-drop'><figure>";
-        $codeblock[]    = "<ul>";
-        foreach($photo_tags as $idx => $tag){
-            $codeblock[]    = "<li class = '$tag'>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='".$doc["_id"]."' data-photo_i='$n'>x</a></li>";
-        }
-        $codeblock[]    = "</ul>";
-        $codeblock[]    = "<a href='$detail_url' target='_blank'  data-time='".$pic_time."' data-date='".$date_ts."' data-photo_i=$n data-doc_id='".$doc["_id"]."' data-long='$long' data-lat='$lat' class='preview rotate walk_photo $nogeo' data-imgsrc='$photo_uri' rev='$rotate'><img src='$photo_uri' /><span></span><b></b><i></i></a>";
         
-        $codeblock[]    = "</figure></li>";
+        $photoblock["id"]            = $_id."_photo_".$n;
+        $photoblock["tags"]          = $photo_tags;
+        $photoblock["detail_url"]    = $detail_url;
+        $photoblock["pic_time"]      = $pic_time;
+        $photoblock["date_ts"]       = $date_ts;
+        $photoblock["actual_ts"]     = $timestamp;
+        $photoblock["doc_id"]        = $_id;
+        $photoblock["n"]             = $n;
+        $photoblock["long"]          = $long;
+        $photoblock["lat"]           = $lat;
+        $photoblock["nogeo"]         = $nogeo;
+        $photoblock["photo_uri"]     = $photo_uri;
+        $photoblock["rotate"]        = $rotate;
+
+        array_push($codeblock, $photoblock);
     }
     return $codeblock;
+}
+
+function getAllDataPicLI($photo_o){
+    $html_li  = "";
+    $html_li .= "<li id='".$photo_o["id"]."' class = 'ui-widget-drop'><figure>";
+    $html_li .= "<ul>";
+    foreach($photo_o["tags"] as $idx => $tag){
+        $html_li .= "<li class = '$tag'>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='".$photo_o["doc_id"]."' data-photo_i='".$photo_o["n"]."'>x</a></li>";
+    }
+    $html_li .= "</ul>";
+    $html_li .= "<a href='".$photo_o["detail_url"]."' target='_blank'  data-time='".$photo_o["pic_time"]."' data-date='".$photo_o["date_ts"]."' data-photo_i=".$photo_o["n"]." data-doc_id='".$photo_o["doc_id"]."' data-long='".$photo_o["long"]."' data-lat='".$photo_o["lat"]."' class='preview rotate walk_photo ".$photo_o["nogeo"]."' data-imgsrc='".$photo_o["photo_uri"]."' rev='".$photo_o["rotate"]."'><img src='".$photo_o["photo_uri"]."' /><span></span><b></b><i></i></a>";
+    
+    $html_li .= "</figure></li>";
+    return $html_li;
 }
 
 function parseTime($data, $storage){

@@ -67,7 +67,9 @@ h4[data-toggle="collapse"]{
 }
 
 
-
+.allwalks #viewsumm{
+	margin:0 40px 20px;
+}
 .allwalks #viewsumm:after{
 	display:none;
 }
@@ -169,11 +171,11 @@ section h5{
 }
 .thumbs li {
 	display:inline-block;
-	margin: 5px 10px 20px 5px; 
+	margin: 5px 5px 20px 6px; 
     vertical-align: top;
 
 }
-.thumbs
+.thumbs,
 .thumbs figure {
 	margin:0; 
 }
@@ -183,8 +185,10 @@ section h5{
 }
 a.preview{
 	display:block;
+	min-width:108px;
 	min-height:150px;
 	position:relative;
+	background-color: pink;
 }
 a.preview span,
 a.preview b,
@@ -426,7 +430,6 @@ label span {
 .photo_detail .photo_previews .thumbs{
 	min-height:145px;
 	margin:0 auto;
-	text-align:center;
 }
 .photo_detail .photo_previews .thumbs a{
 	display:inline-block;
@@ -691,10 +694,17 @@ label span {
 	line-height:80%;
 	right:22px;
 }
-.notags{
-	padding: 10px;
+.notags, .hastags .dragtags{
+	padding: 5px 0 10px;
     font-style: italic;
+    display:block;
 }
+.dragtags,
+.hastags .notags{
+	display:none;
+}
+
+
 
 .data_processed {
 	position: absolute;
@@ -717,28 +727,42 @@ label span {
 .data_processed + .export-pdf{
 	display:none;
 }
-/*agg photos */
-/*::-webkit-scrollbar {
-    width: 7px;
-}*/
-.all-photos{
-    top:18px;
-    border:solid;
-    border-width: 2px;
-    overflow-y: scroll;
-    max-width: 333px;
-    min-width:333px;
-    float:right;
-    min-height: 690px;
-    max-height: 690px;
+
+.showhidemap:link,
+.showhidemap:visited,
+.showhidemap:hover,
+.showhidemap:active,
+.showhidemap {
+	float:right;
+	display:inline-block;
+	text-decoration: none;
     position: relative;
-    border-color:gray;
-    border-radius: 10px;
+    margin: 15px 30px 0;
+    font-weight: bold;
+    font-size: 45%;
+    text-shadow: none;
+    line-height: 185%;
+}
+.showhidemap:after{
+	content:"";
+	position:absolute; top:-5px; right:-30px;
+	width:30px; height:30px;
+	background: url(../img/icon_maps.png) 0 0 no-repeat;
+	background-size:contain;
 }
 
-.thumbs{
-	 margin: 0 10px;
-    text-align: center;
+#google_map_photos {
+	box-shadow:0 0 3px  #888; 
+	width:100%;
+	height:400px;
+	margin: 0px auto 20px;
+}
+
+
+.all-photos{
+	min-height:300px;
+	margin:20px 40px;
+    position: relative;
 }
 
 .collapse {
@@ -771,53 +795,38 @@ label span {
 	position:relative;
 }
 
-#addtags{
-	position:fixed;
-	left:0;
-	bottom:150px;
-	width:190px;
-	overflow:hidden;
-	background:#efefef;
-	border:1px solid #333; 
-	border-left:none;
-	border-radius:0 10px 10px 0;
-	box-shadow:0 0 3px 3px #333;
-	padding-left:5px;
-	z-index:6;
-	transition: .5s left ease-in-out;
-}
-
-#addtags.closed {
-	left:-180px;
-}
-#addtags.closed #close_addtags{
-	height:100%;
-	background:darkseagreen;
-}
-#addtags.closed #close_addtags:hover{
-	background:greenyellow;
-}
-#addtags.closed #close_addtags:before{
-	content:"";
-}
-
-#addtags input[type='text'] {
-	width:65%;
+.innerbox{
+	margin-top:5px;
+	border:1px solid #ccc;
 	border-radius:5px;
-}
-#addtags h4{
-	font-size:88%;
-	padding:10px 0 0;
-	text-align:center;
-} 
-#addtags ul{
-	margin:10px 10px 20px 0;
-	padding:0;
+	background:#f7f7f7;
+	padding:10px 20px;
+	box-shadow:0 0 3px #ccc;
 	overflow:scroll;
-	height:300px;
+}
+
+.nobor { border:none !important; box-shadow:none !important; }
+#addnewtag input{
+	border-radius:5px;
+	vertical-align: top;
+	cursor:pointer;
+}
+#addnewtag .savetag{
+	display:none;
+}
+
+#addtags{
+	overflow:hidden;
+	margin:20px 40px;
+}
+#addtags ul{
+	margin:0;
+	padding:0;
 }
 #addtags li{
-	margin: 10px;
+	display:inline-block;
+	min-width:150px;
+	margin: 5px;
     border: 1px solid #333;
     border-radius: 5px;
     box-shadow: 0px 0px 3px 0px #000;
@@ -825,21 +834,25 @@ label span {
 #addtags li a {
 	display:block;
     text-align: center;
-    padding: 8px 0;
+    padding: 5px 30px;
+    margin:0;
     border-radius: 5px;
     text-decoration:none;
     position:relative;
 }
-#addtags li a:hover{
+#addtags li a:hover:after{
+	content:"";
+	position:absolute;
+	top: 5px;
+    right: 5px;
+	width:20px;
+	height:20px;
 	background: #fff url(../img/icon_drag.png) 93% no-repeat;
-    background-size: 10%;
-}
-#addtags p {
-	padding: 0;
+    background-size: contain;
 }
 #addtags li a:hover b{
 	position:absolute;
-	top: 8px;
+	top: 5px;
     left: 5px;
 	width:20px;
 	height:20px;
@@ -851,25 +864,7 @@ label span {
 	cursor:pointer;
 	z-index:1;
 }
-#close_addtags{
-    position: absolute;
-    width: 20px;
-    height: 35px;
-    top: 0;
-    right: 0;
-    color:#333;
-	font-weight:bold;
 
-}
-#close_addtags:before{
-	content: '\02190';
-	position:absolute;
-	width:20px;
-	height:35px;
-	line-height: 220%;
-	top:0;
-	left:0;
-}
 
 
 .loading{

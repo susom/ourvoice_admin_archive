@@ -126,8 +126,9 @@ nav .btn{
 	min-height:calc(100vh - 135px);
 	padding:0 40px;
 }
-
-
+.allwalks #main_box{
+	padding:0;
+}
 
 #footer {
 	width:100%;
