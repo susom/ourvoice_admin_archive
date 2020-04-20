@@ -19,14 +19,12 @@ if(!empty($pcode) && !empty($active_pid)){
 	$photos 		= $data_geos["code_block"];
 
 	// SET UP NEW PDF Obj
-	// $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-	// pdf_setup($pdf, $pcode);
+	$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+	pdf_setup($pdf, $pcode);
 
 	// INCLUDE FILTERED MAP AT THE TOP
-	// generateWalkMap($pdf, $photo_geos);
+	generateWalkMap($pdf, $photo_geos);
 
-	print_rr($photos);
-	exit;
 	// SORT THE PHOTOS INTO GROUPINGS BY TAG
 	$groupings = array();
 	foreach($pfilters as $filter_tag){
@@ -86,10 +84,6 @@ function pdf_setup($pdf, $header){ //set page contents and function initially
 }
 
 function generateWalkMap($pdf, $photo_geos){
-	$url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
-    $response   = doCurl($url);
-	$doc 		= json_decode(stripslashes($response),1); //wtf this breaking certain ones? 
-
 	$pdf->AddPage();
 	$pdf->StartTransform();
 	$pdf->Rotate(90,0,250);
@@ -116,39 +110,6 @@ function generateWalkMap($pdf, $photo_geos){
 }
 
 function generatePhotoPage($pdf, $photo, $active_pid){
-// (
-//     [id] => IRV_281DA1B2-CC01-44FD-9CB4-74212F37455C_1_1587393986767_photo_0
-//     [tags] => Array
-//         (
-//             [0] => orange
-//             [1] => fucker
-//             [2] => retard
-//         )
-
-//     [detail_url] => photo.php?_id=IRV_281DA1B2-CC01-44FD-9CB4-74212F37455C_1_1587393986767&_file=photo_0.jpg
-//     [pic_time] => 7:46 am
-//     [date_ts] => April 20, 2020
-//     [actual_ts] => 1587393991975.6
-//     [doc_id] => IRV_281DA1B2-CC01-44FD-9CB4-74212F37455C_1_1587393986767
-//     [n] => 0
-//     [long] => -122.46957356155
-//     [lat] => 37.71296433252
-//     [nogeo] => 
-//     [photo_uri] => /cordova/discadmin/thumbnail.php?file=passthru.php%3F_id%3DIRV_281DA1B2-CC01-44FD-9CB4-74212F37455C_1_1587393986767_photo_0.jpg%26_file%3Dphoto_0.jpg&maxw=140&maxh=140
-//     [rotate] => 0
-//     [goodbad] => 1
-//     [text_comment] => 
-//     [transcriptions] => Array
-//         (
-//             [audio_0_1.wav] => Array
-//                 (
-//                     [text] => crap where's my text comment
-//                     [confidence] => 0.9218556
-//                 )
-
-//         )
-
-// )
 	/* Parameters: 
 		pdf = PDF object 
 		id = full walk ID 
@@ -158,7 +119,7 @@ function generatePhotoPage($pdf, $photo, $active_pid){
 	$_file		= "photo_".$photo["n"].".jpg";
 
 	$proj_idx 	= $active_pid;
-    $walk_geo 	= json_encode(array( array("lat" => $photo["lat"], "lng" => $photo["lng"]) );
+    $walk_geo 	= json_encode(array( array("lat" => $photo["lat"], "lng" => $photo["lng"]) ) );
 	$old 		= $photo["old"];
 
 	$goodbad = "";
@@ -174,7 +135,7 @@ function generatePhotoPage($pdf, $photo, $active_pid){
 	$lng 		= $photo["lng"];
 	$lat 		= $photo["lat"];
 	$rotation 	= $photo["rotate"];
-	
+
 	$photo_name = "photo_" . $photo["n"] . ".jpg";
 	$ph_id 		= $old ? $_id : $_id . "_" . $photo_name;
 	$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$photo_name" . $old;
