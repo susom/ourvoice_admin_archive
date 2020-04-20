@@ -45,7 +45,7 @@ if(!empty($pcode) && !empty($active_pid)){
 		}
 	}
 
-	// $pdf->Output($pcode . '_all_data.pdf', 'I');
+	$pdf->Output($pcode . '_all_data.pdf', 'I');
 }
 
 function pdf_setup($pdf, $header){ //set page contents and function initially
