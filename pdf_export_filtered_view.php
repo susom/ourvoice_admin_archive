@@ -22,9 +22,6 @@ if(!empty($pcode) && !empty($active_pid)){
 	$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 	pdf_setup($pdf, $pcode);
 
-	// INCLUDE FILTERED MAP AT THE TOP
-	generateWalkMap($pdf, $photo_geos);
-
 	// SORT THE PHOTOS INTO GROUPINGS BY TAG
 	$groupings = array();
 	foreach($pfilters as $filter_tag){
@@ -49,7 +46,7 @@ if(!empty($pcode) && !empty($active_pid)){
 }
 
 function pdf_setup($pdf, $header){ //set page contents and function initially
-	$pdf->SetHeaderData("", "", "Project Code : $header");
+	$pdf->SetHeaderData("", "", "Project : $header");
 	$pdf->SetTitle($header);
 
 	// set header and footer fonts
@@ -74,6 +71,7 @@ function pdf_setup($pdf, $header){ //set page contents and function initially
 	// 	require_once(dirname(__FILE__).'/lang/eng.php');
 	// 	$pdf->setLanguageArray($l);
 	// }
+	
 	$pdf->setFontSubsetting(true);
 	$pdf->SetFont('dejavusans', '', 8, '', true);
 	$pdf->setTextShadow(array('enabled'=>true, 'depth_w'=>0.2, 'depth_h'=>0.2, 'color'=>array(196,196,196), 'opacity'=>1, 'blend_mode'=>'Normal'));
@@ -86,18 +84,15 @@ function generateWalkMap($pdf, $photo_geos){
 	$pdf->writeHTMLCell(0,0,0,250, "<small>Generated using the Stanford Discovery Tool, © Stanford University 2018</small>",0,1,0, true, '',true);
 	$pdf->StopTransform();
 
-	// $walk_date 	= date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000));
-	// $walk_time 	= date("g:ia", floor($doc["geotags"][0]["timestamp"]/1000)) . " - " . date("g:ia", floor($doc["geotags"][count($doc["geotags"]) - 1]["timestamp"]/1000));
-	// $pdf->writeHTMLCell(0,0,20,9.5, $walk_date . " " .$walk_time,0,1,0, true, '',true);
-
 	$geopoints = array();
 	foreach($photo_geos as $geotag){
 		$lat = array_key_exists("lat",$geotag) ? $geotag["lat"] : $geotag["latitude"];
 		$lng = array_key_exists("lng",$geotag) ? $geotag["lng"] : $geotag["longitude"];
 		$geopoints[] = $lat.",".$lng;
 	}
-	$markers 	= implode("|",$geopoints);
-	$urlp 		= urlencode("icon:https://ourvoice-projects.med.stanford.edu/img/icon_small_blue_dot.png"."|".$markers);
+	$markers 		= implode("|",$geopoints);
+	$marker_img_url = "https://ourvoice-projects.med.stanford.edu/img/marker_gray.png"; //must be live url
+	$urlp 		= urlencode("icon:$marker_img_url"."|".$markers);
 	$parameters = "markers=$urlp";
 
 	$url 		= 'https://maps.googleapis.com/maps/api/staticmap?size=680x'.floor(533).'&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
