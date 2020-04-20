@@ -347,6 +347,7 @@ function getFilteredDataGeos($pcode, $pfilters){
     $good           = array_search("good"   ,$pfilters);
     $bad            = array_search("bad"    ,$pfilters);
     $neutral        = array_search("neutral",$pfilters);
+    $untagged       = array_search("un-tagged", $pfilters);
     if(!empty($good)){
         array_push($goodbad_filter,2);
         unset($pfilters[$good]);
@@ -833,6 +834,18 @@ function filterProjectByTags($project_code, $tags=array(), $view="by_tags", $dd=
     return json_decode($response,1);
 }
 
+function filterProjectNoTags($project_code, $view="no_tags", $dd="project"){
+    // WILL RETURN PHOTO OBJECT(s) FOR TAG , can be duplicates if passing in multiple tags
+    // $project_code   = "AAAA";
+    $temp = array();
+    $temp[] = '["'.$project_code.'","un_tagged"]';
+    $keys       = '['.implode(',', $temp).']';
+    $qs         = http_build_query(array( 'keys' => $keys ));
+    $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
+    $response   = doCurl($couch_url);
+    return json_decode($response,1);
+}
+
 function filterProjectByGoodBad($project_code, $goodbad=array(), $view="by_goodbad", $dd="project"){
     // WILL RETURN PHOTO OBJECT(s) FOR 1 bad, 2 good, 3 nuetral
     // $project_code   = "AAAA";
@@ -857,8 +870,13 @@ function loadAllProjectThumbs($project_code, $tags=array()){
         // NO FILTERS GET ALL PHOTO DATA FOR A PROJECT
         return getProjectSummaryData($project_code, "all_photos");
     }else{
-        // REGULAR TAGS
-        return filterProjectByTags($project_code, $tags);
+        if(in_array("un-tagged", $tags)){
+            // REGULAR TAGS
+            return filterProjectNoTags($project_code);
+        }else{
+            // REGULAR TAGS
+            return filterProjectByTags($project_code, $tags);
+        }
     }
 }
 

@@ -99,7 +99,7 @@ $page = "allwalks";
 				<form  id="choose_filter" class="pull-right">
 					<label>Add Filter(s) :</label>
 					<select>
-						<option value=99>-- Mood or Tags --</option>
+						<option value="-1">-- Mood or Tags --</option>
 						<optgroup label="Moods">
 							<option value="good">Good</option>
 							<option value="bad">Bad</option>
@@ -107,6 +107,7 @@ $page = "allwalks";
 						</optgroup>
 
 						<optgroup id='filter_tags' label="Project Tags">
+							<option value="un-tagged">un-tagged</option>
 							<?php
 							foreach($project_tags as $idx => $tag){
 								echo "<option value='$tag'>$tag</option>";
@@ -572,9 +573,10 @@ $page = "allwalks";
 		//ADD A FILTER (redraws content)
 		$("#choose_filter select").change(function(){
 			var filter_tag = $(this).val();
-			if(filter_tag == 99){
+			if(filter_tag == -1){
 				return;
 			}
+
 			var newli 	= $("<li>");
 			var newi 	= $("<i>");
 			var newdel 	= $("<a>").addClass("delete_filter");
@@ -616,6 +618,7 @@ $page = "allwalks";
 			data: data,
 			dataType : "json",
 			success: function(response){
+				// console.log(response);
 				// why the fuck was this container id with "tags"?
 				$("#tags").empty();
 				$("#tags").html(response.code_block);
