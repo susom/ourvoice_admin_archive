@@ -34,7 +34,7 @@ if(!empty($pcode) && !empty($active_pid)){
 		}
 
 		// GENERATE TAG TITLE PAGE
-		// generateTagPage($pdf,$pcode,$tag);
+		generateTagPage($pdf,$pcode,$filter_tag);
 		
 		foreach($photos as $photo){
 			if(empty($photo["tags"])){
@@ -49,15 +49,11 @@ if(!empty($pcode) && !empty($active_pid)){
 }
 
 function pdf_setup($pdf, $header){ //set page contents and function initially
-	$pdf->SetHeaderData("", "", "Project Code: " . $header);
-
-	// $pdf->setFooterData("", "", "COPYRIGHT STANFORD UNIVERSITY 2017");
+	$pdf->SetHeaderData("", "", "Project Code : $header");
 	$pdf->SetTitle($header);
-	$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', 8));
-	// $pdf->setFooterData(array(0,64,0), array(0,64,128));
 
 	// set header and footer fonts
-	$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', 8));
+	$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', 12));
 	$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
 	// set default monospaced font
 	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
@@ -74,10 +70,10 @@ function pdf_setup($pdf, $header){ //set page contents and function initially
 	$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 
 	// set some language-dependent strings (optional)
-	if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
-		require_once(dirname(__FILE__).'/lang/eng.php');
-		$pdf->setLanguageArray($l);
-	}
+	// if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
+	// 	require_once(dirname(__FILE__).'/lang/eng.php');
+	// 	$pdf->setLanguageArray($l);
+	// }
 	$pdf->setFontSubsetting(true);
 	$pdf->SetFont('dejavusans', '', 8, '', true);
 	$pdf->setTextShadow(array('enabled'=>true, 'depth_w'=>0.2, 'depth_h'=>0.2, 'color'=>array(196,196,196), 'opacity'=>1, 'blend_mode'=>'Normal'));
@@ -107,6 +103,11 @@ function generateWalkMap($pdf, $photo_geos){
 	$url 		= 'https://maps.googleapis.com/maps/api/staticmap?size=680x'.floor(533).'&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
 	$gmapsPhoto = doCurl($url);
 	$pdf->Image('@'.$gmapsPhoto,15,20,180,106);
+}
+
+function generateTagPage($pdf, $pcode, $tag){
+	$pdf->AddPage();
+	$pdf->writeHTMLCell(0, 0, '', 140, "<h1>Tag : $tag</h1>", 0, 1, 0, true, '', true);
 }
 
 function generatePhotoPage($pdf, $photo, $active_pid){
