@@ -40,7 +40,7 @@ if(!empty($pcode) && !empty($active_pid)){
 			if(empty($photo["tags"])){
 				continue;
 			}elseif(in_array($filter_tag,$photo["tags"])){
-				generatePhotoPage($pdf,$photo);
+				generatePhotoPage($pdf,$photo, $active_pid);
 			}
 		}
 	}
@@ -119,7 +119,7 @@ function generatePhotoPage($pdf, $photo, $active_pid){
 	$_file		= "photo_".$photo["n"].".jpg";
 
 	$proj_idx 	= $active_pid;
-    $walk_geo 	= json_encode(array( array("lat" => $photo["lat"], "lng" => $photo["lng"]) ) );
+    $walk_geo 	= json_encode(array( array("lat" => $photo["lat"], "lng" => $photo["long"]) ) );
 	$old 		= $photo["old"];
 
 	$goodbad = "";
@@ -132,7 +132,7 @@ function generatePhotoPage($pdf, $photo, $active_pid){
 		$goodbad = "/img/icon_none.png";
 	}
 
-	$lng 		= $photo["lng"];
+	$lng 		= $photo["long"];
 	$lat 		= $photo["lat"];
 	$rotation 	= $photo["rotate"];
 
@@ -178,8 +178,8 @@ function generatePhotoPage($pdf, $photo, $active_pid){
 
 	///////////////////////////// FORM HTML BEGIN /////////////////////////////
 	$htmlobj = [];
-	$htmlobj['date'] = date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000));
-	$htmlobj['time'] = date("g:i a", floor($timestamp/1000));
+	$htmlobj['date'] = date("F j, Y", floor($photo["actual_ts"]/1000));
+	$htmlobj['time'] = date("g:i a", floor($photo["actual_ts"]/1000));
 
 	///////////////////////////// FORM HTML END /////////////////////////////
 	
