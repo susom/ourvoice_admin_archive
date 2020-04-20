@@ -189,7 +189,7 @@ $page = "allwalks";
 			<h4>Project Tags</h4>
 			<div class="innerbox">
 				<p class='notags'>There are currently no tags in this project. Add Some</p>
-				<p class='dragtags'>Drag tags onto a photo to tag, or click to filter by tag(s).</p>
+				<p class='dragtags'>Drag tags onto a photo to tag.</p>
 				<ul>
 					<?php
 					foreach($project_tags as $idx => $tag){
@@ -266,7 +266,19 @@ $page = "allwalks";
 		background:url(img/icon_tag.png) 0 0  no-repeat;
 		background-size:contain;
 	}
-	
+	.dragtag{
+		display:inline-block;
+		height:60px;
+		background:url(img/icon_tag.png) 50% 0 no-repeat;
+		background-size:28%;
+		text-align:center;
+		line-height:750%;
+	}
+	.draghover{
+		box-shadow: 0 0 15px green;
+	}
+
+
 	#choose_filter {
 		color:#666;
 		margin:0; padding:0;
@@ -604,7 +616,7 @@ $page = "allwalks";
 			return false;
 		});
 
-		//DELETE FILTER
+		//DELETE FILTER (redraws content)
 		$("#filters").on("click",".delete_filter", function(){
 			var parli = $(this).closest("li");
 			parli.remove();
@@ -617,7 +629,7 @@ $page = "allwalks";
 			loadThumbs(project_code, filter_ar);
 			return false;
 		});
-
+		//ADD A FILTER (redraws content)
 		$("#choose_filter select").change(function(){
 			var filter_tag = $(this).val();
 			if(filter_tag == 99){
@@ -708,48 +720,56 @@ $page = "allwalks";
 	      start: function(event,ui){
 	      	$(ui.helper).addClass("ui-draggable-helper");
 	      },
-	      //helper: function(event,ui){return($("<p>").text("DRAG"));}
+	      helper: function(event,ui){
+	      	var tag 	= $(this).find("b").attr("datakey");
+	      	var pcode 	= $(this).find("b").attr("datapcode");
+	      	return($("<i>").addClass("dragtag").text(tag));
+	      },
 	      drag: function(event,ui){
-
-	      //  ui.css("z-index", "-1"); //fix frontal input
+	      	// console.log("dropping");
 	      }
 	    });
 
 	    $( ".ui-widget-drop" ).droppable({
-	      drop: function( event, ui ) {
-	      	var drag = (ui.draggable[0].innerText.trim());
-	      	var drop = event.target.id;
-	      	var temp = drop.split("_");
-	      	var proj = temp[0];
-	      	var p_ref = temp[0] +"_"+ temp[1] +"_"+ temp[2] +"_"+ temp[3];
-	      	var exists = false;
-	      	var datakey = temp[(temp.length-1)];
-	         $.ajax({
-	          url:  "aggregate_post.php",
-	          type:'POST',
-	          data: { DragTag: drag, DropTag: drop, Project: proj, Key: datakey },
-	          success:function(result){
-	          	// console.log(result);
-	          	var appendloc = $("#"+drop).find("ul");
-	          	for(var i = 0 ; i < appendloc[0].childNodes.length; i++){
-	          		//console.log(appendloc[0].childNodes[i].childNodes);
-	          		if(appendloc[0].childNodes[i].childNodes[0].data == drag) //X is appended had to find a work around to get name
-	          			exists = true;
-	          	}
-	          	if(!exists){
-		            var newli 	= $("<li>").text(drag).addClass(drag);
-		            var newa 	= $("<a href='#'>").attr("data-deletetag",drag).attr("data-doc_id",p_ref).attr("data-photo_i",datakey).text("x").addClass("deletetag");
-					newli.append(newa);
-		            appendloc.prepend(newli);
-	          	}
-	          }        
-	            //THIS JUST STORES IS 
-	          },function(err){
-	          console.log("ERRROR");
-	          console.log(err);
-	          });
-	       // ui.draggable.hide(350);
-
+	    	over: function(){
+	    		$(this).find("img").addClass("draghover");
+	    	},
+	    	out: function(){
+	    		$(this).find("img").removeClass("draghover");
+	    	},
+	    	drop: function( event, ui ) {
+		      	var drag 	= (ui.draggable[0].innerText.trim());
+		      	var drop 	= event.target.id;
+		      	var temp 	= drop.split("_");
+		      	var proj 	= temp[0];
+		      	var p_ref 	= temp[0] +"_"+ temp[1] +"_"+ temp[2] +"_"+ temp[3];
+		      	var exists 	= false;
+		      	var datakey = temp[(temp.length-1)];
+		        $.ajax({
+			          url:  "aggregate_post.php",
+			          type:'POST',
+			          data: { DragTag: drag, DropTag: drop, Project: proj, Key: datakey },
+			          success:function(result){
+			          	// console.log(result);
+			          	var appendloc = $("#"+drop).find("ul");
+			          	for(var i = 0 ; i < appendloc[0].childNodes.length; i++){
+			          		//console.log(appendloc[0].childNodes[i].childNodes);
+			          		if(appendloc[0].childNodes[i].childNodes[0].data == drag) //X is appended had to find a work around to get name
+			          			exists = true;
+			          	}
+			          	if(!exists){
+				            var newli 	= $("<li>").text(drag).addClass(drag);
+				            var newa 	= $("<a href='#'>").attr("data-deletetag",drag).attr("data-doc_id",p_ref).attr("data-photo_i",datakey).text("x").addClass("deletetag");
+							newli.append(newa);
+				            appendloc.prepend(newli);
+			          	}
+			          }        
+			            //THIS JUST STORES IS 
+			          },function(err){
+			          console.log("ERRROR");
+			          console.log(err);
+		        });
+		       // ui.draggable.hide(350);
 			}
 	    }); //ui-widget-drop
 	}
