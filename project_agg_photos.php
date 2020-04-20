@@ -46,76 +46,9 @@ if(array_key_exists("ajax",$_POST)){
 	if($_POST["ajax"] == "loadThumbs"){
 		$pcode 			= $_POST["pcode"];
 		$pfilters 		= $_POST["filters"] ?? array();
-
-		// MOOD and TAG FILTERS ARE MIXED TOGETHER, SO SEPERATE THEM OUT
-		$goodbad_filter = array();
-        $good       	= array_search("good"   ,$pfilters);
-        $bad        	= array_search("bad"    ,$pfilters);
-        $neutral    	= array_search("neutral",$pfilters);
-        if(!empty($good)){
-			array_push($goodbad_filter,2);
-			unset($pfilters[$good]);
-		}
-		if(!empty($bad)){
-			array_push($goodbad_filter,1);
-			unset($pfilters[$bad]);
-		}
-		if(!empty($neutral)){
-			array_push($goodbad_filter,3);
-			unset($pfilters[$neutral]);
-		}
-		$pfilters 		= array_values($pfilters);
-
-		$response 		= loadAllProjectThumbs($pcode, $pfilters);
-		$photo_geos 	= array();
-		$code_block 	= array();
-
-		foreach($response["rows"] as $row){
-			$doc 	= $row["value"];
-			$_id 	= $row["id"];
-			$ph_i 	= $doc[0];
-			$old 	= $doc[1];
-			$photo 	= $doc[2]; 
-
-			// I DID THIS TO MYSELF OH LORD
-			$old = is_null($old) ? "" : "&_old=" . $old;
-
-			// if good bad filters is included in tags
-			if(!empty($goodbad_filter)){
-				if(!in_array($photo["goodbad"], $goodbad_filter) ){
-					continue;
-				}
-			}
-
-		    // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK
-			if(!empty($photo["geotag"])){
-				$filename 	= empty($photo["name"]) ? "photo_".$ph_i.".jpg" : $photo["name"];
-				$ph_id 		= $_id;
-		        if(array_key_exists("name",$photo)){
-		        	// new style file pointer
-		            $ph_id 	.= "_" .$filename;
-		        }
-		        $file_uri   	= "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
-		        $photo_uri  	= "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-		        $photo["geotag"]["photo_src"] 	= $photo_uri;
-		        $photo["geotag"]["goodbad"] 	= $photo["goodbad"];
-		        $photo["geotag"]["photo_id"]  	= $_id. "_" . "photo_".$ph_i;
-
-				array_push($photo_geos, $photo["geotag"]);
-			}
-
-			// Massage a block for each photo in the project
-			$code_block = array_merge($code_block, printPhotos($photo,$_id,$ph_i,$old));
-		}
-
-		usort($code_block, function($a, $b) {
-    		return $b['actual_ts'] <=> $a['actual_ts'];
-		});
-
-		// IF ASKING FOR MULTIPLE TAGS COULD HAVE REPEATS FOR MULTI TAGGED PHOTOS
-		$code_block = array_unique($code_block,SORT_REGULAR);
-
-		$reload = json_encode(array("photo_geos" => $photo_geos, "code_block" => printAllDataThumbs($code_block)));
+		$data 			= getFilteredDataGeos($pcode, $pfilters);
+		$data["code_block"] = printAllDataThumbs($data["code_block"]);
+		$reload 		= json_encode($data);
 		echo $reload;
 		exit;
 	}
@@ -161,6 +94,8 @@ $page = "allwalks";
 				<ul id="filters" class="pull-left" data-filtertags=[] data-filtermood=[]>
 					<li><b>Applied Filters :</b></li>		
 				</ul>
+
+				<!-- <a href="#" class="btn btn-sm btn-primary pull-right export_view">Export View as PDF</a> -->
 				<form  id="choose_filter" class="pull-right">
 					<label>Add Filter(s) :</label>
 					<select>
@@ -277,7 +212,11 @@ $page = "allwalks";
 	.draghover{
 		box-shadow: 0 0 15px green;
 	}
-
+	
+	.export_view{
+		margin-left:10px;
+		margin-top:-7px;
+	}
 
 	#choose_filter {
 		color:#666;
@@ -359,6 +298,7 @@ $page = "allwalks";
 		}
 
 		// GET INITIAL PAGE PROJECT PHOTOS
+		var pid 				= "<?php echo $active_pid ?>";
 		var project_code 		= "<?php echo $active_project_id; ?>";
 		var filters 			= [];
 		loadThumbs(project_code,filters);
@@ -653,6 +593,19 @@ $page = "allwalks";
 				filter_ar.push($(new_filters[i]).data("filter") );
 			}
 			loadThumbs(project_code, filter_ar);
+		});
+
+		//EXPORT VIEW AS PDF
+		$(".export_view").click(function(e){
+			var new_filters = $(".filter").toArray();
+			var filter_ar 	= [];
+			for(var i in new_filters){
+				filter_ar.push($(new_filters[i]).data("filter") );
+			}
+
+			var pdf_url = "pdf_export_filtered_view.php?pcode=" + project_code + "&pid=" + pid + "&filters=" + encodeURIComponent(JSON.stringify(filter_ar));
+			window.open(pdf_url, '_blank');
+			return false;
 		});
 	});
 	function loadThumbs(pcode, filters){

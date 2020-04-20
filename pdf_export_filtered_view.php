@@ -1,0 +1,373 @@
+<?php 
+require_once "common.php";
+require_once "vendor/tcpdf/tcpdf.php";
+
+$pcode 			= $_GET["pcode"] ?? null;
+$active_pid 	= $_GET["pid"] ?? null;
+
+if(!empty($pcode) && !empty($active_pid)){
+	$project_tags 	= $_SESSION["DT"]["project_list"][$active_pid]["tags"] ?? array();
+	
+	// THESE FILTERS COME IN MIXED WITH MOOD AND TAG
+	$filters 		= $_GET["filters"] ?? "[]";
+	$pfilters 		= json_decode($filters,1);
+
+	$pfilters 		= empty($pfilters) ? $project_tags : $pfilters;
+
+	$data_geos 		= getFilteredDataGeos($pcode, $pfilters);
+	$photo_geos 	= $data_geos["photo_geos"];
+	$photos 		= $data_geos["code_block"];
+
+	// SET UP NEW PDF Obj
+	// $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+	// pdf_setup($pdf, $pcode);
+
+	// INCLUDE FILTERED MAP AT THE TOP
+	// generateWalkMap($pdf, $photo_geos);
+
+	print_rr($photos);
+	exit;
+	// SORT THE PHOTOS INTO GROUPINGS BY TAG
+	$groupings = array();
+	foreach($pfilters as $filter_tag){
+		// MOOD IS ALREADY FILTERED OUT 
+		if($filter_tag == "good" || $filter_tag == "bad" || $filter_tag == "neutral"){
+			continue;
+		}
+
+		// GENERATE TAG TITLE PAGE
+		// generateTagPage($pdf,$pcode,$tag);
+		
+		foreach($photos as $photo){
+			if(empty($photo["tags"])){
+				continue;
+			}elseif(in_array($filter_tag,$photo["tags"])){
+				generatePhotoPage($pdf,$photo);
+			}
+		}
+	}
+
+	// $pdf->Output($pcode . '_all_data.pdf', 'I');
+}
+
+function pdf_setup($pdf, $header){ //set page contents and function initially
+	$pdf->SetHeaderData("", "", "Project Code: " . $header);
+
+	// $pdf->setFooterData("", "", "COPYRIGHT STANFORD UNIVERSITY 2017");
+	$pdf->SetTitle($header);
+	$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', 8));
+	// $pdf->setFooterData(array(0,64,0), array(0,64,128));
+
+	// set header and footer fonts
+	$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', 8));
+	$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+	// set default monospaced font
+	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+	// set margins
+	$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+	$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+	$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+	// set auto page breaks
+	$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+	// set image scale factor
+	$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+	// set some language-dependent strings (optional)
+	if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
+		require_once(dirname(__FILE__).'/lang/eng.php');
+		$pdf->setLanguageArray($l);
+	}
+	$pdf->setFontSubsetting(true);
+	$pdf->SetFont('dejavusans', '', 8, '', true);
+	$pdf->setTextShadow(array('enabled'=>true, 'depth_w'=>0.2, 'depth_h'=>0.2, 'color'=>array(196,196,196), 'opacity'=>1, 'blend_mode'=>'Normal'));
+}
+
+function generateWalkMap($pdf, $photo_geos){
+	$url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
+    $response   = doCurl($url);
+	$doc 		= json_decode(stripslashes($response),1); //wtf this breaking certain ones? 
+
+	$pdf->AddPage();
+	$pdf->StartTransform();
+	$pdf->Rotate(90,0,250);
+	$pdf->writeHTMLCell(0,0,0,250, "<small>Generated using the Stanford Discovery Tool, © Stanford University 2018</small>",0,1,0, true, '',true);
+	$pdf->StopTransform();
+
+	// $walk_date 	= date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000));
+	// $walk_time 	= date("g:ia", floor($doc["geotags"][0]["timestamp"]/1000)) . " - " . date("g:ia", floor($doc["geotags"][count($doc["geotags"]) - 1]["timestamp"]/1000));
+	// $pdf->writeHTMLCell(0,0,20,9.5, $walk_date . " " .$walk_time,0,1,0, true, '',true);
+
+	$geopoints = array();
+	foreach($photo_geos as $geotag){
+		$lat = array_key_exists("lat",$geotag) ? $geotag["lat"] : $geotag["latitude"];
+		$lng = array_key_exists("lng",$geotag) ? $geotag["lng"] : $geotag["longitude"];
+		$geopoints[] = $lat.",".$lng;
+	}
+	$markers 	= implode("|",$geopoints);
+	$urlp 		= urlencode("icon:https://ourvoice-projects.med.stanford.edu/img/icon_small_blue_dot.png"."|".$markers);
+	$parameters = "markers=$urlp";
+
+	$url 		= 'https://maps.googleapis.com/maps/api/staticmap?size=680x'.floor(533).'&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
+	$gmapsPhoto = doCurl($url);
+	$pdf->Image('@'.$gmapsPhoto,15,20,180,106);
+}
+
+function generatePhotoPage($pdf, $photo, $active_pid){
+// (
+//     [id] => IRV_281DA1B2-CC01-44FD-9CB4-74212F37455C_1_1587393986767_photo_0
+//     [tags] => Array
+//         (
+//             [0] => orange
+//             [1] => fucker
+//             [2] => retard
+//         )
+
+//     [detail_url] => photo.php?_id=IRV_281DA1B2-CC01-44FD-9CB4-74212F37455C_1_1587393986767&_file=photo_0.jpg
+//     [pic_time] => 7:46 am
+//     [date_ts] => April 20, 2020
+//     [actual_ts] => 1587393991975.6
+//     [doc_id] => IRV_281DA1B2-CC01-44FD-9CB4-74212F37455C_1_1587393986767
+//     [n] => 0
+//     [long] => -122.46957356155
+//     [lat] => 37.71296433252
+//     [nogeo] => 
+//     [photo_uri] => /cordova/discadmin/thumbnail.php?file=passthru.php%3F_id%3DIRV_281DA1B2-CC01-44FD-9CB4-74212F37455C_1_1587393986767_photo_0.jpg%26_file%3Dphoto_0.jpg&maxw=140&maxh=140
+//     [rotate] => 0
+//     [goodbad] => 1
+//     [text_comment] => 
+//     [transcriptions] => Array
+//         (
+//             [audio_0_1.wav] => Array
+//                 (
+//                     [text] => crap where's my text comment
+//                     [confidence] => 0.9218556
+//                 )
+
+//         )
+
+// )
+	/* Parameters: 
+		pdf = PDF object 
+		id = full walk ID 
+		pic = number from [0,x) where x is the picture # on the portal 
+	*/
+	$_id 		= $photo["doc_id"];
+	$_file		= "photo_".$photo["n"].".jpg";
+
+	$proj_idx 	= $active_pid;
+    $walk_geo 	= json_encode(array( array("lat" => $photo["lat"], "lng" => $photo["lng"]) );
+	$old 		= $photo["old"];
+
+	$goodbad = "";
+	if($photo["goodbad"] == 2){
+		$goodbad = "/img/icon_smile.png";	
+	}elseif($photo["goodbad"] == 1){
+		$goodbad = "/img/icon_frown.png";
+	}else{
+		// 3 = both wasnt it?
+		$goodbad = "/img/icon_none.png";
+	}
+
+	$lng 		= $photo["lng"];
+	$lat 		= $photo["lat"];
+	$rotation 	= $photo["rotate"];
+	
+	$photo_name = "photo_" . $photo["n"] . ".jpg";
+	$ph_id 		= $old ? $_id : $_id . "_" . $photo_name;
+	$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$photo_name" . $old;
+
+	////////////////GET MAIN PHOTO DEF/////////////////
+	$id 	= isset($ph_id) ? $ph_id : NULL ;
+	$file 	= isset($photo_name) ? $photo_name : NULL ;
+
+	if (empty($id) || empty($file)) {
+	    exit ("Invalid id or file");
+	}
+
+	// Do initial query to get metadata from couchdb
+	if($old == "&_old=2"){
+		$url = cfg::$couch_url . "/disc_attachments/$id";
+	}else if($old == "&_old=1"){
+		$url = cfg::$couch_url . "/".cfg::$couch_users_db."/" . $id;
+	}else{
+		$url = cfg::$couch_url . "/". cfg::$couch_attach_db."/" . $id;
+	}
+	
+	$result 	= doCurl($url);
+	$result 	= json_decode($result,true);
+	$htmlphoto 	= doCurl($url ."/" . $file); //the string representation htmlphoto is the WALK photo
+	///////////////////////////// GET MAIN PHOTO END ///////////////////////////// 
+
+	///////////////////////////// GET TRANSCRIPTIONS START /////////////////////////////		
+	$retTranscript 	= array();
+	$photo_tags 	= !empty($photo["tags"]) ? $photo["tags"] : array();
+	if(!empty($photo["transcriptions"])){
+		foreach($photo["transcriptions"] as $txn){
+			$txns = str_replace('&#34;','"', $txn["text"]);
+			array_push($retTranscript, array("type" => "audio" , "content" => $txns));
+		}
+	}
+    if(!empty($photo["text_comment"])){
+    	array_push($retTranscript, array("type" => "text" , "content" => $photo["text_comment"]));
+    }
+	///////////////////////////// GET TRANSCRIPTIONS END /////////////////////////////		
+
+	///////////////////////////// FORM HTML BEGIN /////////////////////////////
+	$htmlobj = [];
+	$htmlobj['date'] = date("F j, Y", floor($doc["geotags"][0]["timestamp"]/1000));
+	$htmlobj['time'] = date("g:i a", floor($timestamp/1000));
+
+	///////////////////////////// FORM HTML END /////////////////////////////
+	
+	///////////////////////////// GET STATIC GOOGLE MAP /////////////////////////////
+	$urlp = urlencode("|$lat,$lng");
+	$parameters = "markers=$urlp";
+
+	$imageResource = imagecreatefromstring($htmlphoto); //convert to resource before checking dimensions
+	if(imagesx($imageResource) > imagesy($imageResource)){ //check picture orientation
+		// print_rr(imagesx($imageResource));
+		// print_rr(imagesy($imageResource));
+		$landscape = True;
+		$scale = imagesx($imageResource)/imagesy($imageResource);
+	}else{
+		$landscape = False;
+		$scale = imagesy($imageResource)/imagesx($imageResource);
+	}
+
+	$url = 'https://maps.googleapis.com/maps/api/staticmap?size=400x'.floor(533).'&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
+	imagedestroy($imageResource);
+	$gmapsPhoto = doCurl($url);
+
+	generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad);
+	///////////////////////////// END STATIC GOOGLE MAP /////////////////////////////
+}
+
+function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad){
+	/* arguments: SORRY for list will clean up later.
+	pdf = export object
+	htmlobj = includes date, time for picture information
+	htmlphoto = walk photo from portal / one per page
+	retTranscript = text transcription in array format for each photo
+	photo = google maps photo of location
+	landscape = boolean T/F to determine how to scale
+	scale = float that determines scale factor
+	rotation = int of 0-3 to determine which 90 degree offset to rotate
+	goodbad = img path to the correct smile icon
+ 	*/
+	// print_rr($rotation);
+	$pdf->AddPage();
+	$pdf->StartTransform();
+	$pdf->Rotate(90,0,250);
+	$pdf->writeHTMLCell(0,0,0,250, "<small>Generated using the Stanford Discovery Tool, © Stanford University 2018</small>",0,1,0, true, '',true);
+	
+	$pdf->StopTransform();
+	$pdf->writeHTMLCell(0,0,20,9.5, $htmlobj['date'] . " " .$htmlobj['time'],0,1,0, true, '',true);
+	if($scale > 1.4) {#scale = 1.77 in this case 
+		$basePixels = 60;
+	}else{
+		$basePixels = 80;
+	}
+
+	//make sure the image is whole (broken images wont have a resource id)
+	$resource_id 	= imagecreatefromstring($htmlphoto);
+	$image_is_gd 	= get_resource_type($resource_id);
+
+	if($landscape){ //Display Landscape
+		$pdf->writeHTMLCell(0, 0, '', 140, "<h2>Why did you take this picture?</h2>", 0, 1, 0, true, '', true);
+		if(isset($retTranscript[0]) && !empty($retTranscript[0])){
+			$starting_v = 150; //arbitrary almost to sit under the photo;
+			foreach($retTranscript as $k => $trans) {
+				$type 		= $trans["type"];
+				$content 	= $trans["content"];
+                $typeicon 	= $type == "audio" ? "[<img src='./img/icon_mic'/> ".($k + 1)."]" : "[text]";
+                
+                $approx_lines   = ceil(strlen($content)/80);  //about 80 characters per line
+                $approx_vert    = 5; //approx height per line
+                $vert_offset    = $approx_lines * $approx_vert;
+
+                $pdf->writeHTMLCell(0, 0, '', $starting_v, "<h3>$typeicon : '" . $content . "'</h3>", 0, 1, 0, true, '', true);
+            	$starting_v = $starting_v + $vert_offset;
+            }
+		}else{
+			$pdf->writeHTMLCell(0, 0, '', 150, "<h3>No Transcript Available</h3>", 0, 1, 0, true, '', true);
+		}
+		
+		if($image_is_gd == "gd"){
+			if($rotation == 0){
+				$pdf->Image('@'.$htmlphoto,5, 20, $basePixels*$scale, $basePixels); //portrait
+			}else{
+				$pdf->StartTransform();
+				
+				if($rotation == 1){
+					$pdf->Rotate(270,20,20);
+					$pdf->Image('@'.$htmlphoto,20, -70, $basePixels*$scale, $basePixels); //portrait			
+				}elseif($rotation == 2){
+					$pdf->Rotate(180,20,20);
+					$pdf->Image('@'.$htmlphoto,-70, -60, $basePixels*$scale, $basePixels); //portrait	
+				}else{
+					$pdf->Rotate(90,20,20);
+					$pdf->Image('@'.$htmlphoto,-87, 15, $basePixels*$scale, $basePixels); //portrait	
+				}
+				$pdf->StopTransform();
+			}
+		}else{
+			$pdf->writeHTMLCell(0, 0, '', 150, "<h3>No Transcript Available</h3>", 0, 1, 0, true, '', true);
+		}
+	}else{ //Display Portrait
+		$pdf->writeHTMLCell(0, 0, '', 140, "<h2>Why did you take this picture?</h2>", 0, 1, 0, true, '', true);
+		if(isset($retTranscript[0]) && !empty($retTranscript[0])){
+			$starting_v = 150; //arbitrary almost to sit under the photo;
+			foreach($retTranscript as $k => $trans){
+                $type 		= $trans["type"];
+                $content 	= $trans["content"];
+                $typeicon 	= $type == "audio" ? "[audio ".($k + 1)."]" : "[text]";
+
+                $approx_lines   = ceil(strlen($content)/80);  //about 80 characters per line
+                $approx_vert    = 5; //approx height per line
+                $vert_offset    = $approx_lines * $approx_vert;
+
+                $pdf->writeHTMLCell(0, 0, '', $starting_v, "<h3>$typeicon : '".$content."'</h3>", 0, 1, 0, true, '', true);
+                $starting_v = $starting_v + $vert_offset;
+			}
+		}else{
+			$pdf->writeHTMLCell(0, 0, '', 50, "<i>Image Not Available</i>", 0, 1, 0, true, '', true);
+		}
+		
+		if($image_is_gd == "gd"){
+			if($rotation == 0){
+				$pdf->Image('@'.$htmlphoto,16, 20, $basePixels, $basePixels*$scale); //portrait
+			}else{
+				$pdf->StartTransform();
+				
+				if($rotation == 1){
+					$pdf->Rotate(270,20,20);
+					$pdf->Image('@'.$htmlphoto,20, -70, $basePixels, $basePixels*$scale); //portrait			
+				}elseif($rotation == 2){
+					$pdf->Rotate(180,20,20);
+					$pdf->Image('@'.$htmlphoto,-55, -87, $basePixels, $basePixels*$scale); //portrait	
+				}else{
+					$pdf->Rotate(90,20,20);
+					$pdf->Image('@'.$htmlphoto,-60, 5, $basePixels, $basePixels*$scale); //portrait	
+				}
+				$pdf->StopTransform();
+			}
+		}else{
+			$pdf->writeHTMLCell(0, 0, '', 50, "<i>Image Not Available</i>", 0, 1, 0, true, '', true);
+		}
+	}
+
+
+	$pdf->Image('@'.$gmapsPhoto,115,20,80,106);
+	$pdf->writeHTMLCell(0, 0, 146, 128, "Good or Bad for the Community?", 0, 1, 0, true, '', true);
+
+	if(strpos($goodbad,"icon_none")){
+		// this means both
+		$pdf->Image('./img/icon_smile.png',173,133,10,10);
+		$goodbad = "img/icon_frown.png";
+	}
+	$pdf->Image('./'.$goodbad,185,133,10,10);
+}
+?>

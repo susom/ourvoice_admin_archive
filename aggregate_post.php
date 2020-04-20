@@ -89,7 +89,7 @@ if(isset($_POST["deleteTag"])){
 		$_id 	= $item["id"];
 		$photo 	= $item["value"];
 		$ph_i 	= $photo[0];
-		$ph 	= $photo[1];
+		$ph 	= $photo[2];
 
 		$payload 	= getWalkData($_id);
 		$remove_idx = array_search($deletetag, $payload["photos"][$ph_i]["tags"]);

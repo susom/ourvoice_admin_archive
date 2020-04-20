@@ -340,6 +340,79 @@ function saveWalkData($_id, $data){
     $response   = doCurl($walk_url, json_encode($data), 'PUT');
     return json_decode($response,1);
 }
+function getFilteredDataGeos($pcode, $pfilters){
+    //RETURNS JSON ENCODED BLOCK OF FILTERED PHOTO INFO, AND PHOTO GEOs
+    // MOOD and TAG FILTERS ARE MIXED TOGETHER, SO SEPERATE THEM OUT
+    $goodbad_filter = array();
+    $good           = array_search("good"   ,$pfilters);
+    $bad            = array_search("bad"    ,$pfilters);
+    $neutral        = array_search("neutral",$pfilters);
+    if(!empty($good)){
+        array_push($goodbad_filter,2);
+        unset($pfilters[$good]);
+    }
+    if(!empty($bad)){
+        array_push($goodbad_filter,1);
+        unset($pfilters[$bad]);
+    }
+    if(!empty($neutral)){
+        array_push($goodbad_filter,3);
+        unset($pfilters[$neutral]);
+    }
+    $pfilters       = array_values($pfilters);
+
+    $response       = loadAllProjectThumbs($pcode, $pfilters);
+    $photo_geos     = array();
+    $code_block     = array();
+
+    foreach($response["rows"] as $row){
+        $doc    = $row["value"];
+        $_id    = $row["id"];
+        $ph_i   = $doc[0];
+        $old    = $doc[1];
+        $photo  = $doc[2]; 
+        $txns   = $doc[3]; 
+
+        // I DID THIS TO MYSELF OH LORD
+        $old = is_null($old) ? "" : "&_old=" . $old;
+
+        // if good bad filters is included in tags
+        if(!empty($goodbad_filter)){
+            if(!in_array($photo["goodbad"], $goodbad_filter) ){
+                continue;
+            }
+        }
+
+        // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK
+        if(!empty($photo["geotag"])){
+            $filename   = empty($photo["name"]) ? "photo_".$ph_i.".jpg" : $photo["name"];
+            $ph_id      = $_id;
+            if(array_key_exists("name",$photo)){
+                // new style file pointer
+                $ph_id  .= "_" .$filename;
+            }
+            $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+            $photo_uri      = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+            $photo["geotag"]["photo_src"]   = $photo_uri;
+            $photo["geotag"]["goodbad"]     = $photo["goodbad"];
+            $photo["geotag"]["photo_id"]    = $_id. "_" . "photo_".$ph_i;
+
+            array_push($photo_geos, $photo["geotag"]);
+        }
+
+        // Massage a block for each photo in the project
+        $code_block = array_merge($code_block, printPhotos($photo,$_id,$ph_i,$old,$txns));
+    }
+
+    usort($code_block, function($a, $b) {
+        return $b['actual_ts'] <=> $a['actual_ts'];
+    });
+
+    // IF ASKING FOR MULTIPLE TAGS COULD HAVE REPEATS FOR MULTI TAGGED PHOTOS
+    $code_block = array_unique($code_block,SORT_REGULAR);
+    $data       = array("photo_geos" => $photo_geos, "code_block" => $code_block);
+    return $data;
+}
 
 // SOMEHTML GENERATION
 function printRow($doc, $active_pid){
@@ -613,7 +686,7 @@ function printRow($doc, $active_pid){
         return $codeblock;
     }
 }
-function printPhotos($photo, $_id, $n, $old){
+function printPhotos($photo, $_id, $n, $old, $txns=null){
     $codeblock  = array();
 
     $walk_ts_sub = substr($_id,-13);
@@ -626,9 +699,10 @@ function printPhotos($photo, $_id, $n, $old){
 
     $photoblock = array();
     $nogeo      = empty($photo["geotag"]) ? "nogeo" : "";
-    $long       = isset($photo["geotag"]["lng"])        ? $photo["geotag"]["lng"] : null;
-    $lat        = isset($photo["geotag"]["lat"])        ? $photo["geotag"]["lat"]  : null;
+    $lat        = array_key_exists("lat",$photo["geotag"]) ? $photo["geotag"]["lat"] : $photo["geotag"]["latitude"];
+    $long       = array_key_exists("lng",$photo["geotag"]) ? $photo["geotag"]["lng"] : $photo["geotag"]["longitude"];
     $timestamp  = isset($photo["geotag"]["timestamp"])  ? $photo["geotag"]["timestamp"] : null;
+    $txt        = array_key_exists("text_comment",$photo) ? $photo["text_comment"] : null;
 
     $rotate     = isset($photo["rotate"]) ? $photo["rotate"] : 0;
     $filename   = array_key_exists("name",$photo) ? $photo["name"] : "photo_".$n.".jpg";
@@ -658,6 +732,10 @@ function printPhotos($photo, $_id, $n, $old){
     $photoblock["nogeo"]         = $nogeo;
     $photoblock["photo_uri"]     = $photo_uri;
     $photoblock["rotate"]        = $rotate;
+    $photoblock["goodbad"]       = $photo["goodbad"];
+    $photoblock["text_comment"]  = $txt;
+    $photoblock["old"]           = $old;
+    $photoblock["transcriptions"]  = $txns;
 
     array_push($codeblock, $photoblock);
     return $codeblock;

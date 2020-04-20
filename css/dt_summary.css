@@ -766,6 +766,7 @@ label span {
 }
 .all-photos hgroup{
 	overflow:hidden;
+	padding-top: 7px;
 }
 
 .collapse {
