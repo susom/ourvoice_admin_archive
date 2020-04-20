@@ -37,7 +37,7 @@ if(!empty($pcode) && !empty($active_pid)){
 			if(empty($photo["tags"])){
 				continue;
 			}elseif(in_array($filter_tag,$photo["tags"])){
-				generatePhotoPage($pdf,$photo, $active_pid);
+				generatePhotoPage($pdf,$photo, $active_pid, $filter_tag);
 			}
 		}
 	}
@@ -45,13 +45,16 @@ if(!empty($pcode) && !empty($active_pid)){
 	$pdf->Output($pcode . '_all_data.pdf', 'I');
 }
 
+define ('K_PATH_IMAGES', './img/');
+
 function pdf_setup($pdf, $header){ //set page contents and function initially
-	$pdf->SetHeaderData("", "", "Project : $header");
+	$pdf->SetHeaderData("logo.png", "", "Project : $header");
 	$pdf->SetTitle($header);
 
 	// set header and footer fonts
 	$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', 12));
 	$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+	
 	// set default monospaced font
 	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
@@ -74,6 +77,7 @@ function pdf_setup($pdf, $header){ //set page contents and function initially
 	
 	$pdf->setFontSubsetting(true);
 	$pdf->SetFont('dejavusans', '', 8, '', true);
+	$pdf->SetTextColor(20,20,20);
 	$pdf->setTextShadow(array('enabled'=>true, 'depth_w'=>0.2, 'depth_h'=>0.2, 'color'=>array(196,196,196), 'opacity'=>1, 'blend_mode'=>'Normal'));
 }
 
@@ -105,12 +109,13 @@ function generateTagPage($pdf, $pcode, $tag){
 	$pdf->writeHTMLCell(0, 0, '', 140, "<h1>Tag : $tag</h1>", 0, 1, 0, true, '', true);
 }
 
-function generatePhotoPage($pdf, $photo, $active_pid){
+function generatePhotoPage($pdf, $photo, $active_pid, $highlight_tag=null){
 	/* Parameters: 
 		pdf = PDF object 
 		id = full walk ID 
 		pic = number from [0,x) where x is the picture # on the portal 
 	*/
+
 	$_id 		= $photo["doc_id"];
 	$_file		= "photo_".$photo["n"].".jpg";
 
@@ -153,6 +158,7 @@ function generatePhotoPage($pdf, $photo, $active_pid){
 		$url = cfg::$couch_url . "/". cfg::$couch_attach_db."/" . $id;
 	}
 	
+	$tags 		= !empty($photo["tags"]) ? $photo["tags"] : null;
 	$result 	= doCurl($url);
 	$result 	= json_decode($result,true);
 	$htmlphoto 	= doCurl($url ."/" . $file); //the string representation htmlphoto is the WALK photo
@@ -198,11 +204,11 @@ function generatePhotoPage($pdf, $photo, $active_pid){
 	imagedestroy($imageResource);
 	$gmapsPhoto = doCurl($url);
 
-	generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad);
+	generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad, $tags, $highlight_tag);
 	///////////////////////////// END STATIC GOOGLE MAP /////////////////////////////
 }
 
-function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad){
+function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad, $tags, $highlight_tag){
 	/* arguments: SORRY for list will clean up later.
 	pdf = export object
 	htmlobj = includes date, time for picture information
@@ -232,10 +238,10 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 	$resource_id 	= imagecreatefromstring($htmlphoto);
 	$image_is_gd 	= get_resource_type($resource_id);
 
+	$starting_v = 150; //arbitrary almost to sit under the photo;
 	if($landscape){ //Display Landscape
 		$pdf->writeHTMLCell(0, 0, '', 140, "<h2>Why did you take this picture?</h2>", 0, 1, 0, true, '', true);
 		if(isset($retTranscript[0]) && !empty($retTranscript[0])){
-			$starting_v = 150; //arbitrary almost to sit under the photo;
 			foreach($retTranscript as $k => $trans) {
 				$type 		= $trans["type"];
 				$content 	= $trans["content"];
@@ -276,7 +282,6 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 	}else{ //Display Portrait
 		$pdf->writeHTMLCell(0, 0, '', 140, "<h2>Why did you take this picture?</h2>", 0, 1, 0, true, '', true);
 		if(isset($retTranscript[0]) && !empty($retTranscript[0])){
-			$starting_v = 150; //arbitrary almost to sit under the photo;
 			foreach($retTranscript as $k => $trans){
                 $type 		= $trans["type"];
                 $content 	= $trans["content"];
@@ -290,7 +295,7 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
                 $starting_v = $starting_v + $vert_offset;
 			}
 		}else{
-			$pdf->writeHTMLCell(0, 0, '', 50, "<i>Image Not Available</i>", 0, 1, 0, true, '', true);
+			$pdf->writeHTMLCell(0, 0, '', $starting_v, "<i>No Transcriptions</i>", 0, 1, 0, true, '', true);
 		}
 		
 		if($image_is_gd == "gd"){
@@ -316,6 +321,30 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 		}
 	}
 
+	// writeHTMLCell($w, $h, $x, $y, $html='', $border=0, $ln=0, $fill=0, $reseth=true, $align='', $autopadding=true)
+	
+	$starting_v += 10;
+	$pdf->writeHTMLCell(0, 0, '',$starting_v , "<h2>Tags:</h2>");
+	$approx_hor = 32; //32 width units per 10 characters "w's" in <h3>
+	$starting_v += 10;
+	$starting_w = 15;
+	if(!empty($tags)){
+		foreach($tags as $tag){
+			$taglen 	= strlen($tag);
+			$tagwid 	= round(($taglen/10) * $approx_hor);
+			$tag_html 	= "<h3><i>$tag</i></h3>";
+			if($tag == $highlight_tag){
+				$pdf->SetTextColor(255,0,0);
+			}
+			$pdf->writeHTMLCell($tagwid, 0, $starting_w, $starting_v , $tag_html,1);
+			$starting_w += $tagwid + 5;
+
+			// reset text color;
+			$pdf->SetTextColor(20,20,20);
+		}
+	}else{
+		$pdf->writeHTMLCell(0, 0, $starting_w, $starting_v, "<i>No Tags Yet</i>");
+	}
 
 	$pdf->Image('@'.$gmapsPhoto,115,20,80,106);
 	$pdf->writeHTMLCell(0, 0, 146, 128, "Good or Bad for the Community?", 0, 1, 0, true, '', true);
@@ -326,5 +355,7 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 		$goodbad = "img/icon_frown.png";
 	}
 	$pdf->Image('./'.$goodbad,185,133,10,10);
+
+
 }
 ?>
