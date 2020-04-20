@@ -66,9 +66,10 @@ h4[data-toggle="collapse"]{
 	font-weight:normal;
 }
 
-
 .allwalks #viewsumm{
-	margin:0 40px 20px;
+	margin: 0 40px 0px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
 }
 .allwalks #viewsumm:after{
 	display:none;
@@ -762,6 +763,9 @@ label span {
 	min-height:300px;
 	margin:20px 40px;
     position: relative;
+}
+.all-photos hgroup{
+	overflow:hidden;
 }
 
 .collapse {

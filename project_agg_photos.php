@@ -1,7 +1,11 @@
 <?php
 require_once "common.php";
 
-
+// CHECK IF SIGNED IN TO A PROJECT
+if(!isset($_SESSION["proj_id"]) && !isset($_SESSION["summ_pw"])){
+	$_SESSION = null;
+    header("location:summary.php");
+}
 
 // NEXT GET SPECIFIC PROJECT DATA
 $ap 				= $_SESSION["DT"];
@@ -13,54 +17,123 @@ $active_pid 		= null;
 $alerts 			= array();
 
 // AJAX HANDLING
-if(isset($_POST["proj_idx"])){
-	//POSSIBLE NEW PROJECT TAG, SAVE TO disc_projects
-	$json_response 	= array("new_project_tag" => false);
-	$proj_idx 		= $_POST["proj_idx"];
-	$project_tag 	= $_POST["tag_text"];
-	
-	$p_url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-	$p_response 	= doCurl($p_url);
-	$p_doc 	 		= json_decode(stripslashes($p_response),1);
-	$p_payload 		= $p_doc;
+if(array_key_exists("ajax",$_POST)){
+	if($_POST["ajax"] == "addProjectTag"){
+		//POSSIBLE NEW PROJECT TAG, SAVE TO disc_projects
+		$json_response 	= array("new_project_tag" => false);
+		$proj_idx 		= $_POST["proj_idx"];
+		$project_tag 	= $_POST["tag_text"];
+		
+		$p_url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+		$p_response 	= doCurl($p_url);
+		$p_doc 	 		= json_decode(stripslashes($p_response),1);
+		$p_payload 		= $p_doc;
 
-	if(!isset($p_payload["project_list"][$proj_idx]["tags"])){
-		$p_payload["project_list"][$proj_idx]["tags"] = array();
-	}
-	if(!in_array($project_tag,$p_payload["project_list"][$proj_idx]["tags"])){
-		array_push($p_payload["project_list"][$proj_idx]["tags"], $project_tag);
-		$json_response["new_project_tag"] = true;
-		$_SESSION["DT"]["project_list"][$proj_idx] = $p_payload["project_list"][$proj_idx]; 
-	}
-	doCurl($p_url, json_encode($p_payload), "PUT");
+		if(!isset($p_payload["project_list"][$proj_idx]["tags"])){
+			$p_payload["project_list"][$proj_idx]["tags"] = array();
+		}
+		if(!in_array($project_tag,$p_payload["project_list"][$proj_idx]["tags"])){
+			array_push($p_payload["project_list"][$proj_idx]["tags"], $project_tag);
+			$json_response["new_project_tag"] = true;
+			$_SESSION["DT"]["project_list"][$proj_idx] = $p_payload["project_list"][$proj_idx]; 
+		}
+		doCurl($p_url, json_encode($p_payload), "PUT");
 
-	echo json_encode($json_response);
-	exit;
+		echo json_encode($json_response);
+		exit;
+	}
+
+	if($_POST["ajax"] == "loadThumbs"){
+		$pcode 			= $_POST["pcode"];
+		$pfilters 		= $_POST["filters"] ?? array();
+
+		// MOOD and TAG FILTERS ARE MIXED TOGETHER, SO SEPERATE THEM OUT
+		$goodbad_filter = array();
+        $good       	= array_search("good"   ,$pfilters);
+        $bad        	= array_search("bad"    ,$pfilters);
+        $neutral    	= array_search("neutral",$pfilters);
+        if(!empty($good)){
+			array_push($goodbad_filter,2);
+			unset($pfilters[$good]);
+		}
+		if(!empty($bad)){
+			array_push($goodbad_filter,1);
+			unset($pfilters[$bad]);
+		}
+		if(!empty($neutral)){
+			array_push($goodbad_filter,3);
+			unset($pfilters[$neutral]);
+		}
+		$pfilters 		= array_values($pfilters);
+
+		$response 		= loadAllProjectThumbs($pcode, $pfilters);
+		$photo_geos 	= array();
+		$code_block 	= array();
+
+		foreach($response["rows"] as $row){
+			$doc 	= $row["value"];
+			$_id 	= $row["id"];
+			$ph_i 	= $doc[0];
+			$old 	= $doc[1];
+			$photo 	= $doc[2]; 
+
+			// I DID THIS TO MYSELF OH LORD
+			$old = is_null($old) ? "" : "&_old=" . $old;
+
+			// if good bad filters is included in tags
+			if(!empty($goodbad_filter)){
+				if(!in_array($photo["goodbad"], $goodbad_filter) ){
+					continue;
+				}
+			}
+
+		    // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK
+			if(!empty($photo["geotag"])){
+				$filename 	= empty($photo["name"]) ? "photo_".$ph_i.".jpg" : $photo["name"];
+				$ph_id 		= $_id;
+		        if(array_key_exists("name",$photo)){
+		        	// new style file pointer
+		            $ph_id 	.= "_" .$filename;
+		        }
+		        $file_uri   	= "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+		        $photo_uri  	= "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+		        $photo["geotag"]["photo_src"] 	= $photo_uri;
+		        $photo["geotag"]["goodbad"] 	= $photo["goodbad"];
+		        $photo["geotag"]["photo_id"]  	= $_id. "_" . "photo_".$ph_i;
+
+				array_push($photo_geos, $photo["geotag"]);
+			}
+
+			// Massage a block for each photo in the project
+			$code_block = array_merge($code_block, printPhotos($photo,$_id,$ph_i,$old));
+		}
+
+		usort($code_block, function($a, $b) {
+    		return $b['actual_ts'] <=> $a['actual_ts'];
+		});
+
+		// IF ASKING FOR MULTIPLE TAGS COULD HAVE REPEATS FOR MULTI TAGGED PHOTOS
+		$code_block = array_unique($code_block,SORT_REGULAR);
+
+		$reload = json_encode(array("photo_geos" => $photo_geos, "code_block" => printAllDataThumbs($code_block)));
+		echo $reload;
+		exit;
+	}
 }
 
-//NOW AUTO-LOGIN TO THIS PROJECT
-$_POST["proj_id"] 		= $_SESSION["proj_id"];
-$_POST["summ_pw"] 		= $_SESSION["summ_pw"];
-if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
-	$proj_id 	= trim(strtoupper($_POST["proj_id"]));
-	$summ_pw 	= $_POST["summ_pw"];
-	$found  	= false;
+$active_project_id 	= $_SESSION["proj_id"];
+$active_pid 		= $_SESSION["pid"] ?? null;
+if(is_null($active_pid)){
 	foreach($projs as $pid => $proj){
-		if($proj_id == $proj["project_id"] && ( (isset($proj["summ_pass"]) && $summ_pw == $proj["summ_pass"]) || $summ_pw == $masterblaster) ) {
-			$active_project_id = $proj_id;
-			$active_pid = $pid;
-			$found 		= true;
+		if($_SESSION["proj_id"] == $proj["project_id"] ) {
+			$active_pid = $_SESSION["pid"] = $pid;
 			break;
 		}
 	}
 }
 
-// CHECK IF SIGNED IN TO A PROJECT
-if(!isset($_SESSION["proj_id"]) && !isset($_SESSION["summ_pw"]) || !$active_project_id){
-	$_SESSION = null;
-    header("location:summary.php");
-}
-
+// PROJECT TAGS
+$project_tags = $_SESSION["DT"]["project_list"][$active_pid]["tags"] ?? array();
 $page = "allwalks";
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -80,85 +153,38 @@ $page = "allwalks";
 <div id="content">
 	<?php include("inc/gl_nav.php"); ?>
 	<div id="main_box">
-		<h1 id="viewsumm">All Walk Data for : <?php echo $active_project_id ?></h1>
-		<?php
-		// GET ALL photo data for this project
-	    $response 		= getProjectSummaryData($active_project_id,"all_photos");
-		$project_meta 	= $ap["project_list"][$active_pid];
-		$photo_geos 	= array();
-		$code_block 	= array();
-
-		foreach($response["rows"] as $row){
-			$doc = $row["value"];
-			$old = "";
-			// I DID THIS TO MYSELF
-			if(isset($doc["_attachments"])){
-		        //original attachments stored with walk sessions
-		        $old = "&_old=1";
-		    }else{
-		        if(!array_key_exists("name",$doc["photos"][0])){
-		            //all attachments in seperate data entry
-		            $old = "&_old=2";
-		        }
-		    }
-
-		    // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK
-			foreach($doc["photos"] as $n => $photo){
-				if(!empty($photo["geotag"])){
-					$filename 	= empty($photo["name"]) ? "photo_".$n.".jpg" : $photo["name"];
-					$ph_id 		= $doc["_id"];
-			        if(array_key_exists("name",$photo)){
-			            $ph_id 	.= "_" .$filename;
-			        }
-			        $file_uri   	= "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
-			        $photo_uri  	= "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-			        $photo["geotag"]["photo_src"] 	= $photo_uri;
-			        $photo["geotag"]["goodbad"] 	= $photo["goodbad"];
-			        $photo["geotag"]["photo_id"]  	= $doc["_id"]. "_" . "photo_".$n;
-					array_push($photo_geos, $photo["geotag"]);
-				}
-			}
-
-			// Massage a block for each photo in the project
-			$code_block = array_merge($code_block,printPhotos($doc));
-		}
-
-		usort($code_block, function($a, $b) {
-		    return $b['actual_ts'] <=> $a['actual_ts'];
-		});
-
-		// PROJECT TAGS
-		$project_tags = $_SESSION["DT"]["project_list"][$active_pid]["tags"] ?? array();
-		?>
+		<h1 id="viewsumm">All Walk Data for : <?php echo $active_project_id ?> <a href='#' class="showhidemap"><span>Hide</span> Map</a></h1>
 		<div id='google_map_photos' class='gmap'></div>
-
 		<div class='thumbs all-photos'>
 			<hgroup>
-				<h4 class="title">Photos</h4>
-				<ul class="filters"></ul>
+				<h4 class="photo_count pull-left">Photos <span></span></h4>
+				<ul id="filters" class="pull-left" data-filtertags=[] data-filtermood=[]>
+					<li><b>Applied Filters :</b></li>		
+				</ul>
+				<form  id="choose_filter" class="pull-right">
+					<label>Add Filter(s) :</label>
+					<select>
+						<option value=99>-- Mood or Tags --</option>
+						<optgroup label="Moods">
+							<option value="good">Good</option>
+							<option value="bad">Bad</option>
+							<option value="neutral">Neutral</option>
+						</optgroup>
+
+						<optgroup id='filter_tags' label="Project Tags">
+							<?php
+							foreach($project_tags as $idx => $tag){
+								echo "<option value='$tag'>$tag</option>";
+							}
+							?>
+						</optgroup>
+					</select>
+				</form>
 			</hgroup>
 			<div class="innerbox">
-				<ul class='collapse' id='tags'>
-					<?php
-						$perchunk	= 16; 
-						$chunk 		= ceil(count($code_block)/$perchunk);
-						$req_width 	= $chunk*1200;
-						$req_width .= "px";
-						$chunks 	= array_chunk($code_block, $perchunk);
-
-						echo "<style>#tags{ width: $req_width }</style>";
-						foreach($chunks as $blocks){
-							echo "<div>";
-							foreach($blocks as $block){
-								echo getAllDataPicLI($block);
-							}
-							echo "</div>";
-						}
-					?>
-				</ul>
+				<ul class='collapse' id='tags'></ul>
 			</div>
 		</div>
-
 		<div id='addtags' class="<?php if(!empty($project_tags)) echo "hastags" ?>">
 			<h4>Project Tags</h4>
 			<div class="innerbox">
@@ -167,7 +193,7 @@ $page = "allwalks";
 				<ul>
 					<?php
 					foreach($project_tags as $idx => $tag){
-						echo "<li class = 'ui-widget-drag'><a href='#' class='tagphoto'><b datakey = '$tag'></b>$tag</a></li>";
+						echo "<li class = 'ui-widget-drag'><a href='#' class='tagphoto'><b datakey='$tag' datapcode='$active_project_id'></b>$tag</a></li>";
 					}
 					?>
 					<li class="addnewtag nobor">
@@ -184,6 +210,73 @@ $page = "allwalks";
 </body>
 </html>
 <style>
+	#filters {
+		border-left:1px solid #999;
+		height:23px;
+		margin:0 0 0 15px;
+		padding:0 0 0 15px;
+		width:50%;
+	}
+	#filters li {
+		display:inline-block;
+		margin:0 10px 0 0;
+		padding:0; 
+		font-size:85%;
+		line-height:170%;
+		color:#747573;
+	}
+	#filters i {
+		display:inline-block;
+		width:20px;
+		height:20px;
+		font-style:normal;
+		position:relative;
+	}
+	#filters li:hover .delete_filter{
+		display:block;
+	}
+	.delete_filter {
+		position:absolute;
+		top: 0;
+	    right: -3px;
+	    width: 10px;
+	    height: 10px;
+	    background: url(img/icon_redx.png) 50% no-repeat;
+	    background-size: 115%;
+	    display:none;
+	    cursor:pointer;
+	}
+
+	i.good {
+		background:url(img/marker_green.png) 50% no-repeat;
+		background-size:contain;
+	}
+	i.bad { 
+		background:url(img/marker_red.png) 50% no-repeat;
+		background-size:contain;
+	}
+	i.neutral {
+		background:url(img/marker_orange.png) 50% no-repeat;
+		background-size:contain;
+	}
+	#filters i.filter_tag {  
+		width:auto;
+		min-width:20px;
+		padding-left:22px;
+		background:url(img/icon_tag.png) 0 0  no-repeat;
+		background-size:contain;
+	}
+	
+	#choose_filter {
+		color:#666;
+		margin:0; padding:0;
+	}
+	#choose_filter label,
+	#choose_filter select{
+		margin:0;
+		display:inline-block;
+	}
+
 	.gmap{ float:none !important; }
 	.all-photos .innerbox{
 		background: url(img/icon_doublearrow.png) 50% 96% no-repeat;
@@ -247,16 +340,21 @@ $page = "allwalks";
 </style>
 <script>
 	$(document).ready(function(){
-		// removeEmptyPhotos();
-		appendProjectCount();
+		// STORE MAP VIEW PREFERENCE FOR DURATION OF SESSION
+		if(sessionStorage.getItem("showmap_pref")){
+			$("#google_map_photos").hide();
+			$(".showhidemap span").text("Show");
+		}
 
-		window.current_preview = null;
-		bindProperties();
-		var pins = <?php echo json_encode($photo_geos) ?>;
-		var gmarkers = drawGMap(<?php echo json_encode($photo_geos) ?>, 'photos', 16);
+		// GET INITIAL PAGE PROJECT PHOTOS
+		var project_code 		= "<?php echo $active_project_id; ?>";
+		var filters 			= [];
+		loadThumbs(project_code,filters);
 
-		bindMapFunctionality(gmarkers);
-		
+		// SOME INITIAL BS
+		window.current_preview 	= null;
+		var pins 				= null;
+
 		//ROTATE
 		$(".collapse").on("click",".preview span",function(){
 			var rotate = $(this).parent().attr("rev");
@@ -303,7 +401,7 @@ $page = "allwalks";
 			return false;
 		});
 
-		//VIEW TAG
+		//VIEW PHOTO TAGS
 		$(".collapse").on("click", ".preview i", function(){
 			var doc_id 	= $(this).parent().data("doc_id");
 			var photo_i = $(this).parent().data("photo_i"); 
@@ -343,30 +441,24 @@ $page = "allwalks";
 
 		//DELETE PROJECT TAG
 		$("#addtags").on("click",".tagphoto b", function(){
-			//TODO
-			//DELETE TAG FROM BOTH disc_projects and each individual photo that is tagged with it disc_users
-			var ele = $(this).closest("li");
-			var tag = ($(this).attr("datakey"));
-			var pics = $(".ui-widget-drop");
-			var p_data = [];
-			for(var i = 0 ; i < pics.length ; i++ ){
-				p_data.push(pics[i].id)
-			}
-
+			var ele 	= $(this).closest("li");
+			var tag 	= $(this).attr("datakey");
+			var pcode 	= $(this).attr("datapcode");
+	
 			$.ajax({
 	          url:  "aggregate_post.php",
 	          type:'POST',
-	          data: { deleteTag: tag, pictures: p_data },
+	          data: { deleteTag: tag, project_code: pcode},
 	          success:function(result){
-	            //remove dom elements here
-	             $("."+tag).remove();
-	             if($("#addtags li").length < 2){
-	             	$("#addtags").removeClass("hastags");
-	             }
+				if($("#addtags li").length < 2){
+					$("#addtags").removeClass("hastags");
+				}
+             	$("#filter_tags option[value='"+tag+"']").remove();
 	          }
 	        });  
+			
+			// REMOVE immedietely, cause who cares if it succeeds, they can easily delete again next time
 			ele.remove();
-			// console.log("clicking on the trashcan");
 			return false;
 		});
 		
@@ -448,7 +540,7 @@ $page = "allwalks";
 			return false;
 		});
 
-		//ADD PROJECT TAG
+		//ADD PROJECT TAG FORM
 		$("#newtag_txt").focus(function(){
 			$(".savetag").fadeIn();
 		}).blur(function(){
@@ -461,7 +553,7 @@ $page = "allwalks";
 			if(tagtxt){
 				// add tag to project's tags and update disc_project
 				// ADD new tag to UI
-				var data = { proj_idx: proj_idx, tag_text: tagtxt };
+				var data = { proj_idx: proj_idx, tag_text: tagtxt, ajax: "addProjectTag" };
 				$.ajax({
 					method: "POST",
 					url: "project_agg_photos.php",
@@ -477,6 +569,10 @@ $page = "allwalks";
 							newli.append(newa);
 							newli.insertBefore($("#addtags li.addnewtag"));
 							
+							// ADD TAG TO FILTER DROP DOWN
+							var newoption = $("<option>").text(tagtxt).val(tagtxt);
+							$("#filter_tags").append(newoption);
+
 							if(!$("#addtags").hasClass("hastags")){
 								$("#addtags").addClass("hastags");
 							}
@@ -495,31 +591,81 @@ $page = "allwalks";
 		});
 
 		//ADD SHOWHIDE MAP VIEW
-		$("<a href='#'><span>Hide</span> Map</a>").addClass("showhidemap").click(function(){
+		$(".showhidemap").click(function(){
 			if($("#google_map_photos").is(":visible")){
 				$("#google_map_photos").slideUp("medium");
 				$(this).find("span").text("Show");
+				sessionStorage.setItem("showmap_pref",1);
 			}else{
 				$("#google_map_photos").slideDown("fast");
 				$(this).find("span").text("Hide");
+				sessionStorage.removeItem("showmap_pref");
 			}
 			return false;
-		}).appendTo($("#viewsumm"));
-	});
+		});
 
-	function addmarker(latilongi,map_id) {
-	    var marker = new google.maps.Marker({
-	        position  : latilongi,
-	        map       : window[map_id],
-	        icon      : {
-				    path        : google.maps.SymbolPath.CIRCLE,
-				    scale       : 8,
-				    fillColor   : "#ffffff",
-				    fillOpacity : 1
-				},
-	    });
-	    window[map_id].setCenter(marker.getPosition());
-	    window.current_preview = marker;
+		//DELETE FILTER
+		$("#filters").on("click",".delete_filter", function(){
+			var parli = $(this).closest("li");
+			parli.remove();
+
+			var new_filters = $(".filter").toArray();
+			var filter_ar 	= [];
+			for(var i in new_filters){
+				filter_ar.push($(new_filters[i]).data("filter") );
+			}
+			loadThumbs(project_code, filter_ar);
+			return false;
+		});
+
+		$("#choose_filter select").change(function(){
+			var filter_tag = $(this).val();
+			if(filter_tag == 99){
+				return;
+			}
+			var newli 	= $("<li>");
+			var newi 	= $("<i>");
+			var newdel 	= $("<a>").addClass("delete_filter");
+			if(["good","bad","neutral"].indexOf(filter_tag) > -1){
+				newi.addClass("filter").addClass("filter_mood").addClass(filter_tag).attr("data-filter",filter_tag);
+			}else{
+				newi.addClass("filter").addClass("filter_tag").addClass(filter_tag).attr("data-filter",filter_tag).text(filter_tag);
+			}
+			newi.append(newdel);
+			newli.append(newi);
+			$("#filters").append(newli);
+
+			var new_filters = $(".filter").toArray();
+			var filter_ar 	= [];
+			for(var i in new_filters){
+				filter_ar.push($(new_filters[i]).data("filter") );
+			}
+			loadThumbs(project_code, filter_ar);
+		});
+	});
+	function loadThumbs(pcode, filters){
+		var data = { pcode: pcode, filters: filters, ajax:"loadThumbs" };
+		$.ajax({
+			method: "POST",
+			url: "project_agg_photos.php",
+			data: data,
+			dataType : "json",
+			success: function(response){
+				// why the fuck was this container id with "tags"?
+				$("#tags").empty();
+				$("#tags").html(response.code_block);
+
+				pins 			= response.photo_geos;
+				var gmarkers 	= drawGMap(response.photo_geos, 'photos', 16);
+				bindMapFunctionality(gmarkers);
+
+				$(".photo_count span").text("("+$(".walk_photo").length+")");
+				bindProperties();
+			},
+			error: function(){
+				console.log("error");
+			}
+		});
 	}
 
 	function bindMapFunctionality(gmarkers){
@@ -551,14 +697,6 @@ $page = "allwalks";
 				this.setIcon({url:starting_icon});
 				$("#" + photo_id).removeClass("photoOn");
 	        });
-		}
-	}
-
-	function removeEmptyPhotos(){
-		var totals = $(".ui-widget-drop").find("img");
-		for(var v = 0 ; v < totals.length; v++){
-			if($(totals[v]).height() < 30)
-				$(totals[v]).parents("li").remove();
 		}
 	}
 
@@ -615,12 +753,8 @@ $page = "allwalks";
 			}
 	    }); //ui-widget-drop
 	}
-
-	function appendProjectCount(){
-		$(".title").append(" ("+$("#tags").children().length+")");
-	}
 </script>
-<?php // markPageLoadTime("Summary Page Loaded") ?>
+<?php //markPageLoadTime("Summary Page Loaded") ?>
 
 
 

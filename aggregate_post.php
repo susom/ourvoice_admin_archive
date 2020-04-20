@@ -1,8 +1,7 @@
 <?php
 require_once "common.php";
 
-if(isset($_POST["DragTag"])) //assign picture a tag
-{
+if(isset($_POST["DragTag"])) {
 	$proj_id = $_POST["Project"];
 	$drag_tag = $_POST["DragTag"];
 	$temp = explode("_", $_POST["DropTag"]);
@@ -69,40 +68,35 @@ if(isset($_POST["DragTag"])) //assign picture a tag
 }	
 
 if(isset($_POST["deleteTag"])){
-	$dt = $_POST["deleteTag"];
-	$d_pics = $_POST["pictures"];
-	$storage = getAllData();
-	//remove tag from project
-	foreach($storage["project_list"] as $key => $value){ //loop through projects
-		if(isset($value["tags"])){
-			foreach($value["tags"] as $index => $tag){ //if tag: loop through them
-				if($tag == $dt){
-				 	unset($storage["project_list"][$key]["tags"][$index]);
+	$deletetag 	= $_POST["deleteTag"];
+	$pcode 		= $_POST["project_code"];
 
-				}
-			}
-			// print_r($storage["project_list"][104]);
+	// RGET PROJECT LIST, FIND PROJECT AND DELETE TAG, RESAVE PROJECT LIST, REASSIGN SESSION VAR
+	$payload 	= getAllData();
+	foreach($payload["project_list"] as $key => $value){ //loop through projects
+		if($value["project_id"] == $pcode){
+			$remove_idx = array_search($deletetag, $value["tags"]);
+			unset($payload["project_list"][$key]["tags"][$remove_idx]);
+			$payload["project_list"][$key]["tags"] = array_values($payload["project_list"][$key]["tags"]);
 		}
 	}
-	$resp = push_data(cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db, $storage);
-	$_SESSION["DT"] = $storage;
-	//remove the tag from each individual photo
-	foreach($d_pics as $pid){ //loop through photos on page
-		$temp = explode("_", $pid);
-		$call_string = $temp[0] ."_". $temp[1] ."_". $temp[2] ."_". $temp[3];
-		$pic_number = $temp[5];
-		$url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $call_string;
-	 	$storage 		= json_decode(doCurl($url),1); //call photo information each time,
-	 	foreach ($storage["photos"][$pic_number]["tags"] as $key => $value) {
-	 		if($value == $dt)
-	 		{
-	 			unset($storage["photos"][$pic_number]["tags"][$key]);
-	 		}
-	 	}
-	 	$resp = push_data(cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $call_string, $storage);
+	$result 	= push_data(cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db, $payload);
+	$_SESSION["DT"] = $payload;
 
+	// GET ALL PHOTOS WITH TAG, REMOVE TAG FROM PHOTO, RESAVE
+	$photos_w_tag 	= filterProjectByTags($pcode, array($deletetag));
+	foreach($photos_w_tag["rows"] as $item){
+		$_id 	= $item["id"];
+		$photo 	= $item["value"];
+		$ph_i 	= $photo[0];
+		$ph 	= $photo[1];
 
-	}//foreach
+		$payload 	= getWalkData($_id);
+		$remove_idx = array_search($deletetag, $payload["photos"][$ph_i]["tags"]);
+		unset($payload["photos"][$ph_i]["tags"][$remove_idx]);
+		$payload["photos"][$ph_i]["tags"] = array_values($payload["photos"][$ph_i]["tags"]);
+		$result 	= saveWalkData($_id, $payload);
+	};
 }
 
 ?>

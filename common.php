@@ -119,6 +119,229 @@ function getFullName($data, $abv){
     }
 }
 
+function parseTime($data, $storage){
+    if($data["rows"] == null)
+        return false;
+    else
+        for($i = 0 ; $i < count($data["rows"]) ; $i++){         
+            $temp = explode('_', $data["rows"][$i]["id"]); // index zero is the 4 char PID key, index 3 is the time
+            $simp_PID = $temp[0];
+            $ts = $temp[3];
+            
+            if(array_key_exists($simp_PID, $storage)) //if ID is already inside
+                array_push($storage[$simp_PID], $ts);
+            else
+                $storage[$simp_PID] = array($ts);
+        }
+        ksort($storage);
+        return $storage;
+}
+
+function fetchKeys($abvList, $ALL_PROJ_DATA){
+    $keyList = array();
+    if(isset($abvList)){
+        foreach($abvList as $entry)
+            foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects)
+                if($projects["project_id"] == $entry)
+                    array_push($keyList, $key);
+
+
+    }
+    return $keyList;
+}
+
+function push_data($url, $data){
+    $response   = doCurl($url, json_encode($data), 'PUT');
+    return json_decode($response,1);
+}
+
+function parseProjectInfo($ALL_PROJ_DATA){
+    $return_array = array();
+    foreach ($ALL_PROJ_DATA["project_list"] as $project) {
+        array_push($return_array,$project);
+    }
+    return $return_array;
+}
+
+function cacheThumb($ph_id,$thumb_uri){
+    $localthumb = "img/thumbs/$ph_id";
+    
+    // IT MIGHT EXIST BUT IT MIGHT BE GARBAGE
+    if( (file_exists($localthumb) && filesize($localthumb) < 1200) ){
+        unlink($localthumb);
+    }
+
+    $haslocal = false;
+    // NOW IT DOESNT EXIST SO CREATE IT
+    if(!file_exists($localthumb)){
+        $ch         = curl_init($thumb_uri);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+        $raw        = curl_exec($ch);
+        // $errornum   = curl_errno($ch);
+        // $info       = curl_getinfo($ch);
+        curl_close($ch);
+        // print_rr($errornum);
+        // print_rr($info);
+        $fp         = fopen($localthumb,'x');
+        fwrite($fp, $raw);
+        fclose($fp);
+        $haslocal = true;
+    }
+
+    // IT MIGHT HAVE CREATED GARBAGE SHOULD I TEST AGAIN?
+    
+    return $haslocal ? $ph_id : ""; 
+}
+
+function getThumb($ph_id, $thumb_uri, $fileurl){
+    $localthumb = "img/thumbs/$ph_id";
+    // IF IT EXISTS AND ISNT GARBAGE
+    if( file_exists($localthumb) ){
+        if( filesize($localthumb) < 1000 ){
+            //DELETE IT , ITS GARBAGE
+            unlink($localthumb);
+        }else{
+            //ITS GOOD , USE IT
+            $thumb_uri = $localthumb;
+        }
+    }
+
+    return $thumb_uri;
+}
+
+function scanBackUpFolder($backup_dir){
+    $backedup   = array();
+    $couch_url  = "http://".cfg::$couch_user.":".cfg::$couch_pw."@couchdb:5984";
+
+    if ($folder = opendir($backup_dir)) {
+        while (false !== ($file = readdir($folder))) {
+            if($file == "." || $file == ".."){
+                continue;
+            }
+
+            if (!is_dir("$backup_dir/".$file)) {
+                if(strpos($file,".json") > 0){
+                    $split          = explode(".",$file);
+                    $backup         = $split[0];
+                    $walk_json      = $couch_url . "/".cfg::$couch_users_db."/" . $backup ;
+                    $check_walk_id  = get_head($walk_json);
+                    if(array_key_exists("ETag", $check_walk_id[0])){
+                         // DOESNT EXIST SO NEED TO UPLOAD TO disc_users
+                         continue;
+                    }
+                }else{
+                    $attach_file    = $couch_url . "/".cfg::$couch_attach_db."/" . $file ;
+                    $check_attach   = get_head($attach_file);
+                    if(array_key_exists("ETag", $check_attach[0])){
+                         // DOESNT EXIST SO NEED TO UPLOAD TO disc_users
+                         // re upload no matter what. 11/12/19
+                         //continue;
+                    }
+                }
+                $backedup[] = $file;
+            }
+        }
+        closedir($folder);
+    }
+
+    return $backedup;
+}
+
+function prepareAttachment($key,$rev,$parent_dir,$attach_url){
+    $file_i         = str_replace($parent_dir."_","",$key);   
+    $splitdot       = explode(".",$file_i);
+    $c_type         = $splitdot[1];
+
+    $couchurl       = $attach_url."/".$key."/".$file_i."?rev=".$rev;
+    $filepath       = 'temp/'.$parent_dir.'/'.$key;
+    $content_type   = strpos($key,"photo") ? 'image/jpeg' : $c_type;
+    $response       = uploadAttach($couchurl, $filepath, $content_type);
+    return $response;
+}
+
+function uploadAttach($couchurl, $filepath, $content_type){
+    $data       = file_get_contents($filepath);
+    $ch         = curl_init();
+
+    $username   = cfg::$couch_user;
+    $password   = cfg::$couch_pw;
+    $options    = array(
+        CURLOPT_URL             => $couchurl,
+        CURLOPT_USERPWD         => $username . ":" . $password,
+        CURLOPT_SSL_VERIFYPEER  => FALSE,
+        CURLOPT_RETURNTRANSFER  => true,
+        CURLOPT_CUSTOMREQUEST   => 'PUT',
+        CURLOPT_HTTPHEADER      => array (
+            "Content-Type: ".$content_type,
+        ),
+        CURLOPT_POST            => true,
+        CURLOPT_POSTFIELDS      => $data
+    );
+    curl_setopt_array($ch, $options);
+    $info       = curl_getinfo($ch);
+    // print_rr($info);
+    $err        = curl_errno($ch);
+    // print_rr($err);
+    $response   = curl_exec($ch);
+    curl_close($ch);
+    return $response;
+}
+
+function postData($url, $data){ //MUST INCLUDE Key attached to URL, 
+    $data_string = json_encode($data); 
+    $ch = curl_init($url);         
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");   
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);   
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);  
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
+       'Content-Type: application/json',                                                                                
+       'Content-Length: ' . strlen($data_string))                                                                       
+    );    
+    $resp = curl_exec($ch);
+    $c = 0;
+    curl_close($ch);
+    $resp = json_decode($resp,1);
+    return $resp;
+}
+
+function deleteDirectory($dir) {
+    system('rm -rf ' . escapeshellarg($dir), $retval);
+    return $retval == 0; // UNIX commands return zero on success
+}
+
+function updateDoc($url,$keyvalues){
+    // TO PROTECT FROM DOC CONFLICTS (LITERALLY THE WORST POSSIBLE THInG) ,
+    // WE FIRST GET A FRESH COPY OF THE DOC, ALTER IT, THEN SAVE IT RIGHT AWAY
+    $response 	= doCurl($url);
+    $payload    = json_decode($response,1);
+    foreach($keyvalues as $k => $v){
+        $payload[$k] = $v;
+    }
+
+    $response 	= doCurl($url, json_encode($payload), 'PUT');
+    return json_decode($response,1);
+}
+
+function getAllData(){
+    $url            = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+    $response       = doCurl($url);
+    return json_decode($response,1);
+}
+function getWalkData($_id){
+    $walk_url   = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
+    $response   = doCurl($walk_url);
+    $doc        = json_decode(stripslashes($response),1);
+    return $doc;
+}
+function saveWalkData($_id, $data){
+    $walk_url   = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
+    $response   = doCurl($walk_url, json_encode($data), 'PUT');
+    return json_decode($response,1);
+}
+
+// SOMEHTML GENERATION
 function printRow($doc, $active_pid){
     global $project_meta, $ap;
 
@@ -390,24 +613,10 @@ function printRow($doc, $active_pid){
         return $codeblock;
     }
 }
-
-function printPhotos($doc){
+function printPhotos($photo, $_id, $n, $old){
     $codeblock  = array();
-    $_id        = $doc["_id"];
 
-    //fuck
-    $old        = "";
-    if(isset($doc["_attachments"])){
-        //original attachments stored with walk sessions
-        $old = "&_old=1";
-    }else{
-        if(!array_key_exists("name",$doc["photos"][0])){
-            //all attachments in seperate data entry
-            $old = "&_old=2";
-        }
-    }
-
-    $walk_ts_sub = substr($doc["_id"],-13);
+    $walk_ts_sub = substr($_id,-13);
     $date_ts     = date("F j, Y", floor($walk_ts_sub/1000)) ;
     $host        = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : "";
     $url_path    = $host .dirname($_SERVER['PHP_SELF']); 
@@ -415,53 +624,44 @@ function printPhotos($doc){
         $url_path .= '/';               
     }
 
-    foreach($doc["photos"] as $n => $photo){
-        $photoblock = array();
+    $photoblock = array();
+    $nogeo      = empty($photo["geotag"]) ? "nogeo" : "";
+    $long       = isset($photo["geotag"]["lng"])        ? $photo["geotag"]["lng"] : null;
+    $lat        = isset($photo["geotag"]["lat"])        ? $photo["geotag"]["lat"]  : null;
+    $timestamp  = isset($photo["geotag"]["timestamp"])  ? $photo["geotag"]["timestamp"] : null;
 
-        if(is_null($photo)){
-            continue;
-        }
-
-        $nogeo      = empty($photo["geotag"]) ? "nogeo" : "";
-        $long       = isset($photo["geotag"]["lng"])        ? $photo["geotag"]["lng"] : null;
-        $lat        = isset($photo["geotag"]["lat"])        ? $photo["geotag"]["lat"]  : null;
-        $timestamp  = isset($photo["geotag"]["timestamp"])  ? $photo["geotag"]["timestamp"] : null;
-
-        $rotate     = isset($photo["rotate"]) ? $photo["rotate"] : 0;
-        $filename   = array_key_exists("name",$photo) ? $photo["name"] : "photo_".$n.".jpg";
-        $ph_id      = $_id;
-
-        if(array_key_exists("name",$photo)){
-            $ph_id .= "_" .$filename;
-        }
-
-        $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
-        $thumb_uri      = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-        $photo_uri      = getThumb($ph_id,$thumb_uri,$file_uri);
-
-        $detail_url     = "photo.php?_id=".$doc["_id"]."&_file=$filename";
-        $pic_time       = date("g:i a", floor($timestamp/1000));
-        $photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
-        
-        $photoblock["id"]            = $_id."_photo_".$n;
-        $photoblock["tags"]          = $photo_tags;
-        $photoblock["detail_url"]    = $detail_url;
-        $photoblock["pic_time"]      = $pic_time;
-        $photoblock["date_ts"]       = $date_ts;
-        $photoblock["actual_ts"]     = $timestamp;
-        $photoblock["doc_id"]        = $_id;
-        $photoblock["n"]             = $n;
-        $photoblock["long"]          = $long;
-        $photoblock["lat"]           = $lat;
-        $photoblock["nogeo"]         = $nogeo;
-        $photoblock["photo_uri"]     = $photo_uri;
-        $photoblock["rotate"]        = $rotate;
-
-        array_push($codeblock, $photoblock);
+    $rotate     = isset($photo["rotate"]) ? $photo["rotate"] : 0;
+    $filename   = array_key_exists("name",$photo) ? $photo["name"] : "photo_".$n.".jpg";
+    $ph_id      = $_id;
+    if(array_key_exists("name",$photo)){
+        $ph_id .= "_" .$filename;
     }
+
+    $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+    $thumb_uri      = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+    $photo_uri      = getThumb($ph_id,$thumb_uri,$file_uri);
+
+    $detail_url     = "photo.php?_id=".$_id."&_file=$filename";
+    $pic_time       = date("g:i a", floor($timestamp/1000));
+    $photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
+    
+    $photoblock["id"]            = $_id."_photo_".$n;
+    $photoblock["tags"]          = $photo_tags;
+    $photoblock["detail_url"]    = $detail_url;
+    $photoblock["pic_time"]      = $pic_time;
+    $photoblock["date_ts"]       = $date_ts;
+    $photoblock["actual_ts"]     = $timestamp;
+    $photoblock["doc_id"]        = $_id;
+    $photoblock["n"]             = $n;
+    $photoblock["long"]          = $long;
+    $photoblock["lat"]           = $lat;
+    $photoblock["nogeo"]         = $nogeo;
+    $photoblock["photo_uri"]     = $photo_uri;
+    $photoblock["rotate"]        = $rotate;
+
+    array_push($codeblock, $photoblock);
     return $codeblock;
 }
-
 function getAllDataPicLI($photo_o){
     $html_li  = "";
     $html_li .= "<li id='".$photo_o["id"]."' class = 'ui-widget-drop'><figure>";
@@ -475,25 +675,6 @@ function getAllDataPicLI($photo_o){
     $html_li .= "</figure></li>";
     return $html_li;
 }
-
-function parseTime($data, $storage){
-    if($data["rows"] == null)
-        return false;
-    else
-        for($i = 0 ; $i < count($data["rows"]) ; $i++){         
-            $temp = explode('_', $data["rows"][$i]["id"]); // index zero is the 4 char PID key, index 3 is the time
-            $simp_PID = $temp[0];
-            $ts = $temp[3];
-            
-            if(array_key_exists($simp_PID, $storage)) //if ID is already inside
-                array_push($storage[$simp_PID], $ts);
-            else
-                $storage[$simp_PID] = array($ts);
-        }
-        ksort($storage);
-        return $storage;
-}
-
 function populateRecent($ALL_PROJ_DATA, $stor, $listid){ //stor should be 
     $checkWeek = strtotime("-4 Week");
     $abvStorage = array();
@@ -522,198 +703,21 @@ function populateRecent($ALL_PROJ_DATA, $stor, $listid){ //stor should be
     }//for
     $_SESSION["rec_times"] = $cache_data;
 }
+function printAllDataThumbs($photo_block ,$container_w=1200 ,$perchunk=16){
+    $chunk      = ceil(count($photo_block)/$perchunk);
+    $req_width  = $chunk*$container_w;
+    $req_width .= "px";
+    $chunks     = array_chunk($photo_block, $perchunk);
 
-function fetchKeys($abvList, $ALL_PROJ_DATA){
-    $keyList = array();
-    if(isset($abvList)){
-        foreach($abvList as $entry)
-            foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects)
-                if($projects["project_id"] == $entry)
-                    array_push($keyList, $key);
-
-
-    }
-    return $keyList;
-}
-
-function getAllData(){
-    $url            = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-    $response       = doCurl($url);
-    return json_decode($response,1);
-}
-
-function push_data($url, $data){
-    $response   = doCurl($url, json_encode($data), 'PUT');
-    return json_decode($response,1);
-}
-
-function parseProjectInfo($ALL_PROJ_DATA){
-    $return_array = array();
-    foreach ($ALL_PROJ_DATA["project_list"] as $project) {
-        array_push($return_array,$project);
-    }
-    return $return_array;
-}
-
-function cacheThumb($ph_id,$thumb_uri){
-    $localthumb = "img/thumbs/$ph_id";
-    
-    // IT MIGHT EXIST BUT IT MIGHT BE GARBAGE
-    if( (file_exists($localthumb) && filesize($localthumb) < 1200) ){
-        unlink($localthumb);
-    }
-
-    $haslocal = false;
-    // NOW IT DOESNT EXIST SO CREATE IT
-    if(!file_exists($localthumb)){
-        $ch         = curl_init($thumb_uri);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-        $raw        = curl_exec($ch);
-        // $errornum   = curl_errno($ch);
-        // $info       = curl_getinfo($ch);
-        curl_close($ch);
-        // print_rr($errornum);
-        // print_rr($info);
-        $fp         = fopen($localthumb,'x');
-        fwrite($fp, $raw);
-        fclose($fp);
-        $haslocal = true;
-    }
-
-    // IT MIGHT HAVE CREATED GARBAGE SHOULD I TEST AGAIN?
-    
-    return $haslocal ? $ph_id : ""; 
-}
-
-function getThumb($ph_id, $thumb_uri, $fileurl){
-    $localthumb = "img/thumbs/$ph_id";
-    // IF IT EXISTS AND ISNT GARBAGE
-    if( file_exists($localthumb) ){
-        if( filesize($localthumb) < 1000 ){
-            //DELETE IT , ITS GARBAGE
-            unlink($localthumb);
-        }else{
-            //ITS GOOD , USE IT
-            $thumb_uri = $localthumb;
+    $html = "<style>#tags{ width: $req_width }</style>";
+    foreach($chunks as $blocks){
+        $html .= "<div>";
+        foreach($blocks as $block){
+            $html .= getAllDataPicLI($block);
         }
+        $html .= "</div>";
     }
-
-    return $thumb_uri;
-}
-
-function scanBackUpFolder($backup_dir){
-    $backedup   = array();
-    $couch_url  = "http://".cfg::$couch_user.":".cfg::$couch_pw."@couchdb:5984";
-
-    if ($folder = opendir($backup_dir)) {
-        while (false !== ($file = readdir($folder))) {
-            if($file == "." || $file == ".."){
-                continue;
-            }
-
-            if (!is_dir("$backup_dir/".$file)) {
-                if(strpos($file,".json") > 0){
-                    $split          = explode(".",$file);
-                    $backup         = $split[0];
-                    $walk_json      = $couch_url . "/".cfg::$couch_users_db."/" . $backup ;
-                    $check_walk_id  = get_head($walk_json);
-                    if(array_key_exists("ETag", $check_walk_id[0])){
-                         // DOESNT EXIST SO NEED TO UPLOAD TO disc_users
-                         continue;
-                    }
-                }else{
-                    $attach_file    = $couch_url . "/".cfg::$couch_attach_db."/" . $file ;
-                    $check_attach   = get_head($attach_file);
-                    if(array_key_exists("ETag", $check_attach[0])){
-                         // DOESNT EXIST SO NEED TO UPLOAD TO disc_users
-                         // re upload no matter what. 11/12/19
-                         //continue;
-                    }
-                }
-                $backedup[] = $file;
-            }
-        }
-        closedir($folder);
-    }
-
-    return $backedup;
-}
-
-function prepareAttachment($key,$rev,$parent_dir,$attach_url){
-    $file_i         = str_replace($parent_dir."_","",$key);   
-    $splitdot       = explode(".",$file_i);
-    $c_type         = $splitdot[1];
-
-    $couchurl       = $attach_url."/".$key."/".$file_i."?rev=".$rev;
-    $filepath       = 'temp/'.$parent_dir.'/'.$key;
-    $content_type   = strpos($key,"photo") ? 'image/jpeg' : $c_type;
-    $response       = uploadAttach($couchurl, $filepath, $content_type);
-    return $response;
-}
-
-function uploadAttach($couchurl, $filepath, $content_type){
-    $data       = file_get_contents($filepath);
-    $ch         = curl_init();
-
-    $username   = cfg::$couch_user;
-    $password   = cfg::$couch_pw;
-    $options    = array(
-        CURLOPT_URL             => $couchurl,
-        CURLOPT_USERPWD         => $username . ":" . $password,
-        CURLOPT_SSL_VERIFYPEER  => FALSE,
-        CURLOPT_RETURNTRANSFER  => true,
-        CURLOPT_CUSTOMREQUEST   => 'PUT',
-        CURLOPT_HTTPHEADER      => array (
-            "Content-Type: ".$content_type,
-        ),
-        CURLOPT_POST            => true,
-        CURLOPT_POSTFIELDS      => $data
-    );
-    curl_setopt_array($ch, $options);
-    $info       = curl_getinfo($ch);
-    // print_rr($info);
-    $err        = curl_errno($ch);
-    // print_rr($err);
-    $response   = curl_exec($ch);
-    curl_close($ch);
-    return $response;
-}
-
-function postData($url, $data){ //MUST INCLUDE Key attached to URL, 
-    $data_string = json_encode($data); 
-    $ch = curl_init($url);         
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");   
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);   
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);  
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
-       'Content-Type: application/json',                                                                                
-       'Content-Length: ' . strlen($data_string))                                                                       
-    );    
-    $resp = curl_exec($ch);
-    $c = 0;
-    curl_close($ch);
-    $resp = json_decode($resp,1);
-    return $resp;
-}
-
-function deleteDirectory($dir) {
-    system('rm -rf ' . escapeshellarg($dir), $retval);
-    return $retval == 0; // UNIX commands return zero on success
-}
-
-function updateDoc($url,$keyvalues){
-    // TO PROTECT FROM DOC CONFLICTS (LITERALLY THE WORST POSSIBLE THInG) ,
-    // WE FIRST GET A FRESH COPY OF THE DOC, ALTER IT, THEN SAVE IT RIGHT AWAY
-    $response 	= doCurl($url);
-    $payload    = json_decode($response,1);
-    foreach($keyvalues as $k => $v){
-        $payload[$k] = $v;
-    }
-
-    $response 	= doCurl($url, json_encode($payload), 'PUT');
-    return json_decode($response,1);
+    return $html;
 }
 
 //DESIGN DOCUMENT CALLS
@@ -729,6 +733,55 @@ function getProjectSummaryData($project_code, $view="walk", $dd="project"){
     $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
     $response   = doCurl($couch_url);
     return json_decode($response,1);
+}
+
+function filterProjectByTags($project_code, $tags=array(), $view="by_tags", $dd="project"){
+    // WILL RETURN PHOTO OBJECT(s) FOR TAG , can be duplicates if passing in multiple tags
+    // $project_code   = "AAAA";
+    // returns [i,photo]
+    
+    if(empty($tags) || !is_array($tags)){
+        return false;
+    }
+
+    $temp = array();
+    foreach($tags as $tag){
+        $temp[] = '["'.$project_code.'","'.$tag.'"]';
+    }
+    $keys       = '['.implode(',', $temp).']';
+    $qs         = http_build_query(array( 'keys' => $keys ,  'descending' => 'true'));
+    $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
+    $response   = doCurl($couch_url);
+    return json_decode($response,1);
+}
+
+function filterProjectByGoodBad($project_code, $goodbad=array(), $view="by_goodbad", $dd="project"){
+    // WILL RETURN PHOTO OBJECT(s) FOR 1 bad, 2 good, 3 nuetral
+    // $project_code   = "AAAA";
+    // returns [i,photo]
+    if(empty($goodbad) || !is_array($goodbad)){
+        return false;
+    }
+
+    $temp = array();
+    foreach($goodbad as $mood){
+        $temp[] = '["'.$project_code.'",'.$mood.']';
+    }
+    $keys       = '['.implode(',', $temp).']';
+    $qs         = http_build_query(array( 'keys' => $keys ,  'descending' => 'true'));
+    $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
+    $response   = doCurl($couch_url);
+    return json_decode($response,1);
+}
+
+function loadAllProjectThumbs($project_code, $tags=array()){
+    if(empty($tags)){
+        // NO FILTERS GET ALL PHOTO DATA FOR A PROJECT
+        return getProjectSummaryData($project_code, "all_photos");
+    }else{
+        // REGULAR TAGS
+        return filterProjectByTags($project_code, $tags);
+    }
 }
 
 function checkAttachmentsExist($_ids, $view="ids", $dd="checkExisting"){
@@ -758,6 +811,8 @@ function getAggTranscriptions($pid, $view="filter", $dd="transcriptions"){
     $response   = doCurl($couch_url);
     return json_decode($response,1);
 }
+
+
 
 // PHOTO PAGE FUNCTIONS (AUDIO TRANSCRIPTION, FACE PIXELATION)
 function getFullUrl($partialUrl){
@@ -1197,6 +1252,9 @@ function scanForBackUpFiles($backedup, $backup_dir){
     }
 }
 
+
+
+// GOOGLE FIRESTORE AND CLOUD STORAGE 
 /**
  * Upload a file.
  *
