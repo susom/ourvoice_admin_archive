@@ -527,6 +527,7 @@ $page = "allwalks";
 		var hoverTimeOutConstant;
 		$("#tags").on("mouseover",".walk_photo", function(e){
 			var _this = $(this);
+			console.log("hey fuck you");
   			hoverTimeOutConstant = setTimeout(function() {
 				_this.addClass("cursor_spinny");
 				var full_img_src 		= _this.data("fullimgsrc");
@@ -538,7 +539,8 @@ $page = "allwalks";
 				var perc_height 		= .9;
 				var scale_y 			= Math.round( $(window).height() * perc_height );
 				var img_top 			= Math.round( $(window).height() - scale_y ) / 2 ;
-
+				img_top 				= $(window).scrollTop() + img_top;
+				
 				var img_left = distance_from_left+150;
 				var preview_img = $("<img>").attr("src",full_img_src).attr("id","hover_zoom").attr("rev",rotation);
 				
@@ -561,7 +563,8 @@ $page = "allwalks";
 						diff_hw = img_h - img_w; //this is fucked
 					}
 					img_top = (Math.round( $(window).height() - ori_h ) / 2 ) - diff_hw;
-					
+					img_top = $(window).scrollTop() + img_top;
+
 					// WILL ALWAYS SHOW IMAGE TO THE LEFT UNLESS ITS GONNA GO OFF THE RIGHT EDGE, UGH
 					if( (img_left + ori_w) > right_edge ){
 						// REDO it from the left  of the thumb
