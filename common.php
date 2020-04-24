@@ -699,9 +699,17 @@ function printPhotos($photo, $_id, $n, $old, $txns=null){
     }
 
     $photoblock = array();
-    $nogeo      = empty($photo["geotag"]) ? "nogeo" : "";
-    $lat        = array_key_exists("lat",$photo["geotag"]) ? $photo["geotag"]["lat"] : $photo["geotag"]["latitude"];
-    $long       = array_key_exists("lng",$photo["geotag"]) ? $photo["geotag"]["lng"] : $photo["geotag"]["longitude"];
+    $nogeo      = "";
+    $lat        = null;
+    $long       = null;
+    if(empty($photo["geotag"])){
+        $nogeo  = "nogeo";
+    }else{
+        $lat    = array_key_exists("lat",$photo["geotag"]) ? $photo["geotag"]["lat"] : $photo["geotag"]["latitude"];
+        $long   = array_key_exists("lng",$photo["geotag"]) ? $photo["geotag"]["lng"] : $photo["geotag"]["longitude"];
+    }
+    
+
     $timestamp  = isset($photo["geotag"]["timestamp"])  ? $photo["geotag"]["timestamp"] : null;
     $txt        = array_key_exists("text_comment",$photo) ? $photo["text_comment"] : null;
 

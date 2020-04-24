@@ -107,7 +107,7 @@ if( ( (!empty($_SESSION["proj_id"]) OR !empty($_GET["id"]))
 
 ){
     // FIRST CHECK IF LOGIN IS IN SESSION, _GET FOR DIRECT LINKING TO SUMMARY PAGE FROM INDEX PAGES
-    $_POST["proj_id"]       =  !empty($_GET["id"]) ? $_GET["id"] : $_SESSION["proj_id"];
+    $_POST["proj_id"]       = !empty($_GET["id"]) ? $_GET["id"] : $_SESSION["proj_id"];
     $_POST["summ_pw"]       = isset($_SESSION["summ_pw"]) ? $_SESSION["summ_pw"] : $_SESSION["discpw"];
     $_POST["authorized"]    = $_SESSION["authorized"];
 }
@@ -124,8 +124,8 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 		$found  	= false;
 		foreach($projs as $pid => $proj){
 			if(isset($proj["project_id"]) && $proj_id == $proj["project_id"] && ( (isset($proj["summ_pass"]) && $summ_pw == $proj["summ_pass"]) || $summ_pw == $masterblaster) ) {
-				$active_project_id = $proj_id;
-				$active_pid = $pid;
+				$active_project_id      = $proj_id;
+				$_SESSION["pid"]    = $active_pid = $pid;
 				$found 		= true;
 				break;
 			}
