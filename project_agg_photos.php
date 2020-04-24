@@ -582,6 +582,9 @@ $page = "allwalks";
 			clearTimeout(hoverTimeOutConstant);
 			$("#hover_zoom").remove();
 		});
+		$("body").on("click","#hover_zoom", function(){
+			$(this).remove();
+		});
 
 		//ADD PROJECT TAG FORM
 		$("#newtag_txt").focus(function(){
