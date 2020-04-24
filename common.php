@@ -798,8 +798,8 @@ function printAllDataThumbs($photo_block ,$container_w=1200 ,$perchunk=16){
     $chunks     = array_chunk($photo_block, $perchunk);
 
     $html = "<style>#tags{ width: $req_width }</style>";
-    foreach($chunks as $blocks){
-        $html .= "<div>";
+    foreach($chunks as $n=> $blocks){
+        $html .= "<div class='preview_chunk' data-perchunk='$perchunk' data-chunk='$n'>";
         foreach($blocks as $block){
             $html .= getAllDataPicLI($block);
         }

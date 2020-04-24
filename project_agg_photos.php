@@ -325,6 +325,7 @@ $page = "allwalks";
 		var filters 			= [];
 		loadThumbs(project_code,filters);
 
+
 		// SOME INITIAL BS
 		window.current_preview 	= null;
 		var pins 				= null;
@@ -527,7 +528,6 @@ $page = "allwalks";
 		var hoverTimeOutConstant;
 		$("#tags").on("mouseover",".walk_photo", function(e){
 			var _this = $(this);
-			console.log("hey fuck you");
   			hoverTimeOutConstant = setTimeout(function() {
 				_this.addClass("cursor_spinny");
 				var full_img_src 		= _this.data("fullimgsrc");
@@ -737,6 +737,10 @@ $page = "allwalks";
 
 				$(".photo_count span").text("("+$(".walk_photo").length+")");
 				bindProperties();
+
+				var n 			= 0;  //know there should be at least 1 starting with 0
+				var preloads 	= []; // for storing the preloads
+				recursivePreload(n, preloads);
 			},
 			error: function(response){
 				console.log("error",response);
@@ -835,6 +839,35 @@ $page = "allwalks";
 		       // ui.draggable.hide(350);
 			}
 	    }); //ui-widget-drop
+	}
+	function recursivePreload(n, preloads){
+		// will use parralell preloading for all fullsize images in a chunk
+		// but do the chunks in sequence by recursion
+		var _chunk 		= $("#tags .preview_chunk[data-chunk='"+n+"']");
+		var perchunk 	= _chunk.data("perchunk");
+		if(_chunk.length){
+			// console.log("Preloading chunk of ", perchunk , " in preview chunk ", n);
+			_chunk.find(".walk_photo").each(function(ndx){
+				var _photo 		= $(this);
+				var chunkn 		= n*perchunk;
+				var x 			= ndx+chunkn;
+				var imgsrc 		= _photo.data("fullimgsrc");
+				preloads[x] 	= new Image();
+				preloads[x].src = imgsrc;
+				// preloads[x].onload 	= () => console.log("loaded",$(this).attr("data-fullimgsrc"));
+				// preloads[x].onerror 	= err => console.error(err, "fuck not loaded ", $(this).attr("data-fullimgsrc"));
+
+				preloads[x].decode().then(() => {
+					console.log("img preloaded ", imgsrc ); 
+				}).catch((encodingError) => {
+					// Do something with the error.
+					console.log(encodingError, imgsrc );
+				});
+			});
+
+			n++;
+			recursivePreload(n, preloads);
+		}
 	}
 </script>
 <?php //markPageLoadTime("Summary Page Loaded") ?>
