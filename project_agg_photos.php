@@ -127,11 +127,6 @@ $page = "allwalks";
 				<p class='notags'>There are currently no tags in this project. Add Some</p>
 				<p class='dragtags'>Drag tags onto a photo to tag.</p>
 				<ul>
-					<?php
-					foreach($project_tags as $idx => $tag){
-						echo "<li class = 'ui-widget-drag'><a href='#' class='tagphoto'><b datakey='$tag' datapcode='$active_project_id'></b>$tag</a></li>";
-					}
-					?>
 					<li class="addnewtag nobor">
 						<form id="addnewtag" name="newtag" method='post'>
 							<input type='text' id='newtag_txt' data-proj_idx='<?php echo $active_pid; ?>' placeholder="+ Add a New Tag"> <input class="savetag" type='submit' value='Save'/>
@@ -299,8 +294,11 @@ $page = "allwalks";
 		}
 
 		// GET INITIAL PAGE PROJECT PHOTOS
-		var pid 				= "<?php echo $active_pid ?>";
-		var project_code 		= "<?php echo $active_project_id; ?>";
+		var pid 				= '<?php echo $active_pid ?>';
+		var project_code 		= '<?php echo $active_project_id; ?>';
+		var project_tags 		= JSON.parse('<?php echo json_encode($project_tags); ?>');
+		loadTags(project_tags, pid);
+
 		var filters 			= [];
 		loadThumbs(project_code,filters);
 
@@ -514,17 +512,8 @@ $page = "allwalks";
 					dataType : "JSON",
 					success: function(response){
 						if(response["new_project_tag"]){
-							//ADD TAG to modal tags list
-							var newli 	= $("<li>").addClass("ui-widget-drag");
-							var newb 	= $("<b>").attr("datakey",tagtxt);
-							var newa 	= $("<a href='#'>").text(tagtxt).addClass("tagphoto");
-							newa.append(newb);
-							newli.append(newa);
-							newli.insertBefore($("#addtags li.addnewtag"));
-							
-							// ADD TAG TO FILTER DROP DOWN
-							var newoption = $("<option>").text(tagtxt).val(tagtxt);
-							$("#filter_tags").append(newoption);
+							project_tags.push(tagtxt);
+							loadTags(project_tags, pid);
 
 							if(!$("#addtags").hasClass("hastags")){
 								$("#addtags").addClass("hastags");
@@ -610,6 +599,30 @@ $page = "allwalks";
 			return false;
 		});
 	});
+	function loadTags(project_tags, active_project_id){
+		// SORT alphabetically reverse
+		project_tags.sort(function SortByName(b,a){
+		  var aName = a.toLowerCase();
+		  var bName = b.toLowerCase(); 
+		  return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
+		});
+		
+		// REMOVE ERRTHING
+		$("#addtags .ui-widget-drag").remove();
+
+		// REBUILD ERRTHING
+		for(var i in project_tags){
+			var tag 	= project_tags[i];
+			var newli 	= $("<li>").addClass("ui-widget-drag");
+			var newa 	= $("<a href='#'>").addClass("tagphoto").text(tag);
+			var newb 	= $("<b>").attr("datakey",tag).attr("datapcode",active_project_id);
+
+			newa.prepend(newb);
+			newli.append(newa);
+
+			$("#addtags ul").prepend(newli);
+		}
+	}
 	function loadThumbs(pcode, filters){
 		var data = { pcode: pcode, filters: filters, ajax:"loadThumbs" };
 		$.ajax({
@@ -630,12 +643,11 @@ $page = "allwalks";
 				$(".photo_count span").text("("+$(".walk_photo").length+")");
 				bindProperties();
 			},
-			error: function(){
-				console.log("error");
+			error: function(response){
+				console.log("error",response);
 			}
 		});
 	}
-
 	function bindMapFunctionality(gmarkers){
 		$.each(gmarkers, function(){
 			var el 				= this;
@@ -667,7 +679,6 @@ $page = "allwalks";
 	        });
 		}
 	}
-
 	function bindProperties(){
 	    $( ".ui-widget-drag").draggable({
 	      cursor: "move",
