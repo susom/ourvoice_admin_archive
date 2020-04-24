@@ -141,6 +141,29 @@ $page = "allwalks";
 </body>
 </html>
 <style>
+	.cursor_spinny {
+		cursor:progress;
+	}
+	#hover_zoom{ 
+		position:absolute; 
+		width:auto; height:auto; 
+		max-width:800px; max-height:800px; 
+		z-index:999; 
+		box-shadow:0 0 3px #333; 
+		opacity:1;
+	}
+	#hover_zoom[rev='1'] {
+		transform: rotate(90deg) translateX(-100%);
+		transform-origin: left bottom;
+	}
+	#hover_zoom[rev='2'] {
+		transform: rotate(180deg) translate(0,0);
+	}
+	#hover_zoom[rev='3'] {
+		transform: rotate(-90deg) translateY(100%);
+		transform-origin: bottom left;
+	}
+
 	#filters {
 		border-left:1px solid #999;
 		height:23px;
@@ -366,6 +389,14 @@ $page = "allwalks";
 			return false;
 		});
 
+		// START COVERFLOW
+		$(".collapse").on("click", ".preview em", function(){
+			var full_img_src = $(this).data("fullimgsrc");
+
+			console.log("going full hog here, coverflow and hover");
+			return false;
+		});
+
 		//DELETE PHOTO TAG
 		$("#tags").on("click",".deletetag",function(){
 			// get the tag index/photo index
@@ -489,6 +520,64 @@ $page = "allwalks";
 
 			}
 			return false;
+		});
+
+		// hover preview
+		var hover_zoom_delay = 380;
+		var hoverTimeOutConstant;
+		$("#tags").on("mouseover",".walk_photo", function(e){
+			var _this = $(this);
+  			hoverTimeOutConstant = setTimeout(function() {
+				_this.addClass("cursor_spinny");
+				var full_img_src 		= _this.data("fullimgsrc");
+				var distance_from_top 	= _this.offset().top - $(window).scrollTop();
+				var distance_from_left 	= _this.offset().left;
+				var right_edge			= $(window).width() - 50;
+				var rotation 			= _this.attr("rev");
+
+				var perc_height 		= .9;
+				var scale_y 			= Math.round( $(window).height() * perc_height );
+				var img_top 			= Math.round( $(window).height() - scale_y ) / 2 ;
+
+				var img_left = distance_from_left+150;
+				var preview_img = $("<img>").attr("src",full_img_src).attr("id","hover_zoom").attr("rev",rotation);
+				
+				// append body , set initial img_top and img_left need to adjust later for horizontal 
+				$("body").append(preview_img);
+				preview_img.css({ top: img_top, left: img_left, height: scale_y });
+
+				// ONCE IMAGE IS LOADED , CAN GET THE WIDTH AND HEIGHT AND CAN FINE TUNE POSITIONING
+				preview_img.on("load",function(){
+					_this.removeClass("cursor_spinny");
+					var img_w 	= $(this).width();
+					var img_h 	= $(this).height(); 
+					var ori_w 	= img_w;
+					var ori_h 	= img_h;
+					var diff_hw = 0; //when doin css rotations and translations, need to account for orientation change and rotation pivot top, right, bottom, left
+
+					if(rotation == 1 || rotation == 3){
+						ori_w 	= img_h;
+						ori_h 	= img_w;
+						diff_hw = img_h - img_w; //this is fucked
+					}
+					img_top = (Math.round( $(window).height() - ori_h ) / 2 ) - diff_hw;
+					
+					// WILL ALWAYS SHOW IMAGE TO THE LEFT UNLESS ITS GONNA GO OFF THE RIGHT EDGE, UGH
+					if( (img_left + ori_w) > right_edge ){
+						// REDO it from the left  of the thumb
+						img_left = distance_from_left - (ori_w + 10);
+					} 
+
+					$(this).css({ top: img_top, left: img_left });
+				});
+				
+			}, hover_zoom_delay);
+
+			e.preventDefault();
+		});
+		$("#tags").on("mouseout",".walk_photo", function(e){
+			clearTimeout(hoverTimeOutConstant);
+			$("#hover_zoom").remove();
 		});
 
 		//ADD PROJECT TAG FORM

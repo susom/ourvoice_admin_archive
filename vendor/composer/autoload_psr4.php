@@ -10,6 +10,7 @@ return array(
     'Symfony\\Polyfill\\Ctype\\' => array($vendorDir . '/symfony/polyfill-ctype'),
     'Symfony\\Component\\Process\\' => array($vendorDir . '/symfony/process'),
     'Symfony\\Component\\Filesystem\\' => array($vendorDir . '/symfony/filesystem'),
+    'Svg\\' => array($vendorDir . '/phenx/php-svg-lib/src/Svg'),
     'Ramsey\\Uuid\\' => array($vendorDir . '/ramsey/uuid/src'),
     'Psr\\Log\\' => array($vendorDir . '/psr/log/Psr/Log'),
     'Psr\\Http\\Message\\' => array($vendorDir . '/psr/http-message/src'),
@@ -96,7 +97,9 @@ return array(
     'GPBMetadata\\Google\\Cloud\\Asset\\' => array($vendorDir . '/google/cloud/Asset/metadata'),
     'GPBMetadata\\Google\\Bigtable\\' => array($vendorDir . '/google/cloud/Bigtable/metadata'),
     'GPBMetadata\\Google\\' => array($vendorDir . '/google/cloud/CommonProtos/metadata', $vendorDir . '/google/common-protos/metadata', $vendorDir . '/google/gax/metadata'),
+    'FontLib\\' => array($vendorDir . '/phenx/php-font-lib/src/FontLib'),
     'Firebase\\JWT\\' => array($vendorDir . '/firebase/php-jwt/src'),
+    'Dompdf\\' => array($vendorDir . '/dompdf/dompdf/src'),
     'Doctrine\\Common\\Cache\\' => array($vendorDir . '/doctrine/cache/lib/Doctrine/Common/Cache'),
     '' => array($vendorDir . '/google/grpc-gcp/src/generated'),
 );

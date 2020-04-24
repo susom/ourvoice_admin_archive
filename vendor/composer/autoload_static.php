@@ -26,6 +26,7 @@ class ComposerStaticInit43b1f27605365100075f163c43490ce5
             'Symfony\\Polyfill\\Ctype\\' => 23,
             'Symfony\\Component\\Process\\' => 26,
             'Symfony\\Component\\Filesystem\\' => 29,
+            'Svg\\' => 4,
         ),
         'R' => 
         array (
@@ -127,10 +128,12 @@ class ComposerStaticInit43b1f27605365100075f163c43490ce5
         ),
         'F' => 
         array (
+            'FontLib\\' => 8,
             'Firebase\\JWT\\' => 13,
         ),
         'D' => 
         array (
+            'Dompdf\\' => 7,
             'Doctrine\\Common\\Cache\\' => 22,
         ),
     );
@@ -151,6 +154,10 @@ class ComposerStaticInit43b1f27605365100075f163c43490ce5
         'Symfony\\Component\\Filesystem\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/filesystem',
+        ),
+        'Svg\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phenx/php-svg-lib/src/Svg',
         ),
         'Ramsey\\Uuid\\' => 
         array (
@@ -499,9 +506,17 @@ class ComposerStaticInit43b1f27605365100075f163c43490ce5
             1 => __DIR__ . '/..' . '/google/common-protos/metadata',
             2 => __DIR__ . '/..' . '/google/gax/metadata',
         ),
+        'FontLib\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phenx/php-font-lib/src/FontLib',
+        ),
         'Firebase\\JWT\\' => 
         array (
             0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
+        ),
+        'Dompdf\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/dompdf/dompdf/src',
         ),
         'Doctrine\\Common\\Cache\\' => 
         array (
@@ -514,6 +529,13 @@ class ComposerStaticInit43b1f27605365100075f163c43490ce5
     );
 
     public static $prefixesPsr0 = array (
+        'S' => 
+        array (
+            'Sabberworm\\CSS' => 
+            array (
+                0 => __DIR__ . '/..' . '/sabberworm/php-css-parser/lib',
+            ),
+        ),
         'R' => 
         array (
             'Rize\\UriTemplate' => 
@@ -563,8 +585,14 @@ class ComposerStaticInit43b1f27605365100075f163c43490ce5
     );
 
     public static $classMap = array (
+        'Dompdf\\Cpdf' => __DIR__ . '/..' . '/dompdf/dompdf/lib/Cpdf.php',
         'Google_Service_Exception' => __DIR__ . '/..' . '/google/apiclient/src/Google/Service/Exception.php',
         'Google_Service_Resource' => __DIR__ . '/..' . '/google/apiclient/src/Google/Service/Resource.php',
+        'HTML5_Data' => __DIR__ . '/..' . '/dompdf/dompdf/lib/html5lib/Data.php',
+        'HTML5_InputStream' => __DIR__ . '/..' . '/dompdf/dompdf/lib/html5lib/InputStream.php',
+        'HTML5_Parser' => __DIR__ . '/..' . '/dompdf/dompdf/lib/html5lib/Parser.php',
+        'HTML5_Tokenizer' => __DIR__ . '/..' . '/dompdf/dompdf/lib/html5lib/Tokenizer.php',
+        'HTML5_TreeBuilder' => __DIR__ . '/..' . '/dompdf/dompdf/lib/html5lib/TreeBuilder.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

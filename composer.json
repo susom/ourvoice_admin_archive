@@ -5,6 +5,7 @@
         "google/cloud": "^0.113.0",
         "grpc/grpc": "^v1.1.0",
         "google/protobuf": "^v3.3.0",
-        "google/apiclient": "^2.0"
+        "google/apiclient": "^2.0",
+        "dompdf/dompdf": "^0.8.5"
     }
 }

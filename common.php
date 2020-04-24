@@ -744,6 +744,7 @@ function printPhotos($photo, $_id, $n, $old, $txns=null){
     $photoblock["goodbad"]       = $photo["goodbad"];
     $photoblock["text_comment"]  = $txt;
     $photoblock["old"]           = $old;
+    $photoblock["full_img"]      = $file_uri;
     $photoblock["transcriptions"]  = $txns;
 
     array_push($codeblock, $photoblock);
@@ -757,7 +758,7 @@ function getAllDataPicLI($photo_o){
         $html_li .= "<li class = '$tag'>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='".$photo_o["doc_id"]."' data-photo_i='".$photo_o["n"]."'>x</a></li>";
     }
     $html_li .= "</ul>";
-    $html_li .= "<a href='".$photo_o["detail_url"]."' target='_blank'  data-time='".$photo_o["pic_time"]."' data-date='".$photo_o["date_ts"]."' data-photo_i=".$photo_o["n"]." data-doc_id='".$photo_o["doc_id"]."' data-long='".$photo_o["long"]."' data-lat='".$photo_o["lat"]."' class='preview rotate walk_photo ".$photo_o["nogeo"]."' data-imgsrc='".$photo_o["photo_uri"]."' rev='".$photo_o["rotate"]."'><img src='".$photo_o["photo_uri"]."' /><span></span><b></b><i></i></a>";
+    $html_li .= "<a href='".$photo_o["detail_url"]."' target='_blank' class='preview rotate walk_photo ".$photo_o["nogeo"]."' data-photo_i=".$photo_o["n"]." data-doc_id='".$photo_o["doc_id"]."' data-fullimgsrc='".$photo_o["full_img"]."' data-imgsrc='".$photo_o["photo_uri"]."' rev='".$photo_o["rotate"]."'><img src='".$photo_o["photo_uri"]."' /><span></span><b></b><i></i><em></em></a>";
     
     $html_li .= "</figure></li>";
     return $html_li;
