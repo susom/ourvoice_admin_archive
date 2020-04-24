@@ -523,7 +523,7 @@ $page = "allwalks";
 		});
 
 		// hover preview
-		var hover_zoom_delay = 380;
+		var hover_zoom_delay = 500;
 		var hoverTimeOutConstant;
 		$("#tags").on("mouseover",".walk_photo", function(e){
 			var _this = $(this);
@@ -801,6 +801,7 @@ $page = "allwalks";
 		      	var p_ref 	= temp[0] +"_"+ temp[1] +"_"+ temp[2] +"_"+ temp[3];
 		      	var exists 	= false;
 		      	var datakey = temp[(temp.length-1)];
+		      	$(this).find("img").removeClass("draghover");
 		        $.ajax({
 			          url:  "aggregate_post.php",
 			          type:'POST',
