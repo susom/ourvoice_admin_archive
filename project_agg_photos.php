@@ -141,54 +141,101 @@ $page = "allwalks";
 </body>
 </html>
 <style>
-	.cursor_spinny {
-		cursor:progress;
+	#coverflow {
+		position:absolute;
+		left:0;
+		width:100%; height:600px;
+		z-index:1000;
+		box-shadow:0 0 3px #000;
+		background:#333;
 	}
-	#hover_zoom{ 
-		position:absolute; 
-		width:auto; height:auto; 
-		max-width:800px; max-height:800px; 
-		z-index:999; 
-		box-shadow:0 0 3px #333; 
+	#coverflow .cf_close {
+		position:absolute;
+		top:10px; right:10px;
+		width:40px; height:40px; 
+		display:inline-block;
+		background:url(img/icon_redx.png) 50% no-repeat;
+		background-size:contain;
+		cursor:pointer;
+		opacity:.5;
+		transition: opacity .2s ease-in-out;
+		z-index:1002;
+	}
+	#coverflow .cf_close:hover{
 		opacity:1;
 	}
-	#hover_zoom[rev='1'] {
+	#coverflow .cf_nav{
+		position:absolute;
+		left:20px; top:50%;
+		margin-top:-50px;
+		cursor:pointer;
+		height:100px;
+		width:100px; 
+		background:url(img/icon_cf_nav.png) 50%  no-repeat;
+		background-size:contain;
+		opacity:.2;
+		transition: opacity .25s ease-in-out;
+		z-index:1002;
+	}
+	#coverflow .cf_nav:hover{
+		opacity:1;
+	}
+	#coverflow .cf_next{
+		left:initial;
+		right:20px;
+		transform:rotate(180deg);
+	}
+
+	#coverflow figure{
+		margin:0 auto;
+		display:block;
+		width:100%;
+		text-align:center;
+		position:relative;
+	}
+	#coverflow figcaption{
+		position:absolute; 
+		width:100%;
+		bottom:0; 
+	}
+	#coverflow figcaption li{
+		display: inline-block;
+	    border: 1px solid #000;
+	    background: #f7f7f7 url(img/icon_tag.png) 0 50% no-repeat;
+	    background-size: contain;
+	    border-radius: 3px;
+	    padding: 0 10px 0 22px;
+	    margin-right: 10px;
+	    box-shadow: 0 0 3px #000;
+	    position: relative;
+	}
+
+	#coverflow figure img{
+		max-width:600px;
+		max-height:600px;
+	}
+	#coverflow figure img[rev='1'] {
 		transform: rotate(90deg) translateX(-100%);
 		transform-origin: left bottom;
 	}
-	#hover_zoom[rev='2'] {
+	#coverflow figure img[rev='2'] {
 		transform: rotate(180deg) translate(0,0);
 	}
-	#hover_zoom[rev='3'] {
+	#coverflow figure img[rev='3'] {
 		transform: rotate(-90deg) translateY(100%);
 		transform-origin: bottom left;
 	}
+	#coverflow .deletetag{
+		top: -2px; right: -2px;
 
-	#filters {
-		border-left:1px solid #999;
-		height:23px;
-		margin:0 0 0 15px;
-		padding:0 0 0 15px;
-		width:50%;
 	}
-	#filters li {
-		display:inline-block;
-		margin:0 10px 0 0;
-		padding:0; 
-		font-size:85%;
-		line-height:170%;
-		color:#747573;
+	
+
+	.cursor_spinny {
+		cursor:progress;
 	}
-	#filters i {
-		display:inline-block;
-		width:20px;
-		height:20px;
-		font-style:normal;
-		position:relative;
-	}
-	#filters li:hover .delete_filter{
-		display:block;
-	}
+
+	
 	.delete_filter {
 		position:absolute;
 		top: 0;
@@ -226,9 +273,10 @@ $page = "allwalks";
 		background:url(img/icon_tag.png) 50% 0 no-repeat;
 		background-size:28%;
 		text-align:center;
-		line-height:750%;
+		padding-top:40px;
 	}
-	.draghover{
+	li.draghover img,
+	img.draghover{
 		box-shadow: 0 0 15px green;
 	}
 	
@@ -287,7 +335,7 @@ $page = "allwalks";
 		float:left;
 	}
 	#tags .deletetag{
-	    top: 1px;
+	    top: 2px;
 	    right: 2px;
 	}
 	.ui-widget-drag{
@@ -298,6 +346,7 @@ $page = "allwalks";
 	}
 	.ui-draggable-helper{
 	    width:150px;
+	    z-index:1001;
 	}
 
 	li[class*="hide_"]{
@@ -320,7 +369,7 @@ $page = "allwalks";
 		var pid 				= '<?php echo $active_pid ?>';
 		var project_code 		= '<?php echo $active_project_id; ?>';
 		var project_tags 		= JSON.parse('<?php echo json_encode($project_tags); ?>');
-		loadTags(project_tags, pid);
+		loadTags(project_tags, project_code);
 
 		var filters 			= [];
 		loadThumbs(project_code,filters);
@@ -391,21 +440,99 @@ $page = "allwalks";
 		});
 
 		// START COVERFLOW
-		$(".collapse").on("click", ".preview em", function(){
-			var full_img_src = $(this).data("fullimgsrc");
+		$(".collapse").on("click", ".preview em", function(e){
+			loadCoverFlow($(this).closest("li"));
+			e.preventDefault();
+		});
+		$("body").on("click","#coverflow .cf_close", function(e){
+			$("#coverflow").fadeOut("medium",function(){
+				$(this).remove();
+			});
 
-			console.log("going full hog here, coverflow and hover");
-			return false;
+			// renable thumb drops
+			$(".all-photos .ui-widget-drop").droppable({
+				disabled: false
+			});
+			e.preventDefault();
+		});
+		$("body").on("click","#coverflow .cf_prev", function(e){
+			var prev 	= $("#coverflow figure").data("prev");
+			var lid 	= "#"+prev;
+			if($(lid).length){
+				setCoverFlowSlide($(lid));
+			}
+			e.preventDefault();
+		});
+		$("body").on("click","#coverflow .cf_next", function(e){
+			var next = $("#coverflow figure").data("next");
+			var lid 	= "#"+next;
+			if($(lid).length){
+				setCoverFlowSlide($(lid));
+			}
+			e.preventDefault();
 		});
 
+		// HANDLE DRAG AND DROPPING OF TAGS ONTO PHOTOS
+		$( "body" ).on("dropover", ".ui-widget-drop", function( event, ui ) {
+	    		$(this).addClass("draghover");
+		} );
+		$( "body" ).on("dropout", ".ui-widget-drop", function( event, ui ) {
+	    		$(this).removeClass("draghover");
+		} );
+		$( "body" ).on("drop", ".ui-widget-drop", function( event, ui ) {
+				$(this).removeClass("draghover"); 
+
+	    		var drag 	= (ui.draggable[0].innerText.trim());
+		      	
+		      	var drop 	= $(event.target).data("phid");
+		      	var temp 	= drop.split("_");
+		      	var proj 	= temp[0];
+		      	var p_ref 	= temp[0] +"_"+ temp[1] +"_"+ temp[2] +"_"+ temp[3];
+
+		      	var exists 	= false;
+		      	var datakey = temp[(temp.length-1)];
+		        $.ajax({
+			          url:  "aggregate_post.php",
+			          type:'POST',
+			          data: { DragTag: drag, DropTag: drop, Project: proj, Key: datakey },
+			          success:function(result){
+			          	var appendloc 	= $("#"+drop).find("ul"); //for thumbs
+			          	var cf_tags 	= $("#coverflow ul"); //for cover flow
+
+			          	for(var i = 0 ; i < appendloc[0].childNodes.length; i++){
+			          		//console.log(appendloc[0].childNodes[i].childNodes);
+			          		if(appendloc[0].childNodes[i].childNodes[0].data == drag) //X is appended had to find a work around to get name
+			          			exists = true;
+			          	}
+			          	if(!exists){
+				            var newli 	= $("<li>").text(drag).addClass(drag);
+				            var newa 	= $("<a href='#'>").attr("data-deletetag",drag).attr("data-doc_id",p_ref).attr("data-photo_i",datakey).text("x").addClass("deletetag");
+							newli.append(newa);
+				            appendloc.prepend(newli);
+
+				            if(cf_tags.length){
+				            	cf_tags.prepend(newli.clone());
+				            }
+			          	}
+			          }        
+			            //THIS JUST STORES IS 
+			          },function(err){
+			          console.log("ERRROR");
+			          console.log(err);
+		        });
+		} );
+
 		//DELETE PHOTO TAG
-		$("#tags").on("click",".deletetag",function(){
+		$("body").on("click",".deletetag",function(){
 			// get the tag index/photo index
 			var doc_id 	= $(this).data("doc_id");
 			var photo_i = $(this).data("photo_i");
 			var tagtxt 	= $(this).data("deletetag");
 			// console.log(tagtxt);
 			var _this 	= $(this);
+
+			_this.addClass("cursor_spinny");
+			_this.parent().addClass("cursor_spinny");
 			$.ajax({
 				method: "POST",
 				url: "photo.php",
@@ -418,6 +545,12 @@ $page = "allwalks";
 				_this.parent("li").fadeOut("medium",function(){
 					_this.parent("li").remove();
 				});
+
+				// need to delete from the other one too
+				var lid 	= "#" + doc_id + "_photo_" + photo_i;
+				tagtxt 		= tagtxt.split(" ").join(".");
+				var litag 	= "li."+tagtxt;
+				$(lid).find(litag).remove();			
 			});
 			return false;
 		});
@@ -427,7 +560,9 @@ $page = "allwalks";
 			var ele 	= $(this).closest("li");
 			var tag 	= $(this).attr("datakey");
 			var pcode 	= $(this).attr("datapcode");
-	
+			
+			ele.addClass("cursor_spinny");
+			$(this).addClass("cursor_spinny");
 			$.ajax({
 	          url:  "aggregate_post.php",
 	          type:'POST',
@@ -436,90 +571,18 @@ $page = "allwalks";
 				if($("#addtags li").length < 2){
 					$("#addtags").removeClass("hastags");
 				}
+
+				// remove from UI: tag list, dropdown and tagged photos
+             	ele.fadeOut("medium",function(){ $(this).remove(); });
              	$("#filter_tags option[value='"+tag+"']").remove();
-	          }
+
+             	var tagged = "li."+ tag.split(" ").join(".");
+             	$(tagged).remove();
+	          },
+	          error:function(){
+	          	
+	          }	
 	        });  
-			
-			// REMOVE immedietely, cause who cares if it succeeds, they can easily delete again next time
-			ele.remove();
-			return false;
-		});
-		
-		//ADD PHOTO TAG
-		$("#addtags").on("click",".tagphoto", function(){
-			var tag = $(this).children("b").attr("datakey");
-			var photo_selection = $("."+tag);
-			var all_photos = $(".ui-widget-drop");
-			var selected_tag = false;
-			var pic_ids = [];
-			var marker_tags = [];
-			var retpins = [];
-			$(".tagphoto").each(function(index){ //for the tag boxes on the left side of the screen
-				if($(this).children("b").attr("datakey") == tag){
-					if($(this).parent().hasClass("selected")){
-						$(this).parent().removeClass("selected");
-						selected_tag = false;
-					}else{
-						$(this).parent().addClass("selected");
-						selected_tag = true;
-					}
-				}
-			});
-			if(selected_tag){ //if trying to hide pictures
-				photo_selection.each(function(index){
-					$(this).closest(".ui-widget-drop").addClass(tag+"_photo"); //add display to each of the matching tag pics
-					pic_ids.push($(this).closest(".ui-widget-drop").attr("id"));
-				});
-
-				all_photos.each(function(index){ //add hide to each of the others
-					if($(this).hasClass(tag+"_photo"))
-						console.log("nothing");
-					else
-						$(this).addClass("hide_"+tag);
-				});
-				//trying to hide the map markers now
-				$.each(pins, function(){ //loop through all map markers defined globally onReady()
-					for(var i = 0 ; i < pic_ids.length ; i++) //loop through all currently visible pictures on page
-						if($(this).attr("photo_id") == pic_ids[i]){ //identify which markers to add tags to
-							retpins.push(this);
-							// console.log("adding to retpins");
-							// console.log($(this).attr("photo_id") + "--- " + pic_ids[i]);
-						}
-				});
-				// console.log(retpins);
-				var gmarkers = drawGMap(retpins, 'photos', 14);
-				bindMapFunctionality(gmarkers);
-			
-			}else{	//trying to reveal pictures
-
-				// console.log(pic_ids);
-				all_photos.each(function(index){
-					if($(this).hasClass(tag+"_photo")){
-						$(this).removeClass(tag+"_photo");
-					}
-					
-					if($(this).hasClass("hide_"+tag)){
-						$(this).removeClass("hide_"+tag);
-					}
-				});
-
-				$(".ui-widget-drop").not("[class*=hide]").each(function(index){ //find all pics that are displayed
-					pic_ids.push($(this).closest(".ui-widget-drop").attr("id")); //store for comparison loop
-				});
-				// console.log(pic_ids);
-				
-		
-				$.each(pins, function(){ //loop through all map markers defined globally onReady()
-					for(var i = 0 ; i < pic_ids.length ; i++) //loop through all previously stored visible pictures
-						if($(this).attr("photo_id") == pic_ids[i]){ //identify which markers to redraw
-							retpins.push(this);
-						}
-				});
-				// console.log(retpins);
-				var gmarkers = drawGMap(retpins, 'photos', 14);
-				bindMapFunctionality(gmarkers);
-
-			}
 			return false;
 		});
 
@@ -608,13 +671,13 @@ $page = "allwalks";
 					success: function(response){
 						if(response["new_project_tag"]){
 							project_tags.push(tagtxt);
-							loadTags(project_tags, pid);
+							loadTags(project_tags, project_code);
 
 							if(!$("#addtags").hasClass("hastags")){
 								$("#addtags").addClass("hastags");
 							}
 							
-							bindProperties();
+							bindTagDragProperties();
 						}
 					},
 					error: function(){
@@ -694,7 +757,7 @@ $page = "allwalks";
 			return false;
 		});
 	});
-	function loadTags(project_tags, active_project_id){
+	function loadTags(project_tags, project_code){
 		// SORT alphabetically reverse
 		project_tags.sort(function SortByName(b,a){
 		  var aName = a.toLowerCase();
@@ -709,8 +772,8 @@ $page = "allwalks";
 		for(var i in project_tags){
 			var tag 	= project_tags[i];
 			var newli 	= $("<li>").addClass("ui-widget-drag");
-			var newa 	= $("<a href='#'>").addClass("tagphoto").text(tag);
-			var newb 	= $("<b>").attr("datakey",tag).attr("datapcode",active_project_id);
+			var newa 	= $("<a>").addClass("tagphoto").text(tag);
+			var newb 	= $("<b>").attr("datakey",tag).attr("datapcode",project_code);
 
 			newa.prepend(newb);
 			newli.append(newa);
@@ -736,7 +799,7 @@ $page = "allwalks";
 				bindMapFunctionality(gmarkers);
 
 				$(".photo_count span").text("("+$(".walk_photo").length+")");
-				bindProperties();
+				bindTagDragProperties();
 
 				var n 			= 0;  //know there should be at least 1 starting with 0
 				var preloads 	= []; // for storing the preloads
@@ -746,6 +809,133 @@ $page = "allwalks";
 				console.log("error",response);
 			}
 		});
+	}
+	function loadCoverFlow(_el){
+		// INJECT THE COVERFLOW INTO DOM
+		// GET TOP OF addtags
+		var top_of_tags = $("#addtags .innerbox").offset().top;
+		var top_of_cf	= top_of_tags - 600; //place cover flow right on top of tags so can drag tag
+
+		var cf 		= $("<div>").attr("id","coverflow");
+		var close 	= $("<a>").addClass("cf_close");
+		var prev 	= $("<a>").addClass("cf_prev").addClass("cf_nav");
+		var next 	= $("<a>").addClass("cf_next").addClass("cf_nav");
+
+		$("body").append(cf);
+		cf.css({top: top_of_cf});
+		cf.append(close);
+		cf.append(prev);
+		cf.append(next);
+
+		// LOAD THE JQUERY OBJECT FOR A THUMB
+		setCoverFlowSlide(_el);
+		
+		return false;
+	}
+	function setCoverFlowSlide(_el){
+		// clear previous
+		$("#coverflow figure").remove();
+
+		// TAKES A SINGLE thumb jquery OBj , needs context for PREV NEXT
+		//_el needs to inform previous and next somehow
+		var phid 		= _el.data("phid");
+		var fullimgsrc 	= _el.find(".walk_photo").data("fullimgsrc");
+		var rotation 	= _el.find(".walk_photo").attr("rev");
+		var tags 		= _el.find("ul").clone();
+		var prev 		= _el.prev().length ? _el.prev().attr("id") : null;
+		var next 		= _el.next().length ? _el.next().attr("id") : null;
+
+		// maybe take off the recursive preloading of all the images and just do it for the cover flow?
+		var prev_imgsrc = $("#"+prev).find(".walk_photo").data("fullimgsrc");
+		var temp_prev 	= new Image();
+		temp_prev.src 	= prev_imgsrc;
+		var next_imgsrc = $("#"+next).find(".walk_photo").data("fullimgsrc");
+		temp_next 		= new next_imgsrc();
+		temp_next.src 	= imgsrc;
+
+		var figure 	= $("<figure>").attr("data-next",next).attr("data-prev",prev);
+		var fig 	= $("<fig>");
+		var figimg 	= $("<img>").attr("rev",rotation).attr("src",fullimgsrc).attr("data-phid",phid).addClass("ui-widget-drop");
+		var figc 	= $("<figcaption>");
+			
+		fig.append(figimg);
+		figure.append(fig);
+		figure.append(figc);
+		$("#coverflow").append(figure);
+
+		// ONCE IMAGE IS LOADED , CAN GET THE WIDTH AND HEIGHT AND CAN FINE TUNE POSITIONING
+		figimg.on("load",function(){
+			figc.append(tags);
+
+			var img_w 	= $(this).width();
+			var img_h 	= $(this).height(); 
+			var ori_w 	= img_w;
+			var ori_h 	= img_h;
+			var diff_hw = 0; //when doin css rotations and translations, need to account for orientation change and rotation pivot top, right, bottom, left
+		
+			var deg 		= 0; 
+			var transx 		= 0;
+			var transy 		= 0;
+			var hor_adjust;
+
+			//This following song and dance is only cause of this weird css rotation pivots
+			//first reset the definitions of w/h
+			if(rotation == 1 || rotation == 3){
+				ori_w 	= img_h;
+				ori_h 	= img_w;
+				diff_hw = img_h - img_w; 
+			}
+			vert_adjust = (Math.round( 600 - ori_h)/2 ) - Math.abs(diff_hw);
+			
+			if(rotation == 1){
+				deg 	= "90deg";
+				transx 	= (ori_h*-1 + vert_adjust) + "px";
+				transy  = (Math.abs(diff_hw)/2)+ "px";
+			}
+
+			if(rotation == 2){
+				deg 	= "180deg";
+			}
+
+			if(rotation == 3){
+				deg 	= "-90deg";
+				transx 	= -1*vert_adjust + "px";
+				transy 	= (ori_h + Math.abs(diff_hw)/2) + "px";
+			}
+
+			$(this).css("transform","rotate("+deg+") translateX("+transx+") translateY("+transy+")").css("border","3px solid gree");
+		});
+
+		bindCFDroppable();
+	}
+	function recursivePreload(n, preloads){
+		// will use parralell preloading for all fullsize images in a chunk
+		// but do the chunks in sequence by recursion
+		var _chunk 		= $("#tags .preview_chunk[data-chunk='"+n+"']");
+		var perchunk 	= _chunk.data("perchunk");
+		if(_chunk.length){
+			// console.log("Preloading chunk of ", perchunk , " in preview chunk ", n);
+			_chunk.find(".walk_photo").each(function(ndx){
+				var _photo 		= $(this);
+				var chunkn 		= n*perchunk;
+				var x 			= ndx+chunkn;
+				var imgsrc 		= _photo.data("fullimgsrc");
+				preloads[x] 	= new Image();
+				preloads[x].src = imgsrc;
+				// preloads[x].onload 	= () => console.log("loaded",$(this).attr("data-fullimgsrc"));
+				// preloads[x].onerror 	= err => console.error(err, " not loaded ", $(this).attr("data-fullimgsrc"));
+
+				preloads[x].decode().then(() => {
+					// console.log("img preloaded ", imgsrc ); 
+				}).catch((encodingError) => {
+					// Do something with the error.
+					// console.log(encodingError, imgsrc );
+				});
+			});
+
+			n++;
+			recursivePreload(n, preloads);
+		}
 	}
 	function bindMapFunctionality(gmarkers){
 		$.each(gmarkers, function(){
@@ -778,7 +968,7 @@ $page = "allwalks";
 	        });
 		}
 	}
-	function bindProperties(){
+	function bindTagDragProperties(){
 	    $( ".ui-widget-drag").draggable({
 	      cursor: "move",
 	      //containment:$('#addtags'),
@@ -791,83 +981,23 @@ $page = "allwalks";
 	      	var pcode 	= $(this).find("b").attr("datapcode");
 	      	return($("<i>").addClass("dragtag").text(tag));
 	      },
-	      drag: function(event,ui){
-	      	// console.log("dropping");
-	      }
+	      drag: function(event,ui){}
 	    });
 
 	    $( ".ui-widget-drop" ).droppable({
-	    	over: function(){
-	    		$(this).find("img").addClass("draghover");
-	    	},
-	    	out: function(){
-	    		$(this).find("img").removeClass("draghover");
-	    	},
-	    	drop: function( event, ui ) {
-		      	var drag 	= (ui.draggable[0].innerText.trim());
-		      	var drop 	= event.target.id;
-		      	var temp 	= drop.split("_");
-		      	var proj 	= temp[0];
-		      	var p_ref 	= temp[0] +"_"+ temp[1] +"_"+ temp[2] +"_"+ temp[3];
-		      	var exists 	= false;
-		      	var datakey = temp[(temp.length-1)];
-		      	$(this).find("img").removeClass("draghover");
-		        $.ajax({
-			          url:  "aggregate_post.php",
-			          type:'POST',
-			          data: { DragTag: drag, DropTag: drop, Project: proj, Key: datakey },
-			          success:function(result){
-			          	// console.log(result);
-			          	var appendloc = $("#"+drop).find("ul");
-			          	for(var i = 0 ; i < appendloc[0].childNodes.length; i++){
-			          		//console.log(appendloc[0].childNodes[i].childNodes);
-			          		if(appendloc[0].childNodes[i].childNodes[0].data == drag) //X is appended had to find a work around to get name
-			          			exists = true;
-			          	}
-			          	if(!exists){
-				            var newli 	= $("<li>").text(drag).addClass(drag);
-				            var newa 	= $("<a href='#'>").attr("data-deletetag",drag).attr("data-doc_id",p_ref).attr("data-photo_i",datakey).text("x").addClass("deletetag");
-							newli.append(newa);
-				            appendloc.prepend(newli);
-			          	}
-			          }        
-			            //THIS JUST STORES IS 
-			          },function(err){
-			          console.log("ERRROR");
-			          console.log(err);
-		        });
-		       // ui.draggable.hide(350);
-			}
-	    }); //ui-widget-drop
+	    	disabled : false
+	    }); 
 	}
-	function recursivePreload(n, preloads){
-		// will use parralell preloading for all fullsize images in a chunk
-		// but do the chunks in sequence by recursion
-		var _chunk 		= $("#tags .preview_chunk[data-chunk='"+n+"']");
-		var perchunk 	= _chunk.data("perchunk");
-		if(_chunk.length){
-			// console.log("Preloading chunk of ", perchunk , " in preview chunk ", n);
-			_chunk.find(".walk_photo").each(function(ndx){
-				var _photo 		= $(this);
-				var chunkn 		= n*perchunk;
-				var x 			= ndx+chunkn;
-				var imgsrc 		= _photo.data("fullimgsrc");
-				preloads[x] 	= new Image();
-				preloads[x].src = imgsrc;
-				// preloads[x].onload 	= () => console.log("loaded",$(this).attr("data-fullimgsrc"));
-				// preloads[x].onerror 	= err => console.error(err, "fuck not loaded ", $(this).attr("data-fullimgsrc"));
+	function bindCFDroppable(){
+		// temporarily disable thumb drops
+		// renenabled in the event for "#coverflow .cf_close"
+		$(".all-photos .ui-widget-drop").droppable({
+			disabled: true
+		});
 
-				preloads[x].decode().then(() => {
-					console.log("img preloaded ", imgsrc ); 
-				}).catch((encodingError) => {
-					// Do something with the error.
-					console.log(encodingError, imgsrc );
-				});
-			});
-
-			n++;
-			recursivePreload(n, preloads);
-		}
+		$( "img.ui-widget-drop" ).droppable({
+			disabled: false
+	    }); 
 	}
 </script>
 <?php //markPageLoadTime("Summary Page Loaded") ?>

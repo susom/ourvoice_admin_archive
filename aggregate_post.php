@@ -70,7 +70,6 @@ if(isset($_POST["DragTag"])) {
 if(isset($_POST["deleteTag"])){
 	$deletetag 	= $_POST["deleteTag"];
 	$pcode 		= $_POST["project_code"];
-
 	// RGET PROJECT LIST, FIND PROJECT AND DELETE TAG, RESAVE PROJECT LIST, REASSIGN SESSION VAR
 	$payload 	= getAllData();
 	foreach($payload["project_list"] as $key => $value){ //loop through projects
@@ -78,6 +77,7 @@ if(isset($_POST["deleteTag"])){
 			$remove_idx = array_search($deletetag, $value["tags"]);
 			unset($payload["project_list"][$key]["tags"][$remove_idx]);
 			$payload["project_list"][$key]["tags"] = array_values($payload["project_list"][$key]["tags"]);
+			break;
 		}
 	}
 	$result 	= push_data(cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db, $payload);

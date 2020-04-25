@@ -221,7 +221,6 @@ a.preview i{
 	transform: rotate(0);
 }
 a.preview em{
-	display:none;
 	background:#fff url(../img/icon_coverflow.png) 50% no-repeat;
 	top:75px;
 	background-size:contain;
@@ -608,22 +607,17 @@ label span {
 	border-radius:10px;
 	position:relative;
 }
-.deletetag:hover{
-	background:red;
-	color:#fff;
-}
 .deletetag{
-	font-family:arial;
-	font-size:77%;
 	position:absolute;
-	top:6px;
-	right:5px;
 	text-decoration:none;
-	color:#333;
 	display:inline-block;
-	background:#fff;
-	padding:1px 5px;
-	border-radius:10px;
+	text-indent:-5000px;
+    top: 1px; right: 0px;
+    background: url(../img/icon_redx.png) 50% no-repeat;
+    background-size:contain;
+    width:15px; height:15px;
+    padding: initial;
+    border-radius: initial;
 }
 .opentag {
 	color:#333;
@@ -764,6 +758,52 @@ label span {
 	width:100%;
 	height:400px;
 	margin: 0px auto 20px;
+}
+
+#hover_zoom{ 
+	position:absolute; 
+	width:auto; height:auto; 
+	max-width:800px; max-height:800px; 
+	z-index:999; 
+	box-shadow:0 0 3px #333; 
+	opacity:1;
+}
+#hover_zoom[rev='1'] {
+	transform: rotate(90deg) translateX(-100%);
+	transform-origin: left bottom;
+}
+#hover_zoom[rev='2'] {
+	transform: rotate(180deg) translate(0,0);
+}
+#hover_zoom[rev='3'] {
+	transform: rotate(-90deg) translateY(100%);
+	transform-origin: bottom left;
+}
+
+#filters {
+	border-left:1px solid #999;
+	height:23px;
+	margin:0 0 0 15px;
+	padding:0 0 0 15px;
+	width:50%;
+}
+#filters li {
+	display:inline-block;
+	margin:0 10px 0 0;
+	padding:0; 
+	font-size:85%;
+	line-height:170%;
+	color:#747573;
+}
+#filters i {
+	display:inline-block;
+	width:20px;
+	height:20px;
+	font-style:normal;
+	position:relative;
+}
+#filters li:hover .delete_filter{
+	display:block;
 }
 
 

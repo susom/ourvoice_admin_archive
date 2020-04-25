@@ -752,7 +752,7 @@ function printPhotos($photo, $_id, $n, $old, $txns=null){
 }
 function getAllDataPicLI($photo_o){
     $html_li  = "";
-    $html_li .= "<li id='".$photo_o["id"]."' class = 'ui-widget-drop'><figure>";
+    $html_li .= "<li id='".$photo_o["id"]."' class='ui-widget-drop' data-phid='".$photo_o["id"]."'><figure>";
     $html_li .= "<ul>";
     foreach($photo_o["tags"] as $idx => $tag){
         $html_li .= "<li class = '$tag'>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='".$photo_o["doc_id"]."' data-photo_i='".$photo_o["n"]."'>x</a></li>";
