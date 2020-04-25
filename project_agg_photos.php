@@ -368,12 +368,11 @@ $page = "allwalks";
 		// GET INITIAL PAGE PROJECT PHOTOS
 		var pid 				= '<?php echo $active_pid ?>';
 		var project_code 		= '<?php echo $active_project_id; ?>';
-		var project_tags 		= JSON.parse('<?php echo json_encode($project_tags); ?>');
-		loadTags(project_tags, project_code);
-
 		var filters 			= [];
 		loadThumbs(project_code,filters);
 
+		var project_tags 		= JSON.parse('<?php echo json_encode($project_tags); ?>');
+		loadTags(project_tags, project_code);
 
 		// SOME INITIAL BS
 		window.current_preview 	= null;
@@ -418,6 +417,8 @@ $page = "allwalks";
 					$("#photo_"+photo_i).fadeOut("fast",function(){
 						$(this).remove();
 					});
+					
+					setTagCounts();
 				}).fail(function(response){
 					// console.log("delete failed");
 				});
@@ -482,8 +483,7 @@ $page = "allwalks";
 		$( "body" ).on("drop", ".ui-widget-drop", function( event, ui ) {
 				$(this).removeClass("draghover"); 
 
-	    		var drag 	= (ui.draggable[0].innerText.trim());
-		      	
+	    		var drag 	= $(ui.draggable[0]).find("b").attr("datakey");  //tag
 		      	var drop 	= $(event.target).data("phid");
 		      	var temp 	= drop.split("_");
 		      	var proj 	= temp[0];
@@ -491,6 +491,7 @@ $page = "allwalks";
 
 		      	var exists 	= false;
 		      	var datakey = temp[(temp.length-1)];
+
 		        $.ajax({
 			          url:  "aggregate_post.php",
 			          type:'POST',
@@ -514,6 +515,8 @@ $page = "allwalks";
 				            	cf_tags.prepend(newli.clone());
 				            }
 			          	}
+
+						setTagCounts();
 			          }        
 			            //THIS JUST STORES IS 
 			          },function(err){
@@ -538,7 +541,7 @@ $page = "allwalks";
 				url: "photo.php",
 				data: { doc_id: doc_id, photo_i: photo_i, delete_tag_text: tagtxt},
 				success:function(result){
-					// console.log(result);
+					
 				}
 
 			}).done(function( msg ) {
@@ -550,7 +553,9 @@ $page = "allwalks";
 				var lid 	= "#" + doc_id + "_photo_" + photo_i;
 				tagtxt 		= tagtxt.split(" ").join(".");
 				var litag 	= "li."+tagtxt;
-				$(lid).find(litag).remove();			
+				$(lid).find(litag).remove();
+
+				setTagCounts();			
 			});
 			return false;
 		});
@@ -677,6 +682,8 @@ $page = "allwalks";
 								$("#addtags").addClass("hastags");
 							}
 							
+							setTagCounts();
+
 							bindTagDragProperties();
 						}
 					},
@@ -770,7 +777,7 @@ $page = "allwalks";
 
 		// REBUILD ERRTHING
 		for(var i in project_tags){
-			var tag 	= project_tags[i];
+			var tag 		= project_tags[i];
 			var newli 	= $("<li>").addClass("ui-widget-drag");
 			var newa 	= $("<a>").addClass("tagphoto").text(tag);
 			var newb 	= $("<b>").attr("datakey",tag).attr("datapcode",project_code);
@@ -780,6 +787,17 @@ $page = "allwalks";
 
 			$("#addtags ul").prepend(newli);
 		}
+	}
+	function setTagCounts(){
+		$("b[datakey]").each(function(){
+			var tag 		= $(this).attr("datakey");
+			var class_tag 	= "." + tag.split(" ").join(".");
+			var tag_count 	= $(".all-photos").find("li" + class_tag).length;
+			var count_span 	= $("<span>").text(" : "+tag_count);
+
+			$(this).parent().find("span").remove();
+			$(this).parent().append(count_span);
+		});
 	}
 	function loadThumbs(pcode, filters){
 		var data = { pcode: pcode, filters: filters, ajax:"loadThumbs" };
@@ -804,6 +822,8 @@ $page = "allwalks";
 				var n 			= 0;  //know there should be at least 1 starting with 0
 				var preloads 	= []; // for storing the preloads
 				recursivePreload(n, preloads);
+
+				setTagCounts();
 			},
 			error: function(response){
 				console.log("error",response);
