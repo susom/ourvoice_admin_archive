@@ -869,9 +869,10 @@ $page = "allwalks";
 		var prev_imgsrc = $("#"+prev).find(".walk_photo").data("fullimgsrc");
 		var temp_prev 	= new Image();
 		temp_prev.src 	= prev_imgsrc;
+
 		var next_imgsrc = $("#"+next).find(".walk_photo").data("fullimgsrc");
-		temp_next 		= new next_imgsrc();
-		temp_next.src 	= imgsrc;
+		temp_next 		= new Image();
+		temp_next.src 	= next_imgsrc;
 
 		var figure 	= $("<figure>").attr("data-next",next).attr("data-prev",prev);
 		var fig 	= $("<fig>");
