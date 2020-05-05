@@ -682,6 +682,8 @@ $page = "allwalks";
 								$("#addtags").addClass("hastags");
 							}
 							
+							// add to drop down
+							$("#filter_tags").append($("<option value='"+tagtxt+"'>"+tagtxt+"</option>"))	;						
 							setTagCounts();
 
 							bindTagDragProperties();
