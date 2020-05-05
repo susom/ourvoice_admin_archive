@@ -121,6 +121,17 @@ if( isset($_POST["proj_idx"]) ){
 			,"thumbs"			=> isset($_POST["thumbs"]) ? $_POST["thumbs"] : 0
 			,"app_lang" 		=> $app_lang
 		);
+//     [tags] => Array
+//         (
+//             [0] => orange
+//             [1] => cup
+//             [2] => freak
+//             [3] => empty
+//             [4] => drink
+//         )
+
+//     [dropTag] => Test
+
 
 		$pidx 			= $proj_idx;
 		
@@ -128,6 +139,15 @@ if( isset($_POST["proj_idx"]) ){
 		$url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
 	    $response 		= doCurl($url);
 		$payload = $_SESSION["DT"] = json_decode($response,1);
+
+		// since originally setting up the configurator, these new properties were added so 
+		// need to make sure they are included in an update.
+		if(array_key_exists("tags",$payload["project_list"][$pidx])){
+			$updated_project["tags"] = $payload["project_list"][$pidx]["tags"];
+		}
+		if(array_key_exists("dropTag",$payload["project_list"][$pidx])){
+			$updated_project["dropTag"] = $payload["project_list"][$pidx]["dropTag"];
+		}
 		$payload["project_list"][$pidx] = $updated_project;
 
         $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
