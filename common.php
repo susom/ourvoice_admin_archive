@@ -343,28 +343,35 @@ function saveWalkData($_id, $data){
 function getFilteredDataGeos($pcode, $pfilters){
     //RETURNS JSON ENCODED BLOCK OF FILTERED PHOTO INFO, AND PHOTO GEOs
     // MOOD and TAG FILTERS ARE MIXED TOGETHER, SO SEPERATE THEM OUT
+
     $goodbad_filter = array();
     $good           = array_search("good"   ,$pfilters);
     $bad            = array_search("bad"    ,$pfilters);
     $neutral        = array_search("neutral",$pfilters);
+    $unrated        = array_search("un-rated", $pfilters);
     $untagged       = array_search("un-tagged", $pfilters);
-    if(!empty($good)){
+    if($good || is_int($good)){
         array_push($goodbad_filter,2);
         unset($pfilters[$good]);
     }
-    if(!empty($bad)){
+    if($bad || is_int($bad)){
         array_push($goodbad_filter,1);
         unset($pfilters[$bad]);
     }
-    if(!empty($neutral)){
+    if($neutral || is_int($neutral)){
         array_push($goodbad_filter,3);
         unset($pfilters[$neutral]);
     }
+    if($unrated || is_int($unrated)){
+        array_push($goodbad_filter,0);
+        unset($pfilters[$unrated]);
+    }
     $pfilters       = array_values($pfilters);
 
-    $response       = loadAllProjectThumbs($pcode, $pfilters);
+    $response       = loadAllProjectThumbs($pcode, $pfilters, $goodbad_filter);
     $photo_geos     = array();
     $code_block     = array();
+
 
     foreach($response["rows"] as $row){
         $doc    = $row["value"];
@@ -874,12 +881,21 @@ function filterProjectByGoodBad($project_code, $goodbad=array(), $view="by_goodb
     return json_decode($response,1);
 }
 
-function loadAllProjectThumbs($project_code, $tags=array()){
+function loadAllProjectThumbs($project_code, $tags=array(), $goodbad=array()){
     if(empty($tags)){
-        // NO FILTERS GET ALL PHOTO DATA FOR A PROJECT
-        return getProjectSummaryData($project_code, "all_photos");
+        if(!empty($goodbad)){
+            return filterProjectByGoodBad($project_code, $goodbad);
+        }else{
+            // NO FILTERS GET ALL PHOTO DATA FOR A PROJECT
+            return getProjectSummaryData($project_code, "all_photos");
+        }
     }else{
+        return array("hello",$tags);
+
         if(in_array("un-tagged", $tags)){
+            // REGULAR TAGS
+            return filterProjectNoTags($project_code);
+        }elseif(in_array("un-tagged", $tags)){
             // REGULAR TAGS
             return filterProjectNoTags($project_code);
         }else{
