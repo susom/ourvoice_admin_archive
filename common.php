@@ -890,8 +890,6 @@ function loadAllProjectThumbs($project_code, $tags=array(), $goodbad=array()){
             return getProjectSummaryData($project_code, "all_photos");
         }
     }else{
-        return array("hello",$tags);
-
         if(in_array("un-tagged", $tags)){
             // REGULAR TAGS
             return filterProjectNoTags($project_code);
