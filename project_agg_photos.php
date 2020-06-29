@@ -947,10 +947,12 @@ $page = "allwalks";
 			imgtxt.append(tp);
 		}
 
-		if(audios_txn){
+		if(audios_txn.length> 0){
 			for(var i in audios_txn){
-				var txp = $("<p>").addClass("audios_txns").text(audios_txn[i]);
-				imgtxt.append(txp);
+				if(audios_txn[i]){
+					var txp = $("<p>").addClass("audios_txns").text(audios_txn[i]);
+					imgtxt.append(txp);
+				}
 			}
 			
 		}
