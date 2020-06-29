@@ -210,6 +210,52 @@ $page = "allwalks";
 	    position: relative;
 	}
 
+	#coverflow figure fig{
+		display:inline-block;
+		background: #efefef;
+    	padding-right: 300px;
+    	position:relative;
+	}
+	#coverflow fig .imgtxt{
+		position:Absolute;
+		width:300px; 
+		right:0; top:0;
+		padding:20px 10px;
+		text-align:left;
+	}
+	#coverflow fig .imgtxt p {
+		margin:0px 0 15px;
+	}
+	#coverflow fig .imgtxt .txt_comment{
+		padding-left:25px; 
+		position:relative;
+	}
+	#coverflow fig .imgtxt .txt_comment:before{
+		content:"";
+		position:absolute;
+		top:0; left:0;
+		width:25px; height:20px;
+		background:url(../img/icon_keyboard.png) no-repeat;
+		background-size:contain;
+	}
+
+	#coverflow fig .imgtxt .audios_txns{
+		padding-left:25px; 
+		position:relative;
+	}
+	#coverflow fig .imgtxt .audios_txns:before{
+		content:"";
+		position:absolute;
+		top:0; left:0;
+		width:25px; height:20px;
+		background:url(../img/icon_mic.png) no-repeat;
+		background-size:contain;
+	}
+
+
+
+
+
 	#coverflow figure img{
 		max-width:600px;
 		max-height:600px;
@@ -809,7 +855,7 @@ $page = "allwalks";
 			data: data,
 			dataType : "json",
 			success: function(response){
-				// console.log(response);
+				console.log(response);
 				// why the fuck was this container id with "tags"?
 				$("#tags").empty();
 				$("#tags").html(response.code_block);
@@ -862,8 +908,14 @@ $page = "allwalks";
 		//_el needs to inform previous and next somehow
 		var phid 		= _el.data("phid");
 		var fullimgsrc 	= _el.find(".walk_photo").data("fullimgsrc");
+		var goodbad 	= _el.find(".walk_photo").data("goodbad");
+		var textcomment = _el.find(".walk_photo").data("textcomment");
+		var audios_txn	= _el.find(".walk_photo").data("audiotxns");
+
+		console.log("here we go motherfucker", goodbad, textcomment, audios_txn);
 		var rotation 	= _el.find(".walk_photo").attr("rev");
 		var tags 		= _el.find("ul").clone();
+
 		var prev 		= _el.prev().length ? _el.prev().attr("id") : null;
 		var next 		= _el.next().length ? _el.next().attr("id") : null;
 
@@ -879,9 +931,33 @@ $page = "allwalks";
 		var figure 	= $("<figure>").attr("data-next",next).attr("data-prev",prev);
 		var fig 	= $("<fig>");
 		var figimg 	= $("<img>").attr("rev",rotation).attr("src",fullimgsrc).attr("data-phid",phid).addClass("ui-widget-drop");
+		var imgtxt 	= $("<div>").addClass("imgtxt");
+
+		// ADD THIS TO COVER FLOW
+		var gb    = "<p class='img_goodbad'><b>Good or bad for the community?</b> ";
+        if(goodbad > 1){
+            gb  += "<span class='goodbad good'></span>";
+        }
+
+        if(goodbad == 1 || goodbad == 3){
+            gb  += "<span class='goodbad bad'></span>";
+        }
+        gb += "</p>";
+        imgtxt.append($(gb));
+
+        if(textcomment){
+        	var tp = $("<p>").addClass("txt_comment").text(textcomment);
+			imgtxt.append(tp);
+		}
+
+		if(audios_txn){
+			// var txp = $("<p>").addClass("audios_txns").text(textcomment);
+			// imgtxt.append(txp);
+		}
+
 		var figc 	= $("<figcaption>");
-			
 		fig.append(figimg);
+		fig.append(imgtxt);
 		figure.append(fig);
 		figure.append(figc);
 		$("#coverflow").append(figure);

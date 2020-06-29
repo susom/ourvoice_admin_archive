@@ -404,7 +404,6 @@ function getFilteredDataGeos($pcode, $pfilters){
             $photo["geotag"]["photo_src"]   = $photo_uri;
             $photo["geotag"]["goodbad"]     = $photo["goodbad"];
             $photo["geotag"]["photo_id"]    = $_id. "_" . "photo_".$ph_i;
-
             array_push($photo_geos, $photo["geotag"]);
         }
 
@@ -807,6 +806,8 @@ function printAllDataThumbs($photo_block ,$container_w=1200 ,$perchunk=16){
     return $html;
 }
 function getAllDataPicLI($photo_o){
+    $photo_o["audios"];
+
     $html_li  = "";
     $html_li .= "<li id='".$photo_o["id"]."' class='ui-widget-drop' data-phid='".$photo_o["id"]."'><figure>";
     $html_li .= "<ul>";
@@ -814,7 +815,15 @@ function getAllDataPicLI($photo_o){
         $html_li .= "<li class = '$tag'>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='".$photo_o["doc_id"]."' data-photo_i='".$photo_o["n"]."'>x</a></li>";
     }
     $html_li .= "</ul>";
-    $html_li .= "<a href='".$photo_o["detail_url"]."' target='_blank' class='preview rotate walk_photo ".$photo_o["nogeo"]."' data-photo_i=".$photo_o["n"]." data-doc_id='".$photo_o["doc_id"]."' data-fullimgsrc='".$photo_o["full_img"]."' data-imgsrc='".$photo_o["photo_uri"]."' rev='".$photo_o["rotate"]."'><img src='".$photo_o["photo_uri"]."' /><span></span><b></b><i></i><em></em></a>";
+    $html_li .= "<a href='".$photo_o["detail_url"]."' target='_blank' class='preview rotate walk_photo ".$photo_o["nogeo"]."' 
+    data-photo_i=".$photo_o["n"]." 
+    data-goodbad=".$photo_o["goodbad"]." 
+    data-textcomment=".$photo_o["text_comment"]." 
+    data-audiotxns=".$photo_o["audios"]." 
+    data-doc_id='".$photo_o["doc_id"]."' 
+    data-fullimgsrc='".$photo_o["full_img"]."' 
+    data-imgsrc='".$photo_o["photo_uri"]."' 
+    rev='".$photo_o["rotate"]."'><img src='".$photo_o["photo_uri"]."' /><span></span><b></b><i></i><em></em></a>";
     
     $html_li .= "</figure></li>";
     return $html_li;
