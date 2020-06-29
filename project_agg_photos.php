@@ -592,67 +592,67 @@ $page = "allwalks";
 		});
 
 		// hover preview
-		var hover_zoom_delay = 500;
-		var hoverTimeOutConstant;
-		$("#tags").on("mouseover",".walk_photo", function(e){
-			var _this = $(this);
-  			hoverTimeOutConstant = setTimeout(function() {
-				_this.addClass("cursor_spinny");
-				var full_img_src 		= _this.data("fullimgsrc");
-				var distance_from_top 	= _this.offset().top - $(window).scrollTop();
-				var distance_from_left 	= _this.offset().left;
-				var right_edge			= $(window).width() - 50;
-				var rotation 			= _this.attr("rev");
+		// var hover_zoom_delay = 500;
+		// var hoverTimeOutConstant;
+		// $("#tags").on("mouseover",".walk_photo", function(e){
+		// 	var _this = $(this);
+  // 			hoverTimeOutConstant = setTimeout(function() {
+		// 		_this.addClass("cursor_spinny");
+		// 		var full_img_src 		= _this.data("fullimgsrc");
+		// 		var distance_from_top 	= _this.offset().top - $(window).scrollTop();
+		// 		var distance_from_left 	= _this.offset().left;
+		// 		var right_edge			= $(window).width() - 50;
+		// 		var rotation 			= _this.attr("rev");
 
-				var perc_height 		= .9;
-				var scale_y 			= Math.round( $(window).height() * perc_height );
-				var img_top 			= Math.round( $(window).height() - scale_y ) / 2 ;
-				img_top 				= $(window).scrollTop() + img_top;
+		// 		var perc_height 		= .9;
+		// 		var scale_y 			= Math.round( $(window).height() * perc_height );
+		// 		var img_top 			= Math.round( $(window).height() - scale_y ) / 2 ;
+		// 		img_top 				= $(window).scrollTop() + img_top;
 				
-				var img_left = distance_from_left+150;
-				var preview_img = $("<img>").attr("src",full_img_src).attr("id","hover_zoom").attr("rev",rotation);
+		// 		var img_left = distance_from_left+150;
+		// 		var preview_img = $("<img>").attr("src",full_img_src).attr("id","hover_zoom").attr("rev",rotation);
 				
-				// append body , set initial img_top and img_left need to adjust later for horizontal 
-				$("body").append(preview_img);
-				preview_img.css({ top: img_top, left: img_left, height: scale_y });
+		// 		// append body , set initial img_top and img_left need to adjust later for horizontal 
+		// 		$("body").append(preview_img);
+		// 		preview_img.css({ top: img_top, left: img_left, height: scale_y });
 
-				// ONCE IMAGE IS LOADED , CAN GET THE WIDTH AND HEIGHT AND CAN FINE TUNE POSITIONING
-				preview_img.on("load",function(){
-					_this.removeClass("cursor_spinny");
-					var img_w 	= $(this).width();
-					var img_h 	= $(this).height(); 
-					var ori_w 	= img_w;
-					var ori_h 	= img_h;
-					var diff_hw = 0; //when doin css rotations and translations, need to account for orientation change and rotation pivot top, right, bottom, left
+		// 		// ONCE IMAGE IS LOADED , CAN GET THE WIDTH AND HEIGHT AND CAN FINE TUNE POSITIONING
+		// 		preview_img.on("load",function(){
+		// 			_this.removeClass("cursor_spinny");
+		// 			var img_w 	= $(this).width();
+		// 			var img_h 	= $(this).height(); 
+		// 			var ori_w 	= img_w;
+		// 			var ori_h 	= img_h;
+		// 			var diff_hw = 0; //when doin css rotations and translations, need to account for orientation change and rotation pivot top, right, bottom, left
 
-					if(rotation == 1 || rotation == 3){
-						ori_w 	= img_h;
-						ori_h 	= img_w;
-						diff_hw = img_h - img_w; //this is fucked
-					}
-					img_top = (Math.round( $(window).height() - ori_h ) / 2 ) - diff_hw;
-					img_top = $(window).scrollTop() + img_top;
+		// 			if(rotation == 1 || rotation == 3){
+		// 				ori_w 	= img_h;
+		// 				ori_h 	= img_w;
+		// 				diff_hw = img_h - img_w; //this is fucked
+		// 			}
+		// 			img_top = (Math.round( $(window).height() - ori_h ) / 2 ) - diff_hw;
+		// 			img_top = $(window).scrollTop() + img_top;
 
-					// WILL ALWAYS SHOW IMAGE TO THE LEFT UNLESS ITS GONNA GO OFF THE RIGHT EDGE, UGH
-					if( (img_left + ori_w) > right_edge ){
-						// REDO it from the left  of the thumb
-						img_left = distance_from_left - (ori_w + 10);
-					} 
+		// 			// WILL ALWAYS SHOW IMAGE TO THE LEFT UNLESS ITS GONNA GO OFF THE RIGHT EDGE, UGH
+		// 			if( (img_left + ori_w) > right_edge ){
+		// 				// REDO it from the left  of the thumb
+		// 				img_left = distance_from_left - (ori_w + 10);
+		// 			} 
 
-					$(this).css({ top: img_top, left: img_left });
-				});
+		// 			$(this).css({ top: img_top, left: img_left });
+		// 		});
 				
-			}, hover_zoom_delay);
+		// 	}, hover_zoom_delay);
 
-			e.preventDefault();
-		});
-		$("#tags").on("mouseout",".walk_photo", function(e){
-			clearTimeout(hoverTimeOutConstant);
-			$("#hover_zoom").remove();
-		});
-		$("body").on("click","#hover_zoom", function(){
-			$(this).remove();
-		});
+		// 	e.preventDefault();
+		// });
+		// $("#tags").on("mouseout",".walk_photo", function(e){
+		// 	clearTimeout(hoverTimeOutConstant);
+		// 	$("#hover_zoom").remove();
+		// });
+		// $("body").on("click","#hover_zoom", function(){
+		// 	$(this).remove();
+		// });
 
 		//ADD PROJECT TAG FORM
 		$("#newtag_txt").focus(function(){

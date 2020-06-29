@@ -26,6 +26,7 @@ if( empty($_SESSION["DT"]) ){
 	$_SESSION["DT"] = $ap;
 }
 
+
 // NEXT GET SPECIFIC PROJECT DATA
 $ap 				= $_SESSION["DT"];
 $_id 				= $ap["_id"];
@@ -104,10 +105,10 @@ if( ( (!empty($_SESSION["proj_id"]) OR !empty($_GET["id"]))
     && !empty($_SESSION["summ_pw"]) 
     && !empty($_SESSION["authorized"]) )
     || ( isset($_SESSION["discpw"])  && $_SESSION["discpw"] == cfg::$master_pw )
-
 ){
     // FIRST CHECK IF LOGIN IS IN SESSION, _GET FOR DIRECT LINKING TO SUMMARY PAGE FROM INDEX PAGES
-    $_POST["proj_id"]       = !empty($_GET["id"]) ? $_GET["id"] : $_SESSION["proj_id"];
+    $_POST["proj_id"]       = !empty($_GET["id"])  ? $_GET["id"] : !empty($_POST["proj_id"]) ? $_POST["proj_id"] : $_SESSION["proj_id"];
+
     $_POST["summ_pw"]       = isset($_SESSION["summ_pw"]) ? $_SESSION["summ_pw"] : $_SESSION["discpw"];
     $_POST["authorized"]    = $_SESSION["authorized"];
 }
