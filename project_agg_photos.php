@@ -347,7 +347,7 @@ $page = "allwalks";
     	background-size: 8%;
 	}
 	#tags{
-		height:150px;
+		height:170px;
 	}
 	#tags ul {
 		width: 85%;
@@ -938,9 +938,8 @@ $page = "allwalks";
         if(goodbad > 1){
             gb  += "<span class='goodbad good'></span>";
         }
-
         if(goodbad == 1 || goodbad == 3){
-            gb  += "<span class='goodbad bad'></span>";
+            gb  += " <span class='goodbad bad'></span>";
         }
         gb += "</p>";
         imgtxt.append($(gb));

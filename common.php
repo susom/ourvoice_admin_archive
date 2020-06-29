@@ -818,7 +818,7 @@ function getAllDataPicLI($photo_o){
     $html_li .= "<a href='".$photo_o["detail_url"]."' target='_blank' class='preview rotate walk_photo ".$photo_o["nogeo"]."' 
     data-photo_i=".$photo_o["n"]." 
     data-goodbad=".$photo_o["goodbad"]." 
-    data-textcomment=".$photo_o["text_comment"]." 
+    data-textcomment=\"".$photo_o["text_comment"]."\" 
     data-audiotxns=".$photo_o["audios"]." 
     data-doc_id='".$photo_o["doc_id"]."' 
     data-fullimgsrc='".$photo_o["full_img"]."' 
