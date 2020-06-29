@@ -747,6 +747,7 @@ function printPhotos($photo, $_id, $n, $old, $txns=null){
     $photoblock["nogeo"]         = $nogeo;
     $photoblock["photo_uri"]     = $photo_uri;
     $photoblock["rotate"]        = $rotate;
+    $photoblock["audios"]        = $photo["audios"];
     $photoblock["goodbad"]       = $photo["goodbad"];
     $photoblock["text_comment"]  = $txt;
     $photoblock["old"]           = $old;
@@ -785,7 +786,6 @@ function populateRecent($ALL_PROJ_DATA, $stor, $listid){ //stor should be
     $_SESSION["rec_times"] = $cache_data;
 }
 function printAllDataThumbs($photo_block ,$container_w=1200 ,$perchunk=16){
-    
     // $chunk      = ceil(count($photo_block)/$perchunk);
     $chunk          = 1;
     $container_w    = count($photo_block) * 150;
@@ -806,7 +806,14 @@ function printAllDataThumbs($photo_block ,$container_w=1200 ,$perchunk=16){
     return $html;
 }
 function getAllDataPicLI($photo_o){
-    $photo_o["audios"];
+    $txns = "";
+    if(!empty($photo_o["audios"])){
+        $temp = array();
+        foreach($photo_o["audios"] as $audio_key){
+            $temp[] = $photo_o["transcriptions"][$audio_key]["text"];
+        }
+        $txns = json_encode($temp);
+    }
 
     $html_li  = "";
     $html_li .= "<li id='".$photo_o["id"]."' class='ui-widget-drop' data-phid='".$photo_o["id"]."'><figure>";
@@ -816,10 +823,10 @@ function getAllDataPicLI($photo_o){
     }
     $html_li .= "</ul>";
     $html_li .= "<a href='".$photo_o["detail_url"]."' target='_blank' class='preview rotate walk_photo ".$photo_o["nogeo"]."' 
-    data-photo_i=".$photo_o["n"]." 
+    data-photo_i='".$photo_o["n"]."' 
     data-goodbad=".$photo_o["goodbad"]." 
-    data-textcomment=\"".$photo_o["text_comment"]."\" 
-    data-audiotxns=".$photo_o["audios"]." 
+    data-textcomment='".$photo_o["text_comment"]."'
+    data-audiotxns='".$txns."' 
     data-doc_id='".$photo_o["doc_id"]."' 
     data-fullimgsrc='".$photo_o["full_img"]."' 
     data-imgsrc='".$photo_o["photo_uri"]."' 

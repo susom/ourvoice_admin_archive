@@ -855,7 +855,6 @@ $page = "allwalks";
 			data: data,
 			dataType : "json",
 			success: function(response){
-				console.log(response);
 				// why the fuck was this container id with "tags"?
 				$("#tags").empty();
 				$("#tags").html(response.code_block);
@@ -912,7 +911,6 @@ $page = "allwalks";
 		var textcomment = _el.find(".walk_photo").data("textcomment");
 		var audios_txn	= _el.find(".walk_photo").data("audiotxns");
 
-		console.log("here we go motherfucker", goodbad, textcomment, audios_txn);
 		var rotation 	= _el.find(".walk_photo").attr("rev");
 		var tags 		= _el.find("ul").clone();
 
@@ -950,8 +948,11 @@ $page = "allwalks";
 		}
 
 		if(audios_txn){
-			// var txp = $("<p>").addClass("audios_txns").text(textcomment);
-			// imgtxt.append(txp);
+			for(var i in audios_txn){
+				var txp = $("<p>").addClass("audios_txns").text(audios_txn[i]);
+				imgtxt.append(txp);
+			}
+			
 		}
 
 		var figc 	= $("<figcaption>");
