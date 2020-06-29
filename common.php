@@ -757,19 +757,6 @@ function printPhotos($photo, $_id, $n, $old, $txns=null){
     array_push($codeblock, $photoblock);
     return $codeblock;
 }
-function getAllDataPicLI($photo_o){
-    $html_li  = "";
-    $html_li .= "<li id='".$photo_o["id"]."' class='ui-widget-drop' data-phid='".$photo_o["id"]."'><figure>";
-    $html_li .= "<ul>";
-    foreach($photo_o["tags"] as $idx => $tag){
-        $html_li .= "<li class = '$tag'>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='".$photo_o["doc_id"]."' data-photo_i='".$photo_o["n"]."'>x</a></li>";
-    }
-    $html_li .= "</ul>";
-    $html_li .= "<a href='".$photo_o["detail_url"]."' target='_blank' class='preview rotate walk_photo ".$photo_o["nogeo"]."' data-photo_i=".$photo_o["n"]." data-doc_id='".$photo_o["doc_id"]."' data-fullimgsrc='".$photo_o["full_img"]."' data-imgsrc='".$photo_o["photo_uri"]."' rev='".$photo_o["rotate"]."'><img src='".$photo_o["photo_uri"]."' /><span></span><b></b><i></i><em></em></a>";
-    
-    $html_li .= "</figure></li>";
-    return $html_li;
-}
 function populateRecent($ALL_PROJ_DATA, $stor, $listid){ //stor should be 
     $checkWeek = strtotime("-4 Week");
     $abvStorage = array();
@@ -799,10 +786,14 @@ function populateRecent($ALL_PROJ_DATA, $stor, $listid){ //stor should be
     $_SESSION["rec_times"] = $cache_data;
 }
 function printAllDataThumbs($photo_block ,$container_w=1200 ,$perchunk=16){
-    $chunk      = ceil(count($photo_block)/$perchunk);
-    $req_width  = $chunk*$container_w;
-    $req_width .= "px";
-    $chunks     = array_chunk($photo_block, $perchunk);
+    
+    // $chunk      = ceil(count($photo_block)/$perchunk);
+    $chunk          = 1;
+    $container_w    = count($photo_block) * 150;
+    $perchunk       = count($photo_block);
+    $req_width      = $chunk*$container_w;
+    $req_width      .= "px";
+    $chunks         = array_chunk($photo_block, $perchunk);
 
     $html = "<style>#tags{ width: $req_width }</style>";
     foreach($chunks as $n=> $blocks){
@@ -812,7 +803,21 @@ function printAllDataThumbs($photo_block ,$container_w=1200 ,$perchunk=16){
         }
         $html .= "</div>";
     }
+
     return $html;
+}
+function getAllDataPicLI($photo_o){
+    $html_li  = "";
+    $html_li .= "<li id='".$photo_o["id"]."' class='ui-widget-drop' data-phid='".$photo_o["id"]."'><figure>";
+    $html_li .= "<ul>";
+    foreach($photo_o["tags"] as $idx => $tag){
+        $html_li .= "<li class = '$tag'>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='".$photo_o["doc_id"]."' data-photo_i='".$photo_o["n"]."'>x</a></li>";
+    }
+    $html_li .= "</ul>";
+    $html_li .= "<a href='".$photo_o["detail_url"]."' target='_blank' class='preview rotate walk_photo ".$photo_o["nogeo"]."' data-photo_i=".$photo_o["n"]." data-doc_id='".$photo_o["doc_id"]."' data-fullimgsrc='".$photo_o["full_img"]."' data-imgsrc='".$photo_o["photo_uri"]."' rev='".$photo_o["rotate"]."'><img src='".$photo_o["photo_uri"]."' /><span></span><b></b><i></i><em></em></a>";
+    
+    $html_li .= "</figure></li>";
+    return $html_li;
 }
 
 //DESIGN DOCUMENT CALLS

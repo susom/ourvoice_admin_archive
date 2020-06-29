@@ -301,7 +301,7 @@ $page = "allwalks";
     	background-size: 8%;
 	}
 	#tags{
-		height:360px;
+		height:150px;
 	}
 	#tags ul {
 		width: 85%;
@@ -331,7 +331,7 @@ $page = "allwalks";
 	}
 
 	#tags > div {
-		width: 1200px;
+		width: auto;
 		float:left;
 	}
 	#tags .deletetag{
@@ -596,7 +596,7 @@ $page = "allwalks";
 		// var hoverTimeOutConstant;
 		// $("#tags").on("mouseover",".walk_photo", function(e){
 		// 	var _this = $(this);
-  // 			hoverTimeOutConstant = setTimeout(function() {
+  		// 			hoverTimeOutConstant = setTimeout(function() {
 		// 		_this.addClass("cursor_spinny");
 		// 		var full_img_src 		= _this.data("fullimgsrc");
 		// 		var distance_from_top 	= _this.offset().top - $(window).scrollTop();
