@@ -338,7 +338,7 @@ $page = "photo_detail";
 				$audio_attachments = "";
 				
 				$photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
-				$photo_comment  = str_replace("rn", "\r\n",$photo['text_comment']);
+				$photo_comment  = str_replace("rnrn", "\r\n\r\n",$photo['text_comment']);
 		        $text_comment   = !empty($photo["text_comment"]) ? "<textarea name='text_comment' class='audio_clip keyboard'>".  $photo_comment  ."</textarea>" : "";
 
 

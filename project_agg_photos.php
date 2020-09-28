@@ -215,6 +215,7 @@ $page = "allwalks";
 		background: #efefef;
     	padding-right: 300px;
     	position:relative;
+    	min-height: 600px;
 	}
 	#coverflow fig .imgtxt{
 		position:Absolute;
@@ -943,7 +944,8 @@ $page = "allwalks";
         imgtxt.append($(gb));
 
         if(textcomment){
-        	var tp = $("<p>").addClass("txt_comment").text(textcomment);
+        	textcomment = textcomment.replace("rnrn","<br><br>");
+        	var tp = $("<p>").addClass("txt_comment").html(textcomment);
 			imgtxt.append(tp);
 		}
 
@@ -970,6 +972,8 @@ $page = "allwalks";
 
 			var img_w 	= $(this).width();
 			var img_h 	= $(this).height(); 
+
+
 			var ori_w 	= img_w;
 			var ori_h 	= img_h;
 			var diff_hw = 0; //when doin css rotations and translations, need to account for orientation change and rotation pivot top, right, bottom, left
@@ -987,10 +991,10 @@ $page = "allwalks";
 				diff_hw = img_h - img_w; 
 			}
 			vert_adjust = (Math.round( 600 - ori_h)/2 ) - Math.abs(diff_hw);
-			
+
 			if(rotation == 1){
 				deg 	= "90deg";
-				transx 	= (ori_h*-1 + vert_adjust) + "px";
+				transx 	= (ori_h*-1 - vert_adjust) + "px";
 				transy  = (Math.abs(diff_hw)/2)+ "px";
 			}
 
@@ -1003,6 +1007,8 @@ $page = "allwalks";
 				transx 	= -1*vert_adjust + "px";
 				transy 	= (ori_h + Math.abs(diff_hw)/2) + "px";
 			}
+
+			
 
 			$(this).css("transform","rotate("+deg+") translateX("+transx+") translateY("+transy+")").css("border","3px solid gree");
 		});
