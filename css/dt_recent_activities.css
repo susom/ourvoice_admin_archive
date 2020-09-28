@@ -37,14 +37,12 @@
 	display: inline-block;
 	margin:10px;
 	background-color: #efefef;
+	padding:5px 10px;
 }
 #root ul{
 	column-count: 3;
 }
 
-#root a{
-	float:right;
-}
 
 body{
 	display: block;

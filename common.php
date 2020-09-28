@@ -772,7 +772,7 @@ function populateRecent($ALL_PROJ_DATA, $stor, $listid){ //stor should be
             if(($stor[$listid[$i]][$iter]/1000) > $checkWeek){
                 echo '<tr>';
                 echo '<th style = "font-weight: normal">'. "<strong>(".$listid[$i]. ")</strong> " . 
-                '<a href="summary.php?id='.$listid[$i].'"'.'>'.$ful .'</a></th>';
+                '<a class="gotosumm" data-pid="'.$listid[$i].'" href="summary.php?id='.$listid[$i].'"'.'>'.$ful .'</a></th>';
                 echo '<th style = "font-weight: normal">'.gmdate("Y-m-d", $stor[$listid[$i]][0]/1000).'</th>';
                 echo '</tr>';
             }

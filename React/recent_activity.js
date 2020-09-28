@@ -2,12 +2,9 @@ class Entry extends React.Component{
   render(){    
     return(
       <div className = "entry">              
-        <div className = "title">({this.props.abv}) - <b>{this.props.full}</b></div>  
+        <div className = "title">({this.props.abv}) - <b><a href={"summary.php?id=" + this.props.abv} class="gotosumm" data-pid={this.props.abv}>{this.props.full}</a></b></div>  
         <div className = "recent_times">{this.props.rec}</div>
         <div className = "non_recent_times">{this.props.non_rec}</div>
-        <form action = "summary.php" form id = "route_summary" method = "get">
-          <button type = "submit" className = "submitbutton" name = "id" value = {this.props.abv} >GO</button>
-        </form>
       </div>
       ); 
   }

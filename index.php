@@ -121,16 +121,16 @@ if( isset($_POST["proj_idx"]) ){
 			,"thumbs"			=> isset($_POST["thumbs"]) ? $_POST["thumbs"] : 0
 			,"app_lang" 		=> $app_lang
 		);
-//     [tags] => Array
-//         (
-//             [0] => orange
-//             [1] => cup
-//             [2] => freak
-//             [3] => empty
-//             [4] => drink
-//         )
+		//     [tags] => Array
+		//         (
+		//             [0] => orange
+		//             [1] => cup
+		//             [2] => freak
+		//             [3] => empty
+		//             [4] => drink
+		//         )
 
-//     [dropTag] => Test
+		//     [dropTag] => Test
 
 
 		$pidx 			= $proj_idx;
@@ -197,6 +197,7 @@ if(isset($_POST["discpw"])){
   
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
 	<script src="js/common.js"></script>
 </head>
 <body id="main" class="configurator">
