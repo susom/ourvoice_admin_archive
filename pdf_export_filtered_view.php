@@ -22,6 +22,9 @@ if(!empty($pcode) && !empty($active_pid)){
 	$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 	pdf_setup($pdf, $pcode);
 
+
+	// generateWalkMap($pdf, $photo_geos);
+
 	// SORT THE PHOTOS INTO GROUPINGS BY TAG
 	$groupings = array();
 	foreach($pfilters as $filter_tag){
@@ -170,11 +173,13 @@ function generatePhotoPage($pdf, $photo, $active_pid, $highlight_tag=null){
 	if(!empty($photo["transcriptions"])){
 		foreach($photo["transcriptions"] as $txn){
 			$txns = str_replace('&#34;','"', $txn["text"]);
+			$txns = str_replace("rnrn","<br><br>", $txns);
 			array_push($retTranscript, array("type" => "audio" , "content" => $txns));
 		}
 	}
     if(!empty($photo["text_comment"])){
-    	array_push($retTranscript, array("type" => "text" , "content" => $photo["text_comment"]));
+    	$photo_comment = str_replace("rnrn","<br><br>",$photo["text_comment"]);
+    	array_push($retTranscript, array("type" => "text" , "content" => $photo_comment));
     }
 	///////////////////////////// GET TRANSCRIPTIONS END /////////////////////////////		
 
@@ -337,7 +342,7 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 				$pdf->SetTextColor(255,0,0);
 			}
 			$pdf->writeHTMLCell($tagwid, 0, $starting_w, $starting_v , $tag_html,1);
-			$starting_w += $tagwid + 5;
+			$starting_v += 10;
 
 			// reset text color;
 			$pdf->SetTextColor(20,20,20);
