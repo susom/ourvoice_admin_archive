@@ -364,6 +364,7 @@ $page = "photo_detail";
 						}else{
 							$transcription = "";
 						}
+						$transcription  = str_replace("rnrn", "\r\n\r\n",$transcription);
 						$audio_attachments .=   "<div class='audio_clip mic'>
 													<audio controls>
 														<source src='$audio_src'/>
