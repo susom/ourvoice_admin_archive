@@ -175,7 +175,7 @@ function generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landsc
 		foreach($retTranscript as $k => $trans) {
 			$type 			= $trans["type"];
 			$content 		= $trans["content"];
-            $typeicon 		= $type == "audio" ? "[<img src='./img/icon_mic'/ width=10> ".($k + 1)."]" : "[text]";
+            $typeicon 		= $type == "audio" ? "[<img src='./img/icon_mic.png'/ width=10> ".($k + 1)."]" : "[text]";
             $html_block[] 	= "<dl><dt>$typeicon :</dt><dd>'$content'</dd></dl>";
         }
 	}else{
