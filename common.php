@@ -367,8 +367,8 @@ function getFilteredDataGeos($pcode, $pfilters){
         unset($pfilters[$unrated]);
     }
     $pfilters       = array_values($pfilters);
-
     $response       = loadAllProjectThumbs($pcode, $pfilters, $goodbad_filter);
+
     $photo_geos     = array();
     $code_block     = array();
 
@@ -380,6 +380,7 @@ function getFilteredDataGeos($pcode, $pfilters){
         $old    = $doc[1];
         $photo  = $doc[2]; 
         $txns   = $doc[3]; 
+        $device = $doc[4]; 
 
         // I DID THIS TO MYSELF OH LORD
         $old = is_null($old) ? "" : "&_old=" . $old;
@@ -404,6 +405,7 @@ function getFilteredDataGeos($pcode, $pfilters){
             $photo["geotag"]["photo_src"]   = $photo_uri;
             $photo["geotag"]["goodbad"]     = $photo["goodbad"];
             $photo["geotag"]["photo_id"]    = $_id. "_" . "photo_".$ph_i;
+            $photo["geotag"]["platform"]    = $device["platform"];
             array_push($photo_geos, $photo["geotag"]);
         }
 
@@ -830,6 +832,7 @@ function getAllDataPicLI($photo_o){
     data-doc_id='".$photo_o["doc_id"]."' 
     data-fullimgsrc='".$photo_o["full_img"]."' 
     data-imgsrc='".$photo_o["photo_uri"]."' 
+    data-platform='".$photo_o["platform"]."' 
     rev='".$photo_o["rotate"]."'><img src='".$photo_o["photo_uri"]."' /><span></span><b></b><i></i><em></em></a>";
     
     $html_li .= "</figure></li>";

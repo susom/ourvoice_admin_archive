@@ -95,6 +95,7 @@ $page = "allwalks";
 					<li><b>Applied Filters :</b></li>		
 				</ul>
 
+				<a href="#" class="btn btn-sm btn-info pull-right print_view">Print View</a>
 				<a href="#" class="btn btn-sm btn-primary pull-right export_view">Export View as PDF</a>
 				<form  id="choose_filter" class="pull-right">
 					<label>Add Filter(s) :</label>
@@ -141,6 +142,14 @@ $page = "allwalks";
 </body>
 </html>
 <style>
+
+	#google_map_photos{
+		height:400px;
+		transition:height 1s ease-in-out;
+	}
+	#google_map_photos.mapon{
+		height:600px;
+	}
 	#coverflow {
 		position:absolute;
 		left:0;
@@ -327,7 +336,7 @@ $page = "allwalks";
 		box-shadow: 0 0 15px green;
 	}
 	
-	.export_view{
+	.export_view, .print_view{
 		margin-left:10px;
 		margin-top:-7px;
 	}
@@ -812,6 +821,26 @@ $page = "allwalks";
 			window.open(pdf_url, '_blank');
 			return false;
 		});
+
+		//EXPORT VIEW AS PDF
+		$(".print_view").click(function(e){
+			var new_filters = $(".filter").toArray();
+			var filter_ar 	= [];
+			for(var i in new_filters){
+				filter_ar.push($(new_filters[i]).data("filter") );
+			}
+
+			var pdf_url = "print_filtered_view.php?pcode=" + project_code + "&pid=" + pid + "&filters=" + encodeURIComponent(JSON.stringify(filter_ar));
+			window.open(pdf_url, '_blank');
+			return false;
+		});
+
+		$("#google_map_photos").mouseover(function(){
+			$(this).addClass("mapon");
+		});
+		$("#google_map_photos").mouseout(function(){
+			$(this).removeClass("mapon");
+		})
 	});
 	function loadTags(project_tags, project_code){
 		// SORT alphabetically reverse
