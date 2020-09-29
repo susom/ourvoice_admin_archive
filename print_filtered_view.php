@@ -27,7 +27,7 @@ function generateWalkMap($photo_geos){
 	return base64_encode($gmapsPhoto);
 }
 
-function generatePhotoPage($photo, $active_pid, $pcode, $highlight_tag=null){
+function generatePhotoPage($photo, $active_pid, $pcode, $page, $total, $highlight_tag=null){
 	$_id 		= $photo["doc_id"];
 	$_file		= "photo_".$photo["n"].".jpg";
 
@@ -79,11 +79,15 @@ function generatePhotoPage($photo, $active_pid, $pcode, $highlight_tag=null){
 	///////////////////////////// GET TRANSCRIPTIONS START /////////////////////////////		
 	$retTranscript 	= array();
 	$photo_tags 	= !empty($photo["tags"]) ? $photo["tags"] : array();
-	if(!empty($photo["transcriptions"])){
-		foreach($photo["transcriptions"] as $txn){
-			$txns = str_replace('&#34;','"', $txn["text"]);
-			$txns = str_replace("rnrn","<br><br>", $txns);
-			array_push($retTranscript, array("type" => "audio" , "content" => $txns));
+	if(!empty($photo["audios"]) && !empty($photo["transcriptions"])){
+		foreach($photo["audios"] as $audiofile){
+			if(isset($photo["transcriptions"][$audiofile])){
+				$txn 	= $photo["transcriptions"][$audiofile];
+
+				$txns 	= str_replace('&#34;','"', $txn["text"]);
+				$txns 	= str_replace("rnrn","<br><br>", $txns);
+				array_push($retTranscript, array("type" => "audio" , "content" => $txns));
+			}
 		}
 	}
     if(!empty($photo["text_comment"])){
@@ -118,11 +122,11 @@ function generatePhotoPage($photo, $active_pid, $pcode, $highlight_tag=null){
 	imagedestroy($imageResource);
 	$gmapsPhoto = doCurl($url);
 
-	generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad, $tags, $highlight_tag, $pcode );
+	generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad, $tags, $highlight_tag, $pcode , $page, $total);
 	///////////////////////////// END STATIC GOOGLE MAP /////////////////////////////
 }
 
-function generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad, $tags, $highlight_tag, $pcode){
+function generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad, $tags, $highlight_tag, $pcode, $page, $total){
 	/* arguments: SORRY for list will clean up later.
 	pdf = export object
 	htmlobj = includes date, time for picture information
@@ -135,9 +139,11 @@ function generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landsc
 	goodbad = img path to the correct smile icon
  	*/
 
+
+
 	$html_block 	= array();
 	$html_block[] 	= "<section>";
-	$html_block[] 	= "<h2 class='pghdr'>Project : $pcode <b>".$htmlobj['date'] . " " .$htmlobj['time']."</b></h2>";
+	$html_block[] 	= "<h2 class='pghdr'>Project : $pcode <b>".$htmlobj['date'] . " " .$htmlobj['time']."<i>| pg $page</i></b></h2>";
 	
 	//make sure the image is whole (broken images wont have a resource id)
 	$resource_id 	= imagecreatefromstring($htmlphoto);
@@ -253,6 +259,12 @@ if(!empty($pcode) && !empty($active_pid)){
 		    font-weight: normal;
 		    line-height: 220%;
 		}
+		section h2.pghdr b i{
+			font-style:normal; 
+			font-weight:bold; 
+			display:inline-block;
+			margin-left:5px; 
+		}
 		section h3.tagcover{
 			text-align: center;
 		    font-size: 250%;
@@ -303,9 +315,9 @@ if(!empty($pcode) && !empty($active_pid)){
 		    float: right;
 		}
 
-		dl{ margin-bottom: 10px; }
+		dl{ margin-bottom: 10px; font-size: 140%; }
 		dt{ display:inline-block; vertical-align: top}
-		dd{ display:inline-block; vertical-align: top}
+		dd{ display:inline-block; vertical-align: top; width: 90%;}
 
 		h4.tag{
 			border: 1px solid #ccc;
@@ -313,7 +325,7 @@ if(!empty($pcode) && !empty($active_pid)){
 		    padding: 5px 10px;
 		    border-radius: 5px;
 		    background: #efefef;
-		    margin:0 5px 0 0 ;
+		    margin:0 5px 5px 0 ;
 		}
 		h4.tag i{
 			font-style:normal;
@@ -376,11 +388,13 @@ if(!empty($pcode) && !empty($active_pid)){
 		</section>
 
 		<?php
-		foreach($photos as $k => $photo){
+		$page = 1; 
+		foreach($photos as $photo){
 			if(empty($photo["tags"])){
 				continue;
 			}elseif(in_array($filter_tag,$photo["tags"])){
-				generatePhotoPage($photo, $active_pid, $pcode, $filter_tag);
+				generatePhotoPage($photo, $active_pid, $pcode, $page, 22,  $filter_tag );
+				$page++;
 			}
 		}
 	}
