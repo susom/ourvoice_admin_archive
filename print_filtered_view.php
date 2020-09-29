@@ -143,7 +143,7 @@ function generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landsc
 
 	$html_block 	= array();
 	$html_block[] 	= "<section>";
-	$html_block[] 	= "<h2 class='pghdr'>Project : $pcode <b>".$htmlobj['date'] . " " .$htmlobj['time']."<i>| pg $page</i></b></h2>";
+	$html_block[] 	= "<h2 class='pghdr'>Project : $pcode <b>".$htmlobj['date'] . " " .$htmlobj['time']."<i>&#183; pg $page/$total </i></b></h2>";
 	
 	//make sure the image is whole (broken images wont have a resource id)
 	$resource_id 	= imagecreatefromstring($htmlphoto);
@@ -217,6 +217,8 @@ if(!empty($pcode) && !empty($active_pid)){
 	$data_geos 		= getFilteredDataGeos($pcode, $pfilters);
 	$photo_geos 	= $data_geos["photo_geos"];
 	$photos 		= $data_geos["code_block"];
+
+	$json_photo_geos = json_encode($photo_geos);
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -231,7 +233,6 @@ if(!empty($pcode) && !empty($active_pid)){
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>"></script>
 	<script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
-
     <style>
     	#main {
     		width: 990px; 
@@ -315,6 +316,14 @@ if(!empty($pcode) && !empty($active_pid)){
 		    float: right;
 		}
 
+		#google_map_photos {
+			box-shadow:0 0 3px  #888; 
+			width:100%;
+			height:400px;
+			margin: 0px auto 20px;
+		}
+
+
 		dl{ margin-bottom: 10px; font-size: 140%; }
 		dt{ display:inline-block; vertical-align: top}
 		dd{ display:inline-block; vertical-align: top; width: 90%;}
@@ -380,26 +389,38 @@ if(!empty($pcode) && !empty($active_pid)){
 			<h2 class="pghdr">Project : <?=$pcode?></h2>
 			<h3 class="tagcover">Theme : <?=$filter_tag?></h3>
 			<?php
-			$imgsrc = generateWalkMap($photo_geos);
-			echo "<img class='tagmaps' src='data:image/png;base64,  $imgsrc' />";
+			// $imgsrc = generateWalkMap($photo_geos);
+			// echo "<img class='tagmaps' src='data:image/png;base64,  $imgsrc' />";
 			?>
-			<!-- <div id='google_map_photos' class='gmap'></div> -->
+			<div id='google_map_photos' class='gmap'></div>
 			<small>Generated using the Stanford Discovery Tool, © Stanford University 2020</small>
 		</section>
 
 		<?php
+		$total = 0; 
+		foreach($photos as $photo){
+			if(empty($photo["tags"])){
+				continue;
+			}elseif(in_array($filter_tag,$photo["tags"])){
+				$total++;
+			}
+		}
+
 		$page = 1; 
 		foreach($photos as $photo){
 			if(empty($photo["tags"])){
 				continue;
 			}elseif(in_array($filter_tag,$photo["tags"])){
-				generatePhotoPage($photo, $active_pid, $pcode, $page, 22,  $filter_tag );
+				generatePhotoPage($photo, $active_pid, $pcode, $page, $total,  $filter_tag );
 				$page++;
 			}
 		}
 	}
 ?>
 </div>
+<script>
+var gmarkers 	= drawGMap(<?=$json_photo_geos?>, 'photos', 16);
+</script>
 </body>
 </html>
 <?php
