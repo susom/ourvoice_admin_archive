@@ -148,7 +148,7 @@ $page = "allwalks";
 		transition:height 1s ease-in-out;
 	}
 	#google_map_photos.mapon{
-		height:600px;
+		/*height:600px;*/
 	}
 	#coverflow {
 		position:absolute;
