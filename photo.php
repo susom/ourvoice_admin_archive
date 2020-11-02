@@ -247,7 +247,11 @@ $page = "photo_detail";
 		    $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
 		    $response   = doCurl($url);
 
+
+		    $response 	= str_replace('\"',"'", $response);  //goddamn it.. double apostrophes still giving us trouble?
+		    
 			$doc 		= json_decode(stripslashes($response),1); //wtf this breaking certain ones? 
+
 			$_rev 		= $doc["_rev"];
 			$proj_idx 	= $doc["project_id"];
 
