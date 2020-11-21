@@ -242,10 +242,10 @@ if(!isset($_SESSION["discpw"])) {
 			<li><a href = "recent_activity.php">All Data</a></li>
 			<!-- <li><a href = "visualization.php">Visualize</a></li> -->
 			<li style="float:right"><a href="index.php?clearsession=1">Refresh Project Data</a></li>
-			<li style="float:right"><img id = "magnifying_glass" src = "img/Magnifying_glass_icon.svg"></li>
+			<!-- <li style="float:right"><img id = "magnifying_glass" src = "img/Magnifying_glass_icon.svg"></li>
 			<li style="float:right"><input type = "text" id = "search" placeholder="TAG"></li>
 			<li style="float:right"><a href = "">Search: </a></li>
-
+ -->
 		</ul>
 	</div>
 	<?php
@@ -507,7 +507,7 @@ $(document).ready(function(){
 	});//on
 
 	/*On magnifying glass click and enter press -> run search fx */
-	implementSearch(pdata);
+	// implementSearch(pdata);
 
 	<?php
 
