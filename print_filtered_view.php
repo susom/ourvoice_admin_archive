@@ -107,19 +107,22 @@ function generatePhotoPage($photo, $active_pid, $pcode, $page, $total, $highligh
 	$urlp = urlencode("|$lat,$lng");
 	$parameters = "markers=$urlp";
 
-	$imageResource = imagecreatefromstring($htmlphoto); //convert to resource before checking dimensions
-	if(imagesx($imageResource) > imagesy($imageResource)){ //check picture orientation
-		// print_rr(imagesx($imageResource));
-		// print_rr(imagesy($imageResource));
-		$landscape = True;
-		$scale = imagesx($imageResource)/imagesy($imageResource);
-	}else{
-		$landscape = False;
-		$scale = imagesy($imageResource)/imagesx($imageResource);
-	}
+	$landscape 	= False;
+	$scale 		= 1;
 
+	if($imageResource = imagecreatefromstring($htmlphoto)){
+		 //convert to resource before checking dimensions
+		if(imagesx($imageResource) > imagesy($imageResource)){ //check picture orientation
+			// print_rr(imagesx($imageResource));
+			// print_rr(imagesy($imageResource));
+			$landscape = True;
+			$scale = imagesx($imageResource)/imagesy($imageResource);
+		}else{
+			$scale 		= imagesy($imageResource)/imagesx($imageResource);
+		}	
+		imagedestroy($imageResource);
+	}
 	$url = 'https://maps.googleapis.com/maps/api/staticmap?size=400x400&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
-	imagedestroy($imageResource);
 	$gmapsPhoto = doCurl($url);
 
 	generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad, $tags, $highlight_tag, $pcode , $page, $total);
@@ -385,6 +388,7 @@ if(!empty($pcode) && !empty($active_pid)){
 		foreach($photos as $photo){
 			generatePhotoPage($photo, $active_pid, $pcode, $page, $total);
 			$page++;
+			set_time_limit(10);
 		}
 	}else{
 		foreach($pfilters as $filter_tag){
@@ -423,6 +427,7 @@ if(!empty($pcode) && !empty($active_pid)){
 					$page++;
 				}
 			}
+			set_time_limit(10);
 		}
 	}
 ?>
