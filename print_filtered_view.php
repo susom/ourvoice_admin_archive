@@ -379,40 +379,49 @@ if(!empty($pcode) && !empty($active_pid)){
 <body>
 <div id="main">
 <?php
-	foreach($pfilters as $filter_tag){
-		// MOOD IS ALREADY FILTERED OUT 
-		if($filter_tag == "good" || $filter_tag == "bad" || $filter_tag == "neutral"){
-			continue;
-		}
-		?>
-		<section>
-			<h2 class="pghdr">Project : <?=$pcode?></h2>
-			<h3 class="tagcover">Theme : <?=$filter_tag?></h3>
-			<?php
-			// $imgsrc = generateWalkMap($photo_geos);
-			// echo "<img class='tagmaps' src='data:image/png;base64,  $imgsrc' />";
-			?>
-			<div id='google_map_photos' class='gmap'></div>
-			<small>Generated using the Stanford Discovery Tool, © Stanford University 2020</small>
-		</section>
-
-		<?php
-		$total = 0; 
+	if(empty($pfilters)){
+		$total = count($photos);
+		$page  = 1;
 		foreach($photos as $photo){
-			if(empty($photo["tags"])){
+			generatePhotoPage($photo, $active_pid, $pcode, $page, $total);
+			$page++;
+		}
+	}else{
+		foreach($pfilters as $filter_tag){
+			// MOOD IS ALREADY FILTERED OUT 
+			if($filter_tag == "good" || $filter_tag == "bad" || $filter_tag == "neutral"){
 				continue;
-			}elseif(in_array($filter_tag,$photo["tags"])){
-				$total++;
 			}
-		}
+			?>
+			<section>
+				<h2 class="pghdr">Project : <?=$pcode?></h2>
+				<h3 class="tagcover">Theme : <?=$filter_tag?></h3>
+				<?php
+				// $imgsrc = generateWalkMap($photo_geos);
+				// echo "<img class='tagmaps' src='data:image/png;base64,  $imgsrc' />";
+				?>
+				<div id='google_map_photos' class='gmap'></div>
+				<small>Generated using the Stanford Discovery Tool, © Stanford University 2020</small>
+			</section>
 
-		$page = 1; 
-		foreach($photos as $photo){
-			if(empty($photo["tags"])){
-				continue;
-			}elseif(in_array($filter_tag,$photo["tags"])){
-				generatePhotoPage($photo, $active_pid, $pcode, $page, $total,  $filter_tag );
-				$page++;
+			<?php
+			$total = 0; 
+			foreach($photos as $photo){
+				if(empty($photo["tags"])){
+					continue;
+				}elseif(in_array($filter_tag,$photo["tags"])){
+					$total++;
+				}
+			}
+
+			$page = 1; 
+			foreach($photos as $photo){
+				if(empty($photo["tags"])){
+					continue;
+				}elseif(in_array($filter_tag,$photo["tags"])){
+					generatePhotoPage($photo, $active_pid, $pcode, $page, $total,  $filter_tag );
+					$page++;
+				}
 			}
 		}
 	}
