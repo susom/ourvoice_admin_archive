@@ -382,6 +382,11 @@ function getFilteredDataGeos($pcode, $pfilters){
         $txns   = $doc[3]; 
         $device = $doc[4]; 
 
+        if(array_key_exists("deleted", $photo)){
+            continue;
+            exit;
+        }
+        
         // I DID THIS TO MYSELF OH LORD
         $old = is_null($old) ? "" : "&_old=" . $old;
 
