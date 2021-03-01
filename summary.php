@@ -101,34 +101,35 @@ if(isset($_POST["data_procesed"]) && isset($_POST["doc_id"])){
 }
 
 //NOW LOGIN TO YOUR PROJECT 
-if( ( (!empty($_SESSION["proj_id"]) OR !empty($_GET["id"]) ) 
-    && !empty($_SESSION["summ_pw"]) 
-    && !empty($_SESSION["authorized"]) )
+if( ( (!empty($_SESSION["proj_id"]) OR !empty($_GET["id"]) )  && !empty($_SESSION["summ_pw"])  && !empty($_SESSION["authorized"]) )
     || ( isset($_SESSION["discpw"])  && $_SESSION["discpw"] == cfg::$master_pw )
 ){
     // FIRST CHECK IF LOGIN IS IN SESSION, _GET FOR DIRECT LINKING TO SUMMARY PAGE FROM INDEX PAGES
-    $_POST["proj_id"]       = !empty($_GET["id"])  ? $_GET["id"] :  $_SESSION["proj_id"];
+    if(empty($_POST["proj_id"])){
+        $_POST["proj_id"]       = !empty($_GET["id"])  ? $_GET["id"] :  $_SESSION["proj_id"];
+    }
     $_POST["summ_pw"]       = isset($_SESSION["summ_pw"]) ? $_SESSION["summ_pw"] : $_SESSION["discpw"];
     $_POST["authorized"]    = $_SESSION["authorized"];
 }
 
-if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 
+if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 	if(!isset($_POST["authorized"])){
 		$alerts[] = "Please check the box to indicate you are authorized to view these data.";
 	}else{
-		$proj_id 	              = trim(strtoupper($_POST["proj_id"]));
-		$summ_pw 	              = $_POST["summ_pw"];
-		$_SESSION["proj_id"]      = $proj_id;
-		$_SESSION["summ_pw"]      = $summ_pw;
-        $_SESSION["authorized"]   = $_POST["authorized"];
-
-		$found  	= false;
+		$proj_id  = trim(strtoupper($_POST["proj_id"]));
+		$summ_pw  = $_POST["summ_pw"];
+		$found    = false;
 		foreach($projs as $pid => $proj){
 			if(isset($proj["project_id"]) && $proj_id == $proj["project_id"] && ( (isset($proj["summ_pass"]) && $summ_pw == $proj["summ_pass"]) || $summ_pw == $masterblaster) ) {
 				$active_project_id      = $proj_id;
-				$_SESSION["pid"]    = $active_pid = $pid;
-				$found 		= true;
+				$_SESSION["pid"]        = $active_pid = $pid;
+
+                $_SESSION["proj_id"]        = $proj_id;
+                $_SESSION["summ_pw"]        = $summ_pw;
+                $_SESSION["authorized"]     = $_POST["authorized"];
+				
+                $found                      = true;
 				break;
 			}
 		}
@@ -157,7 +158,6 @@ $page = "summary";
 <body id="main" class="<?php echo $page ?>">
 <div id="content">
 	<?php include("inc/gl_nav.php"); ?>
-
     <div id="main_box">
         <?php
         if( $active_project_id ){
@@ -489,9 +489,9 @@ $(document).ready(function(){
 		  url 		: "photo.php",
 		  data 		: { doc_id: doc_id, photo_i: photo_i, rotate: rotate },
 		}).done(function(response) {
-			// console.log("rotation saved");
+			console.log("rotation saved", response);
 		}).fail(function(msg){
-			// console.log("rotation save failed");
+			console.log("rotation save failed");
 		});
 		return false;
 	});
