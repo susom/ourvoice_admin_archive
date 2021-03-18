@@ -96,7 +96,7 @@ $page = "allwalks";
 				</ul>
 
 				<a href="#" class="btn btn-sm btn-info pull-right print_view">Print View</a>
-				<a href="#" class="btn btn-sm btn-primary pull-right export_view">Export View as PDF</a>
+				<!-- <a href="#" class="btn btn-sm btn-primary pull-right export_view">Export View as PDF</a> -->
 				<form  id="choose_filter" class="pull-right">
 					<label>Add Filter(s) :</label>
 					<select>
