@@ -372,7 +372,8 @@ function getFilteredDataGeos($pcode, $pfilters){
     $photo_geos     = array();
     $code_block     = array();
 
-
+    //WHAT THE FUCK IS THIS SHIT, NEED TO LOOP THROUGH 3 times? 
+    $sort_temp      = array();
     foreach($response["rows"] as $row){
         $doc    = $row["value"];
         $_id    = $row["id"];
@@ -382,13 +383,14 @@ function getFilteredDataGeos($pcode, $pfilters){
         $txns   = $doc[3]; 
         $device = $doc[4]; 
 
+        //STUFF IT INTO HOLDING ARRAY BY WALK_ID
+        if(!array_key_exists($_id, $sort_temp)){
+            $sort_temp[$_id] = array();
+        }
+
         if(array_key_exists("deleted", $photo)){
             continue;
-            exit;
         }
-        
-        // I DID THIS TO MYSELF OH LORD
-        $old = is_null($old) ? "" : "&_old=" . $old;
 
         // if good bad filters is included in tags
         if(!empty($goodbad_filter)){
@@ -397,30 +399,43 @@ function getFilteredDataGeos($pcode, $pfilters){
             }
         }
 
-        // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK
-        if(!empty($photo["geotag"])){
-            $filename   = empty($photo["name"]) ? "photo_".$ph_i.".jpg" : $photo["name"];
-            $ph_id      = $_id;
-            if(array_key_exists("name",$photo)){
-                // new style file pointer
-                $ph_id  .= "_" .$filename;
-            }
-            $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
-            $photo_uri      = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-            $photo["geotag"]["photo_src"]   = $photo_uri;
-            $photo["geotag"]["goodbad"]     = $photo["goodbad"];
-            $photo["geotag"]["photo_id"]    = $_id. "_" . "photo_".$ph_i;
-            $photo["geotag"]["platform"]    = $device["platform"];
-            array_push($photo_geos, $photo["geotag"]);
-        }
-
-        // Massage a block for each photo in the project
-        $code_block = array_merge($code_block, printPhotos($photo,$_id,$ph_i,$old,$txns));
+        $sort_temp[$_id][$ph_i] = $doc;        
     }
 
-    usort($code_block, function($a, $b) {
-        return $b['actual_ts'] <=> $a['actual_ts'];
-    });
+    //SECOND LOOP!  + BONUS NESTED LOOP BS,   BETTER WAY TO DO THIS???  FUCK IT.
+    foreach($sort_temp as $walk_id => $junk){
+        ksort($sort_temp[$walk_id]);
+        foreach($sort_temp[$walk_id] as $ph_i => $doc){
+            $_id    = $walk_id;
+            $old    = $doc[1];
+            $photo  = $doc[2]; 
+            $txns   = $doc[3]; 
+            $device = $doc[4];
+
+            // I DID THIS TO MYSELF OH LORD
+            $old = is_null($old) ? "" : "&_old=" . $old;
+
+            // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK, AT LEAST THIS HAS NO ORDER HALLELUJAH
+            if(!empty($photo["geotag"])){
+                $filename   = empty($photo["name"]) ? "photo_".$ph_i.".jpg" : $photo["name"];
+                $ph_id      = $_id;
+                if(array_key_exists("name",$photo)){
+                    // new style file pointer
+                    $ph_id  .= "_" .$filename;
+                }
+                $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+                $photo_uri      = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+                $photo["geotag"]["photo_src"]   = $photo_uri;
+                $photo["geotag"]["goodbad"]     = $photo["goodbad"];
+                $photo["geotag"]["photo_id"]    = $_id. "_" . "photo_".$ph_i;
+                $photo["geotag"]["platform"]    = $device["platform"];
+                array_push($photo_geos, $photo["geotag"]);
+            }
+
+            // Massage a block for each photo in the project
+            $code_block = array_merge($code_block, printPhotos($photo,$_id,$ph_i,$old,$txns));
+        }
+    }
 
     // IF ASKING FOR MULTIPLE TAGS COULD HAVE REPEATS FOR MULTI TAGGED PHOTOS
     $code_block = array_unique($code_block,SORT_REGULAR);
