@@ -571,43 +571,13 @@ $(document).ready(function(){
 
     //EXPORT AS PDF
 	$(".collapse").on("click",".export-pdf",function(e){
-		console.log("clicked button");
-		var _id 	= $(this).data("id");
-		// var last4 	= _id.substr(_id.length - 4);
-		// var _rev 	= $(this).data("rev");
-		var data = {};
-		//find all photos
-		var photosObj = $(this).parent().children(".thumbs").find('li');
-		var photoNames = [];
-		console.log(photosObj);
-		var rotationString = "";
-		photosObj.each(function(index, val){
-			photoNames.push($(val).attr('data-phid'));
-			let temp = $(this).find("a")[0]; //find the element that houses the rotation tag
-			rotationString += ($(temp).attr("rev")); //append to a string
-		});
-		data.photoNames = photoNames;
-		data.walkID = _id;
 		
-		// console.log(_id);
-		// console.log(last4);
-		// console.log(_rev);
+		var _id             =  $(this).data("id");
+        var active_pid      = $(this).data("active_pid");
+        var pcode           = $(this).data("pcode");
 
-		//send request with all the #
-
-		// $.ajax({
-		// 	type 		: "POST",
-		// 	url 		: "pdf_conversion.php",
-		// 	data 		: { data: data },
-		// }).done(function(response) {
-		// 	console.log(response);
-		// }).fail(function(msg){
-		// 	console.log("PDF conversion failed");
-		// });
-		
-		// console.log('pdf_conversion.php?_id='+_id+'&_numPhotos='+photoNames.length+'&_rotation='+rotationString);
-		window.open('pdf_conversion.php?_id='+_id+'&_numPhotos='+photoNames.length+'&_rotationString='+rotationString, '_blank');
-		//photo.php?_id=".$doc["_id"]."&_file=$photo_name
+        var pdf_url = "print_walk_view.php?_id=" + _id + "&pcode=" + pcode + "&active_pid=" + active_pid;
+        window.open(pdf_url, '_blank');
 	});
 
 	//reload live map

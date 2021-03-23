@@ -442,11 +442,91 @@ function getFilteredDataGeos($pcode, $pfilters){
     $data       = array("photo_geos" => $photo_geos, "code_block" => $code_block);
     return $data;
 }
+function getWalkIdDataGeos($walk_id){
+    //RETURNS JSON ENCODED BLOCK OF FILTERED PHOTO INFO, AND PHOTO GEOs
+    // MOOD and TAG FILTERS ARE MIXED TOGETHER, SO SEPERATE THEM OUT
+
+    $response       = getWalkSummaryData($walk_id);
+    // $response       = getProjectSummaryData("IRV", "all_photos");
+    $photo_geos     = array();
+    $code_block     = array();
+
+    //WHAT THE FUCK IS THIS SHIT, NEED TO LOOP THROUGH 3 times? 
+    $sort_temp      = array();
+    foreach($response["rows"] as $row){
+        $doc    = $row["value"];
+        $_id    = $row["id"];
+        $ph_i   = $doc[0];
+        $old    = $doc[1];
+        $photo  = $doc[2]; 
+        $txns   = $doc[3]; 
+        $device = $doc[4]; 
+
+        //STUFF IT INTO HOLDING ARRAY BY WALK_ID
+        if(!array_key_exists($_id, $sort_temp)){
+            $sort_temp[$_id] = array();
+        }
+
+        if(array_key_exists("deleted", $photo)){
+            continue;
+        }
+
+        // if good bad filters is included in tags
+        if(!empty($goodbad_filter)){
+            if(!in_array($photo["goodbad"], $goodbad_filter) ){
+                continue;
+            }
+        }
+
+        $sort_temp[$_id][$ph_i] = $doc;        
+    }
+
+    //SECOND LOOP!  + BONUS NESTED LOOP BS,   BETTER WAY TO DO THIS???  FUCK IT.
+    foreach($sort_temp as $walk_id => $junk){
+        ksort($sort_temp[$walk_id]);
+        foreach($sort_temp[$walk_id] as $ph_i => $doc){
+            $_id    = $walk_id;
+            $old    = $doc[1];
+            $photo  = $doc[2]; 
+            $txns   = $doc[3]; 
+            $device = $doc[4];
+
+            // I DID THIS TO MYSELF OH LORD
+            $old = is_null($old) ? "" : "&_old=" . $old;
+
+            // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK, AT LEAST THIS HAS NO ORDER HALLELUJAH
+            if(!empty($photo["geotag"])){
+                $filename   = empty($photo["name"]) ? "photo_".$ph_i.".jpg" : $photo["name"];
+                $ph_id      = $_id;
+                if(array_key_exists("name",$photo)){
+                    // new style file pointer
+                    $ph_id  .= "_" .$filename;
+                }
+                $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+                $photo_uri      = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+                $photo["geotag"]["photo_src"]   = $photo_uri;
+                $photo["geotag"]["goodbad"]     = $photo["goodbad"];
+                $photo["geotag"]["photo_id"]    = $_id. "_" . "photo_".$ph_i;
+                $photo["geotag"]["platform"]    = $device["platform"];
+                array_push($photo_geos, $photo["geotag"]);
+            }
+
+            // Massage a block for each photo in the project
+            $code_block = array_merge($code_block, printPhotos($photo,$_id,$ph_i,$old,$txns));
+        }
+    }
+
+    // IF ASKING FOR MULTIPLE TAGS COULD HAVE REPEATS FOR MULTI TAGGED PHOTOS
+    $code_block = array_unique($code_block,SORT_REGULAR);
+    $data       = array("photo_geos" => $photo_geos, "code_block" => $code_block);
+    return $data;
+}
 
 // SOMEHTML GENERATION
 function printRow($doc, $active_pid){
     global $project_meta, $ap;
 
+    $pcode          = $ap["project_list"][$active_pid]["project_id"];
     $codeblock      = array();
     $i              = $doc["_id"];
     $photos         = $doc["photos"];
@@ -543,7 +623,7 @@ function printRow($doc, $active_pid){
     if(!$processed){
         $codeblock[] = "<label class='data_processed' ><input type='checkbox' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'/> Data Processed?</label>";
     }
-    $codeblock[] = "<a href='#' class='btn btn-primary export-pdf' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'>Walk Data PDF</a>";
+    $codeblock[] = "<a href='#' class='btn btn-primary export-pdf' data-pcode='".$pcode."' data-active_pid='".$active_pid."' data-id='".$doc["_id"]."' data-rev='".$doc["_rev"]."'>Print View</a>";
 
 
     $codeblock[] = "<h5>Photo Previews (".count($photos).")</h5>";
@@ -869,6 +949,12 @@ function filter_by_projid($view, $keys_array){ //keys array is the # integer of 
 
 function getProjectSummaryData($project_code, $view="walk", $dd="project"){
     $qs         = http_build_query(array( 'keys' => '["'.$project_code.'"]' ,  'descending' => 'true'));
+    $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
+    $response   = doCurl($couch_url);
+    return json_decode($response,1);
+}
+function getWalkSummaryData($walk_id,  $view="walk_id", $dd="summary"){
+    $qs         = http_build_query(array( 'keys' => '["'.$walk_id.'"]' ,  'descending' => 'true'));
     $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
     $response   = doCurl($couch_url);
     return json_decode($response,1);
