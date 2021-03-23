@@ -130,6 +130,8 @@ if( isset($_POST["doc_id"]) ){
             }
         }
 
+/*	
+//TODO WHAT HAPPENED HERE?	
         // to update via firestore, must send entire thing top level Field Value  ie $payload["photos"]
         // ALL UPDATES AFFECT Photos array MAKE UPDATES TO FIRESTORE AS WELL
     	$access_token 		= getGCPRestToken($keyPath, $firestore_scope);
@@ -147,8 +149,10 @@ if( isset($_POST["doc_id"]) ){
 		$json           	= json_encode($data);
 		$response       	= restPushFireStore($firestore_url, $json, $access_token);
 		//UPDATES
+*/
         if($ajax) {
-            $response = doCurl($url, json_encode($payload), "PUT");
+			$response = doCurl($url, json_encode($payload), "PUT");
+			print_r($response);
             exit;
         }
 	}
