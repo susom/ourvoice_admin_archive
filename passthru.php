@@ -11,8 +11,8 @@ $year_cache     = 31536000;
 //$id 	= isset($_GET["_id"])	? $_GET["_id"] 		: "GNT_4C01067B-5704-4C7E-A30E-A501C13A19E7_1_1482192593554";
 //$file 	= isset($_GET["_file"]) ? $_GET["_file"] 	: "photo_0.jpg";
 
-$id 	= isset($_GET["_id"]) 	? $_GET["_id"] 		: NULL ;
-$file 	= isset($_GET["_file"]) ? $_GET["_file"] 	: NULL ;
+$id 	= isset($_GET["_id"]) 	? filter_var($_GET["_id"], FILTER_SANITIZE_STRING) 		: NULL ;
+$file 	= isset($_GET["_file"]) ? filter_var($_GET["_file"], FILTER_SANITIZE_STRING) 	: NULL ;
 $old 	= isset($_GET["_old"])  ? true 	: false ;
 
 if (empty($id) || empty($file)) {

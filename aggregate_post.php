@@ -2,14 +2,14 @@
 require_once "common.php";
 
 if(isset($_POST["DragTag"])) {
-	$proj_id = $_POST["Project"];
-	$drag_tag = $_POST["DragTag"];
-	$temp = explode("_", $_POST["DropTag"]);
+	$proj_id 	= filter_var($_POST["Project"], FILTER_SANITIZE_NUMBER_INT);
+	$drag_tag 	= filter_var($_POST["DragTag"], FILTER_SANITIZE_STRING);
+	$temp 		= explode("_", $_POST["DropTag"]);
 	$pic_reference = $temp[0] ."_". $temp[1] ."_". $temp[2] ."_". $temp[3]; 
 	$pic_number = $temp[5];
-	$datakey = $_POST["Key"];
-	$storage = getAllData();
-	$tag_loc = $storage["project_list"][$datakey]["tags"];
+	$datakey 	= filter_var($_POST["Key"], FILTER_SANITIZE_STRING);
+	$storage 	= getAllData();
+	$tag_loc 	= $storage["project_list"][$datakey]["tags"];
 	$present_flag = false;
 	//add total tags in all_projects
 	 if(isset($tag_loc)){ //if the tags category exists to start
@@ -68,8 +68,8 @@ if(isset($_POST["DragTag"])) {
 }	
 
 if(isset($_POST["deleteTag"])){
-	$deletetag 	= $_POST["deleteTag"];
-	$pcode 		= $_POST["project_code"];
+	$deletetag 	= filter_var($_POST["deleteTag"], FILTER_SANITIZE_STRING);
+	$pcode 		= filter_var($_POST["project_code"], FILTER_SANITIZE_STRING);
 	// RGET PROJECT LIST, FIND PROJECT AND DELETE TAG, RESAVE PROJECT LIST, REASSIGN SESSION VAR
 	$payload 	= getAllData();
 	foreach($payload["project_list"] as $key => $value){ //loop through projects

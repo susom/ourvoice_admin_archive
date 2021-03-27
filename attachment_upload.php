@@ -1,9 +1,13 @@
 <?php
 require_once("common.php");
 
+
+
+
+
 // AJAX UPLOAD WALK DATA
 if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
-	$_id = $_POST["doc_id"];
+	$_id = filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING);
 	$doc = json_decode($_POST["doc"],1);
 	// $url = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
 
@@ -42,7 +46,7 @@ if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
 
 // AJAX UPLOAD ATTACHMENTS
 if( isset($_REQUEST["walk_id"]) ){
-    $walk_id        = $_REQUEST["walk_id"];
+    $walk_id        = filter_var($_REQUEST["walk_id"], FILTER_SANITIZE_STRING);
     $local_folder   = "temp/$walk_id/";
 
     require('UploadHandler.php');

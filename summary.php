@@ -36,10 +36,12 @@ $active_project_id 	= null;
 $active_pid 		= null;
 $alerts 			= array();
 
+
+
 //AJAX GETTING DAY'S DATA
 if(isset($_POST["active_pid"]) && $_POST["date"]){
-	$active_pid 	= $_POST["active_pid"];
-	$date 			= $_POST["date"];
+	$active_pid 	= filter_var($_POST["active_pid"], FILTER_SANITIZE_NUMBER_INT);
+	$date 			= filter_var($_POST["date"], FILTER_SANITIZE_STRING);
 	$project_meta 	= $ap["project_list"][$active_pid];
 
 	//GET THE DATA FROM disc_users
@@ -57,8 +59,8 @@ if(isset($_POST["active_pid"]) && $_POST["date"]){
 
 //AJAX DELETEING DATA ENTRY
 if(isset($_POST["for_delete"]) && $_POST["for_delete"]){
-	$_id 	= $_POST["doc_id"];
-	$_rev 	= $_POST["rev"];
+	$_id 	= filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING);
+	$_rev 	= filter_var($_POST["rev"], FILTER_SANITIZE_STRING);
 
 	$fordelete      = [];
 	array_push($fordelete, array(
@@ -81,7 +83,7 @@ if(isset($_POST["for_delete"]) && $_POST["for_delete"]){
 //AJAX FOR MARKING DATA_PROCESSED
 if(isset($_POST["data_procesed"]) && isset($_POST["doc_id"])){
     // FIRST GET A FRESH COPY OF THE WALK DATA
-    $_id  		= $_POST["doc_id"];
+    $_id  		= filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING);
     $url 		= cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
     $response   = doCurl($url);
     $doc 	 	= json_decode(stripslashes($response),1);
@@ -106,19 +108,18 @@ if( ( (!empty($_SESSION["proj_id"]) OR !empty($_GET["id"]) )  && !empty($_SESSIO
 ){
     // FIRST CHECK IF LOGIN IS IN SESSION, _GET FOR DIRECT LINKING TO SUMMARY PAGE FROM INDEX PAGES
     if(empty($_POST["proj_id"])){
-        $_POST["proj_id"]       = !empty($_GET["id"])  ? $_GET["id"] :  $_SESSION["proj_id"];
+        $_POST["proj_id"]       = !empty($_GET["id"])  ? filter_var($_GET["id"], FILTER_SANITIZE_STRING) :  $_SESSION["proj_id"];
     }
     $_POST["summ_pw"]       = isset($_SESSION["summ_pw"]) ? $_SESSION["summ_pw"] : $_SESSION["discpw"];
     $_POST["authorized"]    = $_SESSION["authorized"];
 }
 
-
 if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 	if(!isset($_POST["authorized"])){
 		$alerts[] = "Please check the box to indicate you are authorized to view these data.";
 	}else{
-		$proj_id  = trim(strtoupper($_POST["proj_id"]));
-		$summ_pw  = $_POST["summ_pw"];
+		$proj_id  = trim(strtoupper(filter_var($_POST["proj_id"], FILTER_SANITIZE_STRING)));
+		$summ_pw  = filter_var($_POST["summ_pw"], FILTER_SANITIZE_STRING);
 		$found    = false;
 		foreach($projs as $pid => $proj){
 			if(isset($proj["project_id"]) && $proj_id == $proj["project_id"] && ( (isset($proj["summ_pass"]) && $summ_pw == $proj["summ_pass"]) || $summ_pw == $masterblaster) ) {
@@ -289,8 +290,8 @@ $page = "summary";
         	echo implode("\r\n",$summ_buffer);
 
         	echo "<form id='project_summary' method='post'>";
-        	echo "<input type='hidden' name='proj_id' value='".$_POST["proj_id"]."'/>";
-        	echo "<input type='hidden' name='summ_pw' value='".$_POST["summ_pw"]."'/>";
+        	echo "<input type='hidden' name='proj_id' value='".filter_var($_POST["proj_id"], FILTER_SANITIZE_STRING)."'/>";
+        	echo "<input type='hidden' name='summ_pw' value='".filter_var($_POST["summ_pw"], FILTER_SANITIZE_STRING)."'/>";
         	$project_meta 		= $ap["project_list"][$active_pid];
         	$most_recent_date 	= true;
         	foreach($date_headers as $date => $record_count){

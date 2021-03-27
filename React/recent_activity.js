@@ -5,6 +5,7 @@ class Entry extends React.Component{
         <div className = "title">({this.props.abv}) - <b><a href={"summary.php?id=" + this.props.abv} class="gotosumm" data-pid={this.props.abv}>{this.props.full}</a></b></div>  
         <div className = "recent_times">{this.props.rec}</div>
         <div className = "non_recent_times">{this.props.non_rec}</div>
+        <a href="index.php?proj_idx={this.props.pid}">Go to Config</a>
       </div>
       ); 
   }
@@ -75,7 +76,7 @@ class Header extends React.Component{
       return(
         <div>
           <h1>Recent Activities</h1>
-          <p> Projects updated within the last 4 weeks: <b>{this.rec_counter}</b> </p>
+          <p>Projects updated within the last 4 weeks: <b>{this.rec_counter}</b> </p>
 
           <ul>{listItems}</ul>
         </div>

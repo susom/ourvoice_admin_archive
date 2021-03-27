@@ -21,20 +21,20 @@ $firestore_scope 	= cfg::$firestore_scope;
 if( isset($_POST["doc_id"]) ){
 	// FOR PHOTOS
 	// FIRST GET A FRESH COPY OF THE WALK DATA
-	$_id  		= $_POST["doc_id"];
+	$_id  		= filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING);
     $url 		= cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
     $response   = doCurl($url);
 	$doc 	 	= json_decode(stripslashes($response),1);
 	$payload 	= $doc;
 
 	if(isset($_POST["photo_i"])){
-		$photo_i = $_POST["photo_i"];
+		$photo_i = filter_var($_POST["photo_i"], FILTER_SANITIZE_NUMBER_INT);
 
 		$ajax = false;
 		if(isset($_POST["rotate"])){
             $ajax = true;
 			//SAVE ROTATION
-			$rotate = $_POST["rotate"]; 
+			$rotate = filter_var($_POST["rotate"], FILTER_SANITIZE_NUMBER_INT); 
 			$payload["photos"][$photo_i]["rotate"] = $rotate;		
 		}elseif(isset($_POST["delete"])){
             $ajax = true;
@@ -68,7 +68,7 @@ if( isset($_POST["doc_id"]) ){
 		}elseif(isset($_POST["tag_text"])){
             $ajax = true;
 			//SAVE TAG
-			$photo_tag 		= $_POST["tag_text"];
+			$photo_tag 		= filter_var($_POST["tag_text"], FILTER_SANITIZE_STRING);
 			$photo_tag 		= str_replace('"',"'",$photo_tag);
 			
 			$json_response 	= array("new_photo_tag" => false, "new_project_tag" => false);
@@ -82,7 +82,7 @@ if( isset($_POST["doc_id"]) ){
 
 			if(isset($_POST["proj_idx"])){
 				//POSSIBLE NEW PROJECT TAG, SAVE TO disc_projects
-				$proj_idx 		= $_POST["proj_idx"];
+				$proj_idx 		= filter_var($_POST["proj_idx"], FILTER_SANITIZE_NUMBER_INT);
 				$p_url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
 				$p_response 	= doCurl($p_url);
 				$p_doc 	 		= json_decode(stripslashes($p_response),1);
@@ -103,7 +103,7 @@ if( isset($_POST["doc_id"]) ){
             $ajax = true;
 			//SAVE TAG
 
-			$photo_tag = $_POST["delete_tag_text"];
+			$photo_tag = filter_var($_POST["delete_tag_text"], FILTER_SANITIZE_STRING);
 
 			print_r($payload["photos"][$photo_i]["tags"]);
 			if(isset($payload["photos"][$photo_i]["tags"])){
@@ -115,16 +115,15 @@ if( isset($_POST["doc_id"]) ){
 			}
 		}
         //SAVE TEXT COMMENT
-		if(isset($_POST["text_comment"])){
-            if(isset($_POST["text_comment"])){
-                $txns = str_replace('"','&#34;', $_POST["text_comment"]);
-                $payload["photos"][$photo_i]["text_comment"] = $txns;
-            }
+        if(isset($_POST["text_comment"])){
+            $txns = str_replace('"','&#34;', filter_var($_POST["text_comment"], FILTER_SANITIZE_STRING));
+            $payload["photos"][$photo_i]["text_comment"] = $txns;
         }
+        
 
         //SAVE TRANSCRIPTIONs
         if(isset($_POST["transcriptions"])){
-            foreach($_POST["transcriptions"] as $audio_name => $transcription){
+            foreach( filter_var($_POST["transcriptions"], FILTER_SANITIZE_STRING) as $audio_name => $transcription){
                 $txns = str_replace('"','&#34;', $transcription);
                 $payload["transcriptions"][$audio_name]["text"] = $txns;
             }
@@ -166,7 +165,7 @@ if( isset($_POST["doc_id"]) ){
 	}
 }
 if( isset($_POST["delete_mp3"]) ){
-	$file_pointer = "./temp/". $_POST["delete_mp3"];
+	$file_pointer = "./temp/".  filter_var($_POST["delete_mp3"], FILTER_SANITIZE_STRING);
 	if(!unlink($file_pointer)){
 		echo 0;
 	}else{
@@ -176,10 +175,10 @@ if( isset($_POST["delete_mp3"]) ){
 }
 //ajax response to pixelation via portal tool
 if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordinates'])){
-	$face_coord 	= json_decode($_POST["coordinates"],1);
-	$_id 			= ($_POST["pic_id"]);
-	$photo_num 		= ($_POST["photo_num"]);
-	$rotationOffset = $_POST["rotation"];
+	$face_coord 	= json_decode(filter_var($_POST["coordinates"], FILTER_SANITIZE_STRING),1);
+	$_id 			= filter_var($_POST["pic_id"], FILTER_SANITIZE_STRING);
+	$photo_num 		= filter_var($_POST["photo_num"], FILTER_SANITIZE_NUMBER_INT);
+	$rotationOffset = filter_var($_POST["rotation"], FILTER_SANITIZE_NUMBER_INT);
 	$photo_num 		= 'photo_'.$photo_num . '.jpg';
 	$id 			= $_id."_".$photo_num;
 
@@ -245,8 +244,8 @@ $page = "photo_detail";
 		<div class='print_logo'></div>
 		<?php
 		if(isset($_GET["_id"]) && isset($_GET["_file"])){
-			$_id 		= trim($_GET["_id"]);
-			$_file 		= $_GET["_file"];
+			$_id 		= trim(filter_var($_GET["_id"], FILTER_SANITIZE_STRING) );
+			$_file 		= trim(filter_var($_GET["_file"], FILTER_SANITIZE_STRING) );
 
 		    $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
 		    $response   = doCurl($url);

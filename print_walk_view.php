@@ -6,9 +6,9 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$_id 			= $_GET["_id"] ?? null;
-$active_pid 	= $_GET["active_pid"] ?? null;
-$pcode 			= $_GET["pcode"] ?? null;
+$_id 			= isset($_GET["_id"]) 			? filter_var($_GET["_id"], FILTER_SANITIZE_STRING) : null;
+$pcode 			= isset($_GET["pcode"]) 		? filter_var($_GET["pcode"], FILTER_SANITIZE_STRING) : null;
+$active_pid 	= isset($_GET["active_pid"])  	? filter_var($_GET["active_pid"], FILTER_SANITIZE_NUMBER_INT) : null;
 
 
 function generateWalkMap($photo_geos){

@@ -17,6 +17,7 @@ for($i = 0 ; $i < count($stor) ; $i++){
 	$ful = getFullName($ALL_PROJ_DATA,$listid[$i]);
 	$iter = 0;
 	$retvar["set"][$i]["abv"] = $listid[$i];
+	$retvar["set"][$i]["pid"] = $i;
 	$retvar["set"][$i]["full"] = $ful;
 	$retvar["set"][$i]["non_rec_times"] = array();
 	$retvar["set"][$i]["rec_time"] = array();		

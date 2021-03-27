@@ -1,5 +1,4 @@
 <?php
-
 //re-size an image and keep its exact proportions
 //<img src="thumbnail.php?file=img.jpg&maxw=50&maxh=50" />
 
@@ -9,9 +8,10 @@
  
 // Get the File path for the image
  
-$image_path     = urldecode($_GET["file"]);
+$image_path     = urldecode(filter_var($_GET["file"], FILTER_SANITIZE_STRING));
 $current_dir    = $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
 $sImagePath     = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://" . $current_dir ."/".  $image_path;
+$sImagePath     = "http://ourvoice-projects.med.stanford.edu/" .  $image_path;
 
 // If you want exact dimensions, you
 // will pass 'width' and 'height'
@@ -22,8 +22,8 @@ $sImagePath     = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://" . $curre
 // If you want proportional thumbnails,
 // you will pass 'maxw' and 'maxh'
  
-$iMaxWidth      = (int)$_GET["maxw"];
-$iMaxHeight     = (int)$_GET["maxh"];
+$iMaxWidth      = (int)filter_var($_GET["maxw"], FILTER_SANITIZE_NUMBER_INT);
+$iMaxHeight     = (int)filter_var($_GET["maxh"], FILTER_SANITIZE_NUMBER_INT);
  
 // Based on the above we can tell which
 // type of resizing our script must do

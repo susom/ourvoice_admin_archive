@@ -18,11 +18,11 @@ $alerts 			= array();
 
 // AJAX HANDLING
 if(array_key_exists("ajax",$_POST)){
-	if($_POST["ajax"] == "addProjectTag"){
+	if(filter_var($_POST["ajax"], FILTER_SANITIZE_STRING) == "addProjectTag"){
 		//POSSIBLE NEW PROJECT TAG, SAVE TO disc_projects
 		$json_response 	= array("new_project_tag" => false);
-		$proj_idx 		= $_POST["proj_idx"];
-		$project_tag 	= $_POST["tag_text"];
+		$proj_idx 		= filter_var($_POST["proj_idx"], FILTER_SANITIZE_NUMBER_INT);
+		$project_tag 	= filter_var($_POST["tag_text"], FILTER_SANITIZE_STRING);
 		
 		$p_url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
 		$p_response 	= doCurl($p_url);
@@ -43,9 +43,9 @@ if(array_key_exists("ajax",$_POST)){
 		exit;
 	}
 
-	if($_POST["ajax"] == "loadThumbs"){
-		$pcode 			= $_POST["pcode"];
-		$pfilters 		= $_POST["filters"] ?? array();
+	if(filter_var($_POST["ajax"], FILTER_SANITIZE_STRING) == "loadThumbs"){
+		$pcode 			= filter_var($_POST["pcode"], FILTER_SANITIZE_STRING);
+		$pfilters 		= isset($_POST["filters"]) ? filter_var($_POST["filters"], FILTER_SANITIZE_STRING) : array();
 		$data 			= getFilteredDataGeos($pcode, $pfilters);
 		$data["code_block"] = printAllDataThumbs($data["code_block"]);
 		$reload 		= json_encode($data);

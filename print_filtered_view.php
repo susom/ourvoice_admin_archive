@@ -6,8 +6,9 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$pcode 			= $_GET["pcode"] ?? null;
-$active_pid 	= $_GET["pid"] ?? null;
+$pcode 			= isset($_GET["pcode"]) ? filter_var($_GET["pcode"], FILTER_SANITIZE_STRING) : null;
+$active_pid 	= isset($_GET["pid"])  	? filter_var($_GET["pid"], FILTER_SANITIZE_NUMBER_INT) : null;
+
 
 function generateWalkMap($photo_geos){
 	$geopoints = array();
@@ -213,7 +214,7 @@ if(!empty($pcode) && !empty($active_pid)){
 	$project_tags 	= $_SESSION["DT"]["project_list"][$active_pid]["tags"] ?? array();
 
 	// THESE FILTERS COME IN MIXED WITH MOOD AND TAG
-	$filters 		= $_GET["filters"] ? $_GET["filters"] : "[]";
+	$filters 		= $_GET["filters"] ? filter_var($_GET["filters"], FILTER_SANITIZE_STRING) : "[]";
 	$pfilters 		= json_decode($filters,1);
 	$pfilters 		= empty($pfilters) ? $project_tags : $pfilters;
 

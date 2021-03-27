@@ -30,7 +30,7 @@ foreach($ap["project_list"] as $pid => $proj){
 
 // AJAX HANDLER 
 if( isset($_POST["proj_idx"]) ){
-	$proj_idx  	= $_POST["proj_idx"];
+	$proj_idx  	= filter_var($_POST["proj_idx"], FILTER_SANITIZE_NUMBER_INT);
 
 	// Delete
 	if(isset($_POST["delete_project_id"])){
@@ -79,7 +79,7 @@ if( isset($_POST["proj_idx"]) ){
 	}else{
 	    // REDIRECT IF NO OTHER ACTION
 		$redi 		= false;
-		if( $projects[$proj_idx] !==  $_POST["project_id"]){
+		if( $projects[$proj_idx] !==  filter_var($_POST["project_id"], FILTER_SANITIZE_STRING)){
 			//MEANS THIS IS A NEW PROJECT
 			//NEED A NEW PROJECT ID!
 			$temp 		= array_keys($projects);
@@ -109,16 +109,16 @@ if( isset($_POST["proj_idx"]) ){
 		}
 
 		$updated_project = array(
-			 "project_id" 		=> strtoupper($_POST["project_id"])
-			,"project_name" 	=> $_POST["project_name"]
-			,"project_pass" 	=> $_POST["project_pass"]
-			,"summ_pass" 		=> $_POST["summ_pass"]
-			,"project_email" 	=> $_POST["project_email"]
-			,"template_type"	=> $_POST["template_type"]
-            ,"text_comments"    => $_POST["text_comments"]
+			 "project_id" 		=> strtoupper(filter_var($_POST["project_id"], FILTER_SANITIZE_STRING))
+			,"project_name" 	=> filter_var($_POST["project_name"], FILTER_SANITIZE_STRING)
+			,"project_pass" 	=> filter_var($_POST["project_pass"], FILTER_SANITIZE_STRING)
+			,"summ_pass" 		=> filter_var($_POST["summ_pass"], FILTER_SANITIZE_STRING)
+			,"project_email" 	=> filter_var($_POST["project_email"], FILTER_SANITIZE_STRING)
+			,"template_type"	=> filter_var($_POST["template_type"], FILTER_SANITIZE_NUMBER_INT)
+            ,"text_comments"    => filter_var($_POST["text_comments"], FILTER_SANITIZE_STRING)
             // ,"include_surveys"  => $_POST["include_surveys"]
             ,"expire_date"  	=> $expire_date
-			,"thumbs"			=> isset($_POST["thumbs"]) ? $_POST["thumbs"] : 0
+			,"thumbs"			=> isset($_POST["thumbs"]) ? filter_var($_POST["thumbs"], FILTER_SANITIZE_NUMBER_INT) : 0
 			,"app_lang" 		=> $app_lang
 		);
 		//     [tags] => Array
@@ -173,7 +173,7 @@ if(isset($_POST["discpw"])){
 	if(!isset($_POST["authorized"])){
 		$alerts[] = "Please check the box to indicate you are authorized to view these data.";
 	}else{
-		$discpw 	= $_POST["discpw"];
+		$discpw 	= filter_var($_POST["discpw"], FILTER_SANITIZE_STRING);
 		if(strtolower($discpw) !== $masterblaster){
 			$alerts[] = "Director Password is incorrect. Please try again.";
 		}else{
@@ -251,8 +251,9 @@ if(!isset($_SESSION["discpw"])) {
 	<?php
 	if( isset($_GET["proj_idx"]) ){
 		// SET UP NEW PROJECT
+		$proj_idx = filter_var($_GET["proj_idx"], FILTER_SANITIZE_NUMBER_INT);
 		$proj_ids = array_column($projs, 'project_id');
-		$p 		  = $projs[$_GET["proj_idx"]];
+		$p 		  = $projs[$proj_idx];
 		$pid 	  = $p["project_id"];
 		$email    = isset($p["project_email"]) ? $p["project_email"] : "";
 		$pname 	  = $p["project_name"];
@@ -269,7 +270,7 @@ if(!isset($_SESSION["discpw"])) {
 		$template = false;
 
 		$show_archive_btn = false;
-		if($_GET["proj_idx"] == 99 || $_GET["proj_idx"] == 100){
+		if($proj_idx == 99 || $proj_idx == 100){
 			$template = true;
 			$template_instructions = "<strong class='tpl_instructions'>*Input a new Project ID & Name to create a new project</strong>";
 		}else{
@@ -280,7 +281,7 @@ if(!isset($_SESSION["discpw"])) {
 		<form id="project_config" method="post" class='<?php echo $template ? "template" : ""?>'>
 			<fieldset class="app_meta">
 				<legend>Project Meta</legend>
-				<input type="hidden" name="proj_idx" value="<?php echo $_GET["proj_idx"]; ?>"/>
+				<input type="hidden" name="proj_idx" value="<?php echo $proj_idx; ?>"/>
 				<label><span>Admin Email</span><input type="text" name="project_email" value="<?php echo !$template ? $email : ""; ?>"/></label>
 				<label><span>Project Id</span><input <?php echo $template ? "" : "readonly"; ?>  type="text" name="project_id" value="<?php echo !$template ? $pid : ""; ?>"/><?php echo $template_instructions ?></label>
 				<label><span>Project Name</span><input  type="text" name="project_name" value="<?php echo !$template ? $pname : ""; ?>"/></label>
@@ -516,7 +517,7 @@ $(document).ready(function(){
 			echo "var current_project_id = '".$pid. "';\n";
 		}
 		if(isset($_GET["msg"])){
-			echo "alert('" . $_GET["msg"] . "');\n";
+			echo "alert('" . filter_var($_GET["msg"], FILTER_SANITIZE_STRING) . "');\n";
 		}
 
 		if(isset($proj_ids)){

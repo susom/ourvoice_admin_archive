@@ -17,6 +17,8 @@ $couch_attach_db    = "disc_attachment";
 $masterblaster      = cfg::$master_pw;
 
 date_default_timezone_set('America/Los_Angeles');
+
+ini_set("session.cookie_httponly", 1);
 session_start(); 
 
 function doCurl($url, $data = null, $method = null, $username = null, $password = null) {

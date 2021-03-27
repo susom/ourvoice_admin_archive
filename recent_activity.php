@@ -47,5 +47,6 @@ if(isset($_SESSION["DT"]))
 <script>
 $(document).ready(function(){
 	pdata = <?php echo json_encode($ALL_PROJ_DATA);?>;
+	console.log("pdata",pdata);
 });
 </script>

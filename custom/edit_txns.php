@@ -8,6 +8,8 @@ $pcode      	= "RASI1";
 $pfilters   	= array();
 $goodbad_filter = array();
 $response       = loadAllProjectThumbs($pcode, $pfilters, $goodbad_filter);
+
+$walks          = array();
 $photo_geos     = array();
 foreach($response["rows"] as $row){
     $doc    = $row["value"];
@@ -40,6 +42,7 @@ foreach($response["rows"] as $row){
         unset($photo["geotag"]["heading"]);
         unset($photo["geotag"]["speed"]);
 
+        $walks[$photo["geotag"]["photo_id"]] = $_id;
         array_push($photo_geos, $photo["geotag"]);
     }
 }
@@ -65,9 +68,17 @@ form img { max-width:365px; max-height:365px; width:365px; height:auto;  display
 form textarea { width:365px; height:200px; }
 </style>
 <?php
+$used_walk_ids = array();
 echo "<form method='POST'>";
 echo "<input type='hidden' name='action' value='makejson'/>";
 foreach($photo_geos as $idx => $pg){
+
+    $walk_id = $walks[$pg["photo_id"]];
+    if( !in_array($walk_id, $used_walk_ids) ){
+        array_push($used_walk_ids, $walk_id);
+        echo "<h4>$walk_id</h4>";
+    }
+
     echo "<div>";
     echo "<img src='".$pg["photo_src"]."'/>";
     echo "<textarea name='audio_txn[$idx]'>".$pg["audio_txn"]."</textarea>";

@@ -15,7 +15,8 @@ $ap 				= $_SESSION["DT"];
 $_id 				= $ap["_id"];
 $_rev 				= $ap["_rev"];
 $projs 				= $ap["project_list"];
-$active_pid 		= $_GET["pid"];
+$active_project_id 	= filter_var($_GET["active_project_id"], FILTER_SANITIZE_STRING);
+$active_pid 		= filter_var($_GET["pid"], FILTER_SANITIZE_NUMBER_INT);
 
 // output headers so that the file is downloaded rather than displayed
 header('Content-Type: text/csv; charset=utf-8');

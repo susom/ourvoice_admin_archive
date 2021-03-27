@@ -17,22 +17,5 @@ if(!empty($request)){
 }
 
 
-/* 
-AJAX format will follow this structure: 
-    $.ajax({
-		method: "POST",
-		url: "ajaxHandler.php",
-		data: {
-            [SENDER NAME]: {DATA}
-        }
-	});
 
-Example: 
-    data: {
-        setTranscription : {
-                            url: 'hello',
-                            text: 'nice'
-        }
-    }, ... 
 
-*/

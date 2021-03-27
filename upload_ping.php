@@ -23,12 +23,11 @@ $gcp_bucketName     = cfg::$gcp_bucketName;
 $access_token       = getGCPRestToken($keyPath, $firestore_scope);
 
 // GET WALK ID , FROM THE PING
-$uploaded_walk_id   = isset($_POST["uploaded_walk_id"]) ? $_POST["uploaded_walk_id"] : null;
-// $proccesed_thumb_ids    = isset($_POST["proccesed_thumb_ids"]) ?  $_POST["proccesed_thumb_ids"] : null;                  
+$uploaded_walk_id   = isset($_POST["uploaded_walk_id"]) ? filter_var($_POST["uploaded_walk_id"], FILTER_SANITIZE_STRING) : null;
 
 if(!empty($uploaded_walk_id)){ 
     $_id                = $uploaded_walk_id;  
-    $email              = isset($_POST["project_email"]) ? $_POST["project_email"] : false;   
+    $email              = isset($_POST["project_email"]) ? filter_var($_POST["project_email"], FILTER_SANITIZE_EMAIL) : false;   
     $temp               = explode("_",$_id);
     $project_id         = $temp[0];
 
