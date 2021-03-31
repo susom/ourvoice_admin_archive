@@ -162,7 +162,7 @@ function generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landsc
 
 		$wh 			= $landscape ? "width='100%'" : "height='100%'";
 
-		$html_block[] 	= "<div class='photo_cont'><img $wh  src='data:image/jpg;base64, $htmlphoto'/></div>";
+		$html_block[] 	= "<div class='photo_cont rotate' rev='$rotation'><img $wh  src='data:image/jpg;base64, $htmlphoto'/></div>";
 	}else{
 		$html_block[] 	= "<div class='photo_cont'><h4>Image Not Available</h4></div>";
 	}
@@ -294,7 +294,22 @@ if(!empty($_id)){
 		.photo_map {
 			overflow:hidden;
 		}
-
+		.photo_map .rotate img {
+			transform: rotate(0) translate(0,0);
+			image-orientation: from-image;
+		}
+		.photo_map .rotate[rev='1'] img {
+			transform: rotate(90deg) translate(90px,0px);
+			image-orientation: from-image;
+		}
+		.photo_map .rotate[rev='2'] img {
+			transform: rotate(180deg) translate(0,0);
+			image-orientation: from-image;
+		}
+		.photo_map .rotate[rev='3'] img {
+			transform: rotate(270deg) translate(-90px,-70px);
+			image-orientation: from-image;
+		}
 		.photo_cont{
 			max-height:400px; max-width:50%;
 			width:50%;
