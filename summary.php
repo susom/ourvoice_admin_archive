@@ -1,6 +1,9 @@
 <?php
 require_once "common.php";
 
+//adhoc https redirect
+include("inc/https_redirect.php");
+
 //markPageLoadTime("Summary Page Start Loading");
 require 'vendor/autoload.php';
 

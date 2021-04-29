@@ -1,6 +1,9 @@
 <?php
 require_once "common.php";
 
+//adhoc https redirect
+include("inc/https_redirect.php");
+
 if(isset($_GET["clearsession"])){
 	$_SESSION = null;
 }
