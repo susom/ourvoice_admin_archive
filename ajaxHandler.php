@@ -1,21 +1,18 @@
 <?php
 require_once "common.php";
-$request 	= array_keys($_REQUEST)[0]; //get the request sender
-$data 		= $_REQUEST[$request]; //get the data associated with directive
 
-if(!empty($request)){
-	$args = array(
-	    'url'   => FILTER_SANITIZE_URL,
-	    'lang'	=> FILTER_SANITIZE_STRING
-	);
-	$data = filter_var_array($data, $args);
+if(!empty($_POST["action"])){
+    $request    = filter_var($_POST["action"], FILTER_SANITIZE_STRING);
+	$url        = isset($_POST["url"])     ? filter_var($_POST["url"], FILTER_SANITIZE_ENCODED);
+    $lang       = isset($_POST["lang"])    ? filter_var($_POST["lang"], FILTER_SANITIZE_STRING);
 	
     switch($request){
         case 'convertAudio':
-            if(!empty($data['url']))  
-                $pathToAudio = getConvertedAudio($data['url'],$data["lang"]);
+            if(!empty($url)){  
+                $pathToAudio = getConvertedAudio($url,$lang);
                 echo $pathToAudio;
-            break;
+            }
+        break;
     }
 
 }else{

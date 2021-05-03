@@ -792,7 +792,7 @@ function createAudioPath(){ //Fire ajax to dynamically load transcriptions after
 	$.ajax({
 		method: "POST",
 		url: "ajaxHandler.php",
-		data: {convertAudio: {url:url, lang:lang}},
+		data: {"action" : "convertAudio", "url" : url, "lang" : lang},
 		success:function(response){
 			// console.log(response);
 			// $(".mic").find('source').attr('src',response);
