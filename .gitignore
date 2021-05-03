@@ -6,3 +6,6 @@ scratch.php
 .idea/*
 attachment_migrate.php
 walk_data_migrate.php
+.DS_STORE
+.gcloudignore
+app_text.json
