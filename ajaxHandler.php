@@ -3,8 +3,8 @@ require_once "common.php";
 
 if(!empty($_POST["action"])){
     $request    = filter_var($_POST["action"], FILTER_SANITIZE_STRING);
-	$url        = isset($_POST["url"])     ? filter_var($_POST["url"], FILTER_SANITIZE_ENCODED);
-    $lang       = isset($_POST["lang"])    ? filter_var($_POST["lang"], FILTER_SANITIZE_STRING);
+	$url        = !empty($_POST["url"])     ? filter_var($_POST["url"], FILTER_SANITIZE_ENCODED) :null;
+    $lang       = !empty($_POST["lang"])    ? filter_var($_POST["lang"], FILTER_SANITIZE_STRING) :null:;
 	
     switch($request){
         case 'convertAudio':
