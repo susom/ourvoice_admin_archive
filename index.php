@@ -118,7 +118,11 @@ if( isset($_POST["proj_idx"]) ){
 			,"summ_pass" 		=> filter_var($_POST["summ_pass"], FILTER_SANITIZE_STRING)
 			,"project_email" 	=> filter_var($_POST["project_email"], FILTER_SANITIZE_STRING)
 			,"template_type"	=> filter_var($_POST["template_type"], FILTER_SANITIZE_NUMBER_INT)
-            ,"text_comments"    => filter_var($_POST["text_comments"], FILTER_SANITIZE_STRING)
+            ,"text_comments"    => filter_var($_POST["text_comments"], FILTER_SANITIZE_NUMBER_INT)
+            ,"audio_comments"  	=> filter_var($_POST["audio_comments"], FILTER_SANITIZE_NUMBER_INT)
+            ,"custom_takephoto_text"  => filter_var($_POST["custom_takephoto_text"], FILTER_SANITIZE_STRING)
+
+
             // ,"include_surveys"  => $_POST["include_surveys"]
             ,"expire_date"  	=> $expire_date
 			,"thumbs"			=> isset($_POST["thumbs"]) ? filter_var($_POST["thumbs"], FILTER_SANITIZE_NUMBER_INT) : 0
@@ -264,6 +268,8 @@ if(!isset($_SESSION["discpw"])) {
 		$spass 	  = isset($p["summ_pass"]) ? $p["summ_pass"] : "";
 		$thumbs   = $p["thumbs"];
         $texts    = isset($p["text_comments"]) ? $p["text_comments"] : true;
+        $audios   = isset($p["audio_comments"]) ? $p["audio_comments"] : false;
+        $custom_takephoto_text = isset($p["custom_takephoto_text"]) ? $p["custom_takephoto_text"] : null;
         $expire_date 		= isset($p["expire_date"]) ? $p["expire_date"] : "";
         $available_langs 	= $projs[100]["app_lang"];
 		$langs 	  			= $p["app_lang"];
@@ -312,10 +318,20 @@ if(!isset($_SESSION["discpw"])) {
 					<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
                 </label>
 
+                <label><span>Audio Comments</span>
+                    <input type="radio" name="audio_comments" <?php if(!$audios) echo "checked"; ?> value="0"/> No Audio Recordings
+                    <input type="radio" name="audio_comments" <?php if($audios) echo "checked"; ?> value="1"/> Allow Audio Recordings
+                </label>
+
                 <label><span>Text Comments</span>
                     <input type="radio" name="text_comments" <?php if(!$texts) echo "checked"; ?> value="0"/> No Texting
                     <input type="radio" name="text_comments" <?php if($texts) echo "checked"; ?> value="1"/> Allow Texting
                 </label>
+
+                <label><span >Custom "Take Photo" Text</span>
+                    <input type="text" name="custom_takephoto_text" placeholder="eg; Remember to smell roses." value="<?=$custom_takephoto_text?>"/>
+                </label>
+
 
 				<label class="languages">
 					<p><span>Languages</span>
