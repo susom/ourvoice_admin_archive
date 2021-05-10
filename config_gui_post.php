@@ -29,30 +29,25 @@ if($folders){
 //we want each project to have a drop tag indicating where it's supposed to belong
 
 if(isset($_POST["dropTag"]) && isset($_POST["dragTag"]) && isset($_POST["datakey"])){
-	print_r($_POST["datakey"]);
-  $drop_tag = trim($_POST["dropTag"]);
-  $drag_tag = trim($_POST["dragTag"]);
-  $datakey = trim($_POST["datakey"]);
+  	$drop_tag 	= trim( filter_var($_POST["dropTag"],FILTER_SANITIZE_STRING) );
+  	$drag_tag 	= trim( filter_var($_POST["dragTag"],FILTER_SANITIZE_STRING) );
+  	$datakey 	= trim( filter_var($_POST["datakey"],FILTER_SANITIZE_STRING) );
 
-		if(!isset($storage["project_list"][$datakey]["dropTag"]))
-  		{
-  			$storage["project_list"][$datakey]["dropTag"] = $drop_tag; 	
-  			print_r("SUCCESS");
-  			print_r("$drop_tag");
-  			$_SESSION["DT"] = $storage;
-  	        $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-		    $response 	= doCurl($url, json_encode($storage), 'PUT');
-            $resp 		= json_decode($response,1);
-
-		}else{
-			//shouldn't happen
-			print_r("element already part of list");
-		}
-
-
-
+	if(!isset($storage["project_list"][$datakey]["dropTag"])){
+		$storage["project_list"][$datakey]["dropTag"] = $drop_tag; 	
+		print_r("SUCCESS");
+		print_r("$drop_tag");
+		$_SESSION["DT"] = $storage;
+        $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+	    $response 	= doCurl($url, json_encode($storage), 'PUT');
+        $resp 		= json_decode($response,1);
+	}else{
+		//shouldn't happen
+		print_r("element already part of list");
 	}
+}
 
+// $delete_tag = isset($_POST["deleteTag"]) ? filter_var($_POST["deleteTag"],FILTER_SANITIZE_STRING) : null;
 if(isset($_POST["deleteTag"])){	
 	$deletion_list = json_decode($_POST["deleteTag"],1);
 	$folder_name = $deletion_list["folder"][0];
