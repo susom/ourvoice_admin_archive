@@ -1,6 +1,11 @@
 <?php
 require_once "common.php";
 
+//adhoc https redirect
+include("inc/https_redirect.php");
+
+include("inc/check_login.php");
+
 if(!isset($_SESSION["DT"])){
     $url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
     $response 		= doCurl($url);
