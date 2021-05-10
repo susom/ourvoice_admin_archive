@@ -1,4 +1,7 @@
 <?php
+header("location:index.php");
+
+exit;
 require_once "common.php";
 
 //adhoc https redirect
