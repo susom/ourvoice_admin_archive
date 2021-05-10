@@ -246,7 +246,7 @@ if(!isset($_SESSION["discpw"])) {
 		<ul>
 			<li><a href = "index.php">Home</a></li>
 			<li><a href = "project_configuration.php">Project Configuration</a></li>
-			<li><a href = "organization.php">Organization</a></li>
+			<!-- <li><a href = "organization.php">Organization</a></li> -->
 			<li><a href = "recent_activity.php">All Data</a></li>
 			<!-- <li><a href = "visualization.php">Visualize</a></li> -->
 			<li style="float:right"><a href="index.php?clearsession=1">Refresh Project Data</a></li>
