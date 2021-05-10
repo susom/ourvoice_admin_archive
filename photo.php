@@ -785,8 +785,8 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 }
 
 function createAudioPath(){ //Fire ajax to dynamically load transcriptions after page load
-	var url = $("#main_photo").attr('src'); //
-    var lang =  $("#main_photo").data('lang');
+	var url 	= $("#main_photo").attr('src'); //
+    var lang 	=  $("#main_photo").data('lang');
 
 	var info = {};
 	$.ajax({

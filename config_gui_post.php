@@ -7,15 +7,16 @@ if(!isset($_SESSION["DT"])){ //store data for use the first time
 	
 }	
 
-if(isset($_POST["folders"])){ 
+$folders = isset($_POST["folders"]) ? filter_var($_POST["folders"],FILTER_SANITIZE_STRING) : null;
+if($folders){ 
 	//check if the folder exists within couch already
 
 	if(!isset($storage["folders"]))
 		$storage["folders"] = array();
-	if(in_array($_POST["folders"], $storage["folders"])){
+	if(in_array($folders, $storage["folders"])){
 		print_r("this folder already exists");
 	}else{
-		array_push($storage["folders"], $_POST["folders"]);
+		array_push($storage["folders"], $folders);
 		$_SESSION["DT"] = $storage;
 		print_r("pushing to folders");
 	 	$url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
