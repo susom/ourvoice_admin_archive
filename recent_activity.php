@@ -1,6 +1,11 @@
 <?php 
 require_once("common.php");
 
+//adhoc https redirect
+include("inc/https_redirect.php");
+
+include("inc/check_login.php");
+
 if(isset($_SESSION["DT"]))
 	$ALL_PROJ_DATA = $_SESSION["DT"];
 
@@ -31,7 +36,6 @@ if(isset($_SESSION["DT"]))
 	<ul>
 		<li><a href = "index.php">Home</a></li>
 		<li><a href = "project_configuration.php">Project Configuration</a></li>
-		<li><a href = "organization.php">Organization</a></li>
 		<li><a href = "recent_activity.php">All Data</a></li>
 		<li style="float:right"><a href="index.php?clearsession=1">Refresh Project Data</a></li>
 		<li style="float:right"><img id = "magnifying_glass" src = "img/Magnifying_glass_icon.svg"></li>

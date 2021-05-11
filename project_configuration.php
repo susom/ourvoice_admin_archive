@@ -1,5 +1,10 @@
 <?php
 require_once("common.php");
+
+//adhoc https redirect
+include("inc/https_redirect.php");
+
+include("inc/check_login.php");
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -19,7 +24,6 @@ require_once("common.php");
 		<ul>
 			<li><a href = "index.php">Home</a></li>
 			<li><a href = "project_configuration.php">Project Configuration</a></li>
-			<li><a href = "organization.php">Organization</a></li>
 			<li><a href = "recent_activity.php">All Data</a></li>
 			<li style="float:right"><a href="index.php?clearsession=1">Refresh Project Data</a></li>
 			<li style="float:right"><img id = "magnifying_glass" src = "img/Magnifying_glass_icon.svg"></li>
