@@ -27,7 +27,7 @@ class Header extends React.Component{
           url:  "React/getData.php",
           dataType:"JSON",
           success:function(result){
-            console.log(result);
+            console.log("ouz", result);
             obj.setState({
               isLoaded: true,
               data: result
@@ -45,6 +45,9 @@ class Header extends React.Component{
     var unique_names = this.remove_dup();
     var ph = this.state.data.set;
     this.rec_counter = 0;
+
+      console.log("shithead",unique_names);
+
     for(var i = 0 ; i < ph.length ; i++){
       if(unique_names[ph[i].abv] != null){
         rows.push(<Entry abv = {ph[i].abv} full = {ph[i].full} rec = {ph[i].rec_time} non_rec = {ph[i].non_rec_times}/>);
@@ -54,8 +57,11 @@ class Header extends React.Component{
           this.rec_counter++;
       }
     }
-    for(var key in unique_names)
+
+
+    for(var key in unique_names){
       rows.push(<Entry abv = {unique_names[key]} />);
+    }
     return rows;
   }
   

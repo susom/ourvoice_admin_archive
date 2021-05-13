@@ -36,6 +36,17 @@ include("inc/check_login.php");
 			<a href="index.php?proj_idx=100" class="tpl btn btn-success" data-tpl="100">Create new Project from Template</a>
 		<p><strong><em>* To Make Changes to an Existing Project: Click on a project Below</em></strong></p>
 	</div>
+<style>
+	.open_link{
+		display: inline-block;
+	    background:url(img/icon_open_link.png) no-repeat;
+	    width: 20px;
+	    height: 20px;
+	    margin-left: 10px;
+	    vertical-align: text-top;
+	    background-size:contain;
+	}
+</style>
 <div id = "proj">
 <?php 
 	if(isset($_SESSION["DT"])){
@@ -53,7 +64,7 @@ include("inc/check_login.php");
 			if(strpos($name,"Template") > -1){
 				continue;
 			}
-			echo '<div class="entry" data-key = "'.$p["key"].'" ><p><a href="index.php?proj_idx='.$p["key"].'"'.'>'.$name. ' [' . $p["project_id"] . ']</a></p></div>';
+			echo '<div class="entry" data-key = "'.$p["key"].'" ><p><a href="index.php?proj_idx='.$p["key"].'"'.'>'.$name. ' [' . $p["project_id"] . ']</a> <a href="summary.php?id='.$p["project_id"].'" class="open_link" target="blanket"></a></p></div>';
 	}
 ?>
 

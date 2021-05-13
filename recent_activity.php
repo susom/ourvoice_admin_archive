@@ -20,10 +20,6 @@ if(isset($_SESSION["DT"]))
     <link href="css/dt_common.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
     <link href="css/dt_index.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
 
- 	<!-- Development scripts -->
-	<!-- <script src="https://unpkg.com/react@15/dist/react.js"></script>
- 	<script src="https://unpkg.com/react-dom@15/dist/react-dom.js"></script> -->
- 	<!-- Production scripts -->
  	<script src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
 	<script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
  	
