@@ -11,3 +11,8 @@ vendor/
 
 # Exclude git history and configuration.
 .gitignore
+
+# Do not copy
+som-rit-ourvoice.json.enc
+Dockerfile
+.travis.yml

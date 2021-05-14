@@ -54,5 +54,4 @@ RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 # ADD BUILD WEBROOT TO CONTAINER
 # Copy in custom code from the host machine.
 WORKDIR /var/www/html
-COPY app ./
-#ADD webroot/ /var/www/html
+COPY . ./
