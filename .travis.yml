@@ -11,7 +11,7 @@ before_install:
   - gcloud auth activate-service-account --key-file=som-rit-ourvoice.json
   - gcloud auth configure-docker    # enable "docker push" to gcr
   - gcloud config set project "som-rit-ourvoice"
-  - gcloud components install beta
+#  - gcloud components install beta
 cache:
   directories:
     - "$HOME/google-cloud-sdk/"
