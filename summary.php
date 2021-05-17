@@ -25,7 +25,7 @@ if( empty($_SESSION["DT"]) ){
 	$response 		= doCurl($couch_url);
 
 	//TURN IT INTO PHP ARRAY
-	$ap 			= json_decode(stripslashes($response),1);
+	$ap 			= json_decode($response,1);
 	$_SESSION["DT"] = $ap;
 }
 
@@ -38,8 +38,6 @@ $projs 				= $ap["project_list"];
 $active_project_id 	= null;
 $active_pid 		= null;
 $alerts 			= array();
-
-
 
 //AJAX GETTING DAY'S DATA
 if(isset($_POST["active_pid"]) && $_POST["date"]){
@@ -124,6 +122,7 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 		$proj_id  = trim(strtoupper(filter_var($_POST["proj_id"], FILTER_SANITIZE_STRING)));
 		$summ_pw  = filter_var($_POST["summ_pw"], FILTER_SANITIZE_STRING);
 		$found    = false;
+
 		foreach($projs as $pid => $proj){
 			if(isset($proj["project_id"]) && $proj_id == $proj["project_id"] && ( (isset($proj["summ_pass"]) && $summ_pw == $proj["summ_pass"]) || $summ_pw == $masterblaster) ) {
 				$active_project_id      = $proj_id;
