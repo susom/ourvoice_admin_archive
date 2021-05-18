@@ -10,3 +10,4 @@ walk_data_migrate.php
 .gcloudignore
 app_text.json
 som-rit-ourvoice*.json
+oidc_client_config.conf

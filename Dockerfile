@@ -26,6 +26,7 @@ RUN set -eux; \
      libpng-dev \
      libzip-dev \
      zip \
+     vim \
 # INSTALL OPENIDC
      libcjose0 libhiredis0.14 \
   && wget https://github.com/zmartzone/mod_auth_openidc/releases/download/v2.4.6/libapache2-mod-auth-openidc_2.4.6-1.buster+1_amd64.deb \
@@ -54,4 +55,7 @@ RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 # ADD BUILD WEBROOT TO CONTAINER
 # Copy in custom code from the host machine.
 WORKDIR /var/www/html
-COPY . ./
+COPY ./app/* ./
+
+ADD entrypoint-dev.sh /usr/local/bin/entrypoint-dev.sh
+RUN chmod +x /usr/local/bin/entrypoint-dev.sh
