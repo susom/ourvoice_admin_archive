@@ -55,7 +55,7 @@ RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 # ADD BUILD WEBROOT TO CONTAINER
 # Copy in custom code from the host machine.
 WORKDIR /var/www/html
-COPY ./app/* ./
+COPY app .
 
 ADD entrypoint-dev.sh /usr/local/bin/entrypoint-dev.sh
 RUN chmod +x /usr/local/bin/entrypoint-dev.sh
