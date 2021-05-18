@@ -28,6 +28,6 @@ script:
       --image="${IMAGE}:${TRAVIS_COMMIT}" \
       --platform=managed \
       --region="${CLOUD_RUN_REGION}" \
-      --set-secrets=/secrets/oidc_client_config.conf=oidc_client_config:latest \
+      --set-secrets=/secrets/oidc_client_config.conf=oidc_client_config:latest, /var/www/html/_config.php=/secret/dev_config:latest \
       --allow-unauthenticated;
     set +x
