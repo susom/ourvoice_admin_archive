@@ -1,0 +1,40 @@
+version: '3.7'
+services:
+  web:
+    build: .
+    ports:
+      - "8111:80"
+    entrypoint: /usr/local/bin/entrypoint-dev.sh
+    command: "apache2-foreground"
+    environment:
+      - XDEBUG_ENABLED=0
+      - PORT=80
+    volumes:
+      - ./app:/var/www/html
+      - ./oidc_client_config.conf:/secrets/oidc_client_config.conf
+      # The following add support for SSL on localhost (see README for directions)
+#      - ./secrets/cert.pem:/etc/apache2/ssl/cert.pem
+#      - ./secrets/cert-key.pem:/etc/apache2/ssl/cert-key.pem
+#      - ./vhost_ssl.conf:/etc/apache2/sites-enabled/vhost_ssl.conf
+#      - ./secrets/rootCA.pem:/usr/local/share/ca-certificates/rootCA.crt
+
+
+#  cloudsql-proxy:
+#    container_name: cloudsql-proxy
+#    image: gcr.io/cloudsql-docker/gce-proxy:latest
+#    command: /cloud_sql_proxy --dir=/cloudsql -instances=som-rit-phi-redcap-dev:us-west1:redcap-dev-mysql=tcp:0.0.0.0:5432 -credential_file=/secrets/cloudsql/credentials.json
+#    #    ports:
+#    #      - "5432:5432"
+#    volumes:
+#      - ./secrets/cloud_sql_credentials.json:/secrets/cloudsql/credentials.json
+#    restart: always
+#
+#  # NOTE THAT MAILHOG MAY NOT DO ANYTHING IF YOUR DATABASE IS USING MAILGUN OR OTHER EMAIL PROVIDER
+#  mailhog:
+#    container_name: mailhog
+#    build: mailhog
+#    depends_on:
+#      - web
+#    ports:
+#      - "8112:8025"
+
