@@ -29,5 +29,6 @@ script:
       --platform=managed \
       --region="${CLOUD_RUN_REGION}" \
       --set-secrets="/secrets/oidc_client_config.conf=oidc_client_config:latest, /secrets2/_config.php=dev_config:latest" \
-      --allow-unauthenticated;
+      #--allow-unauthenticated;
+      --ingress=internal-and-cloud-load-balancing;
     set +x
