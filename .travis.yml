@@ -28,6 +28,6 @@ script:
       --image="${IMAGE}:${TRAVIS_COMMIT}" \
       --platform=managed \
       --region="${CLOUD_RUN_REGION}" \
-      --set-secrets="/secrets/oidc_client_config.conf=oidc_client_config:latest, /secrets2/_config.php=dev_config:latest" \
+      --set-secrets="/secrets/oidc_client_config.conf=oidc_client_config:latest, /secrets2/_config.php=dev_config:latest, /secrets3/firestore_service_account.json=firestore_service_account:latest" \
       --ingress=internal-and-cloud-load-balancing
     set +x
