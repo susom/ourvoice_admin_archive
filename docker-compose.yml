@@ -6,12 +6,16 @@ services:
       - "8111:80"
     entrypoint: /usr/local/bin/entrypoint-dev.sh
     command: "apache2-foreground"
+    depends_on:
+      - couchdb-local
     environment:
-      - XDEBUG_ENABLED=0
+      - XDEBUG_ENABLED=1
       - PORT=80
     volumes:
       - ./app:/var/www/html
       - ./secrets/oidc_client_config.conf:/secrets/oidc_client_config.conf
+      - ./secrets/_config_dev.php:/secrets2/_config.php
+      - ./secrets/som-rit-ourvoice-firestore.json:/secrets3/firestore_service_account.json
       # The following add support for SSL on localhost (see README for directions)
 #      - ./secrets/cert.pem:/etc/apache2/ssl/cert.pem
 #      - ./secrets/cert-key.pem:/etc/apache2/ssl/cert-key.pem
@@ -19,22 +23,15 @@ services:
 #      - ./secrets/rootCA.pem:/usr/local/share/ca-certificates/rootCA.crt
 
 
-#  cloudsql-proxy:
-#    container_name: cloudsql-proxy
-#    image: gcr.io/cloudsql-docker/gce-proxy:latest
-#    command: /cloud_sql_proxy --dir=/cloudsql -instances=som-rit-phi-redcap-dev:us-west1:redcap-dev-mysql=tcp:0.0.0.0:5432 -credential_file=/secrets/cloudsql/credentials.json
-#    #    ports:
-#    #      - "5432:5432"
-#    volumes:
-#      - ./secrets/cloud_sql_credentials.json:/secrets/cloudsql/credentials.json
-#    restart: always
-#
-#  # NOTE THAT MAILHOG MAY NOT DO ANYTHING IF YOUR DATABASE IS USING MAILGUN OR OTHER EMAIL PROVIDER
-#  mailhog:
-#    container_name: mailhog
-#    build: mailhog
-#    depends_on:
-#      - web
-#    ports:
-#      - "8112:8025"
-
+  couchdb-local:
+    image: couchdb:1.7.1
+    volumes:
+      - couchdb_dev_local:/usr/local/var/lib/couchdb
+    environment:
+      - COUCHDB_USER=cdbadm-dev
+      - COUCHDB_PASSWORD=UbudsTrathes
+    ports:
+      - "15984:5984"
+volumes:
+  couchdb_dev_local:
+    name: "couchdb_dev_local"

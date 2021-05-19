@@ -7,3 +7,4 @@ working almost for android
 Moving to cloud run for deployment of the application
 
 
+      #--allow-unauthenticated;

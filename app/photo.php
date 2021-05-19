@@ -215,7 +215,7 @@ if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordin
 
 		$storageCLient = new StorageClient([
             'keyFilePath'   => $keyPath,
-            'projectId'     => $gcp_bucketID
+            'projectId'     => $gcp_project_id
         ]);
 
         //UPLOAD TO GOOGLE BUCKET

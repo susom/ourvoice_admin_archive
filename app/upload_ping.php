@@ -18,8 +18,7 @@ $gcp_project_id     = cfg::$gcp_project_id;
 $walks_collection   = cfg::$firestore_collection; 
 $firestore_endpoint = cfg::$firestore_endpoint; 
 $firestore_scope    = cfg::$firestore_scope; 
-$gcp_bucketID       = cfg::$gcp_bucketID; 
-$gcp_bucketName     = cfg::$gcp_bucketName; 
+$gcp_bucketName     = cfg::$gcp_bucketName;
 $access_token       = getGCPRestToken($keyPath, $firestore_scope);
 
 // GET WALK ID , FROM THE PING
@@ -82,7 +81,7 @@ if(!empty($uploaded_walk_id)){
         // # Instantiates a Storage client
         $storageCLient = new StorageClient([
             'keyFilePath'   => $keyPath,
-            'projectId'     => $gcp_bucketID
+            'projectId'     => $gcp_project_id
         ]);
 
         foreach($backup_files as $file){
