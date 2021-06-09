@@ -3,7 +3,7 @@ services:
   web:
     build: .
     ports:
-      - "8111:80"
+      - "8201:80"
     entrypoint: /usr/local/bin/entrypoint-dev.sh
     command: "apache2-foreground"
     depends_on:
