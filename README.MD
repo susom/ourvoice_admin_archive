@@ -1,5 +1,5 @@
 # Ourvoice Data Portal
-![TravisBuildStatus](https://api.travis-ci.com/susom/ourvoice_admin.svg?token=AJR43pg9jY6pqpktBy24&branch=master&status=unknown)
+[![Build Status](https://travis-ci.com/susom/ourvoice_admin.svg?token=vSNpxxGBXSBYMFjziTQk&branch=travis)](https://travis-ci.com/susom/ourvoice_admin)
 
 <img alt="PHP" src="https://img.shields.io/badge/php-%23777BB4.svg?style=for-the-badge&logo=php&logoColor=white"/>
 <img alt="Google Cloud" src="https://img.shields.io/badge/GoogleCloud-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white"/>
