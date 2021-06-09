@@ -10,3 +10,5 @@ walk_data_migrate.php
 app_text.json
 som-rit-ourvoice*.json
 secrets/*
+.env
+
