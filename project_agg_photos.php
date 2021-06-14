@@ -45,7 +45,8 @@ if(array_key_exists("ajax",$_POST)){
 
 	if(filter_var($_POST["ajax"], FILTER_SANITIZE_STRING) == "loadThumbs"){
 		$pcode 			= filter_var($_POST["pcode"], FILTER_SANITIZE_STRING);
-		$pfilters 		= isset($_POST["filters"]) ? filter_var($_POST["filters"], FILTER_SANITIZE_STRING) : array();
+		$pfilters 		= isset($_POST["filters"]) ? $_POST["filters"] : array();
+
 		$data 			= getFilteredDataGeos($pcode, $pfilters);
 		$data["code_block"] = printAllDataThumbs($data["code_block"]);
 		$reload 		= json_encode($data);
@@ -782,6 +783,7 @@ $page = "allwalks";
 			loadThumbs(project_code, filter_ar);
 			return false;
 		});
+
 		//ADD A FILTER (redraws content)
 		$("#choose_filter select").change(function(){
 			var filter_tag = $(this).val();
@@ -885,7 +887,6 @@ $page = "allwalks";
 			data: data,
 			dataType : "json",
 			success: function(response){
-				// why the fuck was this container id with "tags"?
 				$("#tags").empty();
 				$("#tags").html(response.code_block);
 
