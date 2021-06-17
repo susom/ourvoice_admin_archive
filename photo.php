@@ -123,7 +123,7 @@ if( isset($_POST["doc_id"]) ){
 
         //SAVE TRANSCRIPTIONs
         if(isset($_POST["transcriptions"])){
-            foreach( filter_var($_POST["transcriptions"], FILTER_SANITIZE_STRING) as $audio_name => $transcription){
+            foreach( $_POST["transcriptions"] as $audio_name => $transcription){
                 $txns = str_replace('"','&#34;', $transcription);
                 $payload["transcriptions"][$audio_name]["text"] = $txns;
             }
