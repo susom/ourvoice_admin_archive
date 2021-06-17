@@ -214,7 +214,7 @@ if(!empty($pcode) && !empty($active_pid)){
 	$project_tags 	= $_SESSION["DT"]["project_list"][$active_pid]["tags"] ?? array();
 
 	// THESE FILTERS COME IN MIXED WITH MOOD AND TAG
-	$filters 		= $_GET["filters"] ? filter_var($_GET["filters"], FILTER_SANITIZE_STRING) : "[]";
+	$filters 		= $_GET["filters"] ? $_GET["filters"] : "[]";
 	$pfilters 		= json_decode($filters,1);
 	$pfilters 		= empty($pfilters) ? $project_tags : $pfilters;
 

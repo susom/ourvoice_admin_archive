@@ -914,7 +914,7 @@ function getAllDataPicLI($photo_o){
     if(!empty($photo_o["audios"])){
         $temp = array();
         foreach($photo_o["audios"] as $audio_key){
-            $temp[] = $photo_o["transcriptions"][$audio_key]["text"];
+            $temp[] = str_replace("'","&#8217;",$photo_o["transcriptions"][$audio_key]["text"]);
         }
         $txns = json_encode($temp);
     }
