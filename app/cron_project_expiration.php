@@ -2,7 +2,7 @@
 require_once "common.php";
 
 $couch_url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-$response 		= doCurl($couch_url);
+$response 		= $ds->doCurl($couch_url);
 $project_json 	= json_decode($response,1);
 
 $today 			= date('Y-m-d', time()); 

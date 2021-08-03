@@ -25,7 +25,7 @@ if(array_key_exists("ajax",$_POST)){
 		$project_tag 	= filter_var($_POST["tag_text"], FILTER_SANITIZE_STRING);
 		
 		$p_url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-		$p_response 	= doCurl($p_url);
+		$p_response 	= $ds->doCurl($p_url);
 		$p_doc 	 		= json_decode(stripslashes($p_response),1);
 		$p_payload 		= $p_doc;
 
@@ -37,7 +37,7 @@ if(array_key_exists("ajax",$_POST)){
 			$json_response["new_project_tag"] = true;
 			$_SESSION["DT"]["project_list"][$proj_idx] = $p_payload["project_list"][$proj_idx]; 
 		}
-		doCurl($p_url, json_encode($p_payload), "PUT");
+        $ds->doCurl($p_url, json_encode($p_payload), "PUT");
 
 		echo json_encode($json_response);
 		exit;
@@ -46,7 +46,7 @@ if(array_key_exists("ajax",$_POST)){
 	if(filter_var($_POST["ajax"], FILTER_SANITIZE_STRING) == "loadThumbs"){
 		$pcode 			= filter_var($_POST["pcode"], FILTER_SANITIZE_STRING);
 		$pfilters 		= isset($_POST["filters"]) ? filter_var($_POST["filters"], FILTER_SANITIZE_STRING) : array();
-		$data 			= getFilteredDataGeos($pcode, $pfilters);
+		$data 			= $ds->getFilteredDataGeos($pcode, $pfilters);
 		$data["code_block"] = printAllDataThumbs($data["code_block"]);
 		$reload 		= json_encode($data);
 		echo $reload;

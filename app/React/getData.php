@@ -1,7 +1,7 @@
 <?php
 require_once "../common.php";
-$ALL_PROJ_DATA = urlToJson(cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db);
-$tm = urlToJson(cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts");
+$ALL_PROJ_DATA = $ds->urlToJson(cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db);
+$tm = $ds->urlToJson(cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts");
 $stor = $listid = array();
 $stor = parseTime($tm, $stor, $listid);
 $checkWeek = strtotime("-4 Week"); //for recent activities

@@ -6,8 +6,8 @@ if(isset($_SESSION["discpw"])){
 $turl  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
 $pdurl = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
 
-$ALL_PROJ_DATA = urlToJson($pdurl);
-$tm = urlToJson($turl);
+$ALL_PROJ_DATA = $ds->urlToJson($pdurl);
+$tm = $ds->urlToJson($turl);
 $stor = array(); //house information from couch 
 $listid = array(); //1D array with all proj names
 $iter = 0; //number of results to display'

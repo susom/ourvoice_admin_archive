@@ -9,7 +9,7 @@ if(empty($_GET["doc_id"]) && !empty($_SERVER["HTTP_REFERER"])){
 $doc_id 	= filter_var($_GET["doc_id"], FILTER_SANITIZE_STRING);
 
 $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $doc_id;
-$response   = doCurl($url);
+$response   = $ds->doCurl($url);
 $doc 		= json_decode(stripslashes($response),1); 
 
 if(array_key_exists("error",$doc)){

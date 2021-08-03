@@ -127,7 +127,7 @@ function random_rgba() {
 function initializeDataF(){
 	$data = array();
 	$url 			= cfg::$couch_url . "/" . cfg::$couch_attach_db . "/" . cfg::$couch_all_db;
-	$response 		= doCurl($url);
+	$response 		= $ds->doCurl($url);
 	$present_attachments = json_decode($response,1);
 	// print_rr($present_attachments);
 	$pic_count = 0;
@@ -169,7 +169,7 @@ function initializeData(){
 
 	else{
 		$url 			= cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . cfg::$couch_all_db . "?include_docs=true";
-		$response 		= doCurl($url);
+		$response 		= $ds->doCurl($url);
 		$attachments 	= json_decode($response,1);
 		$resolve 		= countData($attachments);
 		$_SESSION['visualization'] = $resolve;
@@ -213,7 +213,7 @@ function countData($attachments){
 	}
 
 	$url 			= cfg::$couch_url . "/" . cfg::$couch_attach_db . "/" . cfg::$couch_all_db;
-	$response 		= doCurl($url);
+	$response 		= $ds->doCurl($url);
 	$present_attachments = json_decode($response,1);
 	// print_rr($present_attachments);
 	$pic_count = 0;

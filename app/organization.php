@@ -11,7 +11,7 @@ include("inc/check_login.php");
 
 if(!isset($_SESSION["DT"])){
     $url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-    $response 		= doCurl($url);
+    $response 		= $ds->doCurl($url);
 	$_SESSION["DT"] = json_decode($response,1);
 }
 	$ALL_PROJ_DATA 	= $_SESSION["DT"];

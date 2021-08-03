@@ -31,7 +31,7 @@ if($old){
 	//
 	$url = cfg::$couch_url . "/". cfg::$couch_attach_db."/" . $id;
 }
-$result = doCurl($url);
+$result = $ds->doCurl($url);
 $result = json_decode($result,true);
 
 if(!empty($result['_attachments'][$file])) {
@@ -69,7 +69,7 @@ if(!empty($result['_attachments'][$file])) {
 	    header_remove("Pragma");
 	    header_remove("Expires");
 	    // Display file
-		$result = doCurl($url ."/" . $file);
+		$result = $ds->doCurl($url ."/" . $file);
 		echo $result;
 	}
 }else{

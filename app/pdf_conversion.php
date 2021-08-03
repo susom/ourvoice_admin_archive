@@ -27,7 +27,7 @@ function generatePhotoPage($pdf, $id, $pic, $rotation){
 	$_file		= "photo_".$pic.".jpg";
 
     $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
-    $response   = doCurl($url);
+    $response   = $ds->doCurl($url);
 
 	$doc 		= json_decode(stripslashes($response),1); //wtf this breaking certain ones? 
 
@@ -128,11 +128,11 @@ function generatePhotoPage($pdf, $id, $pic, $rotation){
 		}
 		
 
-		$result = doCurl($url);
+		$result = $ds->doCurl($url);
 		$result = json_decode($result,true);
 
 		// print_rr( $result);
-		$htmlphoto = doCurl($url ."/" . $file); //the string representation htmlphoto is the WALK photo
+		$htmlphoto = $ds->doCurl($url ."/" . $file); //the string representation htmlphoto is the WALK photo
 
 		///////////////////////////// GET MAIN PHOTO END ///////////////////////////// 
 
@@ -215,7 +215,7 @@ function generatePhotoPage($pdf, $id, $pic, $rotation){
 	$url = 'https://maps.googleapis.com/maps/api/staticmap?size=400x'.floor(533).'&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
 
 	imagedestroy($imageResource);
-	$gmapsPhoto = doCurl($url);
+	$gmapsPhoto = $ds->doCurl($url);
 	
 	// $photo = imagecreatefromstring($gmapsPhoto);
 	// print_rr($goodbad);
@@ -389,7 +389,7 @@ function generatePage($pdf, $htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $
 
 function generateWalkMap($pdf, $_id){
 	$url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
-    $response   = doCurl($url);
+    $response   = $ds->doCurl($url);
 	$doc 		= json_decode(stripslashes($response),1); //wtf this breaking certain ones? 
 
 	$pdf->AddPage();
@@ -411,7 +411,7 @@ function generateWalkMap($pdf, $_id){
 	$parameters = "markers=$urlp";
 
 	$url 		= 'https://maps.googleapis.com/maps/api/staticmap?size=680x'.floor(533).'&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
-	$gmapsPhoto = doCurl($url);
+	$gmapsPhoto = $ds->doCurl($url);
 	$pdf->Image('@'.$gmapsPhoto,15,20,180,106);
 }
 ?>

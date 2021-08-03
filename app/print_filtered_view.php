@@ -23,7 +23,7 @@ function generateWalkMap($photo_geos){
 	$parameters 	= "markers=$urlp";
 
 	$url 			= 'https://maps.googleapis.com/maps/api/staticmap?size=640x500&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
-	$gmapsPhoto 	= doCurl($url);
+	$gmapsPhoto 	= $ds->doCurl($url);
 	
 	return base64_encode($gmapsPhoto);
 }
@@ -72,9 +72,9 @@ function generatePhotoPage($photo, $active_pid, $pcode, $page, $total, $highligh
 	}
 	
 	$tags 		= !empty($photo["tags"]) ? $photo["tags"] : null;
-	$result 	= doCurl($url);
+	$result 	= $ds->doCurl($url);
 	$result 	= json_decode($result,true);
-	$htmlphoto 	= doCurl($url ."/" . $file); //the string representation htmlphoto is the WALK photo
+	$htmlphoto 	= $ds->doCurl($url ."/" . $file); //the string representation htmlphoto is the WALK photo
 	///////////////////////////// GET MAIN PHOTO END ///////////////////////////// 
 
 	///////////////////////////// GET TRANSCRIPTIONS START /////////////////////////////		
@@ -124,7 +124,7 @@ function generatePhotoPage($photo, $active_pid, $pcode, $page, $total, $highligh
 		imagedestroy($imageResource);
 	}
 	$url = 'https://maps.googleapis.com/maps/api/staticmap?size=400x400&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
-	$gmapsPhoto = doCurl($url);
+	$gmapsPhoto = $ds->doCurl($url);
 
 	generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landscape, $scale, $rotation, $goodbad, $tags, $highlight_tag, $pcode , $page, $total);
 	///////////////////////////// END STATIC GOOGLE MAP /////////////////////////////
@@ -218,7 +218,7 @@ if(!empty($pcode) && !empty($active_pid)){
 	$pfilters 		= json_decode($filters,1);
 	$pfilters 		= empty($pfilters) ? $project_tags : $pfilters;
 
-	$data_geos 		= getFilteredDataGeos($pcode, $pfilters);
+	$data_geos 		= $ds->getFilteredDataGeos($pcode, $pfilters);
 	$photo_geos 	= $data_geos["photo_geos"];
 	$photos 		= $data_geos["code_block"];
 

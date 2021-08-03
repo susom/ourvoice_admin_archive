@@ -5,7 +5,7 @@ error_reporting(E_ALL);
 require_once "common.php";
 	//Get all attachment data
 	$url = cfg::$couch_url . "/". cfg::$couch_attach_db . "/" .cfg::$couch_all_db;
-	$result = doCurl($url);
+	$result = $ds->doCurl($url);
 	$result = json_decode($result,1);
 	$count = 0;
 	 // print_rr($result);
@@ -50,9 +50,9 @@ function detectFaces($id, $old, $photo_name, $rev){
 	}else{
 		$url = cfg::$couch_url . "/". cfg::$couch_attach_db . "/" . $id; 
 	}
-	$result = doCurl($url);
+	$result = $ds->doCurl($url);
 	$meta = json_decode($result,true);
-	$picture = doCurl($url . '/' . $photo_name); //returns the actual image in string format
+	$picture = $ds->doCurl($url . '/' . $photo_name); //returns the actual image in string format
 	// $picture = file_get_contents('5faces_landscape.jpg');
 	$new = imagecreatefromstring($picture); //set the actual picture for editing
 	$pixel_count = imagesy($new)*imagesx($new);
@@ -71,7 +71,7 @@ function detectFaces($id, $old, $photo_name, $rev){
 
 	$vertices = array();
 	 //POST to google's service
-	$resp = postData('https://vision.googleapis.com/v1/images:annotate?key='.cfg::$gvoice_key,$data);
+	$resp = $ds->postData('https://vision.googleapis.com/v1/images:annotate?key='.cfg::$gvoice_key,$data);
 	$attach_url = cfg::$couch_url . "/" . cfg::$couch_attach_db;
 
 		    $couchurl       = $attach_url."/".$id."/".$photo_name."?rev=".$rev;
@@ -105,7 +105,7 @@ function detectFaces($id, $old, $photo_name, $rev){
 		    $couchurl       = $attach_url."/".$id."/".$photo_name."?rev=".$rev;
 		    $content_type   = 'image/jpeg';
 //	    	print_rr($couchurl);
-			// $response       = uploadAttach($couchurl, $filepath, $content_type);
+			// $response       = $ds->uploadAttach($couchurl, $filepath, $content_type);
 			// if(isset("./temp/$id"))
 			// 	unset("./temp/$id");
 

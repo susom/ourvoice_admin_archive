@@ -19,7 +19,7 @@ $walks_collection   = cfg::$firestore_collection;
 $firestore_endpoint = cfg::$firestore_endpoint; 
 $firestore_scope    = cfg::$firestore_scope; 
 $gcp_bucketName     = cfg::$gcp_bucketName;
-$access_token       = getGCPRestToken($keyPath, $firestore_scope);
+$access_token       = $ds->getGCPRestToken($keyPath, $firestore_scope);
 
 // GET WALK ID , FROM THE PING
 $uploaded_walk_id   = isset($_POST["uploaded_walk_id"]) ? filter_var($_POST["uploaded_walk_id"], FILTER_SANITIZE_STRING) : null;
@@ -89,11 +89,11 @@ if(!empty($uploaded_walk_id)){
             if(strpos($file,".json") > 0){
                 $walks_url  = cfg::$couch_url . "/" . cfg::$couch_users_db ;
                 $payload    = file_get_contents($path);
-                $response   = doCurl($walks_url, $payload, 'POST');
+                $response   = $ds->doCurl($walks_url, $payload, 'POST');
 
                 // STORE WALK DATA INTO FIRESTORE FORMAT
                 $old_walk_id    = str_replace(".json","",$file); 
-                $fs_walk_id     = setWalkFireStore($old_walk_id, json_decode($payload,1), $access_token);
+                $fs_walk_id     = $ds->setWalkFireStore($old_walk_id, json_decode($payload,1), $access_token);
             }else{
                 $attach_url = cfg::$couch_url . "/" . cfg::$couch_attach_db; 
 
@@ -108,7 +108,7 @@ if(!empty($uploaded_walk_id)){
                     $rev        = str_replace('"','',$check_ETag["ETag"]);                           
                 }else{  
                     $payload    = json_encode(array("_id" => $file));
-                    $response   = doCurl($attach_url, $payload, 'POST');
+                    $response   = $ds->doCurl($attach_url, $payload, 'POST');
                     $response   = json_decode($response,1);
                     $rev        = $response["rev"];
                 }
@@ -119,10 +119,10 @@ if(!empty($uploaded_walk_id)){
                 // so only need to do the second step
 
                 // next upload the attach
-                $response   = prepareAttachment($file,$rev,$_id,$attach_url); 
+                $response   = $ds->prepareAttachment($file,$rev,$_id,$attach_url);
 
                 //UPLOAD TO GOOGLE BUCKET
-                $uploaded   = uploadCloudStorage($file ,$_id , $gcp_bucketName, $storageCLient);
+                $uploaded   = $ds->uploadCloudStorage($file ,$_id , $gcp_bucketName, $storageCLient);
             }
         }
 

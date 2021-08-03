@@ -5,10 +5,10 @@ require_once "common.php";
 $turl  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
 $pdurl = cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
 
-$ALL_PROJ_DATA = urlToJson($pdurl); //might have to store this in a session variable
+$ALL_PROJ_DATA = $ds->urlToJson($pdurl); //might have to store this in a session variable
 $_SESSION["DT"] = $ALL_PROJ_DATA;
 //print_rr($ALL_PROJ_DATA);
-$tm = urlToJson($turl); //Just for times + project abv
+$tm = $ds->urlToJson($turl); //Just for times + project abv
 $stor = $listid = array();
 $stor = parseTime($tm, $stor, $listid);
 

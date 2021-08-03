@@ -4,33 +4,20 @@ require_once "common.php";
 //adhoc https redirect
 include("inc/https_redirect.php");
 
-
-if(isset($_GET["clearsession"])){
-	$_SESSION = null;
-}
-
 //MEANING IT HAS TO MAKE A CALL TO GET THIS STUFF
 if(!isset($_SESSION["DT"])){
 	//TURN IT INTO PHP ARRAY
     // Query for the all projects document
     $url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-    $response 		= doCurl($url);
+    $response 		= $ds->doCurl($url);
 	$_SESSION["DT"] = json_decode($response,1);
 }
 
 // Loop through all projects
 $ap 			= $_SESSION["DT"];
 $ALL_PROJ_DATA 	= $ap;
-$_id 		= $ap["_id"];
-$_rev 		= $ap["_rev"];
 $projects 	= [];
 $alerts 	= [];
-
-foreach($ap["project_list"] as $pid => $proj){
-	if(isset($proj["project_id"])){
-		$projects[$pid] = $proj["project_id"];
-	}
-} 
 
 // AJAX HANDLER 
 if( isset($_POST["proj_idx"]) ){
@@ -46,7 +33,7 @@ if( isset($_POST["proj_idx"]) ){
 
         //putDoc($payload);
         $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-        $response 	= doCurl($url, json_encode($payload), 'PUT');
+        $response 	= $ds->doCurl($url, json_encode($payload), 'PUT');
         $resp 		= json_decode($response,1);
         if(isset($resp["rev"])){
         	$payload["_rev"] = $resp["rev"];
@@ -63,12 +50,12 @@ if( isset($_POST["proj_idx"]) ){
 	}else if(isset($_POST["archive"])){
 		// due to unfreshness of SESSION multiple people saving and shit, we need to pull fresh version before pushing back up
 		$url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-	    $response 	= doCurl($url);
+	    $response 	= $ds->doCurl($url);
 		$payload 	= $_SESSION["DT"] = json_decode($response,1);
 		
 		$payload["project_list"][$proj_idx]["archived"] = $_POST["archive"];
 		
-        $response 	= doCurl($url, json_encode($payload), 'PUT');
+        $response 	= $ds->doCurl($url, json_encode($payload), 'PUT');
         $resp 		= json_decode($response,1);
         if(isset($resp["rev"])){
         	$payload["_rev"] = $resp["rev"];
@@ -145,7 +132,7 @@ if( isset($_POST["proj_idx"]) ){
 		
 		// due to unfreshness of SESSION multiple people saving and shit, we need to pull fresh version before pushing back up
 		$url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-	    $response 		= doCurl($url);
+	    $response 		= $ds->doCurl($url);
 		$payload = $_SESSION["DT"] = json_decode($response,1);
 
 		// since originally setting up the configurator, these new properties were added so 
@@ -159,7 +146,7 @@ if( isset($_POST["proj_idx"]) ){
 		$payload["project_list"][$pidx] = $updated_project;
 
         $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-        $response 	= doCurl($url, json_encode($payload), 'PUT');
+        $response 	= $ds->doCurl($url, json_encode($payload), 'PUT');
         $resp 		= json_decode($response,1);
         if(isset($resp["rev"])){
         	$payload["_rev"] = $resp["rev"];
@@ -211,7 +198,6 @@ if(isset($_POST["discpw"])){
 <body id="main" class="configurator">
 <div id="box">
 <?php
-$projs 	= $ap["project_list"];
 $pCount = array();
 if(!isset($_SESSION["discpw"])) {
 	$show_alert 	= "";
@@ -375,7 +361,7 @@ if(!isset($_SESSION["discpw"])) {
 		<?php
 	}else{
 		$turl  	= cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
-		$tm 	= urlToJson($turl); //Just for times + project abv
+		$tm 	= $ds->urlToJson($turl); //Just for times + project abv
 		$stor 	= $listid = array();
 		$stor 	= parseTime($tm, $stor, $listid);
 
@@ -414,7 +400,7 @@ if(!isset($_SESSION["discpw"])) {
 				</tr>
 				<?php 
 					$turl  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
-					$tm = urlToJson($turl);
+					$tm = $ds->urlToJson($turl);
 					$stor = $listid = array();
 					$stor = parseTime($tm,$stor);
 					// print_rr($tm);

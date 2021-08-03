@@ -5,7 +5,7 @@ require_once("common.php");
 function getPhotos($view, $keys_array){ //keys array is the # integer of the PrID
     $qs         = !empty($keys_array) ? "?" . http_build_query(array( 'key' => $keys_array )) : "";
     $couch_url  = cfg::$couch_url . "/" . cfg::$couch_attach_db . "/" . "_design/get_photos/_view/".$view.$qs;
-    $response   = doCurl($couch_url);
+    $response   = $ds->doCurl($couch_url);
     return json_decode($response,1);
 }
 

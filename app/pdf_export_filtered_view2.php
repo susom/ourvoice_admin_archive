@@ -17,7 +17,7 @@ if(!empty($pcode) && !empty($active_pid)){
 	$pfilters 		= json_decode($filters,1);
 
 	$pfilters 		= empty($pfilters) ? $project_tags : $pfilters;
-	$data 			= getFilteredDataGeos($pcode, $pfilters);
+	$data 			= $ds->getFilteredDataGeos($pcode, $pfilters);
 	$photos 		= $data["code_block"];
 
 	// instantiate and use the dompdf class

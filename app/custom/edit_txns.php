@@ -7,7 +7,7 @@ error_reporting(E_ALL);
 $pcode      	= "RASI1";
 $pfilters   	= array();
 $goodbad_filter = array();
-$response       = loadAllProjectThumbs($pcode, $pfilters, $goodbad_filter);
+$response       = $ds->loadAllProjectThumbs($pcode, $pfilters, $goodbad_filter);
 
 $walks          = array();
 $photo_geos     = array();

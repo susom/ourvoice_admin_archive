@@ -12,8 +12,8 @@ RUN set -ex; \
     echo "upload_max_filesize = 32M"; \
     echo "post_max_size = 32M"; \
     echo "; Configure Opcache for Containers"; \
-    echo "opcache.enable = On"; \
-    echo "opcache.validate_timestamps = Off"; \
+    echo "opcache.enable = 0"; \
+    echo "opcache.validate_timestamps = 0"; \
     echo "; Configure Opcache Memory (Application-specific)"; \
     echo "opcache.memory_consumption = 32"; \
   } > "$PHP_INI_DIR/conf.d/cloud-run.ini"
@@ -36,6 +36,13 @@ RUN set -eux; \
 # CLEANUP
   && rm -rf /var/log/dpkg.log /var/log/alternatives.log /var/log/apt \
   && rm libapache2-mod-auth-openidc_2.4.6-1.buster+1_amd64.deb
+
+# Install grpc extension for PHP
+RUN set -xe; \
+	apt-get update; \
+	apt-get -y --no-install-recommends install g++ zlib1g-dev; \
+	pecl install grpc; \
+	docker-php-ext-enable grpc
 
 # REPLACE DEFAULT SITE
 ADD 000-default.conf /etc/apache2/sites-available/000-default.conf

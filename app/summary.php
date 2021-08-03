@@ -4,42 +4,17 @@ require_once "common.php";
 //adhoc https redirect
 include("inc/https_redirect.php");
 
-//markPageLoadTime("Summary Page Start Loading");
-require 'vendor/autoload.php';
-
-// FIRESTORE details
-$keyPath 			= cfg::$FireStorekeyPath;
-$gcp_project_id 	= cfg::$gcp_project_id; 
-$walks_collection 	= cfg::$firestore_collection; 
-$firestore_endpoint	= cfg::$firestore_endpoint; 
-$firestore_scope 	= cfg::$firestore_scope; 
-
-if(isset($_GET["clearsession"])){
-	$_SESSION = null;
-    header("location:summary.php");
-}
-
 if( empty($_SESSION["DT"]) ){
 	// FIRST GET THE PROJECT DATA
-	$couch_url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-	$response 		= doCurl($couch_url);
-
-	//TURN IT INTO PHP ARRAY
-	$ap 			= json_decode(stripslashes($response),1);
+    $ap = $ds->getProjectsMeta();
 	$_SESSION["DT"] = $ap;
 }
 
-
 // NEXT GET SPECIFIC PROJECT DATA
 $ap 				= $_SESSION["DT"];
-$_id 				= $ap["_id"];
-$_rev 				= $ap["_rev"];
-$projs 				= $ap["project_list"];
 $active_project_id 	= null;
 $active_pid 		= null;
 $alerts 			= array();
-
-
 
 //AJAX GETTING DAY'S DATA
 if(isset($_POST["active_pid"]) && $_POST["date"]){
@@ -48,7 +23,7 @@ if(isset($_POST["active_pid"]) && $_POST["date"]){
 	$project_meta 	= $ap["project_list"][$active_pid];
 
 	//GET THE DATA FROM disc_users
-	$response 		= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
+	$response 		= $ds->filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
 	$days_data 		= rsort($response["rows"]); 
 	
 	$code_block 	= array();
@@ -74,12 +49,12 @@ if(isset($_POST["for_delete"]) && $_POST["for_delete"]){
 
 	// Bulk update docs
     $couch_url 	= cfg::$couch_url . "/" . cfg::$couch_users_db . "/_bulk_docs";
-    $response 	= doCurl($couch_url, json_encode(array("docs" => $fordelete)), "POST");
+    $response 	= $ds->doCurl($couch_url, json_encode(array("docs" => $fordelete)), "POST");
 
-    $access_token 		= getGCPRestToken($keyPath, $firestore_scope);
-	$object_unique_id 	= convertFSwalkId($_id);
+    $access_token 		= $ds->getGCPRestToken($keyPath, $firestore_scope);
+	$object_unique_id 	= $ds->convertFSwalkId($_id);
 	$firestore_url 		= $firestore_endpoint . "projects/".$gcp_project_id."/databases/(default)/documents/".$walks_collection."/".$object_unique_id;
-    $deleted 			= restDeleteFireStore($firestore_url ,$access_token);
+    $deleted 			= $ds->restDeleteFireStore($firestore_url ,$access_token);
 	exit;
 }
 
@@ -88,55 +63,56 @@ if(isset($_POST["data_procesed"]) && isset($_POST["doc_id"])){
     // FIRST GET A FRESH COPY OF THE WALK DATA
     $_id  		= filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING);
     $url 		= cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
-    $response   = doCurl($url);
+    $response   = $ds->doCurl($url);
     $doc 	 	= json_decode(stripslashes($response),1);
     $payload 	= $doc;
     $payload["data_processed"] = true;
-    $response = doCurl($url, json_encode($payload), "PUT");
+    $response = $ds->doCurl($url, json_encode($payload), "PUT");
 
-    $access_token 		= getGCPRestToken($keyPath, $firestore_scope);
-	$object_unique_id 	= convertFSwalkId($_id);
+    $access_token 		= $ds->getGCPRestToken($keyPath, $firestore_scope);
+	$object_unique_id 	= $ds->convertFSwalkId($_id);
 	$firestore_url 		= $firestore_endpoint . "projects/".$gcp_project_id."/databases/(default)/documents/".$walks_collection."/".$object_unique_id."?updateMask.fieldPaths=data_processed";
 
 	$firestore_data 	= ["data_processed" => array("integerValue" => 1)];
 	$data           	= ["fields" => (object)$firestore_data];
 	$json           	= json_encode($data);
-	$response       	= restPushFireStore($firestore_url, $json, $access_token);
+	$response       	= $ds->restPushFireStore($firestore_url, $json, $access_token);
     exit;
 }
 
-//NOW LOGIN TO YOUR PROJECT 
+
+
+
+//IF COMING FROM CONFIGURATOR, THEN MIMIC A POST TO FLOW DOWN TO LOGIN FUNC
 if( ( (!empty($_SESSION["proj_id"]) OR !empty($_GET["id"]) )  && !empty($_SESSION["summ_pw"])  && !empty($_SESSION["authorized"]) )
     || ( isset($_SESSION["discpw"])  && $_SESSION["discpw"] == cfg::$master_pw )
 ){
     // FIRST CHECK IF LOGIN IS IN SESSION, _GET FOR DIRECT LINKING TO SUMMARY PAGE FROM INDEX PAGES
     if(empty($_POST["proj_id"])){
-        $_POST["proj_id"]       = !empty($_GET["id"])  ? filter_var($_GET["id"], FILTER_SANITIZE_STRING) :  $_SESSION["proj_id"];
+        $_POST["proj_id"]   = !empty($_GET["id"])  ? filter_var($_GET["id"], FILTER_SANITIZE_STRING) :  (!empty($_SESSION["proj_id"]) ? $_SESSION["proj_id"] : null);
     }
     $_POST["summ_pw"]       = isset($_SESSION["summ_pw"]) ? $_SESSION["summ_pw"] : $_SESSION["discpw"];
     $_POST["authorized"]    = $_SESSION["authorized"];
 }
 
+//POST LOGIN TO PROJECT
 if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 	if(!isset($_POST["authorized"])){
 		$alerts[] = "Please check the box to indicate you are authorized to view these data.";
 	}else{
-		$proj_id  = trim(strtoupper(filter_var($_POST["proj_id"], FILTER_SANITIZE_STRING)));
-		$summ_pw  = filter_var($_POST["summ_pw"], FILTER_SANITIZE_STRING);
-		$found    = false;
-		foreach($projs as $pid => $proj){
-			if(isset($proj["project_id"]) && $proj_id == $proj["project_id"] && ( (isset($proj["summ_pass"]) && $summ_pw == $proj["summ_pass"]) || $summ_pw == $masterblaster) ) {
-				$active_project_id      = $proj_id;
-				$_SESSION["pid"]        = $active_pid = $pid;
+		$proj_id            = trim(strtoupper(filter_var($_POST["proj_id"], FILTER_SANITIZE_STRING)));
+		$summ_pw            = filter_var($_POST["summ_pw"], FILTER_SANITIZE_STRING);
+		$found              = false;
 
-                $_SESSION["proj_id"]        = $proj_id;
-                $_SESSION["summ_pw"]        = $summ_pw;
-                $_SESSION["authorized"]     = $_POST["authorized"];
-				
-                $found                      = true;
-				break;
-			}
-		}
+        $project_snapshot   = $ds->loginProject($proj_id, $summ_pw);
+
+        if(!empty($project_snapshot)){
+            $active_project_id          = $proj_id;
+            $_SESSION["proj_id"]        = $proj_id;
+            $_SESSION["summ_pw"]        = $summ_pw;
+            $_SESSION["authorized"]     = $_POST["authorized"];
+            $found                      = true;
+        }
 
 		if(!$found){
 			$alerts[] = "Project Id or Project Password is incorrect. Please try again.";
@@ -166,8 +142,8 @@ $page = "summary";
         <?php
         if( $active_project_id ){
             //FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
-            $response 		= getProjectSummaryData($active_project_id);
-            $response_rows  = $response["rows"];
+            $response       = $ds->getProjectSummaryData($active_project_id);
+            $response_rows  = $response;
 
             $date_headers 	= [];
             $summ_buffer    = [];
@@ -194,9 +170,8 @@ $page = "summary";
 
             $dates      = array();
             $sum_row    = array();
-            foreach($response_rows as $i => $row){
-                $walk   = $row["value"];
 
+            foreach($response_rows as $i => $walk){
                 $date    = $walk["date"];
                 $temp    = explode("-",$date);
                 $dateB   = $temp[2]."-".$temp[0]."-".$temp[1];
@@ -207,28 +182,24 @@ $page = "summary";
                     $date_headers[$date] = 1;				//otherwise create an element [date -> #occurrences]
                 }
 
-                $walk   = $row["value"];
-                $_id    = substr($row["id"] , -4);
-                $uuid   = substr($row["id"], strpos($row["id"],"_")+1,5);
-
-                // $device     = "uuid $uuid ...<br>" . $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
                 $device     = $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
                 $processed  = isset($walk["data_processed"]) ? $walk["data_processed"] : false;
 
                 //check for attachment ids existing
                 //IMPORTANT TO FORMAT THIS RIGHT OR ELSE WILL GET INVALID JSON ERROR
                 $partial    = '["'.implode('","',$walk["attachment_ids"]).'"]';
+                $_id        = $walk["id"];
 
                 if(isset($walk["complete_upload"]) && $walk["complete_upload"]){
                     $expect_cnt = 0;
                 }else{
-                    $count_att  = checkAttachmentsExist($partial);
-                    $expect_cnt = count($count_att["rows"]) - count($walk["attachment_ids"]);
+                    $count_att  = $ds->checkAttachmentsExist($partial);
+                    $expect_cnt = count($response_rows) - count($walk["attachment_ids"]);
                     if($expect_cnt === 0){
                         //PUSH Y flag TO THE COUCH SO WE DONT HAVE TO RUN THIS CHECK NEXT TIME
                         $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $row["id"];
                         $keyvalues  = array("complete_upload" => true);
-                        $resp       = updateDoc($url,$keyvalues);
+                        $resp       = $ds->updateDoc($url,$keyvalues);
                     }
                 }
                 $uploaded       = $expect_cnt === 0 ? "Y" : "N ($expect_cnt files)";
@@ -237,7 +208,7 @@ $page = "summary";
                 $sum_buffer_item = array();
                 $sum_buffer_item[] = "<tr>";
                 $sum_buffer_item[] = "<td>" . $date . "</td>";
-                $sum_buffer_item[] = "<td><a href='#".$row["id"]."'>" . $_id . "</a></td>";
+                $sum_buffer_item[] = "<td><a href='#".$walk["id"]."'>" . $_id . "</a></td>";
                 $sum_buffer_item[] = "<td>" . $device . "</td>";
                 $sum_buffer_item[] = "<td>" . $walk["photos"]. "</td>";
                 $sum_buffer_item[] = "<td>" . $walk["audios"]. "</td>";
@@ -295,7 +266,7 @@ $page = "summary";
         	echo "<form id='project_summary' method='post'>";
         	echo "<input type='hidden' name='proj_id' value='".filter_var($_POST["proj_id"], FILTER_SANITIZE_STRING)."'/>";
         	echo "<input type='hidden' name='summ_pw' value='".filter_var($_POST["summ_pw"], FILTER_SANITIZE_STRING)."'/>";
-        	$project_meta 		= $ap["project_list"][$active_pid];
+
         	$most_recent_date 	= true;
         	foreach($date_headers as $date => $record_count){
         		if($most_recent_date){
@@ -304,14 +275,12 @@ $page = "summary";
         			echo "<div id='day_$date' class='collapse in'>";
 
         			//AUTOMATICALLY SHOW MOST RECENT DATE's DATA, AJAX THE REST
-        			$response 	= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
-
-        			$days_data 	    = rsort($response["rows"]);
-        			foreach($response["rows"] as $row){
-        				$doc        = $row["value"];
-                        echo "<a name='".$doc["_id"]."'></a>";
-                        echo implode("",printRow($doc,$active_pid));
-                    }
+        			$response 	= $ds->filter_by_projid($active_project_id, $date);
+        			foreach($response as $i => $row){
+        				$doc = $row;
+                         echo "<a name='".$doc["project_id"]."'></a>";
+                         echo implode("",printRow($doc, $i));
+                     }
         			echo "</div>";
         			echo "</aside>";
 
@@ -486,12 +455,14 @@ $(document).ready(function(){
 		}
 		$(this).parent().attr("rev",rotate);
 
-		var doc_id 	= $(this).parent().data("doc_id");
-		var photo_i = $(this).parent().data("photo_i"); 
-		$.ajax({
+		var doc_id 	    = $(this).parent().data("doc_id");
+		var photo_i     = $(this).parent().data("photo_i");
+        var filename    = $(this).parent().data("filename");
+
+        $.ajax({
 		  type 		: "POST",
 		  url 		: "photo.php",
-		  data 		: { doc_id: doc_id, photo_i: photo_i, rotate: rotate },
+		  data 		: { doc_id: doc_id, _filename : filename, photo_i: photo_i, rotate: rotate },
 		}).done(function(response) {
 			console.log("rotation saved", response);
 		}).fail(function(msg){

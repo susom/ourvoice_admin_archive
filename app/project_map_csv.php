@@ -4,7 +4,7 @@ require_once "common.php";
 if( empty($_SESSION["DT"]) ){
 	// FIRST GET THE PROJECT DATA
 	$couch_url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-	$response 		= doCurl($couch_url);
+	$response 		= $ds->doCurl($couch_url);
 
 	//TURN IT INTO PHP ARRAY
 	$_SESSION["DT"] = json_decode(stripslashes($response),1);
@@ -30,7 +30,7 @@ fputcsv($output, array('walk id', 'photo name', 'type', 'latitude', 'longitude',
 
 if( $active_pid ){
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
-    $response 		= getAggMaps("[\"$active_pid\"]");
+    $response 		= $ds->getAggMaps("[\"$active_pid\"]");
 	$project_meta 	= $ap["project_list"][$active_pid];
 
 	//PRINT TO SCREEN

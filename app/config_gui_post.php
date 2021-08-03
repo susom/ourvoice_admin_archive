@@ -1,7 +1,7 @@
 <?php
 require_once "common.php";
 //technically callback
-$storage = getAllData();
+$storage = $ds->getAllData();
 if(!isset($_SESSION["DT"])){ //store data for use the first time
 	$_SESSION["DT"] = $storage;
 	
@@ -20,7 +20,7 @@ if($folders){
 		$_SESSION["DT"] = $storage;
 		print_r("pushing to folders");
 	 	$url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-		$response 	= doCurl($url, json_encode($storage), 'PUT');
+		$response 	= $ds->doCurl($url, json_encode($storage), 'PUT');
         $resp 		= json_decode($response,1);
 	}
 
@@ -39,7 +39,7 @@ if(isset($_POST["dropTag"]) && isset($_POST["dragTag"]) && isset($_POST["datakey
 		print_r("$drop_tag");
 		$_SESSION["DT"] = $storage;
         $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-	    $response 	= doCurl($url, json_encode($storage), 'PUT');
+	    $response 	= $ds->doCurl($url, json_encode($storage), 'PUT');
         $resp 		= json_decode($response,1);
 	}else{
 		//shouldn't happen
@@ -73,7 +73,7 @@ if(isset($_POST["deleteTag"])){
 	$_SESSION["DT"] = $storage;
 
 	$url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-	$response 	= doCurl($url, json_encode($storage), 'PUT');
+	$response 	= $ds->doCurl($url, json_encode($storage), 'PUT');
     $resp 		= json_decode($response,1);
 }
 
