@@ -38,11 +38,11 @@ RUN set -eux; \
   && rm libapache2-mod-auth-openidc_2.4.6-1.buster+1_amd64.deb
 
 # Install grpc extension for PHP
-RUN set -xe; \
-	apt-get update; \
-	apt-get -y --no-install-recommends install g++ zlib1g-dev; \
-	pecl install grpc; \
-	docker-php-ext-enable grpc
+#RUN set -xe; \
+#	apt-get update; \
+#	apt-get -y --no-install-recommends install g++ zlib1g-dev; \
+#	pecl install grpc; \
+#	docker-php-ext-enable grpc
 
 # REPLACE DEFAULT SITE
 ADD 000-default.conf /etc/apache2/sites-available/000-default.conf
