@@ -16,7 +16,7 @@ services:
       - ./secrets/_config_dev.php:/secrets2/_config.php
       - ./secrets/som-rit-ourvoice-firestore.json:/secrets3/firestore_service_account.json
       - ./secrets/oidc_client_config.conf:/var/www/html/secrets/oidc_client_config.conf
-      - ./secrets/_config_dev.php:/var/www/html/secrets2/_config.php
+      - ./secrets/_config_dev.php:/var/www/html/_config.php
       - ./secrets/som-rit-ourvoice-firestore.json:/var/www/html/secrets3/firestore_service_account.json
       # The following add support for SSL on localhost (see README for directions)
 #      - ./secrets/cert.pem:/etc/apache2/ssl/cert.pem
