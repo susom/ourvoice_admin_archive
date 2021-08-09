@@ -16,3 +16,5 @@ vendor/
 som-rit-ourvoice.json.enc
 Dockerfile
 .travis.yml
+
+*secrets*

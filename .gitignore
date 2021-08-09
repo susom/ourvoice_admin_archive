@@ -12,3 +12,4 @@ som-rit-ourvoice*.json
 secrets/*
 .env
 
+app/secrets*
