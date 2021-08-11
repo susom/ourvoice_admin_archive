@@ -116,17 +116,6 @@ if( isset($_POST["proj_idx"]) ){
 			,"thumbs"			=> isset($_POST["thumbs"]) ? filter_var($_POST["thumbs"], FILTER_SANITIZE_NUMBER_INT) : 0
 			,"app_lang" 		=> $app_lang
 		);
-		//     [tags] => Array
-		//         (
-		//             [0] => orange
-		//             [1] => cup
-		//             [2] => freak
-		//             [3] => empty
-		//             [4] => drink
-		//         )
-
-		//     [dropTag] => Test
-
 
 		$pidx 			= $proj_idx;
 		
@@ -183,16 +172,12 @@ if(isset($_POST["discpw"])){
 <head>
 	<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
   	<meta charset="utf-8">
-
   	<script src="js/jquery-3.3.1.min.js"></script>
   	<script src="js/jquery-ui.js"></script>
-
     <link href="css/dt_common.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
     <link href="css/dt_index.css?v=<?php echo time();?>" rel="stylesheet" type="text/css"/>
-  
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-
 	<script src="js/common.js"></script>
 </head>
 <body id="main" class="configurator">
@@ -209,37 +194,31 @@ if(!isset($_SESSION["discpw"])) {
 			$display_alert .= "<li>$alert</li>";
 		}
 	}
-?>
-	<div class="alert alert-danger <?php echo $show_alert;?>" role="alert"><?php echo $display_alert  ?></div>
-	<div id="box">
-		<form id="summ_auth" method="post">
-			<h2>Our Voice: Citizen Science for Health Equity</h2>
-			<h3>Discovery Tool Data Configurator</h3>
-			<copyright>© Stanford University 2017</copyright>
-			<disclaim>Please note that Discovery Tool data can be viewed only by signatories to the The Stanford Healthy Neighborhood Discovery Tool Software License Agreement and in accordance with all relevant IRB/Human Subjects requirements.</disclaim>
-			<label class="checkauth">
-				<input type="checkbox" name='authorized'>  Check here to indicate that you are authorized to view this data
-			</label>
-			<label><input type="password" name="discpw" id="proj_pw" placeholder="Admin Password"/></label> 
-			<!--Sends entered text in as "discpw"= and authorized as on/empty-->
-			<button type="submit" class="btn btn-primary">Go to Configurator</button>
-		</form>
-	</div>
-<?php
+    ?>
+        <div class="alert alert-danger <?php echo $show_alert;?>" role="alert"><?php echo $display_alert  ?></div>
+        <div id="box">
+            <form id="summ_auth" method="post">
+                <h2>Our Voice: Citizen Science for Health Equity</h2>
+                <h3>Discovery Tool Data Configurator</h3>
+                <copyright>© Stanford University 2017</copyright>
+                <disclaim>Please note that Discovery Tool data can be viewed only by signatories to the The Stanford Healthy Neighborhood Discovery Tool Software License Agreement and in accordance with all relevant IRB/Human Subjects requirements.</disclaim>
+                <label class="checkauth">
+                    <input type="checkbox" name='authorized'>  Check here to indicate that you are authorized to view this data
+                </label>
+                <label><input type="password" name="discpw" id="proj_pw" placeholder="Admin Password"/></label>
+                <!--Sends entered text in as "discpw"= and authorized as on/empty-->
+                <button type="submit" class="btn btn-primary">Go to Configurator</button>
+            </form>
+        </div>
+    <?php
 }else{ //if password is actually set, display the project configurator
 	?>
 	<div id = "nav">
 		<ul>
 			<li><a href = "index.php">Home</a></li>
 			<li><a href = "project_configuration.php">Project Configuration</a></li>
-			<!-- <li><a href = "organization.php">Organization</a></li> -->
 			<li><a href = "recent_activity.php">All Data</a></li>
-			<!-- <li><a href = "visualization.php">Visualize</a></li> -->
 			<li style="float:right"><a href="index.php?clearsession=1">Refresh Project Data</a></li>
-			<!-- <li style="float:right"><img id = "magnifying_glass" src = "img/Magnifying_glass_icon.svg"></li>
-			<li style="float:right"><input type = "text" id = "search" placeholder="TAG"></li>
-			<li style="float:right"><a href = "">Search: </a></li>
- -->
 		</ul>
 	</div>
 	<?php
@@ -365,29 +344,32 @@ if(!isset($_SESSION["discpw"])) {
 		$stor 	= $listid = array();
 		$stor 	= parseTime($tm, $stor, $listid);
 
-		foreach ($stor as $key => $value){
-		  array_push($listid, $key);
-		}
+		if(is_array($stor)){
+            foreach ($stor as $key => $value){
+                array_push($listid, $key);
+            }
+        }
 		?>
 		<form id="project_config" method="get">
 				    <div id = "folderspace">
 				      	<?php
-				      		
-				        	foreach ($ALL_PROJ_DATA["folders"] as $key => $value) { //populate folders inside working
-					        	$counter = 0;
-					        	echo "<div class = 'folder_entry'>";
-					        	echo "<div class ='ui-widget-drop'><p>".$value." </p></div>";
-					          	echo "<div class ='hiddenFolders' id ='".$value."'>";
-					            	foreach ($ALL_PROJ_DATA["project_list"] as $k => $v) {
-					              		if(isset($v["dropTag"]) && $v["dropTag"] ==$value){
-					               			$counter++;
-					                	echo '<div class="foldercontents drag-from-folder" data-key = "'.$k.'" ><p><a href="index.php?proj_idx='.$k.'"'.'>'.$v["project_id"] .'</a></p></div>';
-					              }
-					            }
-					            $pCount[$value] = $counter;
-					            echo "</div>"; //hiddenfolders
-					            echo "</div>"; //individual_sector
-					        }
+				      		if(isset($ALL_PROJ_DATA["folders"])) {
+                                foreach ($ALL_PROJ_DATA["folders"] as $key => $value) { //populate folders inside working
+                                    $counter = 0;
+                                    echo "<div class = 'folder_entry'>";
+                                    echo "<div class ='ui-widget-drop'><p>" . $value . " </p></div>";
+                                    echo "<div class ='hiddenFolders' id ='" . $value . "'>";
+                                    foreach ($ALL_PROJ_DATA["project_list"] as $k => $v) {
+                                        if (isset($v["dropTag"]) && $v["dropTag"] == $value) {
+                                            $counter++;
+                                            echo '<div class="foldercontents drag-from-folder" data-key = "' . $k . '" ><p><a href="index.php?proj_idx=' . $k . '"' . '>' . $v["project_id"] . '</a></p></div>';
+                                        }
+                                    }
+                                    $pCount[$value] = $counter;
+                                    echo "</div>"; //hiddenfolders
+                                    echo "</div>"; //individual_sector
+                                }
+                            }
 				      	?>    
 				    </div>
 			<table id = "rec-table">
@@ -403,11 +385,11 @@ if(!isset($_SESSION["discpw"])) {
 					$tm = $ds->urlToJson($turl);
 					$stor = $listid = array();
 					$stor = parseTime($tm,$stor);
-					// print_rr($tm);
-					foreach ($stor as $key => $value){
-						array_push($listid, $key);
-					}
-
+                    if(is_array($stor)) {
+                        foreach ($stor as $key => $value) {
+                            array_push($listid, $key);
+                        }
+                    }
 					populateRecent($ALL_PROJ_DATA,$stor,$listid);
 				?>	
 			</table>

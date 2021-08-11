@@ -353,6 +353,15 @@ if(!empty($_POST["action"])){
                 }
             }
         break;
+
+        case "delete_project_id":
+        break;
+
+        case "new_project":
+        break;
+
+        case "archive":
+        break;
     }
 
     if($ajax_resp) {

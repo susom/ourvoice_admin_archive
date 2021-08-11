@@ -101,7 +101,7 @@ function getFullName($data, $abv){
 }
 
 function parseTime($data, $storage){
-    if($data["rows"] == null)
+    if(!isset($data["rows"]) || $data["rows"] == null)
         return false;
     else
         for($i = 0 ; $i < count($data["rows"]) ; $i++){         
@@ -482,6 +482,9 @@ function populateRecent($ALL_PROJ_DATA, $stor, $listid){ //stor should be
     $checkWeek = strtotime("-4 Week");
     $abvStorage = array();
     $cache_data = array();
+    if(!is_array($stor)){
+        return;
+    }
     for($i = 0 ; $i < count($stor) ; $i++){
         $iter = 0;
         rsort($stor[$listid[$i]]); //sort each element's timestamps
