@@ -323,7 +323,7 @@ function printRow($doc, $i){
 
     foreach($photos as $n => $photo){
 
-        if(is_null($photo) || isset($photo["deleted"])){
+        if(is_null($photo) || isset($photo["_deleted"])){
             continue;
         }
 
@@ -417,10 +417,10 @@ function printRow($doc, $i){
     return $codeblock;
 }
 
-function printPhotos($photo, $_id, $n, $old, $txns=null){
+function printPhotos($photo, $_id, $n, $old=null, $txns=null){
     $codeblock  = array();
 
-    $walk_ts_sub = substr($_id,-13);
+    $walk_ts_sub = isset($photo["geotag"]) ? $photo["geotag"]["timestamp"] : null;
     $date_ts     = date("F j, Y", floor($walk_ts_sub/1000)) ;
     $host        = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : "";
     $url_path    = $host .dirname($_SERVER['PHP_SELF']); 
@@ -435,24 +435,21 @@ function printPhotos($photo, $_id, $n, $old, $txns=null){
     if(empty($photo["geotag"])){
         $nogeo  = "nogeo";
     }else{
-        $lat    = array_key_exists("lat",$photo["geotag"]) ? $photo["geotag"]["lat"] : $photo["geotag"]["latitude"];
-        $long   = array_key_exists("lng",$photo["geotag"]) ? $photo["geotag"]["lng"] : $photo["geotag"]["longitude"];
+        $lat    = $photo["geotag"]["lat"];
+        $long   = $photo["geotag"]["lng"];
+
     }
-    
 
     $timestamp  = isset($photo["geotag"]["timestamp"])  ? $photo["geotag"]["timestamp"] : null;
     $txt        = array_key_exists("text_comment",$photo) ? $photo["text_comment"] : null;
 
     $rotate     = isset($photo["rotate"]) ? $photo["rotate"] : 0;
-    $filename   = array_key_exists("name",$photo) ? $photo["name"] : "photo_".$n.".jpg";
-    $ph_id      = $_id;
-    if(array_key_exists("name",$photo)){
-        $ph_id .= "_" .$filename;
-    }
+    $filename   = $photo["name"];
+    $ph_id      = isset($photo["geotag"]) ? $photo["geotag"]["photo_id"] : null;
 
-    $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
+    $file_uri       = isset($photo["geotag"]) ? $photo["geotag"]["photo_src"] : null;
     $thumb_uri      = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-    $photo_uri      = getThumb($ph_id,$thumb_uri,$file_uri);
+    $photo_uri      = $file_uri;
 
     $detail_url     = "photo.php?_id=".$_id."&_file=$filename";
     $pic_time       = date("g:i a", floor($timestamp/1000));
@@ -474,7 +471,6 @@ function printPhotos($photo, $_id, $n, $old, $txns=null){
     $photoblock["audios"]        = $photo["audios"];
     $photoblock["goodbad"]       = $photo["goodbad"];
     $photoblock["text_comment"]  = $txt;
-    $photoblock["old"]           = $old;
     $photoblock["full_img"]      = $file_uri;
     $photoblock["transcriptions"]  = $txns;
 
@@ -534,31 +530,45 @@ function printAllDataThumbs($photo_block ,$container_w=1200 ,$perchunk=16){
 
 function getAllDataPicLI($photo_o){
     $txns = "";
-    if(!empty($photo_o["audios"])){
+    $audios     = $photo_o["audios"];
+    $_id        = $photo_o["id"];
+    $photo_tags = $photo_o["tags"];
+    $doc_id     = $photo_o["doc_id"];
+    $photo_i    = $photo_o["n"];
+    $detail_url = $photo_o["detail_url"];
+    $nogeo      = $photo_o["nogeo"];
+    $goodbad    = $photo_o["goodbad"];
+    $text_com   = $photo_o["text_comment"];
+    $fullimg    = $photo_o["full_img"];
+    $imgsrc     = $photo_o["photo_uri"];
+    $platform   = null;//$photo_o["platform"];
+    $rotation   = $photo_o["rotate"];
+
+    if(!empty($audios)){
         $temp = array();
-        foreach($photo_o["audios"] as $audio_key){
-            $temp[] = $photo_o["transcriptions"][$audio_key]["text"];
+        foreach($audios as $audio_key => $txn){
+            $temp[] = $txn;
         }
         $txns = json_encode($temp);
     }
 
     $html_li  = "";
-    $html_li .= "<li id='".$photo_o["id"]."' class='ui-widget-drop' data-phid='".$photo_o["id"]."'><figure>";
+    $html_li .= "<li id='".$_id."' class='ui-widget-drop' data-phid='".$_id."'><figure>";
     $html_li .= "<ul>";
-    foreach($photo_o["tags"] as $idx => $tag){
-        $html_li .= "<li class = '$tag'>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='".$photo_o["doc_id"]."' data-photo_i='".$photo_o["n"]."'>x</a></li>";
+    foreach($photo_tags as $idx => $tag){
+        $html_li .= "<li class = '$tag'>$tag<a href='#' class='deletetag' data-deletetag='$tag' data-doc_id='".$doc_id."' data-photo_i='".$photo_i."'>x</a></li>";
     }
     $html_li .= "</ul>";
-    $html_li .= "<a href='".$photo_o["detail_url"]."' target='_blank' class='preview rotate walk_photo ".$photo_o["nogeo"]."' 
-    data-photo_i='".$photo_o["n"]."' 
-    data-goodbad=".$photo_o["goodbad"]." 
-    data-textcomment='".$photo_o["text_comment"]."'
+    $html_li .= "<a href='".$detail_url."' target='_blank' class='preview rotate walk_photo ".$nogeo."' 
+    data-photo_i='".$photo_i."' 
+    data-goodbad=".$goodbad." 
+    data-textcomment='".$text_com."'
     data-audiotxns='".$txns."' 
-    data-doc_id='".$photo_o["doc_id"]."' 
-    data-fullimgsrc='".$photo_o["full_img"]."' 
-    data-imgsrc='".$photo_o["photo_uri"]."' 
-    data-platform='".$photo_o["platform"]."' 
-    rev='".$photo_o["rotate"]."'><img src='".$photo_o["photo_uri"]."' /><span></span><b></b><i></i><em></em></a>";
+    data-doc_id='".$doc_id."' 
+    data-fullimgsrc='".$fullimg."' 
+    data-imgsrc='".$imgsrc."' 
+    data-platform='".$platform."' 
+    rev='".$rotation."'><img src='".$imgsrc."' /><span></span><b></b><i></i><em></em></a>";
     
     $html_li .= "</figure></li>";
     return $html_li;
@@ -676,90 +686,6 @@ function getConvertedAudio($attach_url, $lang){
         $newAudioPath = convertAudio($filename, $full_proj_code[0], $lang);
     }
     return $newAudioPath;
-}
-
-function convertAudio($filename, $full_proj_code , $lang){
-
-    $split = explode("." , $filename);
-    $noext = $split[0]; //audio_0_1 (ex)
-    // echo '--------------' . "./temp/".$full_proj_code . '---------------';;
-    // echo "_".$noext.".mp3" . '---------------';
-    if (function_exists('curl_file_create')) { // php 5.5+
-        $cFile = curl_file_create("./temp/".$filename);
-    } else { //
-        $cFile = '@' . realpath("./temp/".$filename);
-    }
-    if(!file_exists("./temp/".$full_proj_code."_".$noext.".mp3")){ //if the mp3 does not exist on the server already
-        // MAKE THE MP3 FROM locally saved .wav or .amr
-        // print_rr("DNE");
-        $ffmpeg_url = cfg::$ffmpeg_url;
-        $postfields = array(
-            "file"     => $cFile
-        ,"format"   => "mp3"
-        ,"rate"     => 16000
-        );
-
-        // CURL OPTIONS
-        // POST IT TO FFMPEG SERVICE
-        $ch = curl_init($ffmpeg_url);
-        curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($ch);
-        curl_close($ch);
-
-        // REPLACE ATTACHMENT
-        $newfile    = "./temp/".$full_proj_code."_".$noext.".mp3";
-        // echo 'newfile  ' . $newfile;
-        $handle     = fopen($newfile, 'w');
-        fwrite($handle, $response);
-    }else{
-        //if the mp3 already exists just link it
-        $newfile    = "./temp/".$full_proj_code."_".$noext.".mp3";
-        // echo '<br> ' . $newfile;
-    }
-
-    //check if transcription exists on database
-    $url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $full_proj_code;
-    $response       = $ds->doCurl($url);
-    $storage        = json_decode($response,1);
-    if($lang == "en" && (!isset($storage["transcriptions"]) || !isset($storage["transcriptions"][$filename]))){
-        $trans = transcribeAudio($cFile,$filename);
-        if(!empty($trans["transcript"])){
-            $storage["transcriptions"][$filename]["text"] = $trans["transcript"];
-            $storage["transcriptions"][$filename]["confidence"] = $trans["confidence"];
-            $response   = $ds->doCurl($url, json_encode($storage), 'PUT');
-            $resp       = json_decode($response,1);
-
-            $_id                = $full_proj_code;
-            $access_token       = $ds->getGCPRestToken(cfg::$FireStorekeyPath, cfg::$firestore_scope);
-            $object_unique_id   = $ds->convertFSwalkId($_id);
-            $firestore_url      = cfg::$firestore_endpoint . "projects/".cfg::$gcp_project_id."/databases/(default)/documents/".cfg::$firestore_collection."/".$object_unique_id."?updateMask.fieldPaths=photos";
-
-            // SEND IT TO FIRESTORE
-            $payload            = $storage;
-            $photos             = $payload["photos"];
-            $txn                = array_key_exists("transcriptions", $payload) ? $payload["transcriptions"] : array();
-            $new_photos         = formatUpdateWalkPhotos($photos,$txn);
-
-            $firestore_data     = ["photos" => array("arrayValue" => array("values" => $new_photos))];
-            $data               = ["fields" => (object)$firestore_data];
-            $json               = json_encode($data);
-            $response           = $ds->restPushFireStore($firestore_url, $json, $access_token);
-
-            header("Refresh:0");
-        }
-    }
-
-    //remove extraneous files from server after creation of mp3
-    $flac = explode(".",$filename);
-    if(file_exists('./temp/'.$filename)){
-        unlink('./temp/'.$filename);
-
-        if(file_exists('./temp/'.$flac[0].'.flac'))
-            unlink('./temp/'.$flac[0].'.flac');
-    }
-    return $newfile; //string representation of path to mp3
 }
 
 function transcribeAudio($cFile,$filename){

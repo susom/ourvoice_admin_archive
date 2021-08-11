@@ -16,73 +16,6 @@ $active_project_id 	= null;
 $active_pid 		= null;
 $alerts 			= array();
 
-//AJAX GETTING DAY'S DATA
-if(isset($_POST["active_pid"]) && $_POST["date"]){
-	$active_pid 	= filter_var($_POST["active_pid"], FILTER_SANITIZE_NUMBER_INT);
-	$date 			= filter_var($_POST["date"], FILTER_SANITIZE_STRING);
-	$project_meta 	= $ap["project_list"][$active_pid];
-
-	//GET THE DATA FROM disc_users
-	$response 		= $ds->filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
-	$days_data 		= rsort($response["rows"]); 
-	
-	$code_block 	= array();
-	foreach($response["rows"] as $row){
-		$doc 		= $row["value"];
-		$code_block = array_merge($code_block, printRow($doc,$active_pid));
-	}
-	echo implode("",$code_block);
-	exit;
-}
-
-//AJAX DELETEING DATA ENTRY
-if(isset($_POST["for_delete"]) && $_POST["for_delete"]){
-	$_id 	= filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING);
-	$_rev 	= filter_var($_POST["rev"], FILTER_SANITIZE_STRING);
-
-	$fordelete      = [];
-	array_push($fordelete, array(
-	         "_id"          => $_id
-	        ,"_rev"         => $_rev
-	        ,"_deleted" => true
-		));
-
-	// Bulk update docs
-    $couch_url 	= cfg::$couch_url . "/" . cfg::$couch_users_db . "/_bulk_docs";
-    $response 	= $ds->doCurl($couch_url, json_encode(array("docs" => $fordelete)), "POST");
-
-    $access_token 		= $ds->getGCPRestToken($keyPath, $firestore_scope);
-	$object_unique_id 	= $ds->convertFSwalkId($_id);
-	$firestore_url 		= $firestore_endpoint . "projects/".$gcp_project_id."/databases/(default)/documents/".$walks_collection."/".$object_unique_id;
-    $deleted 			= $ds->restDeleteFireStore($firestore_url ,$access_token);
-	exit;
-}
-
-//AJAX FOR MARKING DATA_PROCESSED
-if(isset($_POST["data_procesed"]) && isset($_POST["doc_id"])){
-    // FIRST GET A FRESH COPY OF THE WALK DATA
-    $_id  		= filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING);
-    $url 		= cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
-    $response   = $ds->doCurl($url);
-    $doc 	 	= json_decode(stripslashes($response),1);
-    $payload 	= $doc;
-    $payload["data_processed"] = true;
-    $response = $ds->doCurl($url, json_encode($payload), "PUT");
-
-    $access_token 		= $ds->getGCPRestToken($keyPath, $firestore_scope);
-	$object_unique_id 	= $ds->convertFSwalkId($_id);
-	$firestore_url 		= $firestore_endpoint . "projects/".$gcp_project_id."/databases/(default)/documents/".$walks_collection."/".$object_unique_id."?updateMask.fieldPaths=data_processed";
-
-	$firestore_data 	= ["data_processed" => array("integerValue" => 1)];
-	$data           	= ["fields" => (object)$firestore_data];
-	$json           	= json_encode($data);
-	$response       	= $ds->restPushFireStore($firestore_url, $json, $access_token);
-    exit;
-}
-
-
-
-
 //IF COMING FROM CONFIGURATOR, THEN MIMIC A POST TO FLOW DOWN TO LOGIN FUNC
 if( ( (!empty($_SESSION["proj_id"]) OR !empty($_GET["id"]) )  && !empty($_SESSION["summ_pw"])  && !empty($_SESSION["authorized"]) )
     || ( isset($_SESSION["discpw"])  && $_SESSION["discpw"] == cfg::$master_pw )
@@ -271,7 +204,7 @@ $page = "summary";
         	foreach($date_headers as $date => $record_count){
         		if($most_recent_date){
         			echo "<aside>";
-        			echo "<h4 class='day' rel='true' rev='$active_pid' data-toggle='collapse' data-target='#day_$date'>$date</h4>";
+        			echo "<h4 class='day' rel='true' rev='$active_project_id' data-toggle='collapse' data-target='#day_$date'>$date</h4>";
         			echo "<div id='day_$date' class='collapse in'>";
 
         			//AUTOMATICALLY SHOW MOST RECENT DATE's DATA, AJAX THE REST
@@ -290,7 +223,7 @@ $page = "summary";
 
         		//SHOW THE HEADERS OF ALL THE OTHER ONES
         		echo "<aside>";
-        		echo "<h4 class='day' rel='false' rev='$active_pid' data-toggle='collapse' data-target='#day_$date'>$date</h4>";
+        		echo "<h4 class='day' rel='false' rev='$active_project_id' data-toggle='collapse' data-target='#day_$date'>$date</h4>";
         		echo "<div id='day_$date' class='collapse'>";
         		echo "<div class='loading'></div>";
         		echo "</div>";
@@ -396,6 +329,7 @@ function checkLocationData(){
     });
 }
 $(document).ready(function(){
+    var ajax_handler = "ajaxHandler.php";
 	window.current_preview = null;
 	var timer;
 	// checkLocationData();
@@ -417,14 +351,12 @@ $(document).ready(function(){
 		var active_pid 	= $(this).attr("rev");
 		var date 		= $(this).text();
 		var target 		= $(this).data("target");
-
 		if(hasData == "false"){
 			$.ajax({
 			  type 		: "POST",
-			  url 		: "summary.php",
-			  data 		: { active_pid: active_pid, date: date },
+			  url 		: ajax_handler,
+			  data 		: { active_pid: active_pid, date: date , action : "day_walks"},
 			}).done(function(response) {
-				// console.log(response);
 				setTimeout(function(){
 					$(target).find(".loading").fadeOut("fast",function(){
 						$(this).remove() });
@@ -461,10 +393,10 @@ $(document).ready(function(){
 
         $.ajax({
 		  type 		: "POST",
-		  url 		: "photo.php",
-		  data 		: { doc_id: doc_id, _filename : filename, photo_i: photo_i, rotate: rotate },
+		  url 		: ajax_handler, //photo
+		  data 		: { doc_id: doc_id, _filename : filename, photo_i: photo_i, rotate: rotate, action : "rotation" },
 		}).done(function(response) {
-			console.log("rotation saved", response);
+			console.log("rotation saved");
 		}).fail(function(msg){
 			console.log("rotation save failed");
 		});
@@ -480,12 +412,38 @@ $(document).ready(function(){
 		if(deleteyes){
 			$.ajax({
 			  type 		: "POST",
-			  url 		: "photo.php",
-			  data 		: { doc_id: doc_id, photo_i: photo_i, delete: true }
+			  url 		: ajax_handler, //photo
+			  data 		: { doc_id: doc_id, photo_i: photo_i, delete: true , action: "delete_photo"}
 			}).done(function(response) {
-				var phid = doc_id+"_photo_"+photo_i+".jpg";
+				var phid    = doc_id+"_photo_"+photo_i+".jpg";
+                var ulwrap  = $("li[data-phid='"+phid+"']").closest("ul");
 				$("li[data-phid='"+phid+"']").fadeOut("fast",function(){
 					$(this).remove();
+
+					//if last photo in walk , delete walk
+					if(!ulwrap.find("li").length){
+					    //last photo in walk , delete walk
+                        $.ajax({
+                            type 		: "POST",
+                            url 		: ajax_handler,
+                            data 		: { doc_id: doc_id, for_delete: true, action : "delete_walk"},
+                        }).done(function(response) {
+                            var _parent	= ulwrap.closest(".user_entry");
+
+                            _parent.slideUp("medium", function(){
+                                var day_cont = $(this).parent();
+                                $(this).remove();
+                                //if last walk in the day , delete day
+                                if( !day_cont.find(".user_entry").length ){
+                                    day_cont.closest("aside").slideUp("medium", function(){
+                                        $(this).remove();
+                                    });
+                                }
+                            });
+                        }).fail(function(msg){
+                            // console.log("rotation save failed");
+                        });
+                    }
 				});
 			}).fail(function(response){
 				// console.log("delete failed");
@@ -499,7 +457,6 @@ $(document).ready(function(){
 		e.preventDefault();
 		var _id 	= $(this).data("id");
 		var last4 	= _id.substr(_id.length - 4);
-		var _rev 	= $(this).data("rev");
 
 		var _parent	= $(this).closest(".user_entry");
 
@@ -508,11 +465,19 @@ $(document).ready(function(){
 			//AJAX DELETE IT
 			$.ajax({
 			  type 		: "POST",
-			  url 		: "summary.php",
-			  data 		: { doc_id: _id, rev: _rev , for_delete: true},
+			  url 		: ajax_handler,
+			  data 		: { doc_id: _id, for_delete: true, action : "delete_walk"},
 			}).done(function(response) {
-				_parent.slideUp("medium");
-			}).fail(function(msg){
+				_parent.slideUp("medium", function(){
+				    var day_cont = $(this).parent();
+                    $(this).remove();
+				    if( !day_cont.find(".user_entry").length ){
+                        day_cont.closest("aside").slideUp("medium", function(){
+                            $(this).remove();
+                        });
+                    }
+                });
+            }).fail(function(msg){
 				// console.log("rotation save failed");
 			});
 		}
@@ -528,8 +493,8 @@ $(document).ready(function(){
         var doc_id = el.data("id");
         $.ajax({
             type 		: "POST",
-            url 		: "summary.php",
-            data 		: { doc_id: doc_id, data_procesed: 1 },
+            url 		: ajax_handler,
+            data 		: { doc_id: doc_id, data_procesed: 1, action: "data_processed" },
         }).done(function(response) {
             console.log(response);
             setTimeout(function(){

@@ -1,6 +1,7 @@
 # Pre-configuration files on base image
 FROM gcr.io/som-rit-ourvoice/ourvoice_base:latest
 
+
 # REPLACE DEFAULT SITE
 ADD 000-default.conf /etc/apache2/sites-available/000-default.conf
 

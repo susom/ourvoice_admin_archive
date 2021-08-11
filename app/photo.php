@@ -5,224 +5,6 @@
 ini_set('memory_limit','256M'); //necessary for picture processing.
 require_once "common.php";
 
-// AJAX HANDLING
-if( isset($_POST["doc_id"]) ){
-	// FIRST GET A FRESH COPY OF THE WALK DATA
-	$_id  		= filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING);
-    $payload    = $ds->getWalkData($_id, true);
-    $read_data  = $payload->snapshot()->data();
-
-    // FOR PHOTOS
-    $photos     = $read_data["photos"];
-
-	if(isset($_POST["photo_i"])){
-		$photo_i    = filter_var($_POST["photo_i"], FILTER_SANITIZE_NUMBER_INT);
-        $filename   = filter_var($_POST["_filename"], FILTER_SANITIZE_STRING);
-		$ajax       = false;
-
-		if(isset($_POST["rotate"])){
-            $ajax = true;
-
-            //SAVE ROTATION
-			$rotate = filter_var($_POST["rotate"], FILTER_SANITIZE_NUMBER_INT);
-            $photos = $read_data["photos"];
-            if(isset($photos[$photo_i])){
-                $photos[$photo_i]["rotate"] = $rotate;
-                $payload->update([
-                    ['path' => 'photos', 'value' => $photos]
-                ]);
-            }
-		}elseif(isset($_POST["delete"])){
-            $ajax = true;
-			$photo_name 	= "photo_".$photo_i.".jpg";
-			$audio_match 	= "audio_".$photo_i."_";
-
-			$payload["photos"][$photo_i]["deleted"] = true;
-			// unset ($payload["photos"][$photo_i]);
-
-			if(isset($payload["_attachments"])){
-				foreach($payload["_attachments"] as $name => $val){
-					if($name == $photo_name){
-						unset($payload["_attachments"][$name]);
-					}
-					if(strpos($name,$audio_match) > -1){
-						unset($payload["_attachments"][$name]);
-					}
-				}
-			}
-
-			if(isset($payload["transcriptions"])){
-				foreach($payload["transcriptions"] as $name => $val){
-					if(strpos($name,$audio_match) > -1){
-						unset($payload["transcriptions"][$name]);
-					}
-				}
-			}
-
-			$backup_folder      = "temp/$_id";
-	        $backup_files       = scanBackUpFolder($backup_folder);
-		}elseif(isset($_POST["tag_text"])){
-            $ajax = true;
-			//SAVE TAG
-			$photo_tag 		= filter_var($_POST["tag_text"], FILTER_SANITIZE_STRING);
-			$photo_tag 		= str_replace('"',"'",$photo_tag);
-			
-			$json_response 	= array("new_photo_tag" => false, "new_project_tag" => false);
-			if(!isset($payload["photos"][$photo_i]["tags"])){
-				$payload["photos"][$photo_i]["tags"] = array();
-			}
-			if(!in_array($photo_tag,$payload["photos"][$photo_i]["tags"])){
-				array_push($payload["photos"][$photo_i]["tags"], $photo_tag);
-				$json_response["new_photo_tag"] = true;
-			}
-
-			if(isset($_POST["proj_idx"])){
-				//POSSIBLE NEW PROJECT TAG, SAVE TO disc_projects
-				$proj_idx 		= filter_var($_POST["proj_idx"], FILTER_SANITIZE_NUMBER_INT);
-				$p_url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-				$p_response 	= $ds->doCurl($p_url);
-				$p_doc 	 		= json_decode(stripslashes($p_response),1);
-				$p_payload 		= $p_doc;
-
-				if(!isset($p_payload["project_list"][$proj_idx]["tags"])){
-					$p_payload["project_list"][$proj_idx]["tags"] = array();
-				}
-				if(!in_array($photo_tag,$p_payload["project_list"][$proj_idx]["tags"])){
-					array_push($p_payload["project_list"][$proj_idx]["tags"], $photo_tag);
-					$json_response["new_project_tag"] = true;
-					$_SESSION["DT"]["project_list"][$proj_idx] = $p_payload["project_list"][$proj_idx]; 
-				}
-                $ds->doCurl($p_url, json_encode($p_payload), "PUT");
-			}
-			echo json_encode($json_response);
-		}elseif(isset($_POST["delete_tag_text"])){
-            $ajax = true;
-			//SAVE TAG
-
-			$photo_tag = filter_var($_POST["delete_tag_text"], FILTER_SANITIZE_STRING);
-
-			print_r($payload["photos"][$photo_i]["tags"]);
-			if(isset($payload["photos"][$photo_i]["tags"])){
-				if (($key = array_search($photo_tag, $payload["photos"][$photo_i]["tags"])) !== false) {
-				    // print_r($payload["photos"][$photo_i]["tags"]);
-				    unset($payload["photos"][$photo_i]["tags"][$key]);
-					// print_r($payload["photos"][$photo_i]["tags"]);				
-				}
-			}
-		}
-        //SAVE TEXT COMMENT
-        if(isset($_POST["text_comment"])){
-            $txns = str_replace('"','&#34;', filter_var($_POST["text_comment"], FILTER_SANITIZE_STRING));
-            $payload["photos"][$photo_i]["text_comment"] = $txns;
-        }
-        
-
-        //SAVE TRANSCRIPTIONs
-        if(isset($_POST["transcriptions"])){
-            foreach( filter_var($_POST["transcriptions"], FILTER_SANITIZE_STRING) as $audio_name => $transcription){
-                $txns = str_replace('"','&#34;', $transcription);
-                $payload["transcriptions"][$audio_name]["text"] = $txns;
-            }
-        }
-
-		/*	
-		//TODO WHAT HAPPENED HERE?	
-		        // to update via firestore, must send entire thing top level Field Value  ie $payload["photos"]
-		        // ALL UPDATES AFFECT Photos array MAKE UPDATES TO FIRESTORE AS WELL
-		    	$access_token 		= $ds->getGCPRestToken($keyPath, $firestore_scope);
-				$object_unique_id 	= $ds->convertFSwalkId($_id);
-				$firestore_url 		= $firestore_endpoint . "projects/".$gcp_project_id."/databases/(default)/documents/".$walks_collection."/".$object_unique_id."?updateMask.fieldPaths=photos";
-
-				// FORMAT JUST THE PHOTOS FOR FIRESTORE (WILL NEED transcriptions)
-				$photos     		= $payload["photos"];
-				$txn    			= array_key_exists("transcriptions", $payload) ? $payload["transcriptions"] : array();
-				$new_photos 		= formatUpdateWalkPhotos($photos,$txn);
-
-				// SEND IT TO FIRESTORE
-				$firestore_data 	= ["photos" => array("arrayValue" => array("values" => $new_photos))];
-				$data           	= ["fields" => (object)$firestore_data];
-				$json           	= json_encode($data);
-				$response       	= $ds->restPushFireStore($firestore_url, $json, $access_token);
-				//UPDATES
-		*/
-        if($ajax) {
-			$response = $ds->doCurl($url, json_encode($payload), "PUT");
-			print_r($response);
-            exit;
-        }
-	}
-
-	$response 	= $ds->doCurl($url, json_encode($payload),"PUT");
-	$resp 		= json_decode($response,1);
-	if(isset($resp["ok"])){
-		$payload["_rev"] = $resp["rev"];
-	}else{
-		echo "something went wrong:";
-	}
-}
-
-if( isset($_POST["delete_mp3"]) ){
-	$file_pointer = "./temp/".  filter_var($_POST["delete_mp3"], FILTER_SANITIZE_STRING);
-	if(!unlink($file_pointer)){
-		echo 0;
-	}else{
-		echo 1;
-	}
-	exit;
-}
-
-//ajax response to pixelation via portal tool
-if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordinates'])){
-	$face_coord 	= json_decode(filter_var($_POST["coordinates"], FILTER_SANITIZE_STRING),1);
-	$_id 			= filter_var($_POST["pic_id"], FILTER_SANITIZE_STRING);
-	$photo_num 		= filter_var($_POST["photo_num"], FILTER_SANITIZE_NUMBER_INT);
-	$rotationOffset = filter_var($_POST["rotation"], FILTER_SANITIZE_NUMBER_INT);
-	$photo_num 		= 'photo_'.$photo_num . '.jpg';
-	$id 			= $_id."_".$photo_num;
-
-	//find rev by curling to couch
-	$url 			= cfg::$couch_url . "/". cfg::$couch_attach_db . "/" .$id;
-	$result 		= $ds->doCurl($url);
-	$result 		= json_decode($result,1);
-	$rev 			= ($result['_rev']);
-
-	//find the offset so canvas can be specified for each image based on portal rotation
-	// $rOffset = findRotationOffset(cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $id);
-	// 0 = none, 1 = base, 2 = 90 degree rotation
-
-	$picture 		= $ds->doCurl($url . '/' . $photo_num); //returns the actual image in string format
-	$new 			= imagecreatefromstring($picture); //set the actual picture for editing
-	$pixel_count 	= (imagesx($new)*imagesy($new)); //scale pixel to % image size
-	$altered_image 	= filterFaces($face_coord, $new, $_id, $pixel_count, $rotationOffset);
-	if(isset($altered_image) && $altered_image){
-		$filepath = "./temp/$_id.jpg";
-		if(file_exists($filepath)){
-			unlink("./temp/$_id.jpg");
-		}
-
-		// if(file_exists($filepath))
-		// 	unset($filepath);
-
-		imagejpeg($altered_image, $filepath); //save it 
-		imagedestroy($altered_image);
-		$content_type   = 'image/jpeg';
-	 	$attach_url 	= cfg::$couch_url . "/" . cfg::$couch_attach_db;
-	    $couchurl       = $attach_url."/".$id."/".$photo_num."?rev=".$rev;
-	    $content_type   = 'image/jpeg';
-		$response       = $ds->uploadAttach($couchurl, $filepath, $content_type);
-
-		$storageCLient = new StorageClient([
-            'keyFilePath'   => $keyPath,
-            'projectId'     => $gcp_project_id
-        ]);
-
-        //UPLOAD TO GOOGLE BUCKET
-        $uploaded   	= $ds->uploadCloudStorage($id ,$_id , $gcp_bucketName, $storageCLient,  $filepath);
-		//refresh page
-	}
-	exit();
-}
-
 $page = "photo_detail";
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -242,11 +24,16 @@ $page = "photo_detail";
 		<div class='print_logo'></div>
 		<?php
 		if(isset($_GET["_id"]) && isset($_GET["_file"])){
-			$_id 		= trim(filter_var($_GET["_id"], FILTER_SANITIZE_STRING) );
-			$_file 		= trim(filter_var($_GET["_file"], FILTER_SANITIZE_STRING) );
+			$_id 		    = trim(filter_var($_GET["_id"], FILTER_SANITIZE_STRING) );
+			$_file 		    = trim(filter_var($_GET["_file"], FILTER_SANITIZE_STRING) );
 
-		    $doc 		= $ds->getPhotoData($_id, $_file);
-			$proj_idx 	= $doc["project_id"];
+		    $doc 		    = $ds->getPhotoData($_id, $_file);
+			$proj_idx 	    = $doc["project_id"];
+
+			$project_fs     = $ds->getProject($proj_idx);
+            $snapshot       = $project_fs->snapshot();
+			$project_data   = $snapshot->data();
+            $project_tags   = array_key_exists("tags", $project_data) ? $project_data["tags"] : array();
 
 			if(!isset($_SESSION["DT"]["project_list"][$proj_idx]["tags"])){
 				$_SESSION["DT"]["project_list"][$proj_idx]["tags"] = array();
@@ -295,18 +82,18 @@ $page = "photo_detail";
 	        }
 
 
-			if($lat != 0 | $long != 0){
-	            $time = time();
-	            $url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$long&timestamp=$time&key=" .cfg::$gmaps_key;
-	            $ch = curl_init();
-	            curl_setopt($ch, CURLOPT_URL, $url);
-	            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	            $responseJson = curl_exec($ch);
-	            curl_close($ch);
-	             
-	            $response = json_decode($responseJson);
-	            date_default_timezone_set($response->timeZoneId); 
-	        }
+//			if($lat != 0 | $long != 0){
+//	            $time = time();
+//	            $url = "https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$long&timestamp=$time&key=" .cfg::$gmaps_key;
+//	            $ch = curl_init();
+//	            curl_setopt($ch, CURLOPT_URL, $url);
+//	            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+//	            $responseJson = curl_exec($ch);
+//	            curl_close($ch);
+//
+//	            $response = json_decode($responseJson);
+//	            date_default_timezone_set($response->timeZoneId);
+//	        }
 
 			$photo_uri 	= $ds->getStorageFile("dev_ov_walk_files", $_id, $_file);
 			// detectFaces($ph_id,$old, $photo_name);
@@ -316,7 +103,7 @@ $page = "photo_detail";
 			
 			$photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
 			$photo_comment  = str_replace("rnrn", "\r\n\r\n",$photo['text_comment']);
-	        $text_comment   = "<div class='audio_clip'><textarea name='text_comment' class='keyboard'>".  $photo_comment  ."</textarea></div>";
+	        $text_comment   = "<div class='audio_clip'><textarea id='text_comment' name='text_comment' class='keyboard'>".  $photo_comment  ."</textarea></div>";
 
 
 			if(isset($photo["audios"])){
@@ -332,12 +119,8 @@ $page = "photo_detail";
 					// $script 		= !empty($confidence) ? "This audio was transcribed using Google's API at ".round($confidence*100,2)."% confidence" : "";
 
 					//Works for archaic saving scheme as well as the new one : 
-					if(isset($txn)){
-						$txns = str_replace('&#34;','"', $txn["text"]);
-						$transcription = str_replace('&#34;','"', $txn["text"]);
-					}else{
-						$transcription = "";
-					}
+                    $transcription  = str_replace('&#34;','"', $txn);
+                    $transcription  = str_replace('&#34;','"', $transcription);
 					$transcription  = str_replace("rnrn", "\r\n\r\n",$transcription);
 					$audio_attachments .=   "<div class='audio_clip mic'>
 												<audio controls>
@@ -345,7 +128,7 @@ $page = "photo_detail";
 												</audio> 
 												<a class='refresh_audio' href='$just_file' title='Audio not working?  Click to refresh.'>&#8635;</a> 
 												<div class='forprint'>$transcription</div>
-												<textarea name='transcriptions[$filename]' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
+												<textarea class='audio_txn' name='$filename' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
 												<p id = 'confidence_exerpt'>$script</p>
 					 						</div>";
 				}
@@ -413,7 +196,7 @@ $page = "photo_detail";
 					$text_comment
 					
 					$audio_attachments
-					<input type='submit' value='Save Transcriptions'/>
+					<input type='submit' id='save_txns' value='Save Transcriptions'/>
 				</aside>";
 
 			if(count($prevnext)> 0){
@@ -433,7 +216,6 @@ $page = "photo_detail";
 			echo "</form>";
 		}
 
-		// $project_tags = $_SESSION["DT"]["project_list"][$proj_idx]["tags"];
 		include("inc/modal_tag.php");
 		?>
 	</div>
@@ -445,6 +227,7 @@ $page = "photo_detail";
 <script src="js/jquery-ui.js"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
 <script>
+var ajax_handler = "ajaxHandler.php";
 function addmarker(latilongi,map_id) {
     var marker = new google.maps.Marker({
         position  : latilongi,
@@ -461,14 +244,14 @@ function addmarker(latilongi,map_id) {
 }
 
 function saveTag(doc_id,photo_i,tagtxt,proj_idx){
-	var data = { doc_id: doc_id, photo_i: photo_i, tag_text: tagtxt};
+	var data = { doc_id: doc_id, photo_i: photo_i, tag_text: tagtxt, action:"tag_text"};
 	if(proj_idx){
 		data["proj_idx"] = proj_idx
 	}
 
 	$.ajax({
 		method: "POST",
-		url: "photo.php",
+		url: ajax_handler,
 		data: data,
 		dataType : "JSON",
 		success: function(response){
@@ -499,7 +282,6 @@ function saveTag(doc_id,photo_i,tagtxt,proj_idx){
 }
 
 $(document).ready(function(){
-	createAudioPath();
 	<?php
 		echo implode($gmaps);
 	?>
@@ -550,8 +332,8 @@ $(document).ready(function(){
 		var photo_i = $(this).parent().data("photo_i");
 		$.ajax({
 		  method: "POST",
-		  url: "photo.php",
-		  data: { doc_id: doc_id, photo_i: photo_i, rotate: rotate },
+		  url: ajax_handler,
+		  data: { doc_id: doc_id, photo_i: photo_i, rotate: rotate, action:"rotation" },
 		  dataType: "text",
 		  success:function(result){
 	      	console.log(result);
@@ -577,10 +359,10 @@ $(document).ready(function(){
 		var _this 	= $(this);
 		$.ajax({
 			method: "POST",
-			url: "photo.php",
-			data: { doc_id: doc_id, photo_i: photo_i, delete_tag_text: tagtxt}
+			url: ajax_handler,
+			data: { doc_id: doc_id, photo_i: photo_i, delete_tag_text: tagtxt, action:"delete_tag_text"}
 		}).done(function( msg ) {
-			_this.parent("li").fadeOut("medium",function(){
+            _this.parent("li").fadeOut("medium",function(){
 				_this.remove();
 			});
 		});
@@ -628,26 +410,44 @@ $(document).ready(function(){
 		return false;
 	});
 
-	$(".refresh_audio").click(function(e){
-		var file = $(this).attr("href");
-		// DELETE .mp3 file
-		
-		$.ajax({
-	 		method: "POST",
-	  	 	url: "photo.php",
-	  	 	data: { delete_mp3: file },
-	  	 	success:function(response){
-	  	 		var result = parseInt(response);
-	  	 		if(result){
-	  	 			// refresh browser
-	  	 			location.reload();
-	  	 		}else{
-	  	 			alert("Error: Reload page and try again or contact Administrator.");
-	  	 		}
-	 	 	}
-		});
-		e.preventDefault();
-	});
+	$("#photo_detail").submit(function(e){
+	    e.preventDefault();
+        var _id     = $('input[name=doc_id]').val();
+        var _i      = $('input[name=photo_i]').val();
+        var data    = {doc_id : _id, photo_i : _i };
+
+        var changed = $("textarea[data-dirty='true']");
+        if(changed.length){
+            $("#save_txns").addClass("waiting", function(){
+                var _el = $(this);
+                setTimeout(function(){
+                    _el.removeClass("waiting");
+                },2000);
+            });
+            changed.each(function(){
+                var prop    = $(this).attr("name");
+                var val     = $(this).val();
+
+                data["prop"]    = prop;
+                data["text"]    = val;
+                data["action"]  = prop == "text_comment" ? "save_text_comment" : "save_audio_txn";
+                $.ajax({
+                    method: "POST",
+                    url: ajax_handler,
+                    data: data,
+                    success:function(response){
+                        // console.log(response);
+                        // window.location.reload(true);
+                    }
+                });
+                $("#save_txns").removeClass("waiting");
+            });
+        }
+    });
+
+	$("#text_comment, .audio_txn").change(function(){
+	    $(this).attr("data-dirty",true);
+    });
 });
 
 function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
@@ -671,8 +471,8 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 			if(confirm('Are you sure you want to pixelate this area? This action cannot be undone.')){
 				$.ajax({
 			 		method: "POST",
-			  	 	url: "photo.php",
-			  	 	data: { pic_id: doc_id, photo_num: photo_i, coordinates: data, rotation: rotationOffset},
+			  	 	url: ajax_handler,
+			  	 	data: { pic_id: doc_id, photo_num: photo_i, coordinates: data, rotation: rotationOffset, action:"pixelation"},
 			  	 	success:function(response){
 			  	 		console.log(response);
 			  			window.location.reload(true);
@@ -726,23 +526,6 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 	});
 }
 
-function createAudioPath(){ //Fire ajax to dynamically load transcriptions after page load
-	var url 	= $("#main_photo").attr('src'); //
-    var lang 	=  $("#main_photo").data('lang');
-
-	var info = {};
-	$.ajax({
-		method: "POST",
-		url: "ajaxHandler.php",
-		data: {"action" : "convertAudio", "url" : url, "lang" : lang},
-		success:function(response){
-			// console.log(response);
-			// $(".mic").find('source').attr('src',response);
-			// console.log($(".mic").find('source').attr('src'));
-		}
-	});
-}
-
 function setCanvas(canvas, rotationOffset, width_pic, height_pic){
 	// $(".covering_canvas").css("width",width_pic).css("height", height_pic);
 	$(".covering_canvas").css("cursor", "crosshair");
@@ -750,7 +533,7 @@ function setCanvas(canvas, rotationOffset, width_pic, height_pic){
 	//set the canvas for drawing to be the same dimensions as the photo
 	canvas.width = width_pic;
 	canvas.height = height_pic;
-	canvas.style.position = "absolute";
+	canvas.style.position = "relative";
 	$(".covering_canvas").css("left",$("#main_photo").position().left);
 	$(".covering_canvas").css("top",$("#main_photo").position().top);
 

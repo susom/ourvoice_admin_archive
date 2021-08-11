@@ -934,7 +934,9 @@ label span {
 	z-index:1;
 }
 
+#save_txns.loading{
 
+}
 
 .loading{
 	width:195px;

@@ -8,6 +8,7 @@
 	<h5>Add Existing Tag to Photo</h5>
 	<ul>
 		<?php
+
 		if(empty($project_tags)){
 			echo "<p class='noback notags'>There are currently no tags in this project.</p>";
 		}

@@ -6,7 +6,7 @@ use Google\Cloud\Storage\StorageClient;
 class Datastore {
     const firestore_projects    = 'dev_ov_projects';
     const firestore_walks       = 'dev_ov_walks';
-
+    const google_bucket         = 'dev_ov_walk_files';
     private   $keyPath
             , $gcp_project_id
             , $walks_collection
@@ -34,10 +34,6 @@ class Datastore {
             // 'keyFilePath'       => "som-rit-ourvoice-firestore.json" //'/secrets3/firestore_service_account.json'
             'keyFilePath'       => '/secrets3/firestore_service_account.json'
         ]);
-    }
-
-    public function hello(){
-        print_rr(substr(time(), -4));
     }
 
     public function doCurl($url, $data = null, $method = "GET", $username = null, $password = null) {
@@ -229,13 +225,38 @@ class Datastore {
             if(!empty($temp)){
                 $ap = $temp;
             }
-        }else{
-            $couch_url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-            $response 		= $ds->doCurl($couch_url);
-            $ap 			= json_decode(stripslashes($response),1);
         }
 
         return $ap;
+    }
+
+    public function getProject($project_code){
+        $result = null;
+
+        if($this->firestore){
+            $project    = $this->firestore->collection(self::firestore_projects)->document($project_code);
+            $snapshot   = $project->snapshot();
+            if ($snapshot->exists()) {
+                $result = $project;
+            }
+        }
+
+        return $result;
+    }
+
+    public function getWalks($ids=array()){
+        $result = array();
+
+        if($this->firestore && !empty($ids)){
+            foreach($ids as $_id){
+                $walk_fs = $this->getWalkData($_id, true);
+                if( !empty($walk_fs) ){
+                    array_push($result, $walk_fs);
+                }
+            }
+        }
+
+        return $result;
     }
 
     public function getWalkData($doc_id, $raw=false){
@@ -392,109 +413,6 @@ class Datastore {
         return json_decode($response,1);
     }
 
-    public function getFilteredDataGeos($pcode, $pfilters){
-        //RETURNS JSON ENCODED BLOCK OF FILTERED PHOTO INFO, AND PHOTO GEOs
-        // MOOD and TAG FILTERS ARE MIXED TOGETHER, SO SEPERATE THEM OUT
-
-        $goodbad_filter = array();
-        $good           = array_search("good"   ,$pfilters);
-        $bad            = array_search("bad"    ,$pfilters);
-        $neutral        = array_search("neutral",$pfilters);
-        $unrated        = array_search("un-rated", $pfilters);
-        $untagged       = array_search("un-tagged", $pfilters);
-        if($good || is_int($good)){
-            array_push($goodbad_filter,2);
-            unset($pfilters[$good]);
-        }
-        if($bad || is_int($bad)){
-            array_push($goodbad_filter,1);
-            unset($pfilters[$bad]);
-        }
-        if($neutral || is_int($neutral)){
-            array_push($goodbad_filter,3);
-            unset($pfilters[$neutral]);
-        }
-        if($unrated || is_int($unrated)){
-            array_push($goodbad_filter,0);
-            unset($pfilters[$unrated]);
-        }
-        $pfilters       = array_values($pfilters);
-        $response       = $this->loadAllProjectThumbs($pcode, $pfilters, $goodbad_filter);
-
-        $photo_geos     = array();
-        $code_block     = array();
-
-        //WHAT THE FUCK IS THIS SHIT, NEED TO LOOP THROUGH 3 times? 
-        $sort_temp      = array();
-        foreach($response["rows"] as $row){
-            $doc    = $row["value"];
-            $_id    = $row["id"];
-            $ph_i   = $doc[0];
-            $old    = $doc[1];
-            $photo  = $doc[2]; 
-            $txns   = $doc[3]; 
-            $device = $doc[4]; 
-
-            //STUFF IT INTO HOLDING ARRAY BY WALK_ID
-            if(!array_key_exists($_id, $sort_temp)){
-                $sort_temp[$_id] = array();
-            }
-
-            if(array_key_exists("deleted", $photo)){
-                continue;
-            }
-
-            // if good bad filters is included in tags
-            if(!empty($goodbad_filter)){
-                if(!in_array($photo["goodbad"], $goodbad_filter) ){
-                    continue;
-                }
-            }
-
-            $sort_temp[$_id][$ph_i] = $doc;        
-        }
-
-        //SECOND LOOP!  + BONUS NESTED LOOP BS,   BETTER WAY TO DO THIS???  FUCK IT.
-        foreach($sort_temp as $walk_id => $junk){
-            ksort($sort_temp[$walk_id]);
-            foreach($sort_temp[$walk_id] as $ph_i => $doc){
-                $_id    = $walk_id;
-                $old    = $doc[1];
-                $photo  = $doc[2]; 
-                $txns   = $doc[3]; 
-                $device = $doc[4];
-
-                // I DID THIS TO MYSELF OH LORD
-                $old = is_null($old) ? "" : "&_old=" . $old;
-
-                // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK, AT LEAST THIS HAS NO ORDER HALLELUJAH
-                if(!empty($photo["geotag"])){
-                    $filename   = empty($photo["name"]) ? "photo_".$ph_i.".jpg" : $photo["name"];
-                    $ph_id      = $_id;
-                    if(array_key_exists("name",$photo)){
-                        // new style file pointer
-                        $ph_id  .= "_" .$filename;
-                    }
-                    $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
-                    $photo_uri      = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-                    $photo["geotag"]["photo_src"]   = $photo_uri;
-                    $photo["geotag"]["goodbad"]     = $photo["goodbad"];
-                    $photo["geotag"]["photo_id"]    = $_id. "_" . "photo_".$ph_i;
-                    $photo["geotag"]["platform"]    = $device["platform"];
-                    array_push($photo_geos, $photo["geotag"]);
-                }
-
-                // Massage a block for each photo in the project
-                $code_block = array_merge($code_block, printPhotos($photo,$_id,$ph_i,$old,$txns));
-            }
-        }
-
-        // IF ASKING FOR MULTIPLE TAGS COULD HAVE REPEATS FOR MULTI TAGGED PHOTOS
-        $code_block = array_unique($code_block,SORT_REGULAR);
-        $data       = array("photo_geos" => $photo_geos, "code_block" => $code_block);
-        return $data;
-    }
-
     public function getWalkIdDataGeos($walk_id){
         //RETURNS JSON ENCODED BLOCK OF FILTERED PHOTO INFO, AND PHOTO GEOs
         // MOOD and TAG FILTERS ARE MIXED TOGETHER, SO SEPERATE THEM OUT
@@ -576,6 +494,84 @@ class Datastore {
     }
 
     //DESIGN DOCUMENT CALLS
+    public function getFilteredDataGeos($pcode, $pfilters){
+        //RETURNS JSON ENCODED BLOCK OF FILTERED PHOTO INFO, AND PHOTO GEOs
+        // MOOD and TAG FILTERS ARE MIXED TOGETHER, SO SEPERATE THEM OUT
+
+        $goodbad_filter = array();
+        $good           = array_search("good"   ,$pfilters);
+        $bad            = array_search("bad"    ,$pfilters);
+        $neutral        = array_search("neutral",$pfilters);
+        $unrated        = array_search("un-rated", $pfilters);
+        $untagged       = array_search("un-tagged", $pfilters);
+        if($good || is_int($good)){
+            array_push($goodbad_filter,2);
+            unset($pfilters[$good]);
+        }
+        if($bad || is_int($bad)){
+            array_push($goodbad_filter,1);
+            unset($pfilters[$bad]);
+        }
+        if($neutral || is_int($neutral)){
+            array_push($goodbad_filter,3);
+            unset($pfilters[$neutral]);
+        }
+        if($unrated || is_int($unrated)){
+            array_push($goodbad_filter,0);
+            unset($pfilters[$unrated]);
+        }
+        $pfilters       = array_values($pfilters);
+        $response       = $this->loadAllProjectThumbs($pcode, $pfilters, $goodbad_filter);
+
+        $photo_geos     = array();
+        $code_block     = array();
+
+        //WHAT THE FUCK IS THIS SHIT, NEED TO LOOP THROUGH 3 times?
+        $sort_temp      = array();
+        foreach($response as $doc){
+            $_id        = $doc["id"];
+            $photo_i    = $doc["photo_i"];
+
+            //STUFF IT INTO HOLDING ARRAY BY WALK_ID
+            if(!array_key_exists($_id, $sort_temp)){
+                $sort_temp[$_id] = array();
+            }
+
+            $sort_temp[$_id][$photo_i] = $doc["photo"];
+        }
+
+        //SECOND LOOP!  + BONUS NESTED LOOP BS,   BETTER WAY TO DO THIS???  FUCK IT.
+        foreach($sort_temp as $_id => $photos){
+            foreach($photos as $photo){
+                // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK, AT LEAST THIS HAS NO ORDER HALLELUJAH
+                if(!empty($photo["geotag"])){
+                    $filename   = $photo["name"];
+                    $ph_id      = $_id . "_" .$filename;;
+                    $ph_i       = $photo["i"];
+
+                    $file_uri   = $this->getStorageFile(self::google_bucket, $_id, $filename);
+                    $thumb_uri  = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+                    $photo_uri  = $file_uri;
+                    $detail_url = "photo.php?_id=".$_id."&_file=$filename";
+
+                    $photo["geotag"]["photo_src"]   = $photo_uri;
+                    $photo["geotag"]["goodbad"]     = $photo["goodbad"];
+                    $photo["geotag"]["photo_id"]    = $ph_id;
+                    $photo["geotag"]["platform"]    = $photo["platform"];
+                    array_push($photo_geos, $photo["geotag"]);
+                }
+
+                // Massage a block for each photo in the project
+                $code_block = array_merge($code_block, printPhotos($photo,$_id,$ph_i));
+            }
+        }
+
+        // IF ASKING FOR MULTIPLE TAGS COULD HAVE REPEATS FOR MULTI TAGGED PHOTOS
+        $code_block = array_unique($code_block,SORT_REGULAR);
+        $data       = array("photo_geos" => $photo_geos, "code_block" => $code_block);
+        return $data;
+    }
+
     public function filter_by_projid($project_code, $getdate){ //keys array is the # integer of the PrID
         $result = array();
         
@@ -590,6 +586,10 @@ class Datastore {
             $snapshot       = $query->documents();
 	        foreach ($snapshot as $document) {
 	            $_id        = $document->id();
+                $walk_data  = $document->data();
+                if(array_key_exists("_deleted",$walk_data)){
+                    continue;
+                }
                 $geocoll    = $ov_walks->document($_id)->collection("geotags")->documents();
                 $geotags    = array();
                 if($geocoll){
@@ -598,19 +598,19 @@ class Datastore {
                     }
                 }
                 ksort($geotags);
-                $walk_data              = $document->data();
+
                 $walk_data["_id"]       = $_id;
                 $walk_data["geotags"]   = $geotags;
 
                 array_push($result, $walk_data);
             }
         }
-
         return $result;
     }
 
     public function getProjectSummaryData($project_code){
         $result = array();
+
         if($this->firestore){
             $ov_projects    = $this->firestore->collection(self::firestore_walks);
             $query          = $ov_projects->where('project_id', '=', $project_code);
@@ -619,6 +619,10 @@ class Datastore {
 
             foreach ($snapshot as $document) {
                 $data           = $document->data();
+                if(array_key_exists("_deleted",$data)){
+                    continue;
+                }
+
                 $doc_id         = $data["project_id"] . "_" . $data["device"]["uid"]. "_" . $data["timestamp"];
                 $text_count     = 0;
                 $photo_count    = 0;
@@ -626,9 +630,15 @@ class Datastore {
                 $attachment_ids = array();
 
                 foreach($data["photos"] as $photo){
+                    if(array_key_exists("_deleted",$photo)){
+                        continue;
+                    }
+
+                    $photo_count++;
+
                     if(!$walk_tz) {
                         if (isset($data["geos"])) {
-                            print_rr($data["geos"][0]);
+
                         } elseif (isset($photo["geotag"])) {
                             $lat = $photo["geotag"]["lat"];
                             $lng = $photo["geotag"]["lng"];
@@ -651,9 +661,6 @@ class Datastore {
                     if(isset($photo["text_comment"])){
                         $text_count++;
                     }
-                    if(!isset($photo["text_comment"])){
-                        $photo_count++;
-                    }
 
                     if(isset($photo["audios"])){
                         array_push($attachment_ids, $doc_id . "_" . $photo["name"]);
@@ -665,6 +672,10 @@ class Datastore {
 				        }
                     }
                 };
+
+                if(!$photo_count){
+                    continue;
+                }
 
                 //, new DateTimeZone($walk_tz) do this on display not before querying
                 $dt = new DateTime("now"); //first argument "must" be a string
@@ -685,90 +696,116 @@ class Datastore {
                     ,"completed_upload" => $data["completed_upload"] ?? null
                 );
 
+
                 array_push($result, $temp);
             }
         }
+
         return $result;
     }
-    
-    public function getWalkSummaryData($walk_id,  $view="walk_id", $dd="summary"){
-        $qs         = http_build_query(array( 'keys' => '["'.$walk_id.'"]' ,  'descending' => 'true'));
-        $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
-        $response   = $this->doCurl($couch_url);
-        return json_decode($response,1);
-    }
 
-    public function filterProjectByTags($project_code, $tags=array(), $view="by_tags", $dd="project"){
-        // WILL RETURN PHOTO OBJECT(s) FOR TAG , can be duplicates if passing in multiple tags
-        // $project_code   = "AAAA";
-        // returns [i,photo]
-        
-        if(empty($tags) || !is_array($tags)){
-            return false;
+    public function filterProjectPhotos($project_code, $tags=array(), $goodbad=array()){
+        $result = array();
+
+        if($this->firestore){
+            $ov_projects    = $this->firestore->collection(self::firestore_walks);
+            $query          = $ov_projects->where('project_id', '=', $project_code);
+            $snapshot       = $query->documents();
+            $walk_tz        = null;
+
+            foreach ($snapshot as $document) {
+                $data           = $document->data();
+                if(array_key_exists("_deleted",$data)){
+                    continue;
+                }
+
+                $doc_id         = $document->id();
+                foreach($data["photos"] as $photo_i => $photo){
+                    if(array_key_exists("_deleted",$photo)){
+                        continue;
+                    }
+
+                    //FILTER by TAGS and GOOD BAD or UN-Tagged
+                    if(in_array("no_tags", $tags) && array_key_exists("tags", $photo) ){
+                        continue;
+                    }elseif(!empty($tags) && !in_array("no_tags", $tags) && (!isset($photo["tags"]) || empty(array_intersect($tags,$photo["tags"]))) ){
+                        continue;
+                    }elseif(!empty($goodbad) && (empty($photo["goodbad"]) || !in_array($photo["goodbad"], $goodbad) ) ){
+                        continue;
+                    }
+
+                    if(!$walk_tz) {
+                        if (isset($photo["geotag"])) {
+                            $lat = $photo["geotag"]["lat"];
+                            $lng = $photo["geotag"]["lng"];
+                        }else{
+                            $walk_tz = "America/Los_Angeles";
+                        }
+
+                        if($lat && $lng){
+                            $gkey       = $this->gapi_key;
+                            $ts         = round($data["timestamp"]/1000);
+                            $url        ="https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$lng&timestamp=$ts&key=$gkey";
+                            $g_result   = $this->doCurl($url);
+                            $g_arr      = json_decode($g_result,1);
+                            if(isset($g_arr["timeZoneId"])){
+                                $walk_tz = $g_arr["timeZoneId"];
+                            }
+                        }
+                    }
+
+                    $photo["timezone"]  = $walk_tz;
+                    $photo["i"]         = $photo_i;
+                    $photo["platform"]  = $data["device"]["platform"];
+
+                    $temp = array(
+                         "id"               => $doc_id
+                        ,"photo_i"          => $photo_i
+                        ,"photo"            => $photo
+                    );
+
+                    array_push($result, $temp);
+                };
+            }
         }
 
-        $temp = array();
-        foreach($tags as $tag){
-            $temp[] = '["'.$project_code.'","'.$tag.'"]';
-        }
-        $keys       = '['.implode(',', $temp).']';
-        $qs         = http_build_query(array( 'keys' => $keys ,  'descending' => 'true'));
-        $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
-        $response   = $this->doCurl($couch_url);
-        return json_decode($response,1);
-    }
-
-    public function filterProjectNoTags($project_code, $view="no_tags", $dd="project"){
-        // WILL RETURN PHOTO OBJECT(s) FOR TAG , can be duplicates if passing in multiple tags
-        // $project_code   = "AAAA";
-        $temp = array();
-        $temp[] = '["'.$project_code.'","un_tagged"]';
-        $keys       = '['.implode(',', $temp).']';
-        $qs         = http_build_query(array( 'keys' => $keys ));
-        $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
-        $response   = $this->doCurl($couch_url);
-        return json_decode($response,1);
-    }
-
-    public function filterProjectByGoodBad($project_code, $goodbad=array(), $view="by_goodbad", $dd="project"){
-        // WILL RETURN PHOTO OBJECT(s) FOR 1 bad, 2 good, 3 nuetral
-        // $project_code   = "AAAA";
-        // returns [i,photo]
-        if(empty($goodbad) || !is_array($goodbad)){
-            return false;
-        }
-
-        $temp = array();
-        foreach($goodbad as $mood){
-            $temp[] = '["'.$project_code.'",'.$mood.']';
-        }
-        $keys       = '['.implode(',', $temp).']';
-        $qs         = http_build_query(array( 'keys' => $keys ,  'descending' => 'true'));
-        $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
-        $response   = $this->doCurl($couch_url);
-        return json_decode($response,1);
+        return $result;
     }
 
     public function loadAllProjectThumbs($project_code, $tags=array(), $goodbad=array()){
         if(empty($tags)){
             if(!empty($goodbad)){
-                return $this->filterProjectByGoodBad($project_code, $goodbad);
+                return $this->filterProjectPhotos($project_code, array() , $goodbad);
             }else{
                 // NO FILTERS GET ALL PHOTO DATA FOR A PROJECT
-                return $this->getProjectSummaryData($project_code, "all_photos");
+                return $this->filterProjectPhotos($project_code);
             }
         }else{
             if(in_array("un-tagged", $tags)){
                 // REGULAR TAGS
-                return $this->filterProjectNoTags($project_code);
-            }elseif(in_array("un-tagged", $tags)){
-                // REGULAR TAGS
-                return $this->filterProjectNoTags($project_code);
+                return $this->filterProjectPhotos($project_code, array("no_tags"));
             }else{
                 // REGULAR TAGS
-                return $this->filterProjectByTags($project_code, $tags);
+                return $this->filterProjectPhotos($project_code, $tags);
             }
         }
+    }
+
+    public function getStorageFile($google_bucket, $id_string , $file_name){
+        $temp       = explode("_", $id_string);
+        $pcode      = $temp[0];
+        $uuid       = $temp[1];
+        $walk_ts    = $temp[2];
+
+        $file_uri   = "https://storage.googleapis.com/$google_bucket/$pcode/$uuid/$walk_ts/$file_name";
+        return $file_uri;
+    }
+
+    public function getWalkSummaryData($walk_id,  $view="walk_id", $dd="summary"){
+        $qs         = http_build_query(array( 'keys' => '["'.$walk_id.'"]' ,  'descending' => 'true'));
+        $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
+        $response   = $this->doCurl($couch_url);
+        return json_decode($response,1);
     }
 
     public function checkAttachmentsExist($_ids, $view="ids", $dd="checkExisting"){
@@ -785,15 +822,6 @@ class Datastore {
         return json_decode($response,1);
     }
 
-    public function getStorageFile($google_bucket, $id_string , $file_name){
-        $temp       = explode("_", $id_string);
-        $pcode      = $temp[0];
-        $uuid       = $temp[1];
-        $walk_ts    = $temp[2];
-
-        $file_uri   = "https://storage.googleapis.com/$google_bucket/$pcode/$uuid/$walk_ts/$file_name";
-        return $file_uri;
-    }
 
 
 

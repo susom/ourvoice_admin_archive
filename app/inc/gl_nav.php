@@ -10,7 +10,7 @@
 			}
 
 			if( $page != "photo_detail"){
-				echo '<a target="_blank" class="inproject btn btn-success" href="project_map_csv.php?active_project_id='.$active_project_id.'&pid='.$active_pid.'">Download All Project Data (.csv)</a>';
+				echo '<a target="_blank" class="inproject btn btn-success" href="project_map_csv.php?active_project_id='.$active_project_id.'">Download All Project Data (.csv)</a>';
 			}
 		}
 		?>
