@@ -355,12 +355,133 @@ if(!empty($_POST["action"])){
         break;
 
         case "delete_project_id":
+            $pidx 		= $proj_idx;
+            $payload 	= $ap;
+            unset($payload["project_list"][$pidx]);
+
+            $_SESSION["DT"] = $payload;
+
+            //putDoc($payload);
+            $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+            $response 	= $ds->doCurl($url, json_encode($payload), 'PUT');
+            $resp 		= json_decode($response,1);
+            if(isset($resp["rev"])){
+                $payload["_rev"] = $resp["rev"];
+                $ap = $_SESSION["DT"] = $payload;
+            }else{
+                echo "something went wrong:";
+                print_rr($resp);
+                print_rr($payload);
+            }
+
+            $msg = "Project " . $projects[$pidx] . " has been deleted";
+//            header("location:index.php?msg=$msg");
         break;
 
+        case "edit_project":
         case "new_project":
+            // REDIRECT IF NO OTHER ACTION
+            $redi 		= false;
+            if( $projects[$proj_idx] !==  filter_var($_POST["project_id"], FILTER_SANITIZE_STRING)){
+                //MEANS THIS IS A NEW PROJECT
+                //NEED A NEW PROJECT ID!
+                $temp 		= array_keys($projects);
+                $last_key 	= array_pop($temp);
+                $last_key++;
+                while($last_key > 98 && $last_key < 101){
+                    $last_key++;
+                }
+                $proj_idx 	= $last_key;
+                $redi 		= true;
+            }
+
+            //GOT ALL THE DATA IN A STRUCTURE, NOW JUST MASSAGE IT INTO RIGHT FORMAT THEN SUBMIT IT
+            $app_lang = array();
+            foreach($_POST["lang_code"] as $ldx => $code){
+                array_push($app_lang, array("lang" => $code , "language" => $_POST["lang_full"][$ldx]));
+            }
+
+            if(isset($_POST["thumbs"]) && is_array($_POST["thumbs"])){
+                $_POST["thumbs"] = $_POST["thumbs"][1];
+            }
+
+            $expire_date = null;
+            if(!empty($_POST["expire_date"])){
+                $exp_time 		= strtotime($_POST["expire_date"]);
+                $expire_date 	= date('Y-m-d',$exp_time);
+            }
+
+            $updated_project = array(
+                "project_id" 		=> strtoupper(filter_var($_POST["project_id"], FILTER_SANITIZE_STRING))
+            ,"project_name" 	=> filter_var($_POST["project_name"], FILTER_SANITIZE_STRING)
+            ,"project_pass" 	=> filter_var($_POST["project_pass"], FILTER_SANITIZE_STRING)
+            ,"summ_pass" 		=> filter_var($_POST["summ_pass"], FILTER_SANITIZE_STRING)
+            ,"project_email" 	=> filter_var($_POST["project_email"], FILTER_SANITIZE_STRING)
+            ,"template_type"	=> filter_var($_POST["template_type"], FILTER_SANITIZE_NUMBER_INT)
+            ,"text_comments"    => filter_var($_POST["text_comments"], FILTER_SANITIZE_NUMBER_INT)
+            ,"audio_comments"  	=> filter_var($_POST["audio_comments"], FILTER_SANITIZE_NUMBER_INT)
+            ,"custom_takephoto_text"  => filter_var($_POST["custom_takephoto_text"], FILTER_SANITIZE_STRING)
+
+
+                // ,"include_surveys"  => $_POST["include_surveys"]
+            ,"expire_date"  	=> $expire_date
+            ,"thumbs"			=> isset($_POST["thumbs"]) ? filter_var($_POST["thumbs"], FILTER_SANITIZE_NUMBER_INT) : 0
+            ,"app_lang" 		=> $app_lang
+            );
+
+            $pidx 			= $proj_idx;
+
+            // due to unfreshness of SESSION multiple people saving and shit, we need to pull fresh version before pushing back up
+            $url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+            $response 		= $ds->doCurl($url);
+            $payload = $_SESSION["DT"] = json_decode($response,1);
+
+            // since originally setting up the configurator, these new properties were added so
+            // need to make sure they are included in an update.
+            if(array_key_exists("tags",$payload["project_list"][$pidx])){
+                $updated_project["tags"] = $payload["project_list"][$pidx]["tags"];
+            }
+            if(array_key_exists("dropTag",$payload["project_list"][$pidx])){
+                $updated_project["dropTag"] = $payload["project_list"][$pidx]["dropTag"];
+            }
+            $payload["project_list"][$pidx] = $updated_project;
+
+            $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+            $response 	= $ds->doCurl($url, json_encode($payload), 'PUT');
+            $resp 		= json_decode($response,1);
+            if(isset($resp["rev"])){
+                $payload["_rev"] = $resp["rev"];
+                $ap = $_SESSION["DT"] = $payload;
+
+                if($redi){
+                    header("location:index.php?proj_idx=$pidx");
+                }
+            }else{
+                echo "something went wrong:";
+                print_rr($resp);
+                print_rr($payload);
+            }
         break;
 
         case "archive":
+            // due to unfreshness of SESSION multiple people saving and shit, we need to pull fresh version before pushing back up
+            $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+            $response 	= $ds->doCurl($url);
+            $payload 	= $_SESSION["DT"] = json_decode($response,1);
+
+            $payload["project_list"][$proj_idx]["archived"] = $_POST["archive"];
+
+            $response 	= $ds->doCurl($url, json_encode($payload), 'PUT');
+            $resp 		= json_decode($response,1);
+            if(isset($resp["rev"])){
+                $payload["_rev"] = $resp["rev"];
+                $ap = $_SESSION["DT"] = $payload;
+                print_rr("yay sucess");
+            }else{
+                echo "something went wrong:";
+                print_rr($resp);
+                print_rr($payload);
+            }
         break;
     }
 
