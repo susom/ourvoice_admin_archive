@@ -216,7 +216,7 @@ if(!empty($pcode) && !empty($active_pid)){
 	// THESE FILTERS COME IN MIXED WITH MOOD AND TAG
 	$filters 		= $_GET["filters"] ? $_GET["filters"] : "[]";
 	$pfilters 		= json_decode($filters,1);
-	$pfilters 		= empty($pfilters) ? $project_tags : $pfilters;
+	$pfilters 		= empty($pfilters) ? array() : $pfilters;
 
 	$data_geos 		= getFilteredDataGeos($pcode, $pfilters);
 	$photo_geos 	= $data_geos["photo_geos"];
