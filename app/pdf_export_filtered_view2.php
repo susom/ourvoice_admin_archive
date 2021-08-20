@@ -16,7 +16,7 @@ if(!empty($pcode) && !empty($active_pid)){
 	$filters 		= $_GET["filters"] ?? "[]";
 	$pfilters 		= json_decode($filters,1);
 
-	$pfilters 		= empty($pfilters) ? $project_tags : $pfilters;
+	$pfilters 		= empty($pfilters) ? array() : $pfilters;
 	$data 			= $ds->getFilteredDataGeos($pcode, $pfilters);
 	$photos 		= $data["code_block"];
 

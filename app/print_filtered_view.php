@@ -1,13 +1,17 @@
 <?php 
 require_once "common.php";
-require_once "vendor/tcpdf/tcpdf.php";
+//require_once "vendor/tcpdf/tcpdf.php";
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 $pcode 			= isset($_GET["pcode"]) ? filter_var($_GET["pcode"], FILTER_SANITIZE_STRING) : null;
-$active_pid 	= isset($_GET["pid"])  	? filter_var($_GET["pid"], FILTER_SANITIZE_NUMBER_INT) : null;
+
+$project_fs     = $ds->getProject($pcode);
+$project_data   = $project_fs->snapshot()->data();
+$project_tags   = array_key_exists("tags", $project_data) ? $project_data["tags"] : array();
+$google_bucket  = "dev_ov_walk_files";
 
 
 function generateWalkMap($photo_geos){
@@ -28,31 +32,26 @@ function generateWalkMap($photo_geos){
 	return base64_encode($gmapsPhoto);
 }
 
-function generatePhotoPage($photo, $active_pid, $pcode, $page, $total, $highlight_tag=null){
+function generatePhotoPage($photo, $pcode, $page, $total, $highlight_tag=null){
+    global $ds, $google_bucket;
+
 	$_id 		= $photo["doc_id"];
-	$_file		= "photo_".$photo["n"].".jpg";
+	$goodbad    = "/img/icon_none.png";
 
-	$proj_idx 	= $active_pid;
-    $walk_geo 	= json_encode(array( array("lat" => $photo["lat"], "lng" => $photo["long"]) ) );
-	$old 		= $photo["old"];
-
-	$goodbad = "";
 	if($photo["goodbad"] == 2){
 		$goodbad = "/img/icon_smile.png";	
 	}elseif($photo["goodbad"] == 1){
 		$goodbad = "/img/icon_frown.png";
-	}else{
-		// 3 = both wasnt it?
-		$goodbad = "/img/icon_none.png";
 	}
 
 	$lng 		= $photo["long"];
 	$lat 		= $photo["lat"];
 	$rotation 	= $photo["rotate"];
+    $walk_geo 	= json_encode(array( array("lat" => $lat, "lng" => $lng ) ) );
 
 	$photo_name = "photo_" . $photo["n"] . ".jpg";
-	$ph_id 		= $old ? $_id : $_id . "_" . $photo_name;
-	$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$photo_name" . $old;
+	$ph_id 		= $_id . "_" . $photo_name;
+	$photo_uri 	= $photo["photo_uri"];
 
 	////////////////GET MAIN PHOTO DEF/////////////////
 	$id 	= isset($ph_id) ? $ph_id : NULL ;
@@ -63,18 +62,10 @@ function generatePhotoPage($photo, $active_pid, $pcode, $page, $total, $highligh
 	}
 
 	// Do initial query to get metadata from couchdb
-	if($old == "&_old=2"){
-		$url = cfg::$couch_url . "/disc_attachments/$id";
-	}else if($old == "&_old=1"){
-		$url = cfg::$couch_url . "/".cfg::$couch_users_db."/" . $id;
-	}else{
-		$url = cfg::$couch_url . "/". cfg::$couch_attach_db."/" . $id;
-	}
-	
+	$url        = cfg::$couch_url . "/". cfg::$couch_attach_db."/" . $id;
+
 	$tags 		= !empty($photo["tags"]) ? $photo["tags"] : null;
-	$result 	= $ds->doCurl($url);
-	$result 	= json_decode($result,true);
-	$htmlphoto 	= $ds->doCurl($url ."/" . $file); //the string representation htmlphoto is the WALK photo
+	$htmlphoto 	= $photo_uri;
 	///////////////////////////// GET MAIN PHOTO END ///////////////////////////// 
 
 	///////////////////////////// GET TRANSCRIPTIONS START /////////////////////////////		
@@ -111,18 +102,18 @@ function generatePhotoPage($photo, $active_pid, $pcode, $page, $total, $highligh
 	$landscape 	= False;
 	$scale 		= 1;
 
-	if($imageResource = imagecreatefromstring($htmlphoto)){
-		 //convert to resource before checking dimensions
-		if(imagesx($imageResource) > imagesy($imageResource)){ //check picture orientation
-			// print_rr(imagesx($imageResource));
-			// print_rr(imagesy($imageResource));
-			$landscape = True;
-			$scale = imagesx($imageResource)/imagesy($imageResource);
-		}else{
-			$scale 		= imagesy($imageResource)/imagesx($imageResource);
-		}	
-		imagedestroy($imageResource);
-	}
+//	if($imageResource = imagecreatefromstring($htmlphoto)){
+//		 //convert to resource before checking dimensions
+//		if(imagesx($imageResource) > imagesy($imageResource)){ //check picture orientation
+//			// print_rr(imagesx($imageResource));
+//			// print_rr(imagesy($imageResource));
+//			$landscape = True;
+//			$scale = imagesx($imageResource)/imagesy($imageResource);
+//		}else{
+//			$scale 		= imagesy($imageResource)/imagesx($imageResource);
+//		}
+//		imagedestroy($imageResource);
+//	}
 	$url = 'https://maps.googleapis.com/maps/api/staticmap?size=400x400&zoom=16&'.$parameters."&key=".cfg::$gvoice_key;
 	$gmapsPhoto = $ds->doCurl($url);
 
@@ -150,24 +141,20 @@ function generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landsc
 	$html_block[] 	= "<h2 class='pghdr'>Project : $pcode <b>".$htmlobj['date'] . " " .$htmlobj['time']."<i>&#183; pg $page/$total </i></b></h2>";
 	
 	//make sure the image is whole (broken images wont have a resource id)
-	$resource_id 	= imagecreatefromstring($htmlphoto);
-	$image_is_gd 	= get_resource_type($resource_id);
-
-	
+//	$resource_id 	= imagecreatefromstring($htmlphoto);
+//	$image_is_gd 	= get_resource_type($resource_id);
+//
+//
 	$gmapsPhoto 		= base64_encode($gmapsPhoto);
 	$html_block[] 		= "<div class='photo_map'>";
-	if($image_is_gd == "gd"){
-		$htmlphoto 		= base64_encode($htmlphoto);
-
+//	if($image_is_gd == "gd"){
 		$wh 			= $landscape ? "width='100%'" : "height='100%'";
-
-		$html_block[] 	= "<div class='photo_cont rotate' rev='$rotation'><img $wh  src='data:image/jpg;base64, $htmlphoto'/></div>";
-	}else{
-		$html_block[] 	= "<div class='photo_cont'><h4>Image Not Available</h4></div>";
-	}
+		$html_block[] 	= "<div class='photo_cont rotate' rev='$rotation'><img $wh  src='$htmlphoto'/></div>";
+//	}else{
+//		$html_block[] 	= "<div class='photo_cont'><h4>Image Not Available</h4></div>";
+//	}
 	$html_block[] 		= "<div class='map_cont'><img class='map' src='data:image/png;base64, $gmapsPhoto' height='100%'/></div>";
 	$html_block[] 		= "</div>";
-
 
 	$html_block[] 		= "<div class='good_bad'>";
 	$html_block[] 		= "<h4>Good or Bad for the Community?</h4>";
@@ -178,8 +165,7 @@ function generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landsc
 	}
 	$html_block[] 		= "<img src='.$goodbad' width=30>";
 	$html_block[] 		= "</div>";
-
-
+	
 	$html_block[] 			= "<h2>Why did you take this picture?</h2>";
 	if(isset($retTranscript[0]) && !empty($retTranscript[0])){
 		foreach($retTranscript as $k => $trans) {
@@ -210,13 +196,11 @@ function generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landsc
 	echo implode("\r\n",$html_block);
 }
 
-if(!empty($pcode) && !empty($active_pid)){
-	$project_tags 	= $_SESSION["DT"]["project_list"][$active_pid]["tags"] ?? array();
-
+if(!empty($pcode) ){
 	// THESE FILTERS COME IN MIXED WITH MOOD AND TAG
 	$filters 		= $_GET["filters"] ? filter_var($_GET["filters"], FILTER_SANITIZE_STRING) : "[]";
 	$pfilters 		= json_decode($filters,1);
-	$pfilters 		= empty($pfilters) ? $project_tags : $pfilters;
+	$pfilters 		= empty($pfilters) ? array() : $pfilters;
 
 	$data_geos 		= $ds->getFilteredDataGeos($pcode, $pfilters);
 	$photo_geos 	= $data_geos["photo_geos"];
@@ -402,7 +386,7 @@ if(!empty($pcode) && !empty($active_pid)){
 		$total = count($photos);
 		$page  = 1;
 		foreach($photos as $photo){
-			generatePhotoPage($photo, $active_pid, $pcode, $page, $total);
+			generatePhotoPage($photo,$pcode, $page, $total);
 			$page++;
 			set_time_limit(10);
 		}
@@ -439,7 +423,7 @@ if(!empty($pcode) && !empty($active_pid)){
 				if(empty($photo["tags"])){
 					continue;
 				}elseif(in_array($filter_tag,$photo["tags"])){
-					generatePhotoPage($photo, $active_pid, $pcode, $page, $total,  $filter_tag );
+					generatePhotoPage($photo, $pcode, $page, $total,  $filter_tag );
 					$page++;
 				}
 			}

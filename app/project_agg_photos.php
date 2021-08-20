@@ -720,7 +720,7 @@ $page = "allwalks";
 				filter_ar.push($(new_filters[i]).data("filter") );
 			}
 
-			var pdf_url = "print_filtered_view.php?pcode=" + project_code + "&pid=" + pid + "&filters=" + encodeURIComponent(JSON.stringify(filter_ar));
+			var pdf_url = "print_filtered_view.php?pcode=" + project_code + "&filters=" + encodeURIComponent(JSON.stringify(filter_ar));
 			window.open(pdf_url, '_blank');
 			return false;
 		});
