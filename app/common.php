@@ -9,7 +9,8 @@ require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . "/_config.php";
 require_once __DIR__ . "/_datastore.php";
 
-$ds = new Datastore();
+$google_bucket  = "ov_walk_files";
+$ds             = new Datastore();
 //$ds->hello();
 
 //START TIMER FOR PAGE LOAD

@@ -1,30 +1,25 @@
 <?php
 require_once "common.php";
 
+//TODO ADD ZIP to DOCKER FILE or BASE IMAGE
+
 if(empty($_GET["doc_id"]) && !empty($_SERVER["HTTP_REFERER"])){
 	header("location:". $_SERVER["HTTP_REFERER"]);
 	exit;
 }
 
-$doc_id 	= filter_var($_GET["doc_id"], FILTER_SANITIZE_STRING);
-
-$url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $doc_id;
-$response   = $ds->doCurl($url);
-$doc 		= json_decode(stripslashes($response),1); 
-
-if(array_key_exists("error",$doc)){
-	header("location: ".$_SERVER["HTTP_HOST"]);
-	exit;
-}
+$doc_id 		= filter_var($_GET["doc_id"], FILTER_SANITIZE_STRING);
+$walk_data 		= $ds->getWalkData($doc_id);
+$walk_photos 	= !empty($walk_data["attachment_ids"]) ? $walk_data["attachment_ids"] : array();
+$walk_photos	= array_filter($walk_photos, function($item){
+						return strpos($item,"_photo") > -1 && strpos($item,"jpg") > -1;
+					});
 
 $photo_names 	= array();
-$baseurl        = "https://".$_SERVER["HTTP_HOST"]."/";
-foreach($doc["photos"] as $photo){
-	$filename 	= $photo["name"];
-	$ph_id 		= $doc["_id"]."_".$filename;
-
-	$img_url 	= $baseurl . "passthru.php?_id=".$ph_id."&_file=$filename";
-	$photo_names[$filename] = $img_url;
+foreach($walk_photos as $photo){
+	$file_name 	= substr($photo, strlen($doc_id) + 1);
+	$img_url 	= $ds->getStorageFile($google_bucket, $doc_id , $file_name);
+	$photo_names[$file_name] = $img_url;
 }
 
 $zip 		= new ZipArchive();

@@ -32,7 +32,7 @@ class Datastore {
         $this->firestore            = new FirestoreClient([
             'projectId'         => $this->gcp_project_id,
             // 'keyFilePath'       => "som-rit-ourvoice-firestore.json" //'/secrets3/firestore_service_account.json'
-            'keyFilePath'       => '/secrets3/firestore_service_account.json'
+            'keyFilePath'       => 'secrets3/firestore_service_account.json'
         ]);
     }
 
@@ -702,6 +702,13 @@ class Datastore {
         }
 
         return $result;
+    }
+
+    public function getProjectSummaryData_bak($project_code, $view="walk", $dd="project"){
+        $qs         = http_build_query(array( 'keys' => '["'.$project_code.'"]' ,  'descending' => 'true'));
+        $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
+        $response   = doCurl($couch_url);
+        return json_decode($response,1);
     }
 
     public function filterProjectPhotos($project_code, $tags=array(), $goodbad=array()){
