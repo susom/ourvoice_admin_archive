@@ -198,7 +198,7 @@ function generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landsc
 
 if(!empty($pcode) ){
 	// THESE FILTERS COME IN MIXED WITH MOOD AND TAG
-	$filters 		= $_GET["filters"] ? filter_var($_GET["filters"], FILTER_SANITIZE_STRING) : "[]";
+	$filters 		= $_GET["filters"]  ?: "[]";
 	$pfilters 		= json_decode($filters,1);
 	$pfilters 		= empty($pfilters) ? array() : $pfilters;
 
