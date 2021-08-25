@@ -822,13 +822,6 @@ class Datastore {
         return json_decode($response,1);
     }
 
-    public function getAggMaps($pid, $view="filter", $dd="geo"){
-        $qs         = http_build_query(array( 'key' => $pid ));
-        $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
-        $response   = $this->doCurl($couch_url);
-        return json_decode($response,1);
-    }
-
 
 
 

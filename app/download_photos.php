@@ -29,7 +29,7 @@ if($zip->open($zip_name, ZIPARCHIVE::CREATE)!==TRUE){
 	$error .= "* Sorry ZIP creation failed at this time";
 }
 
-foreach($photo_names as $filename => $file){ 
+foreach($photo_names as $filename => $file){
 	$fileContent = file_get_contents($file);
 	$zip->addFromString($filename, $fileContent);
 }
