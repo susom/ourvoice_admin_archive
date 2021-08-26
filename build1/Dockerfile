@@ -33,6 +33,9 @@ RUN set -eux; \
   && dpkg -i libapache2-mod-auth-openidc_2.4.6-1.buster+1_amd64.deb \
   && a2enmod auth_openidc \
   && a2enmod headers \
+# ZipArchive
+  && docker-php-ext-configure zip \
+  && docker-php-ext-install zip \
 # CLEANUP
   && rm -rf /var/log/dpkg.log /var/log/alternatives.log /var/log/apt \
   && rm libapache2-mod-auth-openidc_2.4.6-1.buster+1_amd64.deb
