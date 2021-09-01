@@ -31,8 +31,8 @@ class Datastore {
         #instantiates FireStore client
         $this->firestore            = new FirestoreClient([
             'projectId'         => $this->gcp_project_id,
-            // 'keyFilePath'       => "som-rit-ourvoice-firestore.json" //'/secrets3/firestore_service_account.json'
-            'keyFilePath'       => 'secrets3/firestore_service_account.json'
+            // 'keyFilePath'       => "som-rit-ourvoice-firestore.json"
+            'keyFilePath'       => '/secrets3/firestore_service_account.json'
         ]);
     }
 
