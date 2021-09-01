@@ -1,6 +1,10 @@
 <?php
 require_once "common.php";
 
+ ini_set('display_errors', 1);
+ ini_set('display_startup_errors', 1);
+ error_reporting(E_ALL);
+
 //POST LOGIN TO PROJECT
 $project_snapshot = array();
 if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
