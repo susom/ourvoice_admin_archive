@@ -9,7 +9,9 @@ if (!file_exists(__DIR__ . "/_config.php")) {
 // Load the configuration
 require_once __DIR__ . "/_config.php";
 require_once __DIR__ . "/_datastore.php";
+require_once __DIR__ . "/_datastore.php";
 
+$ds             = new Datastore();
 
 //START TIMER FOR PAGE LOAD
 $start_time	= microtime(true);
