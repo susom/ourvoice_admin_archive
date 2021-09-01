@@ -35,6 +35,7 @@ function restGetFireStore($firestore_url, $json_payload, $access_token){
 }
 
 function loginProject($project_id, $project_pass){
+    global $gcp_project_id, $projects_data, $access_token;
     $result = array();
 
     if(isset($project_id) && isset($project_pass)){
