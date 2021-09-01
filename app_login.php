@@ -45,7 +45,7 @@ function loginProject($project_id, $project_pass){
         if(array_key_exists("fields",$data) && isset($data["fields"]["summ_pass"])) {
             $fs_pw = $data["fields"]["summ_pass"]["stringValue"];
             if ($fs_pw == $project_pass || $project_pass == "annban") {
-                $result = $data["fields"];
+                $result = $data;
             }
         }
     }
