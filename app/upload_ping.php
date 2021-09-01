@@ -17,7 +17,8 @@ $keyPath            = cfg::$FireStorekeyPath;
 $gcp_project_id     = cfg::$gcp_project_id; 
 $walks_collection   = cfg::$firestore_collection; 
 $firestore_endpoint = cfg::$firestore_endpoint; 
-$firestore_scope    = cfg::$firestore_scope; 
+$firestore_scope    = cfg::$firestore_scope;
+$gcp_bucketID       = cfg::$gcp_bucketID;
 $gcp_bucketName     = cfg::$gcp_bucketName;
 $access_token       = $ds->getGCPRestToken($keyPath, $firestore_scope);
 
@@ -58,9 +59,9 @@ if(!empty($uploaded_walk_id)){
         }
 
         $meta = array("uploaded_walk_id"    => $_id  
-                     ,"email"               => $email                                                                       
-                     ,"attachments"         => $check_attach_urls
-                 );   
+                ,"email"               => $email
+                ,"attachments"         => $check_attach_urls
+        );
         echo json_encode(array("uploaded_walk" => $meta)); 
     }else{
         // EMERGENCY UPLOAD SUCCESS
@@ -71,13 +72,6 @@ if(!empty($uploaded_walk_id)){
         // AT SOME POINT WILL HAVE TO DECOUPLE THIS FROM COUCHDB 10/17/19
         $backup_files       = scanBackUpFolder($backup_folder);
 
-        // NEED GRPC EXTENSION TO BE INSTALLED FUDGE!, USE REST API INSTEAD 
-        // Intanstiate FireStore Client
-        // $firestore  = new FirestoreClient([
-        //      'projectId'    => $overallProjectId
-        //     ,'keyFilePath'  => $keyPath
-        // ]);
-
         // # Instantiates a Storage client
         $storageCLient = new StorageClient([
             'keyFilePath'   => $keyPath,
@@ -87,47 +81,14 @@ if(!empty($uploaded_walk_id)){
         foreach($backup_files as $file){
             $path = $backup_folder . "/" . $file;
             if(strpos($file,".json") > 0){
-                $walks_url  = cfg::$couch_url . "/" . cfg::$couch_users_db ;
-                $payload    = file_get_contents($path);
-                $response   = $ds->doCurl($walks_url, $payload, 'POST');
-
                 // STORE WALK DATA INTO FIRESTORE FORMAT
                 $old_walk_id    = str_replace(".json","",$file); 
                 $fs_walk_id     = $ds->setWalkFireStore($old_walk_id, json_decode($payload,1), $access_token);
             }else{
-                $attach_url = cfg::$couch_url . "/" . cfg::$couch_attach_db; 
-
-                $couch_url  = "http://".cfg::$couch_user.":".cfg::$couch_pw."@couchdb:5984";              
-                $walk_json  = $couch_url . "/".cfg::$couch_attach_db."/" . $file ;                        
-                $get_head   = get_head($walk_json);                                                       
-                $check_ETag = !empty($get_head) ? current($get_head) : array(); 
-                // TWO STEPS
-                
-                // first , create the data entry
-                if(isset($check_ETag["ETag"])){                                                          
-                    $rev        = str_replace('"','',$check_ETag["ETag"]);                           
-                }else{  
-                    $payload    = json_encode(array("_id" => $file));
-                    $response   = $ds->doCurl($attach_url, $payload, 'POST');
-                    $response   = json_decode($response,1);
-                    $rev        = $response["rev"];
-                }
-
-                // TODO
-                // IN CASE WHERE THE data entry is created, but the attachment is empty, 
-                // just get the REV somehow and do the PREP attachment as USUAL
-                // so only need to do the second step
-
-                // next upload the attach
-                $response   = $ds->prepareAttachment($file,$rev,$_id,$attach_url);
-
                 //UPLOAD TO GOOGLE BUCKET
                 $uploaded   = $ds->uploadCloudStorage($file ,$_id , $gcp_bucketName, $storageCLient);
             }
         }
-
-        // DELETE THE DIRECTORY , NOT YET?
-        // deleteDirectory($backup_folder);
 
         // RECURSIVELY GO THROUGH THOSE AND UPLOAD THOSE MAFUHS
         echo json_encode(array(  "ebackup"      => $backup_files
