@@ -4,9 +4,9 @@ use Google\Cloud\Firestore\FirestoreClient;
 use Google\Cloud\Storage\StorageClient;
 
 class Datastore {
-    const firestore_projects    = 'dev_ov_projects';
-    const firestore_walks       = 'dev_ov_walks';
-    const google_bucket         = 'dev_ov_walk_files';
+    const firestore_projects    = 'ov_projects';
+    const firestore_walks       = 'ov_walks';
+    const google_bucket         = 'ov_walk_files';
     private   $keyPath
             , $gcp_project_id
             , $walks_collection
