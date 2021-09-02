@@ -45,7 +45,10 @@ function loginProject($project_id, $project_pass){
         if(array_key_exists("fields",$data) && isset($data["fields"]["summ_pass"])) {
             $fs_pw = $data["fields"]["summ_pass"]["stringValue"];
             if ($fs_pw == $project_pass || $project_pass == "annban") {
-                $result = $data;
+                $fields = $data["fields"];
+                foreach($fields as $key => $val){
+                    $result[$key] = castTypeCleaner($val);
+                }
             }
         }
     }
@@ -53,6 +56,24 @@ function loginProject($project_id, $project_pass){
     return $result;
 }
 
+function castTypeCleaner($val){
+    if(is_array($val)){
+        if(isset($val["stringValue"])){
+            $val    = $val["stringValue"];
+        }elseif(isset($val["integerValue"])){
+            $val    = $val["integerValue"];
+        }elseif(isset($val["arrayValue"])){
+            $val    = $val["arrayValue"]["values"];
+            $temp   = array();
+            foreach($val as $v){
+                array_push($temp, castTypeCleaner($v));
+            }
+            $val = $temp;
+        }
+    }
+
+    return $val;
+}
 //POST LOGIN TO PROJECT
 $project_snapshot = array();
 if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
