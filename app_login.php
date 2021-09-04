@@ -63,11 +63,21 @@ function castTypeCleaner($val){
         }elseif(isset($val["integerValue"])){
             $val    = $val["integerValue"];
         }elseif(isset($val["arrayValue"])){
+            //regular array
             $val    = $val["arrayValue"]["values"];
             $temp   = array();
             foreach($val as $v){
                 array_push($temp, castTypeCleaner($v));
             }
+            $val = $temp;
+        }elseif(isset($val["mapValue"])) {
+            //object
+            $val = $val["mapValue"]["fields"];
+            $temp = array();
+            foreach ($val as $k => $v) {
+                $temp[$k] = castTypeCleaner($v);
+            }
+
             $val = $temp;
         }
     }
