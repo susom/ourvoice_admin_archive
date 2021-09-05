@@ -22,6 +22,9 @@ $gcp_bucketID       = cfg::$gcp_bucketID;
 $gcp_bucketName     = cfg::$gcp_bucketName; 
 $access_token       = getGCPRestToken($keyPath, $firestore_scope);
 
+if(isset($_GET["irvin"])){
+    $_POST["upload_walk_id"] = $_GET["irvin"];
+}
 // GET WALK ID , FROM THE PING
 $uploaded_walk_id   = isset($_POST["uploaded_walk_id"]) ? filter_var($_POST["uploaded_walk_id"], FILTER_SANITIZE_STRING) : null;
 
