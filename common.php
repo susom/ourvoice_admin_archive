@@ -1490,10 +1490,10 @@ function scanForBackUpFiles($backedup, $backup_dir){
                     continue;
                 }
 
-                if(!strpos($file,".json")){
+//                if(!strpos($file,".json")){
                     $backedup_attachments[] = $file;
                     $parent_check[$file]    = $backup;
-                }
+//                }
                 $html[] =  "<li><a href='temp/$backup/$file' target='blank'>";
                 $html[] =  $file;
                 $html[] =  "</a></li>";

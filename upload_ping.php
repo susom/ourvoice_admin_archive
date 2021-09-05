@@ -23,7 +23,7 @@ $gcp_bucketName     = cfg::$gcp_bucketName;
 $access_token       = getGCPRestToken($keyPath, $firestore_scope);
 
 if(isset($_GET["irvin"])){
-    $_POST["upload_walk_id"] = $_GET["irvin"];
+    $_POST["uploaded_walk_id"] = $_GET["irvin"];
 }
 // GET WALK ID , FROM THE PING
 $uploaded_walk_id   = isset($_POST["uploaded_walk_id"]) ? filter_var($_POST["uploaded_walk_id"], FILTER_SANITIZE_STRING) : null;
@@ -90,10 +90,15 @@ if(!empty($uploaded_walk_id)){
 
         foreach($backup_files as $file){
             $path = $backup_folder . "/" . $file;
+
+            if(isset($_GET["irvin"])){
+                print_r($path);
+            }
+
             if(strpos($file,".json") > 0){
                 $walks_url  = cfg::$couch_url . "/" . cfg::$couch_users_db ;
                 $payload    = file_get_contents($path);
-                $response   = doCurl($walks_url, $payload, 'POST');
+//                $response   = doCurl($walks_url, $payload, 'POST');
 
                 // STORE WALK DATA INTO FIRESTORE FORMAT
                 $old_walk_id    = str_replace(".json","",$file); 
