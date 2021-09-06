@@ -1620,7 +1620,7 @@ function formatUpdateWalkPhotos($photos,$transcriptions){
                 $audioFields[$key] = array("mapValue" => array("fields" => $temp_audio_fields ));
             }
         }
-        //$fields["audios"] = array("mapValue" => array("fields" => $audioFields));
+        $fields["audios"] = !empty($audioFields) ? array("mapValue" => array("fields" => $audioFields)) : array("arrayValue" => array("values" => array()));
 
         $tagFields = array();
         foreach($temp["tags"] as $tag){
