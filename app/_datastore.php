@@ -936,7 +936,7 @@ class Datastore {
                     $audioFields[$key] = array("mapValue" => array("fields" => array("text" => array("stringValue" => $audio_text), "confidence" => array("doubleValue" => $audio_confidence)     ) ));
                 }
             }
-            $fields["audios"]           = array("mapValue" => array("fields" => $audioFields));
+            $fields["audios"]  = !empty($audioFields) ? array("mapValue" => array("fields" => $audioFields)) : array("arrayValue" => array("values" => array()));
 
             $tagFields = array();
             foreach($temp["tags"] as $tag){
