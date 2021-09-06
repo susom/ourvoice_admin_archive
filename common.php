@@ -1611,12 +1611,16 @@ function formatUpdateWalkPhotos($photos,$transcriptions){
             if(empty($val)){
                 $audioFields[$key] = array("arrayValue" => array("values" => $val) );
             }else{
-                $audio_text = isset($val["text"]) ? $val["text"] : "";
-                $audio_confidence = isset($val["confidence"]) ? $val["confidence"] : 0;
-                $audioFields[$key] = array("mapValue" => array("fields" => array("text" => array("stringValue" => $audio_text), "confidence" => array("doubleValue" => $audio_confidence)     ) ));
+                $audio_text         = isset($val["text"]) ? $val["text"] : "";
+                $audio_confidence   = isset($val["confidence"]) ? $val["confidence"] : 0;
+
+                $temp_audio_fields = array();
+                $temp_audio_fields["text"]         = array("stringValue" => $audio_text);
+                $temp_audio_fields["confidence"]   = array("doubleValue" => $audio_confidence);
+                $audioFields[$key] = array("mapValue" => array("fields" => $temp_audio_fields ));
             }
         }
-        $fields["audios"]           = array("mapValue" => array("fields" => $audioFields));
+        //$fields["audios"] = array("mapValue" => array("fields" => $audioFields));
 
         $tagFields = array();
         foreach($temp["tags"] as $tag){

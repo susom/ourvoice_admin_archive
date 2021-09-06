@@ -41,6 +41,8 @@ function loginProject($project_id, $project_pass){
     if(isset($project_id) && isset($project_pass)){
         $firestore_url  = "https://firestore.googleapis.com/v1/projects/$gcp_project_id/databases/(default)/documents/$projects_data/$project_id";
         $response       = restGetFireStore($firestore_url, null, $access_token);
+        print_r($response);
+        exit;
         $data           = json_decode($response,1);
         if(array_key_exists("fields",$data) && isset($data["fields"]["summ_pass"])) {
             $fs_pw = $data["fields"]["summ_pass"]["stringValue"];
@@ -86,6 +88,8 @@ function castTypeCleaner($val){
 }
 //POST LOGIN TO PROJECT
 $project_snapshot = array();
+$_POST["proj_id"] = "JOR";
+$_POST["proj_pw"] = "4321";
 if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
     $proj_id            = trim(strtoupper(filter_var($_POST["proj_id"], FILTER_SANITIZE_STRING)));
     $proj_pw            = filter_var($_POST["proj_pw"], FILTER_SANITIZE_STRING);

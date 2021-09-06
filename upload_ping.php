@@ -91,10 +91,6 @@ if(!empty($uploaded_walk_id)){
         foreach($backup_files as $file){
             $path = $backup_folder . "/" . $file;
 
-            if(isset($_GET["irvin"])){
-                print_r($path);
-            }
-
             if(strpos($file,".json") > 0){
                 $walks_url  = cfg::$couch_url . "/" . cfg::$couch_users_db ;
                 $payload    = file_get_contents($path);
