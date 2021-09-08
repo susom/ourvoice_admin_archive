@@ -1,7 +1,7 @@
 <?php
 
 use Google\Cloud\Firestore\FirestoreClient;
-use Google\Cloud\Storage\StorageClient;
+//use Google\Cloud\Storage\StorageClient;
 
 class Datastore {
     const firestore_projects    = 'ov_projects';
@@ -26,13 +26,19 @@ class Datastore {
         $this->gapi_key             = cfg::$gmaps_key;
         $this->masterpw             = cfg::$master_pw;
 
-        $this->collection           = "dev_ov_projects";//cfg::$firestore_collection;
+        $this->collection           = cfg::$firestore_collection;
+
 
         #instantiates FireStore client
         $this->firestore            = new FirestoreClient([
             'projectId'         => $this->gcp_project_id,
-            'keyFilePath'       => 'secrets/som-rit-ourvoice-firestore.json'
+            'keyFilePath'       => $this->keyPath
         ]);
+
+    }
+
+    public function getFireStore(){
+        return $this->firestore;
     }
 
     public function doCurl($url, $data = null, $method = "GET", $username = null, $password = null) {
