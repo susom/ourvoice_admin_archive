@@ -36,8 +36,8 @@ function restGetFireStore($firestore_url, $json_payload, $access_token){
 
 function loginProject($project_id, $project_pass){
     global $gcp_project_id, $projects_data, $access_token;
-    $result = array();
-
+    $result     = array();
+    $ov_meta    = array();
     if(isset($project_id) && isset($project_pass)){
         $firestore_url  = "https://firestore.googleapis.com/v1/projects/$gcp_project_id/databases/(default)/documents/$projects_data/$project_id";
         $response       = restGetFireStore($firestore_url, null, $access_token);
@@ -50,6 +50,18 @@ function loginProject($project_id, $project_pass){
                     $result[$key] = castTypeCleaner($val);
                 }
             }
+
+            //GET ov_meta data
+            firestore_url  = "https://firestore.googleapis.com/v1/projects/$gcp_project_id/databases/(default)/documents/ov_meta/app_data";
+            $response       = restGetFireStore($firestore_url, null, $access_token);
+            $data           = json_decode($response,1);
+            $fields         = $data["fields"];
+            foreach($fields as $key => $val){
+                $ov_meta[$key] = castTypeCleaner($val);
+            }
+
+            print_r($ov_meta);
+            exit;
         }
     }
 
