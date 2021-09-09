@@ -52,20 +52,17 @@ function loginProject($project_id, $project_pass){
             }
 
             //GET ov_meta data
-            firestore_url  = "https://firestore.googleapis.com/v1/projects/$gcp_project_id/databases/(default)/documents/ov_meta/app_data";
+            $firestore_url  = "https://firestore.googleapis.com/v1/projects/$gcp_project_id/databases/(default)/documents/ov_meta/app_data";
             $response       = restGetFireStore($firestore_url, null, $access_token);
             $data           = json_decode($response,1);
             $fields         = $data["fields"];
             foreach($fields as $key => $val){
                 $ov_meta[$key] = castTypeCleaner($val);
             }
-
-            print_r($ov_meta);
-            exit;
         }
     }
 
-    return $result;
+    return array("active_project" => $result , "ov_meta" => $ov_meta);
 }
 
 function castTypeCleaner($val){
