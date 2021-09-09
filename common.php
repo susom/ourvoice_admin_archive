@@ -1602,7 +1602,9 @@ function formatUpdateWalkPhotos($photos,$transcriptions){
 
         $geoFields = array();
         foreach($temp["geotag"] as $key => $val){
-            $geoFields[$key] = array("doubleValue" => $val);
+            if($val) {
+                $geoFields[$key] = array("doubleValue" => $val);
+            }
         }
         $fields["geotag"]           = array("mapValue" => array("fields" => $geoFields));
 
