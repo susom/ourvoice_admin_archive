@@ -1606,7 +1606,7 @@ function formatUpdateWalkPhotos($photos,$transcriptions){
                 $geoFields[$key] = array("doubleValue" => $val);
             }
         }
-        $fields["geotag"]           = array("mapValue" => array("fields" => $geoFields));
+        $fields["geotag"]           = !empty($geoFields) ? array("mapValue" => array("fields" => $geoFields)) : array("arrayValue" => array("values" => array()));
 
         $audioFields = array();
         foreach($temp["audios"] as $key => $val){
@@ -1710,6 +1710,10 @@ function setWalkFireStore($old_id, $details, $firestore=null){
 
     //PUSH THE ORIGINAL WALK DATA DOCUMENT
     $response           = restPushFireStore($firestore_url, $json, $access_token);
+    if(isset($_GET["irvin"]) ){
+        print_r($response);
+        exit;
+    }
 
     // NOW PUSH A NEW DOCUMENT FOR EACH GEOTAG TO THE SUBCOLLECTION FOR THE WALK 
     $firestore_url_sub  = $firestore_url . "/geotags/";
