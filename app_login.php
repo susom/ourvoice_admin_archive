@@ -1,11 +1,15 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+header("Access-Control-Allow-Origin: *");
+
+//ini_set('display_errors', 1);
+//ini_set('display_startup_errors', 1);
+//error_reporting(E_ALL);
 
 require_once "common.php";
 require 'vendor/autoload.php';
 use Google\Cloud\Firestore\FirestoreClient;
+
+
 
 // FIRESTORE details
 $keyPath            = cfg::$FireStorekeyPath;
@@ -100,5 +104,6 @@ if(isset($_POST["proj_id"]) && isset($_POST["proj_pw"])){
     $proj_pw            = filter_var($_POST["proj_pw"], FILTER_SANITIZE_STRING);
     $project_snapshot   = loginProject($proj_id, $proj_pw);
 }
+
 echo json_encode($project_snapshot);
 ?>

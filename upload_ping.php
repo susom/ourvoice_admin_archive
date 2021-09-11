@@ -1,4 +1,6 @@
-<?php     
+<?php
+header("Access-Control-Allow-Origin: *");
+
 require_once "common.php";
 require_once "inc/class.mail.php";
 
@@ -94,7 +96,7 @@ if(!empty($uploaded_walk_id)){
             if(strpos($file,".json") > 0){
                 $walks_url  = cfg::$couch_url . "/" . cfg::$couch_users_db ;
                 $payload    = file_get_contents($path);
-//                $response   = doCurl($walks_url, $payload, 'POST');
+                $response   = doCurl($walks_url, $payload, 'POST');
 
                 // STORE WALK DATA INTO FIRESTORE FORMAT
                 $old_walk_id    = str_replace(".json","",$file); 
