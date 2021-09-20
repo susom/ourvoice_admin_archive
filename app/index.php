@@ -4,34 +4,9 @@ require_once "common.php";
 //adhoc https redirect
 include("inc/https_redirect.php");
 
-//MEANING IT HAS TO MAKE A CALL TO GET THIS STUFF
-if(!isset($_SESSION["DT"])){
-	//TURN IT INTO PHP ARRAY
-    // Query for the all projects document
-    $url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-    $response 		= $ds->doCurl($url);
-	$_SESSION["DT"] = json_decode($response,1);
-}
-
 // Loop through all projects
-$ap 			= $_SESSION["DT"];
-$ALL_PROJ_DATA 	= $ap;
 $projects 	= [];
 $alerts 	= [];
-
-// AJAX HANDLER 
-if( isset($_POST["proj_idx"]) ){
-	$proj_idx  	= filter_var($_POST["proj_idx"], FILTER_SANITIZE_NUMBER_INT);
-
-	// Delete
-	if(isset($_POST["delete_project_id"])){
-
-	}else if(isset($_POST["archive"])){
-
-	}else{
-
-	}
-}
 
 //NOW LOGIN TO YOUR PROJECT
 if(isset($_POST["discpw"])){
@@ -96,48 +71,54 @@ if(!isset($_SESSION["discpw"])) {
 	?>
 	<div id = "nav">
 		<ul>
-			<li><a href = "index.php">Home</a></li>
+			<li><a href = "index.php" class="on">Home</a></li>
 			<li><a href = "project_configuration.php">Project Configuration</a></li>
-			<li><a href = "recent_activity.php">All Data</a></li>
-			<li style="float:right"><a href="index.php?clearsession=1">Refresh Project Data</a></li>
 		</ul>
 	</div>
 	<?php
-	if( isset($_GET["proj_idx"]) ){
+	if( isset($_GET["proj_id"]) ){
 		// SET UP NEW PROJECT
-		$proj_idx = filter_var($_GET["proj_idx"], FILTER_SANITIZE_NUMBER_INT);
-		$proj_ids = array_column($projs, 'project_id');
-		$p 		  = $projs[$proj_idx];
-		$pid 	  = $p["project_id"];
-		$email    = isset($p["project_email"]) ? $p["project_email"] : "";
-		$pname 	  = $p["project_name"];
-		$ppass 	  = $p["project_pass"];
-		$spass 	  = isset($p["summ_pass"]) ? $p["summ_pass"] : "";
-		$thumbs   = $p["thumbs"];
-        $texts    = isset($p["text_comments"]) ? $p["text_comments"] : true;
-        $audios   = isset($p["audio_comments"]) ? $p["audio_comments"] : false;
-        $custom_takephoto_text = isset($p["custom_takephoto_text"]) ? $p["custom_takephoto_text"] : null;
-        $expire_date 		= isset($p["expire_date"]) ? $p["expire_date"] : "";
-        $available_langs 	= $projs[100]["app_lang"];
-		$langs 	  			= $p["app_lang"];
-		$template_type      = isset($p["template_type"]) ? $p["template_type"] : "1";
-        $include_surveys    = isset($p["include_surveys"]) ? $p["include_surveys"] : false;
-        $template_instructions = "";
-		$template = false;
+		$proj_id    = filter_var($_GET["proj_id"], FILTER_SANITIZE_STRING);
+        $project    = $ds->getProject($proj_id);
+        $p          = $project->snapshot()->data();
 
-		$show_archive_btn = false;
-		if($proj_idx == 99 || $proj_idx == 100){
+		$pid 	    = $p["code"];
+		$email      = isset($p["project_email"]) ? $p["project_email"] : "";
+		$pname 	    = $p["name"];
+		$ppass 	    = $p["project_pass"];
+		$spass 	    = isset($p["summ_pass"]) ? $p["summ_pass"] : "";
+		$thumbs     = $p["thumbs"];
+        $texts      = isset($p["text_comments"]) ? $p["text_comments"] : true;
+        $audios     = isset($p["audio_comments"]) ? $p["audio_comments"] : false;
+        $custom_takephoto_text  = isset($p["custom_takephoto_text"]) ? $p["custom_takephoto_text"] : null;
+        $expire_date 		    = isset($p["expire_date"]) ? $p["expire_date"] : "";
+
+        $tpl_project            = $ds->getProject("TPLFULL");
+        $tpl_p                  = $project->snapshot()->data();
+        $available_langs 	    = $tpl_p["languages"];
+
+        $langs 	  			    = $p["languages"];
+		$template_type          = isset($p["template_type"]) ? $p["template_type"] : "1";
+        $include_surveys        = isset($p["include_surveys"]) ? $p["include_surveys"] : false;
+        $template_instructions  = "";
+		$template               = false;
+
+		$show_archive_btn       = false;
+		if($proj_id == "TPLFULL" || $proj_id == "TPLSHORT"){
 			$template = true;
+            $new_edit = "new_project";
 			$template_instructions = "<strong class='tpl_instructions'>*Input a new Project ID & Name to create a new project</strong>";
 		}else{
 			$show_archive_btn = true;
+            $new_edit = "edit_project";
 			$archive_class = isset($p["archived"]) && $p["archived"] ?  "archived" : "active";
 		}
 		?>
-		<form id="project_config" method="post" class='<?php echo $template ? "template" : ""?>'>
+		<form id="project_config" action="ajaxHandler.php" method="post" class='<?php echo $template ? "template" : ""?>'>
 			<fieldset class="app_meta">
 				<legend>Project Meta</legend>
-				<input type="hidden" name="proj_idx" value="<?php echo $proj_idx; ?>"/>
+                <input type="hidden" name="action" value="<?=$new_edit?>"/>
+				<input type="hidden" name="proj_id" value="<?php echo $proj_id; ?>"/>
 				<label><span>Admin Email</span><input type="text" name="project_email" value="<?php echo !$template ? $email : ""; ?>"/></label>
 				<label><span>Project Id</span><input <?php echo $template ? "" : "readonly"; ?>  type="text" name="project_id" value="<?php echo !$template ? $pid : ""; ?>"/><?php echo $template_instructions ?></label>
 				<label><span>Project Name</span><input  type="text" name="project_name" value="<?php echo !$template ? $pname : ""; ?>"/></label>
@@ -195,6 +176,10 @@ if(!isset($_SESSION["discpw"])) {
 					}
 					?>
 				</label>
+
+                <?php
+                if(!$template){
+                ?>
 				<label>
 					<b>+ Add Language</b> 
 				<?php 
@@ -205,6 +190,9 @@ if(!isset($_SESSION["discpw"])) {
 					echo "</select>";
 				?>
 				</label>
+                <?php
+                }
+                ?>
 
 
 				<a href="#" id="delete_project">Delete This Project</a>
@@ -220,62 +208,20 @@ if(!isset($_SESSION["discpw"])) {
 		</form>
 		<?php
 	}else{
-		$turl  	= cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
-		$tm 	= $ds->urlToJson($turl); //Just for times + project abv
-		$stor 	= $listid = array();
-		$stor 	= parseTime($tm, $stor, $listid);
-
-		
-
-
-		print_rr($stor);
-		if(is_array($stor)){
-            foreach ($stor as $key => $value){
-                array_push($listid, $key);
-            }
-        }
+	    $recent_days = 14;
 		?>
 		<form id="project_config" method="get">
-				    <div id = "folderspace">
-				      	<?php
-				      		if(isset($ALL_PROJ_DATA["folders"])) {
-                                foreach ($ALL_PROJ_DATA["folders"] as $key => $value) { //populate folders inside working
-                                    $counter = 0;
-                                    echo "<div class = 'folder_entry'>";
-                                    echo "<div class ='ui-widget-drop'><p>" . $value . " </p></div>";
-                                    echo "<div class ='hiddenFolders' id ='" . $value . "'>";
-                                    foreach ($ALL_PROJ_DATA["project_list"] as $k => $v) {
-                                        if (isset($v["dropTag"]) && $v["dropTag"] == $value) {
-                                            $counter++;
-                                            echo '<div class="foldercontents drag-from-folder" data-key = "' . $k . '" ><p><a href="index.php?proj_idx=' . $k . '"' . '>' . $v["project_id"] . '</a></p></div>';
-                                        }
-                                    }
-                                    $pCount[$value] = $counter;
-                                    echo "</div>"; //hiddenfolders
-                                    echo "</div>"; //individual_sector
-                                }
-                            }
-				      	?>    
-				    </div>
 			<table id = "rec-table">
 				<tr>
-					<td ><h3>Recent Activity</h3></td>
+					<td ><h3>Recent Activity (last <?=$recent_days?> days)</h3></td>
 				</tr>
 				<tr>
 					<th onclick="sortTable(0)" class = "tablehead" >Project ID -<em> (Click to sort)</em></th>
 					<th onclick="sortTable(1)" class = "tablehead">Last Updated</th>
 				</tr>
-				<?php 
-					$turl  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts"; 
-					$tm = $ds->urlToJson($turl);
-					$stor = $listid = array();
-					$stor = parseTime($tm,$stor);
-                    if(is_array($stor)) {
-                        foreach ($stor as $key => $value) {
-                            array_push($listid, $key);
-                        }
-                    }
-					populateRecent($ALL_PROJ_DATA,$stor,$listid);
+				<?php
+                    $recent_walks = $ds->getRecentWalkActivity($recent_days);
+					populateRecent($recent_walks);
 				?>	
 			</table>
 		</form>
@@ -344,7 +290,6 @@ function sortTable(n){
 		}
 }
 $(document).ready(function(){
-	pdata = <?php echo json_encode($ALL_PROJ_DATA);?>;
 	if($("#folderspace").length){
 		sortTable(1);
 		sortTable(1); //default to Last updated Time
@@ -523,7 +468,6 @@ $(document).ready(function(){
     })  
     $( ".ui-widget-drop" ).droppable({
       drop: function( event, ui ) {
-        //var pdata = <?php echo json_encode($ALL_PROJ_DATA);?>;
         var dropBox_name = $.trim(this.innerText);
         var dragBox_name = $.trim(ui.draggable[0].innerText);
         var key = $(ui.draggable[0]).data("key");
@@ -760,8 +704,7 @@ $(document).ready(function(){
 	#rec-table {
 		border-collapse: collapse;
 		position:relative;
-		width:49%;
-		float:right;
+		width:100%;
 		margin:0 0;
 		top:0;
 	}

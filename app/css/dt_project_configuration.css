@@ -33,8 +33,11 @@
 .entry{
 	background-color: #efefef;
 	margin:0 0 10px;
-	padding:1px;
-
+	padding:5px 8px;
+	min-height:64px;
+	box-shadow: 1px 1px 2px 0px #333;
+	border-radius:3px;
+	font-size:15px;
  	-webkit-column-break-inside: avoid;
            page-break-inside: avoid;
                 break-inside: avoid;

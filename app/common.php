@@ -479,36 +479,16 @@ function printPhotos($photo, $_id, $n, $old=null, $txns=null){
     return $codeblock;
 }
 
-function populateRecent($ALL_PROJ_DATA, $stor, $listid){ //stor should be 
-    $checkWeek = strtotime("-4 Week");
-    $abvStorage = array();
-    $cache_data = array();
-    if(!is_array($stor)){
-        return;
+function populateRecent($walk_times){
+    global $ds;
+    foreach($walk_times as $proj_id =>  $walk_time){
+        $full_name = $ds->getFullProjectName($proj_id);
+        echo '<tr>';
+        echo '<th style = "font-weight: normal">'. "<strong>(".$proj_id. ")</strong> " .
+            '<a class="gotosumm" data-pid="'.$proj_id.'" href="summary.php?id='.$proj_id.'"'.'>'.$full_name .'</a></th>';
+        echo '<th style = "font-weight: normal">'.gmdate("Y-m-d", $walk_time/1000).'</th>';
+        echo '</tr>';
     }
-    for($i = 0 ; $i < count($stor) ; $i++){
-        $iter = 0;
-        rsort($stor[$listid[$i]]); //sort each element's timestamps
-                $ful = getFullName($ALL_PROJ_DATA,$listid[$i]);
-
-    
-        while(!empty($stor[$listid[$i]][$iter]) && $iter < 1) //display only the most recent update per proj 
-        {
-            if(($stor[$listid[$i]][$iter]/1000) > $checkWeek){
-                echo '<tr>';
-                echo '<th style = "font-weight: normal">'. "<strong>(".$listid[$i]. ")</strong> " . 
-                '<a class="gotosumm" data-pid="'.$listid[$i].'" href="summary.php?id='.$listid[$i].'"'.'>'.$ful .'</a></th>';
-                echo '<th style = "font-weight: normal">'.gmdate("Y-m-d", $stor[$listid[$i]][0]/1000).'</th>';
-                echo '</tr>';
-            }
-            $cache_data[$listid[$i]] = array();
-            $cache_data[$listid[$i]]["full"] = $ful;
-            $cache_data[$listid[$i]]["rec_date"] = $stor[$listid[$i]][0]/1000;
-            $iter++;
-        }
-        
-    }//for
-    $_SESSION["rec_times"] = $cache_data;
 }
 
 function printAllDataThumbs($photo_block ,$container_w=1200 ,$perchunk=16){

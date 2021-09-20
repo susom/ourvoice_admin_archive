@@ -327,9 +327,12 @@ input[readonly]{
 	text-decoration: none;
 }
 
+#nav li a.on,
 #nav li a:hover{
 	background-color: #111;
 }
+
+
 
 #nav li input{
 	position: relative;

@@ -230,6 +230,37 @@ class Datastore {
         return $ap;
     }
 
+    public function getActiveProjectsMeta(){
+        $ap = null;
+
+        //if firestore is working use that
+        if($this->firestore){
+            $all_proj   = $this->firestore->collection(self::firestore_projects);
+            $documents  = $all_proj->documents();
+            $temp       = array();
+            foreach ($documents as $document) {
+                if ($document->exists()) {
+                    $data = $document->data();
+
+                    if(array_key_exists("archived", $data) && $data["archived"]){
+                        continue;
+                    }
+
+                    if(!empty($data["expire_date"]) && strtotime($data["expire_date"]) < time()){
+                        continue;
+                    }
+                    array_push($temp, $document->data());
+                }
+            }
+
+            if(!empty($temp)){
+                $ap = $temp;
+            }
+        }
+
+        return $ap;
+    }
+
     public function getProject($project_code){
         $result = null;
 
@@ -822,8 +853,84 @@ class Datastore {
         return json_decode($response,1);
     }
 
+    public function getRecentWalkActivity($days=30){
+        $result = array();
 
+        if($this->firestore){
+            $nowtime        = time()*1000;
+            $nowtime_minus  = $nowtime - ($days*86400000);
 
+            $ov_walks       = $this->firestore->collection(self::firestore_walks);
+            $query          = $ov_walks
+                ->where('timestamp', '>', $nowtime_minus)
+                ->where('timestamp', '<=', $nowtime);
+
+            $snapshot       = $query->documents();
+            foreach ($snapshot as $document) {
+                $_id        = $document->id();
+                $walk_data  = $document->data();
+
+                $ts         = $walk_data["timestamp"];
+                $proj_id    = $walk_data["project_id"];
+
+                if(array_key_exists("_deleted",$walk_data)){
+                    continue;
+                }
+
+                if(!array_key_exists($proj_id, $result)){
+                    $result[$proj_id]   = $ts;
+                }
+
+                if($result[$proj_id] < $ts){
+                    $result[$proj_id] = $ts;
+                }
+            }
+            arsort($result);
+        }
+
+        return $result;
+    }
+
+    public function getFullProjectName($project_id){
+        $result = null;
+
+        if($this->firestore){
+            $ov_projects    = $this->firestore->collection(self::firestore_projects);
+            $project        = $ov_projects->document($project_id);
+            $snap           = $project->snapshot();
+
+            $data           = $snap->data();
+            if($data){
+                $result     = $data["name"];
+            }else{
+                $result     = $project_id;
+            }
+        }
+
+        return $result;
+    }
+
+    public function putProject($payload){
+
+        print_rr($payload);
+        exit;
+        $result = null;
+
+        if($this->firestore){
+            $ov_projects    = $this->firestore->collection(self::firestore_projects);
+            $project        = $ov_projects->document($project_id);
+            $snap           = $project->snapshot();
+
+            $data           = $snap->data();
+            if($data){
+                $result     = $data["name"];
+            }else{
+                $result     = $project_id;
+            }
+        }
+
+        return $result;
+    }
 
     // GOOGLE FIRESTORE AND CLOUD STORAGE 
     /**

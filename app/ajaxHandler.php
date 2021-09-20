@@ -4,11 +4,11 @@ require_once "common.php";
 $action = filter_var($_POST["action"], FILTER_SANITIZE_STRING);
 if(!empty($_POST["action"])){
     // POSSIBLE POST VARS COMING IN
-    $_id        = !empty($_POST["doc_id"])  ? filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING) : null;
-    $url        = !empty($_POST["url"])     ? filter_var($_POST["url"], FILTER_SANITIZE_ENCODED) :null;
-    $lang       = !empty($_POST["lang"])    ? filter_var($_POST["lang"], FILTER_SANITIZE_STRING) :null;
-    $photo_i    = isset($_POST["photo_i"]) ? filter_var($_POST["photo_i"], FILTER_SANITIZE_NUMBER_INT) : null;
-    $filename   = isset($_POST["_filename"]) ? filter_var($_POST["_filename"], FILTER_SANITIZE_STRING) : null;
+    $_id        = !empty($_POST["doc_id"])      ? filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING) : null;
+    $url        = !empty($_POST["url"])         ? filter_var($_POST["url"], FILTER_SANITIZE_ENCODED) :null;
+    $lang       = !empty($_POST["lang"])        ? filter_var($_POST["lang"], FILTER_SANITIZE_STRING) :null;
+    $photo_i    = isset($_POST["photo_i"])      ? filter_var($_POST["photo_i"], FILTER_SANITIZE_NUMBER_INT) : null;
+    $filename   = isset($_POST["_filename"])    ? filter_var($_POST["_filename"], FILTER_SANITIZE_STRING) : null;
 
     // GET WALK DATA
     if($_id){
@@ -381,28 +381,12 @@ if(!empty($_POST["action"])){
         case "edit_project":
         case "new_project":
             // REDIRECT IF NO OTHER ACTION
-            $redi 		= false;
-            if( $projects[$proj_idx] !==  filter_var($_POST["project_id"], FILTER_SANITIZE_STRING)){
-                //MEANS THIS IS A NEW PROJECT
-                //NEED A NEW PROJECT ID!
-                $temp 		= array_keys($projects);
-                $last_key 	= array_pop($temp);
-                $last_key++;
-                while($last_key > 98 && $last_key < 101){
-                    $last_key++;
-                }
-                $proj_idx 	= $last_key;
-                $redi 		= true;
-            }
+            $redi = true;
 
             //GOT ALL THE DATA IN A STRUCTURE, NOW JUST MASSAGE IT INTO RIGHT FORMAT THEN SUBMIT IT
             $app_lang = array();
             foreach($_POST["lang_code"] as $ldx => $code){
                 array_push($app_lang, array("lang" => $code , "language" => $_POST["lang_full"][$ldx]));
-            }
-
-            if(isset($_POST["thumbs"]) && is_array($_POST["thumbs"])){
-                $_POST["thumbs"] = $_POST["thumbs"][1];
             }
 
             $expire_date = null;
@@ -413,54 +397,34 @@ if(!empty($_POST["action"])){
 
             $updated_project = array(
                 "project_id" 		=> strtoupper(filter_var($_POST["project_id"], FILTER_SANITIZE_STRING))
-            ,"project_name" 	=> filter_var($_POST["project_name"], FILTER_SANITIZE_STRING)
-            ,"project_pass" 	=> filter_var($_POST["project_pass"], FILTER_SANITIZE_STRING)
-            ,"summ_pass" 		=> filter_var($_POST["summ_pass"], FILTER_SANITIZE_STRING)
-            ,"project_email" 	=> filter_var($_POST["project_email"], FILTER_SANITIZE_STRING)
-            ,"template_type"	=> filter_var($_POST["template_type"], FILTER_SANITIZE_NUMBER_INT)
-            ,"text_comments"    => filter_var($_POST["text_comments"], FILTER_SANITIZE_NUMBER_INT)
-            ,"audio_comments"  	=> filter_var($_POST["audio_comments"], FILTER_SANITIZE_NUMBER_INT)
-            ,"custom_takephoto_text"  => filter_var($_POST["custom_takephoto_text"], FILTER_SANITIZE_STRING)
-
+                ,"project_name" 	=> filter_var($_POST["project_name"], FILTER_SANITIZE_STRING)
+                ,"project_pass" 	=> filter_var($_POST["project_pass"], FILTER_SANITIZE_STRING)
+                ,"summ_pass" 		=> filter_var($_POST["summ_pass"], FILTER_SANITIZE_STRING)
+                ,"project_email" 	=> filter_var($_POST["project_email"], FILTER_SANITIZE_STRING)
+                ,"template_type"	=> filter_var($_POST["template_type"], FILTER_SANITIZE_NUMBER_INT)
+                ,"text_comments"    => filter_var($_POST["text_comments"], FILTER_SANITIZE_NUMBER_INT)
+                ,"audio_comments"  	=> filter_var($_POST["audio_comments"], FILTER_SANITIZE_NUMBER_INT)
+                ,"custom_takephoto_text"  => filter_var($_POST["custom_takephoto_text"], FILTER_SANITIZE_STRING)
 
                 // ,"include_surveys"  => $_POST["include_surveys"]
-            ,"expire_date"  	=> $expire_date
-            ,"thumbs"			=> isset($_POST["thumbs"]) ? filter_var($_POST["thumbs"], FILTER_SANITIZE_NUMBER_INT) : 0
-            ,"app_lang" 		=> $app_lang
+                ,"expire_date"  	=> $expire_date
+                ,"thumbs"			=> isset($_POST["thumbs"]) ? filter_var($_POST["thumbs"], FILTER_SANITIZE_NUMBER_INT) : 0
+                ,"app_lang" 		=> $app_lang
             );
 
-            $pidx 			= $proj_idx;
+            $pidx = $_POST["project_id"];
 
-            // due to unfreshness of SESSION multiple people saving and shit, we need to pull fresh version before pushing back up
-            $url 			= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-            $response 		= $ds->doCurl($url);
-            $payload = $_SESSION["DT"] = json_decode($response,1);
+            $ds->putProject($updated_project);
 
-            // since originally setting up the configurator, these new properties were added so
-            // need to make sure they are included in an update.
-            if(array_key_exists("tags",$payload["project_list"][$pidx])){
-                $updated_project["tags"] = $payload["project_list"][$pidx]["tags"];
-            }
-            if(array_key_exists("dropTag",$payload["project_list"][$pidx])){
-                $updated_project["dropTag"] = $payload["project_list"][$pidx]["dropTag"];
-            }
-            $payload["project_list"][$pidx] = $updated_project;
-
-            $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-            $response 	= $ds->doCurl($url, json_encode($payload), 'PUT');
-            $resp 		= json_decode($response,1);
+            exit;
             if(isset($resp["rev"])){
-                $payload["_rev"] = $resp["rev"];
-                $ap = $_SESSION["DT"] = $payload;
-
                 if($redi){
-                    header("location:index.php?proj_idx=$pidx");
+                    header("location:index.php?proj_id=$pidx");
                 }
             }else{
                 echo "something went wrong:";
-                print_rr($resp);
-                print_rr($payload);
             }
+            exit;
         break;
 
         case "archive":

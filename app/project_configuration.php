@@ -3,7 +3,6 @@ require_once("common.php");
 
 //adhoc https redirect
 include("inc/https_redirect.php");
-
 include("inc/check_login.php");
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -19,56 +18,53 @@ include("inc/check_login.php");
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 		<link rel = "stylesheet" type = "text/css" href = "css/dt_project_configuration.css">
 		<script src="js/common.js"></script>
+        <style>
+            .open_link{
+                display: inline-block;
+                background:url(img/icon_open_link.png) no-repeat;
+                width: 20px;
+                height: 20px;
+                margin-left: 5px;
+                vertical-align: bottom;
+                background-size:contain;
+            }
+
+            #main {
+                padding:20px;
+            }
+        </style>
 	</head>
 	<div id = "nav">
 		<ul>
 			<li><a href = "index.php">Home</a></li>
-			<li><a href = "project_configuration.php">Project Configuration</a></li>
-			<li><a href = "recent_activity.php">All Data</a></li>
-			<li style="float:right"><a href="index.php?clearsession=1">Refresh Project Data</a></li>
-			<li style="float:right"><img id = "magnifying_glass" src = "img/Magnifying_glass_icon.svg"></li>
-			<li style="float:right"><input type = "text" id = "search" placeholder="TAG"></li>
-			<li style="float:right"><a href = "">Search: </a></li>
+			<li><a href = "project_configuration.php" class="on">Project Configuration</a></li>
 		</ul>
 	</div>
+
 	<div id = "main">
 		<p><strong><em>* To Configure a New Project: Choose a template below and add a ProjectID and Name!</em></strong></p>
-			<a href="index.php?proj_idx=100" class="tpl btn btn-success" data-tpl="100">Create new Project from Template</a>
+			<a href="index.php?proj_id=TPLFULL" class="tpl btn btn-success">Create new Project from Template</a>
 		<p><strong><em>* To Make Changes to an Existing Project: Click on a project Below</em></strong></p>
-	</div>
-<style>
-	.open_link{
-		display: inline-block;
-	    background:url(img/icon_open_link.png) no-repeat;
-	    width: 20px;
-	    height: 20px;
-	    margin-left: 10px;
-	    vertical-align: text-top;
-	    background-size:contain;
-	}
-</style>
-<div id = "proj">
-<?php 
-	if(isset($_SESSION["DT"])){
-		$ALL_PROJ_DATA = $_SESSION["DT"];
-		$sort = array();
-		foreach ($ALL_PROJ_DATA["project_list"] as $key=>$projects){
-			if(!isset($projects["project_name"])){
-				continue;
-			}
-			$sort[$projects["project_name"]] = array("key" => $key, "project_id" => $projects["project_id"]);  
-		}
-	    ksort($sort);
-	}
-	foreach($sort as $name => $p){
-			if(strpos($name,"Template") > -1){
-				continue;
-			}
-			echo '<div class="entry" data-key = "'.$p["key"].'" ><p><a href="index.php?proj_idx='.$p["key"].'"'.'>'.$name. ' [' . $p["project_id"] . ']</a> <a href="summary.php?id='.$p["project_id"].'" class="open_link" target="blanket"></a></p></div>';
-	}
-?>
 
-</div>
+        <br>
+
+        <div id = "proj">
+        <?php
+            $ALL_PROJ_DATA  = $ds->getActiveProjectsMeta();
+            $sort           = array();
+            foreach ($ALL_PROJ_DATA as $key=> $project){
+                $sort[$project["code"]] = array("key" => $key, "project_id" => $project["name"]);
+            }
+            ksort($sort);
+            foreach($sort as $name => $p){
+                if(strpos($name,"Template") > -1){
+                    continue;
+                }
+                echo '<div class="entry" data-key = "'.$p["key"].'" ><p><a href="index.php?proj_idx='.$p["key"].'"'.'>'.$name. ' [' . $p["project_id"] . ']</a> <a href="summary.php?id='.$p["project_id"].'" class="open_link" target="blanket"></a></p></div>';
+            }
+        ?>
+        </div>
+    </div>
 <script>
 	$(document).ready(function(){
 		pdata = <?php echo json_encode($ALL_PROJ_DATA);?>;
