@@ -396,7 +396,7 @@ if(!empty($_POST["action"])){
             }
 
             $updated_project = array(
-                "project_id" 		=> strtoupper(filter_var($_POST["project_id"], FILTER_SANITIZE_STRING))
+                 "project_id" 		=> strtoupper(filter_var($_POST["project_id"], FILTER_SANITIZE_STRING))
                 ,"project_name" 	=> filter_var($_POST["project_name"], FILTER_SANITIZE_STRING)
                 ,"project_pass" 	=> filter_var($_POST["project_pass"], FILTER_SANITIZE_STRING)
                 ,"summ_pass" 		=> filter_var($_POST["summ_pass"], FILTER_SANITIZE_STRING)
@@ -412,12 +412,10 @@ if(!empty($_POST["action"])){
                 ,"app_lang" 		=> $app_lang
             );
 
-            $pidx = $_POST["project_id"];
+            $pidx   = $_POST["project_id"];
+            $result = $ds->putProject($updated_project);
 
-            $ds->putProject($updated_project);
-
-            exit;
-            if(isset($resp["rev"])){
+            if($result){
                 if($redi){
                     header("location:index.php?proj_id=$pidx");
                 }

@@ -910,22 +910,60 @@ class Datastore {
         return $result;
     }
 
-    public function putProject($payload){
-
-        print_rr($payload);
-        exit;
-        $result = null;
+    public function putProject($project){
+        $result     = null;
 
         if($this->firestore){
-            $ov_projects    = $this->firestore->collection(self::firestore_projects);
-            $project        = $ov_projects->document($project_id);
-            $snap           = $project->snapshot();
+            $temp   = $project;
+            if(!array_key_exists("project_id", $project)){
+                return $result;
+            }
 
-            $data           = $snap->data();
-            if($data){
-                $result     = $data["name"];
+            $code           = $project["project_id"];
+            $temp["code"]   = $code;
+            if(!array_key_exists("project_name", $project)){
+                $temp["name"] = $code;
             }else{
-                $result     = $project_id;
+                $temp["name"] = $project["project_name"];
+            }
+
+
+            if(!empty($project["app_lang"])){
+                $temp["languages"]  = $project["app_lang"];
+            }else{
+                $temp["languages"]  = array(array("lang"=>"en", "language"=>"English"));
+            }
+
+            if(!array_key_exists("project_email", $project)){
+                $temp["project_email"] = "banchoff@stanford.edu";
+            }
+            if(!array_key_exists("audio_comments", $temp)){
+                $temp["audio_comments"] = "0";
+            }
+            if(!array_key_exists("text_comments", $temp)){
+                $temp["text_comments"] = "1";
+            }
+            if(!array_key_exists("custom_takephoto_text", $temp)){
+                $temp["custom_takephoto_text"] = "";
+            }
+            if(!array_key_exists("thumbs", $temp)){
+                $temp["thumbs"] = "0";
+            }
+            if(!array_key_exists("expire_date", $temp)){
+                $temp["expire_date"] = "";
+            }
+
+            unset($temp["project_id"]);
+            unset($temp["project_name"]);
+            unset($temp["app_lang"]);
+
+            try {
+                // CREATE THE PARENT DOC
+                $ov_projects    = $this->firestore->collection(self::firestore_projects);
+                $tempDoc        = $ov_projects->document($code);
+                $result         = $tempDoc->set($temp);
+            } catch (exception $e) {
+                echo "bad opperation";
             }
         }
 

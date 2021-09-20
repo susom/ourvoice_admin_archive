@@ -94,7 +94,7 @@ if(!isset($_SESSION["discpw"])) {
         $expire_date 		    = isset($p["expire_date"]) ? $p["expire_date"] : "";
 
         $tpl_project            = $ds->getProject("TPLFULL");
-        $tpl_p                  = $project->snapshot()->data();
+        $tpl_p                  = $tpl_project->snapshot()->data();
         $available_langs 	    = $tpl_p["languages"];
 
         $langs 	  			    = $p["languages"];
