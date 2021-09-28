@@ -175,7 +175,7 @@ if( isset($_POST["delete_mp3"]) ){
 }
 //ajax response to pixelation via portal tool
 if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordinates'])){
-	$face_coord 	= json_decode(filter_var($_POST["coordinates"], FILTER_SANITIZE_STRING),1);
+	$face_coord 	= json_decode($_POST["coordinates"],1);
 	$_id 			= filter_var($_POST["pic_id"], FILTER_SANITIZE_STRING);
 	$photo_num 		= filter_var($_POST["photo_num"], FILTER_SANITIZE_NUMBER_INT);
 	$rotationOffset = filter_var($_POST["rotation"], FILTER_SANITIZE_NUMBER_INT);

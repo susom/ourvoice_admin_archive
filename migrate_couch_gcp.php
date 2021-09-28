@@ -12,7 +12,7 @@ $keyPath            = cfg::$FireStorekeyPath;
 $firestore_scope    = cfg::$firestore_scope;
 $access_token       = getGCPRestToken($keyPath, $firestore_scope);
 
-$action = "sync_walk_data";
+$action = "sync_project_lists";
 
 switch($action){
     case "sync_walk_attachments":
