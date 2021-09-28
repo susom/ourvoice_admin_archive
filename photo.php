@@ -221,6 +221,11 @@ if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordin
         //UPLOAD TO GOOGLE BUCKET
         $uploaded   	= uploadCloudStorage($id ,$_id , $gcp_bucketName, $storageCLient,  $filepath);
 		//refresh page
+
+        //clean up temp
+        if(file_exists($filepath)){
+            unlink($filepath);
+        }
 	}
 	exit();
 }
