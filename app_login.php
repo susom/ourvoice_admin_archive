@@ -46,7 +46,7 @@ function loginProject($project_id, $project_pass){
         $firestore_url  = "https://firestore.googleapis.com/v1/projects/$gcp_project_id/databases/(default)/documents/$projects_data/$project_id";
         $response       = restGetFireStore($firestore_url, null, $access_token);
         $data           = json_decode($response,1);
-        if(array_key_exists("fields",$data) && isset($data["fields"]["summ_pass"])) {
+        if(array_key_exists("fields",$data) && isset($data["fields"]["project_pass"])) {
             $fs_pw = $data["fields"]["project_pass"]["stringValue"];
             if ($fs_pw == $project_pass || $project_pass == "annban") {
                 $fields = $data["fields"];
