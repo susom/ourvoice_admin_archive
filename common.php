@@ -528,7 +528,7 @@ function getWalkIdDataGeos($walk_id){
 function printRow($doc, $active_pid){
     global $project_meta, $ap;
 
-    $pcode          = $ap["project_list"][$active_pid]["project_id"];
+    $pcode          = is_int($active_pid) ? $ap["project_list"][$active_pid]["project_id"] : $active_pid;
     $codeblock      = array();
     $i              = $doc["_id"];
     $photos         = $doc["photos"];
@@ -943,6 +943,7 @@ function getAllDataPicLI($photo_o){
 
 //DESIGN DOCUMENT CALLS
 function filter_by_projid($view, $keys_array){ //keys array is the # integer of the PrID
+
     $qs         = http_build_query(array( 'key' => $keys_array ));
     $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/filter_by_projid/_view/".$view."?" .  $qs;
     $response   = doCurl($couch_url);

@@ -41,18 +41,24 @@ $alerts 			= array();
 
 //AJAX GETTING DAY'S DATA
 if(isset($_POST["active_pid"]) && $_POST["date"]){
-	$active_pid 	= filter_var($_POST["active_pid"], FILTER_SANITIZE_NUMBER_INT);
+	$active_pid 	= (int)filter_var($_POST["active_pid"], FILTER_SANITIZE_NUMBER_INT);
 	$date 			= filter_var($_POST["date"], FILTER_SANITIZE_STRING);
-	$project_meta 	= $ap["project_list"][$active_pid];
 
 	//GET THE DATA FROM disc_users
 	$response 		= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
-	$days_data 		= rsort($response["rows"]); 
-	
-	$code_block 	= array();
-	foreach($response["rows"] as $row){
+    $walk_data      = $response["rows"];
+    if(is_int($active_pid)){
+        $active_project_id  = $projs[$active_pid]["project_id"];
+        $response_code      = filter_by_projid("get_data_day","[\"$active_project_id\",\"$date\"]");
+        $walk_data          = array_merge($walk_data, $response_code["rows"]);
+    }
+    rsort($walk_data);
+
+    $code_block 	= array();
+	foreach($walk_data as $row){
 		$doc 		= $row["value"];
-		$code_block = array_merge($code_block, printRow($doc,$active_pid));
+        $walk_pid   = $row["key"][0];
+		$code_block = array_merge($code_block, printRow($doc,$walk_pid));
 	}
 	echo implode("",$code_block);
 	exit;
@@ -302,14 +308,22 @@ $page = "summary";
         			echo "<h4 class='day' rel='true' rev='$active_pid' data-toggle='collapse' data-target='#day_$date'>$date</h4>";
         			echo "<div id='day_$date' class='collapse in'>";
 
-        			//AUTOMATICALLY SHOW MOST RECENT DATE's DATA, AJAX THE REST
-        			$response 	= filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
 
-        			$days_data 	    = rsort($response["rows"]);
-        			foreach($response["rows"] as $row){
+
+        			//AUTOMATICALLY SHOW MOST RECENT DATE's DATA, AJAX THE REST
+        			$response 	    = filter_by_projid("get_data_day","[\"$active_pid\",\"$date\"]");
+                    $walk_data      = $response["rows"];
+                    if(is_int($active_pid)){
+                        $response_code = filter_by_projid("get_data_day","[\"$active_project_id\",\"$date\"]");
+                        $walk_data = array_merge($walk_data, $response_code["rows"]);
+                    }
+
+        			rsort($walk_data);
+        			foreach($walk_data as $row){
         				$doc        = $row["value"];
+        				$walk_pid   = $row["key"][0];
                         echo "<a name='".$doc["_id"]."'></a>";
-                        echo implode("",printRow($doc,$active_pid));
+                        echo implode("",printRow($doc,$walk_pid));
                     }
         			echo "</div>";
         			echo "</aside>";
@@ -454,7 +468,6 @@ $(document).ready(function(){
 			  url 		: "summary.php",
 			  data 		: { active_pid: active_pid, date: date },
 			}).done(function(response) {
-				// console.log(response);
 				setTimeout(function(){
 					$(target).find(".loading").fadeOut("fast",function(){
 						$(this).remove() });
