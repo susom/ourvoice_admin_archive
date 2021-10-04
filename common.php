@@ -1516,8 +1516,19 @@ function scanForBackUpFiles($backedup, $backup_dir){
  *
  * @return Psr\Http\Message\StreamInterface
  */
+function url_get_contents ($Url) {
+    if (!function_exists('curl_init')){
+        die('CURL is not installed!');
+    }
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $Url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $output = curl_exec($ch);
+    curl_close($ch);
+    return $output;
+}
 function upload_object($storageClient, $bucketName, $objectName, $source) {
-    if($file = file_get_contents($source)){
+    if($file = url_get_contents($source)){
         $bucket     = $storageClient->bucket($bucketName);
         $object     = $bucket->upload($file, [
             'name' => $objectName

@@ -1,7 +1,7 @@
 <?php
 require_once("common.php");
 
-
+header("Access-Control-Allow-Origin: *");
 
 
 

@@ -7,29 +7,130 @@ require("common.php");
 require("vendor/autoload.php");
 require("_datastore.php");
 
+use Google\Cloud\Storage\StorageClient;
+
 $ds                 = new Datastore();
 $keyPath            = cfg::$FireStorekeyPath;
 $firestore_scope    = cfg::$firestore_scope;
 $access_token       = getGCPRestToken($keyPath, $firestore_scope);
 
-$action = "sync_project_lists";
+$action             = "sync_walk_attachments";
+
+function getLastXWeeksActivty($xweeks="-4 Week"){
+    $turl   = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts";
+    $tm     = urlToJson($turl);
+    $stor   = $listid = array();
+    $stor   = parseTime($tm,$stor);
+    $listid = array();
+    foreach ($stor as $key => $value){
+        array_push($listid, $key);
+    }
+
+    $checkWeek      = strtotime($xweeks);
+    $project_list   = array();
+    for($i = 0 ; $i < count($stor) ; $i++){
+        $iter = 0;
+        rsort($stor[$listid[$i]]); //sort each element's timestamps
+        while(!empty($stor[$listid[$i]][$iter]) && $iter < 1) //display only the most recent update per proj
+        {
+            if(($stor[$listid[$i]][$iter]/1000) > $checkWeek){
+                array_push($project_list, array("project_id" => $listid[$i]));
+            }
+            $iter++;
+        }
+    }
+
+    return $project_list;
+}
 
 switch($action){
     case "sync_walk_attachments":
 
+
+        $gcp_bucketName     = cfg::$gcp_bucketName;
+        $keyPath            = cfg::$FireStorekeyPath;
+        $gcp_bucketID       = cfg::$gcp_bucketID;
+
+        $project_list       = getLastXWeeksActivty();
+
+        $storageCLient      = new StorageClient([
+            'keyFilePath'   => $keyPath,
+            'projectId'     => $gcp_bucketID
+        ]);
+
+        $attach_url         = cfg::$couch_url . "/" . cfg::$couch_attach_db;
+
+        foreach($project_list as $project){
+            if(!array_key_exists("project_id", $project)){
+                continue;
+            }
+
+            $code           = $project["project_id"];
+            $startkey       = $endkey = $code;
+
+            $couch_url 		= cfg::$couch_url . "/" . cfg::$couch_users_db . "/_all_docs?startkey=%22$startkey%22&endkey=%22$endkey%EF%BF%B0%22" . "&include_docs=true&inclusive_end=false";
+            $response 		= doCurl($couch_url);
+            $all_docs       = json_decode($response, 1);
+
+            foreach($all_docs["rows"] as $walk){
+                $couch_url  = "https://".cfg::$couch_user.":".cfg::$couch_pw."@ourvoice-cdb.med.stanford.edu";
+                $doc        = $walk["doc"];
+                $walk_id    = $doc["_id"];
+                if(empty($doc["photos"]) || array_key_exists("_attachments", $doc)){
+                    continue;
+                }
+
+
+                $photos = $doc["photos"];
+                foreach($photos as $photo){
+                    $has_audio  = $photo["audio"];
+                    $audios     = $photo["audios"];
+                    $ph_name    = $photo["name"];
+
+                    $file       = $walk_id. "_" . $ph_name ;
+                    $attach_id  = $couch_url . "/".cfg::$couch_attach_db."/" . $file ;
+
+                    $get_head   = get_head($attach_id);
+                    $check_ETag = !empty($get_head) ? current($get_head) : array();
+
+                    if(!empty($check_ETag)){
+                        $uploaded   = uploadCloudStorage($file ,$walk_id , $gcp_bucketName, $storageCLient, $attach_id."/".$ph_name);
+                        echo $attach_id."\r\n";
+                    }
+
+                    if($has_audio){
+                        foreach($audios as $audio){
+                            $file       = $walk_id. "_" . $audio ;
+                            $attach_id  = $couch_url . "/".cfg::$couch_attach_db."/" . $file ;
+
+                            $get_head   = get_head($attach_id);
+                            $check_ETag = !empty($get_head) ? current($get_head) : array();
+
+                            if(!empty($check_ETag)){
+                                $uploaded   = uploadCloudStorage($file ,$walk_id , $gcp_bucketName, $storageCLient, $attach_id."/".$audio);
+                                echo $attach_id."\r\n";
+                            }
+                        }
+                    }
+                }
+            }
+        }
     break;
 
     case "sync_walk_data":
+//        JUST SYNC LAST 4 WEEKS OF UPDATED DATA
+        $project_list   = getLastXWeeksActivty();
+
         /********************** COPY INTO FIRESTORE : WALK DATA FROM couch:disc_users **********************/
-        $couch_url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
-        $response 		= doCurl($couch_url);
-        $ap             = json_decode($response, 1);
-        $project_list   = $ap["project_list"];
+//        ALL DATA
+//        $couch_url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
+//        $response 		= doCurl($couch_url);
+//        $ap             = json_decode($response, 1);
+//        $project_list   = $ap["project_list"];
 
         $firestore      = $ds->getFireStore();
         $docRef         = $firestore->collection("ov_walks");
 
-        $min=false;
         foreach($project_list as $project){
             if(!array_key_exists("project_id", $project)){
                 continue;
