@@ -29,5 +29,6 @@ script:
       --platform=managed \
       --region="${CLOUD_RUN_REGION}" \
       --set-secrets="/secrets/oidc_client_config.conf=oidc_client_config:latest, /secrets2/_config.php=dev_config:latest, /secrets3/firestore_service_account.json=firestore_service_account:latest" \
-      --ingress=all
+      --ingress=all \
+      --allow-unauthenticated
     set +x
