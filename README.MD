@@ -23,6 +23,8 @@ Any commits to the travis branch will be built to configuration & deployed as a 
 
 Secrets are injected at deploy time and stored within GCloud.
 
+Ensure the OIDC Redirect URI matches the network endpoint specified in the load balancer.
+
 
 
 
