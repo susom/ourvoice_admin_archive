@@ -14,7 +14,7 @@ $keyPath            = cfg::$FireStorekeyPath;
 $firestore_scope    = cfg::$firestore_scope;
 $access_token       = getGCPRestToken($keyPath, $firestore_scope);
 
-$action             = "sync_walk_attachments";
+$action             = "sync_project_lists";
 
 function getLastXWeeksActivty($xweeks="-4 Week"){
     $turl   = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts";
