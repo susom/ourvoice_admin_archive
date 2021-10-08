@@ -418,7 +418,7 @@ function printRow($doc, $i){
 function printPhotos($photo, $_id, $n, $old=null, $txns=null){
     $codeblock  = array();
 
-    $walk_ts_sub = isset($photo["geotag"]) ? $photo["geotag"]["timestamp"] : null;
+    $walk_ts_sub = !empty($photo["geotag"]["timestamp"]) ? $photo["geotag"]["timestamp"] : null;
     $date_ts     = date("F j, Y", floor($walk_ts_sub/1000)) ;
     $host        = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : "";
     $url_path    = $host .dirname($_SERVER['PHP_SELF']); 
@@ -433,19 +433,18 @@ function printPhotos($photo, $_id, $n, $old=null, $txns=null){
     if(empty($photo["geotag"])){
         $nogeo  = "nogeo";
     }else{
-        $lat    = $photo["geotag"]["lat"];
-        $long   = $photo["geotag"]["lng"];
-
+        $lat    = isset($photo["geotag"]["latitude"]) ? $photo["geotag"]["latitude"] : $photo["geotag"]["lat"];
+        $long   = isset($photo["geotag"]["longitude"]) ? $photo["geotag"]["longitude"] : $photo["geotag"]["lng"];
     }
 
-    $timestamp  = isset($photo["geotag"]["timestamp"])  ? $photo["geotag"]["timestamp"] : null;
+    $timestamp  = !empty($photo["geotag"]["timestamp"])  ? $photo["geotag"]["timestamp"] : null;
     $txt        = array_key_exists("text_comment",$photo) ? $photo["text_comment"] : null;
 
-    $rotate     = isset($photo["rotate"]) ? $photo["rotate"] : 0;
+    $rotate     = !empty($photo["rotate"]) ? $photo["rotate"] : 0;
     $filename   = $photo["name"];
-    $ph_id      = isset($photo["geotag"]) ? $photo["geotag"]["photo_id"] : null;
+    $ph_id      = !empty($photo["geotag"]) ? $photo["geotag"]["photo_id"] : null;
 
-    $file_uri       = isset($photo["geotag"]) ? $photo["geotag"]["photo_src"] : null;
+    $file_uri       = !empty($photo["geotag"]) ? $photo["geotag"]["photo_src"] : null;
     $thumb_uri      = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
     $photo_uri      = $file_uri;
 
