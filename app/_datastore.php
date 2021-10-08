@@ -6,6 +6,7 @@ use Google\Cloud\Storage\StorageClient;
 class Datastore {
     const firestore_projects    = 'ov_projects';
     const firestore_walks       = 'ov_walks';
+    const firestore_meta        = 'ov_meta';
     const google_bucket         = 'ov_walk_files';
     private   $keyPath
             , $gcp_project_id
@@ -191,21 +192,64 @@ class Datastore {
         }
     }
 
-    public function loginProject($project_id, $project_pass){
-        $result = null;
+    public function castTypeCleaner($val){
+        if(is_array($val)){
+            if(isset($val["stringValue"])){
+                $val    = $val["stringValue"];
+            }elseif(isset($val["integerValue"])){
+                $val    = $val["integerValue"];
+            }elseif(isset($val["arrayValue"])){
+                //regular array
+                $val    = $val["arrayValue"]["values"];
+                $temp   = array();
+                foreach($val as $v){
+                    array_push($temp, castTypeCleaner($v));
+                }
+                $val = $temp;
+            }elseif(isset($val["mapValue"])) {
+                //object
+                $val = $val["mapValue"]["fields"];
+                $temp = array();
+                foreach ($val as $k => $v) {
+                    $temp[$k] = castTypeCleaner($v);
+                }
 
-        if($this->firestore){
+                $val = $temp;
+            }
+        }
+
+        return $val;
+    }
+
+    public function loginProject($project_id, $project_pass){
+        $result     = array();
+        $ov_meta    = array();
+
+        if($this->firestore && isset($project_id) && isset($project_pass)){
             $docRef     = $this->firestore->collection(self::firestore_projects)->document($project_id);
             $snapshot   = $docRef->snapshot();
             if ($snapshot->exists()) {
                 $data = $snapshot->data();
-                if($data["summ_pass"] == $project_pass || $project_pass == $this->masterpw || $project_pass == "annban"){
-                    $result = $data;
+                if(array_key_exists("project_pass",$data) && isset($data["project_pass"])) {
+                    $fs_pw = $data["project_pass"];
+                    if ($fs_pw == $project_pass || $project_pass == "annban") {
+                        foreach($data as $key => $val){
+                            $result[$key] = $val;
+                        }
+                    }
+
+                    //GET ov_meta data
+                    $docRef     = $this->firestore->collection(self::firestore_meta)->document("app_data");
+                    $snapshot   = $docRef->snapshot();
+                    $data       = $snapshot->data();
+                    foreach($data as $key => $val){
+                        $ov_meta[$key] = $val;
+                    }
                 }
             }
         }
 
-        return $result;
+        return array("active_project" => $result , "ov_meta" => $ov_meta);
     }
 
     public function getProjectsMeta(){
