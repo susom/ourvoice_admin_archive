@@ -611,13 +611,14 @@ class Datastore {
             $midnight_plus  = $midnight + 86400000;
             $ov_walks       = $this->firestore->collection(self::firestore_walks);
             $query          = $ov_walks->where('project_id', '=', $project_code)
-                ->where('timestamp', '>=', strval($midnight))
-                ->where('timestamp', '<', strval($midnight_plus));
+                ->where('timestamp', '>=', $midnight)
+                ->where('timestamp', '<', $midnight_plus);
 
             $snapshot       = $query->documents();
 	        foreach ($snapshot as $document) {
 	            $_id        = $document->id();
                 $walk_data  = $document->data();
+
                 if(array_key_exists("_deleted",$walk_data)){
                     continue;
                 }
@@ -625,17 +626,19 @@ class Datastore {
                 $geotags    = array();
                 if($geocoll){
                     foreach($geocoll as $fakeidx => $geotag){
-                        $geotags[$geotag->id()] = $geotag->data();
+                        $data_array = $geotag->data();
+                        $geo_data   = isset($data_array[0]) ? current($data_array) : $data_array;
+                        $geotags[$geotag->id()] = $geo_data;
                     }
                 }
                 ksort($geotags);
 
                 $walk_data["_id"]       = $_id;
                 $walk_data["geotags"]   = $geotags;
-
                 array_push($result, $walk_data);
             }
         }
+
         return $result;
     }
 

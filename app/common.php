@@ -241,7 +241,6 @@ function printRow($doc, $i){
     $photos         = $doc["photos"];
 
     $geotags        = !empty($doc["geotags"]) ? $doc["geotags"] : array();
-
     $survey         = !empty($doc["survey"]) ? $doc["survey"] : array();
     $processed      = !empty($doc["data_processed"]) ? $doc["data_processed"] : null;
 
@@ -358,13 +357,11 @@ function printRow($doc, $i){
         $img_id         = $doc["_id"]."_".$photo_name;
 
         //https://storage.googleapis.com/$google_bucket/$project_id/$uuid/$ts/$photo_name
-        $google_bucket  = "dev_ov_walk_files";
         $uuid           = $doc["device"]["uid"];
         $walk_ts        = $doc["timestamp"];
 
-
-        $file_uri   = $ds->getStorageFile($google_bucket, $doc["_id"], $photo_name);
-        $thumb_uri  = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+        $file_uri   = $ds->getStorageFile(cfg::$gcp_bucketName, $doc["_id"], $photo_name);
+//        $thumb_uri  = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
         $photo_uri  = $file_uri;
         $detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 

@@ -210,10 +210,10 @@ $page = "summary";
         			//AUTOMATICALLY SHOW MOST RECENT DATE's DATA, AJAX THE REST
         			$response 	= $ds->filter_by_projid($active_project_id, $date);
         			foreach($response as $i => $row){
-        				$doc = $row;
-                         echo "<a name='".$doc["project_id"]."'></a>";
-                         echo implode("",printRow($doc, $i));
-                     }
+                        $doc = $row;
+                        echo "<a name='".$doc["project_id"]."'></a>";
+                        echo implode("",printRow($doc, $i));
+                    }
         			echo "</div>";
         			echo "</aside>";
 
