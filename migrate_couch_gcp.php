@@ -14,7 +14,7 @@ $keyPath            = cfg::$FireStorekeyPath;
 $firestore_scope    = cfg::$firestore_scope;
 $access_token       = getGCPRestToken($keyPath, $firestore_scope);
 
-$action             = "sync_project_lists";
+$action             = "sync_walk_attachments";
 
 function getLastXWeeksActivty($xweeks="-4 Week"){
     $turl   = cfg::$couch_url . "/" . cfg::$couch_users_db . "/"  . "_design/filter_by_projid/_view/get_data_ts";
@@ -51,7 +51,7 @@ switch($action){
         $keyPath            = cfg::$FireStorekeyPath;
         $gcp_bucketID       = cfg::$gcp_bucketID;
 
-        $project_list       = getLastXWeeksActivty();
+        $project_list       = getLastXWeeksActivty("-1 Week");
 
         $storageCLient      = new StorageClient([
             'keyFilePath'   => $keyPath,
@@ -119,7 +119,7 @@ switch($action){
 
     case "sync_walk_data":
 //        JUST SYNC LAST 4 WEEKS OF UPDATED DATA
-        $project_list   = getLastXWeeksActivty();
+        $project_list   = getLastXWeeksActivty("-1 Week");
 
         /********************** COPY INTO FIRESTORE : WALK DATA FROM couch:disc_users **********************/
 //        ALL DATA
