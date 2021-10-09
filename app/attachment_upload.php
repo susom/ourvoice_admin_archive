@@ -1,15 +1,10 @@
 <?php
 require_once("common.php");
 
-
-
-
-
 // AJAX UPLOAD WALK DATA
 if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
 	$_id = filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING);
 	$doc = json_decode($_POST["doc"],1);
-	// $url = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
 
     // IF THE DOC WAS PROPERLY PASSED IN
     if(isset($doc["_id"])){
