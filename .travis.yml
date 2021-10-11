@@ -2,8 +2,8 @@ language: minimal
 env:
   global:
     - GCP_PROJECT_ID=som-rit-ourvoice
-    - IMAGE=gcr.io/som-rit-ourvoice/ourvoice-dev
-    - CLOUD_RUN_SERVICE=ourvoice-dev
+    - IMAGE=gcr.io/som-rit-ourvoice/ourvoice-prod
+    - CLOUD_RUN_SERVICE=ourvoice-prod
     - CLOUD_RUN_REGION=us-west1
     - CLOUDSDK_CORE_DISABLE_PROMPTS=1   # prevent gcloud from prompting
 before_install:
