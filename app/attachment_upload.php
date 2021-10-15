@@ -1,10 +1,6 @@
 <?php
 require_once("common.php");
 
-
-
-
-
 // AJAX UPLOAD WALK DATA
 if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
 	$_id = filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING);
@@ -38,6 +34,7 @@ if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
         }else{
             //what to do if it fails?
             //nothing i guess
+            print_r(json_encode(array("fuck it didnt work?")));
         }
         fclose($fp);
     }
@@ -53,6 +50,7 @@ if( isset($_REQUEST["walk_id"]) ){
     $options = array('overwrite' => true);
     $upload_handler = new UploadHandler($options,true,null,$local_folder);
 
+    print_r(json_encode(array("attach ment uploaded? $walk_id")));
     exit;
 }
 
