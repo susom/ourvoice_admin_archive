@@ -25,6 +25,10 @@ $access_token       = $ds->getGCPRestToken($keyPath, $firestore_scope);
 // GET WALK ID , FROM THE PING
 $uploaded_walk_id   = isset($_POST["uploaded_walk_id"]) ? filter_var($_POST["uploaded_walk_id"], FILTER_SANITIZE_STRING) : null;
 
+if(isset($_GET["irvin"])){
+    $uploaded_walk_id = $_GET["irvin"];
+}
+
 if(!empty($uploaded_walk_id)){ 
     $_id                = $uploaded_walk_id;  
     $email              = isset($_POST["project_email"]) ? filter_var($_POST["project_email"], FILTER_SANITIZE_EMAIL) : false;   
