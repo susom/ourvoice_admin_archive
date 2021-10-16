@@ -80,9 +80,10 @@ if(!empty($uploaded_walk_id)){
         // # Instantiates a Storage client
         $storageCLient = new StorageClient([
             'keyFilePath'   => $keyPath,
-            'projectId'     => $gcp_bucketName
+            'projectId'     => $gcp_bucketID
         ]);
 
+        /*
         foreach($backup_files as $file){
             $path = $backup_folder . "/" . $file;
             if(strpos($file,".json") > 0){
@@ -94,7 +95,7 @@ if(!empty($uploaded_walk_id)){
                 $uploaded   = $ds->uploadCloudStorage($file ,$_id , $gcp_bucketName, $storageCLient);
             }
         }
-
+        */
         // RECURSIVELY GO THROUGH THOSE AND UPLOAD THOSE MAFUHS
         echo json_encode(array(  "ebackup"      => $backup_files
                                 ,"backupfolder" => $backup_folder
