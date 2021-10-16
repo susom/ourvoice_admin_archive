@@ -1,6 +1,8 @@
 <?php
 require_once("common.php");
 
+header("Access-Control-Allow-Origin: *");
+
 // AJAX UPLOAD WALK DATA
 //THIS WORKS ON DEV!
 if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
@@ -34,7 +36,6 @@ if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
         }else{
             //what to do if it fails?
             //nothing i guess
-            print_r(json_encode(array("fuck it didnt work?")));
         }
         fclose($fp);
     }
@@ -50,7 +51,6 @@ if( isset($_REQUEST["walk_id"]) ){
     $options = array('overwrite' => true);
     $upload_handler = new UploadHandler($options,true,null,$local_folder);
 
-    echo json_encode(array("what happened in attachment_upload?" => $upload_handler)) ;
     exit;
 }
 
