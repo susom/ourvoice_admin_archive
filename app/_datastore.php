@@ -23,6 +23,7 @@ class Datastore {
         $this->walks_collection 	= cfg::$firestore_collection;
         $this->firestore_endpoint	= cfg::$firestore_endpoint;
         $this->firestore_scope 	    = cfg::$firestore_scope;
+        $this->firestore_projects   = cfg::$firestore_projects;
         $this->gapi_key             = cfg::$gmaps_key;
         $this->masterpw             = cfg::$master_pw;
 
@@ -195,7 +196,7 @@ class Datastore {
         $result = null;
 
         if($this->firestore){
-            $docRef     = $this->firestore->collection(self::firestore_projects)->document($project_id);
+            $docRef     = $this->firestore->collection($this->firestore_projects)->document($project_id);
             $snapshot   = $docRef->snapshot();
             if ($snapshot->exists()) {
                 $data = $snapshot->data();
@@ -204,7 +205,7 @@ class Datastore {
                 }
             }
         }
-
+        $result = array("faggot");
         return $result;
     }
 
