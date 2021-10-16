@@ -50,7 +50,7 @@ if( isset($_REQUEST["walk_id"]) ){
     $options = array('overwrite' => true);
     $upload_handler = new UploadHandler($options,true,null,$local_folder);
 
-    echo json_encode($upload_handler) ;
+    echo json_encode(array("what happened in attachment_upload?" => $upload_handler)) ;
     exit;
 }
 
