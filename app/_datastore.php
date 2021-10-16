@@ -1149,7 +1149,7 @@ class Datastore {
         $walk_id        = $walk_parts[0] ."_" . $walk_parts[1] . "_" . $walk_parts[3];
 
         // IF NO PHOTOS, THEN ITS NOT A COMPLETE WALK 
-        if(!array_key_exists("photos", $details)){
+        if(!isset($details["photos"])){
             return false;
         }
 
