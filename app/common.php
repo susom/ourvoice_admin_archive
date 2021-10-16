@@ -202,20 +202,6 @@ function scanBackUpFolder($backup_dir){
                 if(strpos($file,".json") > 0){
                     $split          = explode(".",$file);
                     $backup         = $split[0];
-                    $walk_json      = $couch_url . "/".cfg::$couch_users_db."/" . $backup ;
-                    $check_walk_id  = get_head($walk_json);
-                    if(array_key_exists("ETag", $check_walk_id[0])){
-                         // DOESNT EXIST SO NEED TO UPLOAD TO disc_users
-                         continue;
-                    }
-                }else{
-                    $attach_file    = $couch_url . "/".cfg::$couch_attach_db."/" . $file ;
-                    $check_attach   = get_head($attach_file);
-                    if(array_key_exists("ETag", $check_attach[0])){
-                         // DOESNT EXIST SO NEED TO UPLOAD TO disc_users
-                         // re upload no matter what. 11/12/19
-                         //continue;
-                    }
                 }
                 $backedup[] = $file;
             }
