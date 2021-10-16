@@ -1,4 +1,6 @@
-<?php     
+<?php
+header("Access-Control-Allow-Origin: *");
+
 require_once "common.php";
 require_once "inc/class.mail.php";
 
@@ -14,7 +16,7 @@ use Google\Cloud\Firestore\FirestoreClient;
 
 // FIRESTORE details
 $keyPath            = cfg::$FireStorekeyPath;
-$gcp_project_id     = cfg::$gcp_project_id; 
+$gcp_project_id     = cfg::$gcp_project_id;
 $walks_collection   = cfg::$firestore_collection; 
 $firestore_endpoint = cfg::$firestore_endpoint; 
 $firestore_scope    = cfg::$firestore_scope;
@@ -22,12 +24,11 @@ $gcp_bucketID       = cfg::$gcp_bucketID;
 $gcp_bucketName     = cfg::$gcp_bucketName;
 $access_token       = $ds->getGCPRestToken($keyPath, $firestore_scope);
 
+if(isset($_GET["irvin"])){
+    $_POST["uploaded_walk_id"] = $_GET["irvin"];
+}
 // GET WALK ID , FROM THE PING
 $uploaded_walk_id   = isset($_POST["uploaded_walk_id"]) ? filter_var($_POST["uploaded_walk_id"], FILTER_SANITIZE_STRING) : null;
-
-if(isset($_GET["irvin"])){
-    $uploaded_walk_id = $_GET["irvin"];
-}
 
 if(!empty($uploaded_walk_id)){ 
     $_id                = $uploaded_walk_id;  
@@ -79,7 +80,7 @@ if(!empty($uploaded_walk_id)){
         // # Instantiates a Storage client
         $storageCLient = new StorageClient([
             'keyFilePath'   => $keyPath,
-            'projectId'     => $gcp_project_id
+            'projectId'     => $gcp_bucketName
         ]);
 
         foreach($backup_files as $file){
