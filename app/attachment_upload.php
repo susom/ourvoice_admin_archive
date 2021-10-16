@@ -6,7 +6,6 @@ require_once("common.php");
 if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
 	$_id = filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING);
 	$doc = json_decode($_POST["doc"],1);
-	// $url = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $_id;
 
     // IF THE DOC WAS PROPERLY PASSED IN
     if(isset($doc["_id"])){
@@ -51,7 +50,7 @@ if( isset($_REQUEST["walk_id"]) ){
     $options = array('overwrite' => true);
     $upload_handler = new UploadHandler($options,true,null,$local_folder);
 
-    print_r(json_encode(array("attach ment uploaded? $walk_id")));
+    echo json_encode(array("attachment uploaded? $walk_id")) ;
     exit;
 }
 

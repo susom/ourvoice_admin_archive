@@ -95,7 +95,7 @@ $page = "photo_detail";
 //	            date_default_timezone_set($response->timeZoneId);
 //	        }
 
-			$photo_uri 	= $ds->getStorageFile("dev_ov_walk_files", $_id, $_file);
+			$photo_uri 	= $ds->getStorageFile(cfg::$gcp_bucketName, $_id, $_file);
 			// detectFaces($ph_id,$old, $photo_name);
 
 			$attach_url = "#";
@@ -157,7 +157,6 @@ $page = "photo_detail";
 				</a>
 
 				</figure>";
-				
 				$geotags   = array();
 				$geotags[] = array("lat" => $lat, "lng" => $long);
 				$json_geo  = json_encode($geotags);

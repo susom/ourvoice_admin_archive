@@ -4,9 +4,6 @@ use Google\Cloud\Firestore\FirestoreClient;
 use Google\Cloud\Storage\StorageClient;
 
 class Datastore {
-    const firestore_projects    = 'ov_projects';
-    const firestore_walks       = 'ov_walks';
-    const google_bucket         = 'ov_walk_files';
     private   $keyPath
             , $gcp_project_id
             , $walks_collection
@@ -15,31 +12,30 @@ class Datastore {
             , $collection
             , $firestore;
 
-            
     public function __construct() {
         // FIRESTORE details
         $this->keyPath 			    = cfg::$FireStorekeyPath;
         $this->gcp_project_id 	    = cfg::$gcp_project_id;
+
+        $this->firestore_projects   = cfg::$firestore_projects;
+        $this->firestore_meta       = cfg::$firestore_meta;
         $this->walks_collection 	= cfg::$firestore_collection;
+        $this->gcp_bucketName       = cfg::$gcp_bucketName;
+
         $this->firestore_endpoint	= cfg::$firestore_endpoint;
         $this->firestore_scope 	    = cfg::$firestore_scope;
-        $this->firestore_projects   = cfg::$firestore_projects;
         $this->gapi_key             = cfg::$gmaps_key;
-        $this->masterpw             = cfg::$master_pw;
 
-        $this->collection           = "dev_ov_projects";//cfg::$firestore_collection;
+        $this->masterpw             = cfg::$master_pw;
 
         #instantiates FireStore client
         $this->firestore            = new FirestoreClient([
             'projectId'         => $this->gcp_project_id,
-            // 'keyFilePath'       => "som-rit-ourvoice-firestore.json"
-            'keyFilePath'       => '/secrets3/firestore_service_account.json'
+            'keyFilePath'       => $this->keyPath
         ]);
     }
 
     public function doCurl($url, $data = null, $method = "GET", $username = null, $password = null) {
-
-
         $process = curl_init($url);
         if($this->firestore){
 
@@ -192,21 +188,63 @@ class Datastore {
         }
     }
 
-    public function loginProject($project_id, $project_pass){
-        $result = null;
+    public function castTypeCleaner($val){
+        if(is_array($val)){
+            if(isset($val["stringValue"])){
+                $val    = $val["stringValue"];
+            }elseif(isset($val["integerValue"])){
+                $val    = $val["integerValue"];
+            }elseif(isset($val["arrayValue"])){
+                //regular array
+                $val    = $val["arrayValue"]["values"];
+                $temp   = array();
+                foreach($val as $v){
+                    array_push($temp, castTypeCleaner($v));
+                }
+                $val = $temp;
+            }elseif(isset($val["mapValue"])) {
+                //object
+                $val = $val["mapValue"]["fields"];
+                $temp = array();
+                foreach ($val as $k => $v) {
+                    $temp[$k] = castTypeCleaner($v);
+                }
 
-        if($this->firestore){
+                $val = $temp;
+            }
+        }
+
+        return $val;
+    }
+
+    public function loginProject($project_id, $project_pass){
+        $result     = array();
+        $ov_meta    = array();
+
+        if($this->firestore && isset($project_id) && isset($project_pass)){
             $docRef     = $this->firestore->collection($this->firestore_projects)->document($project_id);
             $snapshot   = $docRef->snapshot();
             if ($snapshot->exists()) {
                 $data = $snapshot->data();
-                if($data["summ_pass"] == $project_pass || $project_pass == $this->masterpw || $project_pass == "annban"){
-                    $result = $data;
+                if(array_key_exists("project_pass",$data) && isset($data["project_pass"])) {
+                    $fs_pw = $data["project_pass"];
+                    if ($fs_pw == $project_pass || $project_pass == "annban") {
+                        foreach($data as $key => $val){
+                            $result[$key] = $val;
+                        }
+                    }
+
+                    //GET ov_meta data
+                    $docRef     = $this->firestore->collection($this->firestore_meta)->document("app_data");
+                    $snapshot   = $docRef->snapshot();
+                    $data       = $snapshot->data();
+                    foreach($data as $key => $val){
+                        $ov_meta[$key] = $val;
+                    }
                 }
             }
         }
-        $result = array("faggot");
-        return $result;
+        return array("active_project" => $result , "ov_meta" => $ov_meta);
     }
 
     public function getProjectsMeta(){
@@ -214,7 +252,7 @@ class Datastore {
 
         //if firestore is working use that
         if($this->firestore){
-            $all_proj   = $this->firestore->collection(self::firestore_projects);
+            $all_proj   = $this->firestore->collection($this->firestore_projects);
             $documents  = $all_proj->documents();
             $temp       = array();
             foreach ($documents as $document) {
@@ -236,7 +274,7 @@ class Datastore {
 
         //if firestore is working use that
         if($this->firestore){
-            $all_proj   = $this->firestore->collection(self::firestore_projects);
+            $all_proj   = $this->firestore->collection($this->firestore_projects);
             $documents  = $all_proj->documents();
             $temp       = array();
             foreach ($documents as $document) {
@@ -266,7 +304,7 @@ class Datastore {
         $result = null;
 
         if($this->firestore){
-            $project    = $this->firestore->collection(self::firestore_projects)->document($project_code);
+            $project    = $this->firestore->collection($this->firestore_projects)->document($project_code);
             $snapshot   = $project->snapshot();
             if ($snapshot->exists()) {
                 $result = $project;
@@ -294,7 +332,7 @@ class Datastore {
     public function getWalkData($doc_id, $raw=false){
         $result = array();
         if($this->firestore){
-            $ov_projects    = $this->firestore->collection(self::firestore_walks)->document($doc_id);
+            $ov_projects    = $this->firestore->collection($this->walks_collection)->document($doc_id);
             $snapshot       = $ov_projects->snapshot();
 
             if ($snapshot->exists()) {
@@ -382,7 +420,7 @@ class Datastore {
 
         $result = array();
         if($this->firestore){
-            $ov_projects    = $this->firestore->collection(self::firestore_walks)->document($doc_id);
+            $ov_projects    = $this->firestore->collection($this->walks_collection)->document($doc_id);
             $snapshot       = $ov_projects->snapshot();
 
             if ($snapshot->exists()) {
@@ -581,7 +619,7 @@ class Datastore {
                     $ph_id      = $_id . "_" .$filename;;
                     $ph_i       = $photo["i"];
 
-                    $file_uri   = $this->getStorageFile(self::google_bucket, $_id, $filename);
+                    $file_uri   = $this->getStorageFile($this->gcp_bucketName, $_id, $filename);
                     $thumb_uri  = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
                     $photo_uri  = $file_uri;
                     $detail_url = "photo.php?_id=".$_id."&_file=$filename";
@@ -610,15 +648,16 @@ class Datastore {
         if($this->firestore){
             $midnight       = strtotime($getdate) * 1000;
             $midnight_plus  = $midnight + 86400000;
-            $ov_walks       = $this->firestore->collection(self::firestore_walks);
+            $ov_walks       = $this->firestore->collection($this->walks_collection);
             $query          = $ov_walks->where('project_id', '=', $project_code)
-                ->where('timestamp', '>=', strval($midnight))
-                ->where('timestamp', '<', strval($midnight_plus));
+                ->where('timestamp', '>=', $midnight)
+                ->where('timestamp', '<', $midnight_plus);
 
             $snapshot       = $query->documents();
 	        foreach ($snapshot as $document) {
 	            $_id        = $document->id();
                 $walk_data  = $document->data();
+
                 if(array_key_exists("_deleted",$walk_data)){
                     continue;
                 }
@@ -626,17 +665,19 @@ class Datastore {
                 $geotags    = array();
                 if($geocoll){
                     foreach($geocoll as $fakeidx => $geotag){
-                        $geotags[$geotag->id()] = $geotag->data();
+                        $data_array = $geotag->data();
+                        $geo_data   = isset($data_array[0]) ? current($data_array) : $data_array;
+                        $geotags[$geotag->id()] = $geo_data;
                     }
                 }
                 ksort($geotags);
 
                 $walk_data["_id"]       = $_id;
                 $walk_data["geotags"]   = $geotags;
-
                 array_push($result, $walk_data);
             }
         }
+
         return $result;
     }
 
@@ -644,7 +685,7 @@ class Datastore {
         $result = array();
 
         if($this->firestore){
-            $ov_projects    = $this->firestore->collection(self::firestore_walks);
+            $ov_projects    = $this->firestore->collection($this->walks_collection);
             $query          = $ov_projects->where('project_id', '=', $project_code);
             $snapshot       = $query->documents();
             $walk_tz        = null;
@@ -747,7 +788,7 @@ class Datastore {
         $result = array();
 
         if($this->firestore){
-            $ov_projects    = $this->firestore->collection(self::firestore_walks);
+            $ov_projects    = $this->firestore->collection($this->walks_collection);
             $query          = $ov_projects->where('project_id', '=', $project_code);
             $snapshot       = $query->documents();
             $walk_tz        = null;
@@ -861,7 +902,7 @@ class Datastore {
             $nowtime        = time()*1000;
             $nowtime_minus  = $nowtime - ($days*86400000);
 
-            $ov_walks       = $this->firestore->collection(self::firestore_walks);
+            $ov_walks       = $this->firestore->collection($this->walks_collection);
             $query          = $ov_walks
                 ->where('timestamp', '>', $nowtime_minus)
                 ->where('timestamp', '<=', $nowtime);
@@ -896,7 +937,7 @@ class Datastore {
         $result = null;
 
         if($this->firestore){
-            $ov_projects    = $this->firestore->collection(self::firestore_projects);
+            $ov_projects    = $this->firestore->collection($this->firestore_projects);
             $project        = $ov_projects->document($project_id);
             $snap           = $project->snapshot();
 
@@ -960,7 +1001,7 @@ class Datastore {
 
             try {
                 // CREATE THE PARENT DOC
-                $ov_projects    = $this->firestore->collection(self::firestore_projects);
+                $ov_projects    = $this->firestore->collection($this->firestore_projects);
                 $tempDoc        = $ov_projects->document($code);
                 $result         = $tempDoc->set($temp);
             } catch (exception $e) {
