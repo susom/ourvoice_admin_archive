@@ -60,6 +60,8 @@ switch($action){
 
         $attach_url         = cfg::$couch_url . "/" . cfg::$couch_attach_db;
 
+        $project_list   = array(array("project_id" => "PARK2"));
+
         foreach($project_list as $project){
             if(!array_key_exists("project_id", $project)){
                 continue;
@@ -130,6 +132,9 @@ switch($action){
 
         $firestore      = $ds->getFireStore();
         $docRef         = $firestore->collection("ov_walks");
+
+        $project_list   = array(array("project_id" => "PARK2"));
+
 
         foreach($project_list as $project){
             if(!array_key_exists("project_id", $project)){
