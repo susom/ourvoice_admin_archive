@@ -40,7 +40,7 @@ $page = "photo_detail";
 			}
 
 			// filter out low accuracy
-		    $forjsongeo = $doc["photo"]["geotag"];
+		    $forjsongeo = !empty($doc["photo"]["geotag"]) ? $doc["photo"]["geotag"] : array();
 		    $walk_geo 	= json_encode($forjsongeo);
 
 		    // print_rr($doc);
@@ -105,7 +105,6 @@ $page = "photo_detail";
 			$photo_comment  = str_replace("rnrn", "\r\n\r\n",$photo['text_comment']);
 	        $text_comment   = "<div class='audio_clip'><textarea id='text_comment' name='text_comment' class='keyboard'>".  $photo_comment  ."</textarea></div>";
 
-
 			if(isset($photo["audios"])){
 				foreach($photo["audios"] as $filename => $txn){
 					//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
@@ -118,22 +117,24 @@ $page = "photo_detail";
 					// $confidence 	= appendConfidence($attach_url);
 					// $script 		= !empty($confidence) ? "This audio was transcribed using Google's API at ".round($confidence*100,2)."% confidence" : "";
 
-					//Works for archaic saving scheme as well as the new one : 
-                    $transcription  = str_replace('&#34;','"', $txn);
-                    $transcription  = str_replace('&#34;','"', $transcription);
-					$transcription  = str_replace("rnrn", "\r\n\r\n",$transcription);
+					//Works for archaic saving scheme as well as the new one :
+                    $transcription  = "";
+                    if(!empty($txn)){
+                        $transcription  = str_replace('&#34;','"', $txn);
+                        $transcription  = str_replace('&#34;','"', $transcription);
+                        $transcription  = str_replace("rnrn", "\r\n\r\n",$transcription);
+                    }
 					$audio_attachments .=   "<div class='audio_clip mic'>
 												<audio controls>
 													<source src='$audio_src'/>
 												</audio> 
 												<a class='refresh_audio' href='$just_file' title='Audio not working?  Click to refresh.'>&#8635;</a> 
 												<div class='forprint'>$transcription</div>
-												<textarea class='audio_txn' name='$filename' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
+												<textarea class='audio_txn' name='$filename' placeholder='Click the icon and transcribe what you hear'></textarea>
 												<p id = 'confidence_exerpt'>$script</p>
 					 						</div>";
 				}
 			}
-			
 
 			echo "<form id='photo_detail' method='POST'>";
 			echo "<input type='hidden' name='doc_id' value='".$doc["id"]."'/>";
@@ -141,8 +142,17 @@ $page = "photo_detail";
 			
 			echo "<div class='user_entry'>";
 			echo "<hgroup>";
+            $photo_date = "N/A";
+            $photo_ts   = "N/A";
+            if(!empty($photo["geotag"]["timestamp"])) {
+                $photo_ts   = $photo["geotag"]["timestamp"];
+                $photo_date = date("F j, Y", floor($photo["geotag"]["timestamp"] / 1000));
+            }
+            if(!empty($timestamp)){
+                $photo_ts = date("g:i a", floor($timestamp/1000));
+            }
 			echo "<h4>Photo Detail : 
-			<b>".date("F j, Y", floor($photo["geotag"]["timestamp"]/1000))." <span class='time'>@".date("g:i a", floor($timestamp/1000))."</span></b> 
+			<b>".$photo_date." <span class='time'>@".$photo_ts."</span></b> 
 			<i>".substr($doc["id"],-4)."</i></h4>";
 			echo "</hgroup>";
 

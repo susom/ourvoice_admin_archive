@@ -282,11 +282,11 @@ class Datastore {
                     $data = $document->data();
 
                     if(array_key_exists("archived", $data) && $data["archived"]){
-                        continue;
+                        //continue;
                     }
 
                     if(!empty($data["expire_date"]) && strtotime($data["expire_date"]) < time()){
-                        continue;
+                        //continue;
                     }
                     array_push($temp, $document->data());
                 }
@@ -428,6 +428,9 @@ class Datastore {
                 $walk_tz    = null;
                 $photo      = null;
 
+                $lat        = null;
+                $lng        = null;
+
                 foreach($data["photos"] as $i => $photo){
                     if($photo["name"] !== $file_id){
                         continue;
@@ -437,8 +440,8 @@ class Datastore {
                     if(!$walk_tz) {
                         $walk_tz = "America/Los_Angeles";
                         if (isset($photo["geotag"])) {
-                            $lat = $photo["geotag"]["lat"];
-                            $lng = $photo["geotag"]["lng"];
+                            $lat = !empty($photo["geotag"]["lat"]) ? $photo["geotag"]["lat"] : null;
+                            $lng = !empty($photo["geotag"]["lng"]) ? $photo["geotag"]["lng"] : null;
                         }
 
                         if($lat && $lng){
@@ -1084,7 +1087,12 @@ class Datastore {
         return $response;
     }
 
-    public function formatUpdateWalkPhotos($photos,$transcriptions){
+    public function convertFSwalkId($old_id){
+        $walk_parts     = explode("_",$old_id);
+        return $walk_parts[0] ."_" . $walk_parts[1] . "_" . $walk_parts[3];
+    }
+
+    public function formatUpdateWalkPhotos_2($photos,$transcriptions){
         $new_photos     = array();
         foreach($photos as $photo){
             $temp                   = array();
@@ -1136,9 +1144,58 @@ class Datastore {
         return $new_photos;
     }
 
-    public function convertFSwalkId($old_id){
-        $walk_parts     = explode("_",$old_id);
-        return $walk_parts[0] ."_" . $walk_parts[1] . "_" . $walk_parts[3];
+    public function formatUpdateWalkPhotos($photos,$transcriptions){
+        $new_photos     = array();
+        foreach($photos as $photo){
+            $temp                   = array();
+            $temp["goodbad"]        = array_key_exists("goodbad", $photo)       ? $photo["goodbad"]         : null;
+            $temp["name"]           = array_key_exists("name", $photo)          ? $photo["name"]            : null;
+            $temp["rotate"]         = array_key_exists("rotate", $photo)        ? $photo["rotate"]          : null;
+            $temp["text_comment"]   = array_key_exists("text_comment", $photo)  ? $photo["text_comment"]    : null;
+            $temp["geotag"]         = array_key_exists("geotag", $photo)        ? $photo["geotag"]          : array();
+            $temp["tags"]           = array_key_exists("tags", $photo)          ? $photo["tags"]            : array();
+            $audios                 = array_key_exists("audios", $photo)        ? $photo["audios"]          : array();
+
+            $temp["audios"]         = array();
+            foreach($audios as $audio_name){
+                $temp["audios"][$audio_name] = array_key_exists($audio_name, $transcriptions) ? $transcriptions[$audio_name] : array() ;
+            }
+
+            $fields                     = array();
+            $fields["goodbad"]          = array_key_exists("goodbad", $photo) && !is_null($photo["goodbad"])            ? array("integerValue" => $photo["goodbad"])    : array("nullValue" => null);
+            $fields["name"]             = array_key_exists("name", $photo) && !is_null($photo["name"])                  ? array("stringValue" => $photo["name"])        : array("nullValue" => null);
+            $fields["rotate"]           = array_key_exists("rotate", $photo) && !is_null($photo["rotate"])              ? array("integerValue" => $photo["rotate"] )    : array("nullValue" => null);
+            $fields["text_comment"]     = array_key_exists("text_comment", $photo) && !is_null($photo["text_comment"])  ? array("stringValue" => $photo["text_comment"]): array("nullValue" => null);
+
+            $geoFields = array();
+            foreach($temp["geotag"] as $key => $val){
+                $geoFields[$key] = array("doubleValue" => $val);
+            }
+            if(!empty($geoFields)) {
+                $fields["geotag"] = array("mapValue" => array("fields" => $geoFields));
+            }
+
+            $audioFields = array();
+            foreach($temp["audios"] as $key => $val){
+                if(empty($val)){
+                    $audioFields[$key] = array("arrayValue" => array("values" => $val) );
+                }else{
+                    $audio_text = isset($val["text"]) ? $val["text"] : "";
+                    $audio_confidence = isset($val["confidence"]) ? $val["confidence"] : 0;
+                    $audioFields[$key] = array("mapValue" => array("fields" => array("text" => array("stringValue" => $audio_text), "confidence" => array("doubleValue" => $audio_confidence)     ) ));
+                }
+            }
+            $fields["audios"]  = !empty($audioFields) ? array("mapValue" => array("fields" => $audioFields)) : array("arrayValue" => array("values" => array()));
+
+            $tagFields = array();
+            foreach($temp["tags"] as $tag){
+                $tagFields[]  = array("stringValue" => $tag);
+            }
+            $fields["tags"] = array("arrayValue" => array("values" => $tagFields));
+            $new_photos[]   = array("mapValue" => array("fields" => $fields));
+        }
+
+        return $new_photos;
     }
 
     public function setWalkFireStore($old_id, $details, $firestore=null){
@@ -1209,8 +1266,12 @@ class Datastore {
         $firestore_url      = cfg::$firestore_endpoint . "projects/".cfg::$gcp_project_id."/databases/(default)/documents/".cfg::$firestore_collection."/".$object_unique_id;
         $access_token       = $firestore;
 
+
+
+
         //PUSH THE ORIGINAL WALK DATA DOCUMENT
         $response           = $this->restPushFireStore($firestore_url, $json, $access_token);
+        print_rr($response);
 
         // NOW PUSH A NEW DOCUMENT FOR EACH GEOTAG TO THE SUBCOLLECTION FOR THE WALK 
         $firestore_url_sub  = $firestore_url . "/geotags/";
@@ -1273,7 +1334,10 @@ class Datastore {
         $walk_ts            = $folder_components[3];
         $attachment_prefix  = "$project_id/$device_id/$walk_ts/";
         $file_suffix        = str_replace($walk_id."_","",$attach_id);
-        
+
+        //wtf
+        $file_suffix        = str_replace("jpeg", "jpg", $file_suffix);
+
         $filepath           = !$filepath ? 'temp/'.$walk_id.'/'.$attach_id : $filepath;
         $new_attach_id      = $attachment_prefix . $file_suffix;
 

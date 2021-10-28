@@ -90,6 +90,7 @@ if(!empty($uploaded_walk_id)){
                 // STORE WALK DATA INTO FIRESTORE FORMAT
                 $old_walk_id    = str_replace(".json","",$file);
                 $payload        = file_get_contents($path);
+
                 $fs_walk_id     = $ds->setWalkFireStore($old_walk_id, json_decode($payload,1), $access_token);
             }else{
                 //UPLOAD TO GOOGLE BUCKET
