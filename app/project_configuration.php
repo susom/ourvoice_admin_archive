@@ -62,7 +62,7 @@ include("inc/check_login.php");
                     continue;
                 }
 
-                echo '<div class="entry" data-key = "'.$p["key"].'" ><p><a href="index.php?proj_id='.$code.'"'.'>'.$code. ' [' . $p["project_name"] . ']</a> <a href="summary.php?id='.$p["project_name"].'" class="open_link" target="blanket"></a></p></div>';
+                echo '<div class="entry" data-key = "'.$p["key"].'" ><p><a href="index.php?proj_id='.$code.'"'.'>'.$code. ' [' . $p["project_name"] . ']</a> <a href="summary.php?id='.$code.'" class="open_link" target="blanket"></a></p></div>';
             }
         ?>
         </div>

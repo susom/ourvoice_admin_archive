@@ -281,6 +281,8 @@ class Datastore {
                 if ($document->exists()) {
                     $data = $document->data();
 
+                    print_rr($data);
+
                     if(array_key_exists("archived", $data) && $data["archived"]){
                         //continue;
                     }
@@ -489,74 +491,36 @@ class Datastore {
     public function getWalkIdDataGeos($walk_id){
         //RETURNS JSON ENCODED BLOCK OF FILTERED PHOTO INFO, AND PHOTO GEOs
         // MOOD and TAG FILTERS ARE MIXED TOGETHER, SO SEPERATE THEM OUT
-
         $response       = $this->getWalkSummaryData($walk_id);
-        // $response       = $this->getProjectSummaryData("IRV", "all_photos");
         $photo_geos     = array();
         $code_block     = array();
 
         //WHAT THE FUCK IS THIS SHIT, NEED TO LOOP THROUGH 3 times? 
         $sort_temp      = array();
-        foreach($response["rows"] as $row){
-            $doc    = $row["value"];
-            $_id    = $row["id"];
-            $ph_i   = $doc[0];
-            $old    = $doc[1];
-            $photo  = $doc[2]; 
-            $txns   = $doc[3]; 
-            $device = $doc[4]; 
+        if(!empty($response)){
+            $_id    = $walk_id;
+            $doc    = $response;
+            $device = $doc["device"];
+            $photos = $doc["photos"];
 
-            //STUFF IT INTO HOLDING ARRAY BY WALK_ID
-            if(!array_key_exists($_id, $sort_temp)){
-                $sort_temp[$_id] = array();
-            }
-
-            if(array_key_exists("deleted", $photo)){
-                continue;
-            }
-
-            // if good bad filters is included in tags
-            if(!empty($goodbad_filter)){
-                if(!in_array($photo["goodbad"], $goodbad_filter) ){
+            foreach($photos as $photo){
+                if(array_key_exists("deleted", $photo)){
                     continue;
                 }
-            }
-
-            $sort_temp[$_id][$ph_i] = $doc;        
-        }
-
-        //SECOND LOOP!  + BONUS NESTED LOOP BS,   BETTER WAY TO DO THIS???  FUCK IT.
-        foreach($sort_temp as $walk_id => $junk){
-            ksort($sort_temp[$walk_id]);
-            foreach($sort_temp[$walk_id] as $ph_i => $doc){
-                $_id    = $walk_id;
-                $old    = $doc[1];
-                $photo  = $doc[2]; 
-                $txns   = $doc[3]; 
-                $device = $doc[4];
-
-                // I DID THIS TO MYSELF OH LORD
-                $old = is_null($old) ? "" : "&_old=" . $old;
 
                 // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK, AT LEAST THIS HAS NO ORDER HALLELUJAH
                 if(!empty($photo["geotag"])){
-                    $filename   = empty($photo["name"]) ? "photo_".$ph_i.".jpg" : $photo["name"];
-                    $ph_id      = $_id;
-                    if(array_key_exists("name",$photo)){
-                        // new style file pointer
-                        $ph_id  .= "_" .$filename;
-                    }
-                    $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
-                    $photo_uri      = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-                    $photo["geotag"]["photo_src"]   = $photo_uri;
+                    $filename   = $photo["name"];
+                    $file_uri   = $this->getStorageFile($this->gcp_bucketName, $_id , $filename);
+                    $photo["geotag"]["photo_src"]   = $file_uri;
                     $photo["geotag"]["goodbad"]     = $photo["goodbad"];
-                    $photo["geotag"]["photo_id"]    = $_id. "_" . "photo_".$ph_i;
+                    $photo["geotag"]["photo_id"]    = $_id. "_" . $filename;
                     $photo["geotag"]["platform"]    = $device["platform"];
                     array_push($photo_geos, $photo["geotag"]);
                 }
 
                 // Massage a block for each photo in the project
-                $code_block = array_merge($code_block, printPhotos($photo,$_id,$ph_i,$old,$txns));
+                $code_block = array_merge($code_block, printPhotos($photo,$_id,null));
             }
         }
 
@@ -885,10 +849,14 @@ class Datastore {
     }
 
     public function getWalkSummaryData($walk_id,  $view="walk_id", $dd="summary"){
-        $qs         = http_build_query(array( 'keys' => '["'.$walk_id.'"]' ,  'descending' => 'true'));
-        $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
-        $response   = $this->doCurl($couch_url);
-        return json_decode($response,1);
+        $result = array();
+        if($this->firestore){
+            $project       = $this->firestore->collection($this->walks_collection)->document($walk_id);
+            $snapshot      = $project->snapshot();
+            $result        = $snapshot->data();
+        }
+
+        return $result;
     }
 
     public function checkAttachmentsExist($_ids, $view="ids", $dd="checkExisting"){

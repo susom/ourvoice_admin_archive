@@ -438,7 +438,7 @@ function printPhotos($photo, $_id, $n, $old=null, $txns=null){
     $pic_time       = date("g:i a", floor($timestamp/1000));
     $photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
     
-    $photoblock["id"]            = $_id."_photo_".$n;
+    $photoblock["id"]            = $_id."_".$photo["name"];
     $photoblock["tags"]          = $photo_tags;
     $photoblock["detail_url"]    = $detail_url;
     $photoblock["pic_time"]      = $pic_time;
