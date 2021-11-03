@@ -141,7 +141,7 @@ $page = "summary";
                 $sum_buffer_item = array();
                 $sum_buffer_item[] = "<tr>";
                 $sum_buffer_item[] = "<td>" . $date . "</td>";
-                $sum_buffer_item[] = "<td><a href='#".$walk["id"]."'>" . $_id . "</a></td>";
+                $sum_buffer_item[] = "<td><a href='#".$walk["id"]."'>" . substr($_id, -4) . "</a></td>";
                 $sum_buffer_item[] = "<td>" . $device . "</td>";
                 $sum_buffer_item[] = "<td>" . $walk["photos"]. "</td>";
                 $sum_buffer_item[] = "<td>" . $walk["audios"]. "</td>";

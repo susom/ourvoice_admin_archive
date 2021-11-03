@@ -616,11 +616,28 @@ class Datastore {
             $midnight       = strtotime($getdate) * 1000;
             $midnight_plus  = $midnight + 86400000;
             $ov_walks       = $this->firestore->collection($this->walks_collection);
+
             $query          = $ov_walks->where('project_id', '=', $project_code)
                 ->where('timestamp', '>=', $midnight)
                 ->where('timestamp', '<', $midnight_plus);
-
             $snapshot       = $query->documents();
+
+            //FUCK THIS SHIT 1 m illion %
+            $snap_ok = false;
+            foreach ($snapshot as $document) {
+                $snap_ok  = true;
+                break;
+            }
+            //FUCK THIS SHIT FUCK THIS SHIT FUCK IT!
+            if(!$snap_ok){
+                $midnight       = strval($midnight);
+                $midnight_plus  = strval($midnight_plus);
+                $query          = $ov_walks->where('project_id', '=', $project_code)
+                    ->where('timestamp', '>=', $midnight)
+                    ->where('timestamp', '<', $midnight_plus);
+                $snapshot       = $query->documents();
+            }
+
 	        foreach ($snapshot as $document) {
 	            $_id        = $document->id();
                 $walk_data  = $document->data();
@@ -669,6 +686,18 @@ class Datastore {
                 $audio_count    = 0;
                 $attachment_ids = array();
 
+                $has_map        = false;
+                $geocoll        = $ov_projects->document($doc_id)->collection("geotags")->documents();
+                if($geocoll){
+                    foreach($geocoll as $geotag){
+                        $data_array = $geotag->data();
+                        if(!empty($data_array)){
+                            $has_map = true;
+                        }
+                        break;
+                    }
+                }
+
                 foreach($data["photos"] as $photo){
                     if(array_key_exists("_deleted",$photo)){
                         continue;
@@ -677,6 +706,7 @@ class Datastore {
                     $photo_count++;
 
                     if(!$walk_tz) {
+
                         if (isset($data["geos"])) {
 
                         } elseif (isset($photo["geotag"])) {
@@ -726,7 +756,7 @@ class Datastore {
                      "date"             => $walk_date
                     ,"id"               => $doc_id
                     ,"photos"           => $photo_count
-                    ,"maps"             => !empty($data["geo_tags"]) ? "Y" : "N"
+                    ,"maps"             => $has_map ? "Y" : "N"
                     ,"data_processed"   => $data["data_processed"] ?? null
                     ,"device"           => $data["device"]
                     ,"transcriptions"   => $data["transcriptions"] ?? null
