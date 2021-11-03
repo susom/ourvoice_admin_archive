@@ -199,7 +199,6 @@ function generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landsc
 	echo implode("\r\n",$html_block);
 }
 
-$_id = "IRV_281DA1B2-CC01-44FD-9CB4-74212F37455C_1633016301729";
 if(!empty($_id)){
 	$data_geos 			= $ds->getWalkIdDataGeos($_id);
 	$photo_geos 		= $data_geos["photo_geos"];
