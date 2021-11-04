@@ -281,8 +281,6 @@ class Datastore {
                 if ($document->exists()) {
                     $data = $document->data();
 
-                    print_rr($data);
-
                     if(array_key_exists("archived", $data) && $data["archived"]){
                         //continue;
                     }
