@@ -617,7 +617,7 @@ class Datastore {
             $midnight_plus  = $midnight + 86400000;
             $ov_walks       = $this->firestore->collection($this->walks_collection);
 
-
+            //TODO NEED AWAY TO QUERY BOTH INTERGER AND STRING FUCKING TIMESTAMPS
             $query          = $ov_walks->where('project_id', '=', $project_code)
                 ->where('timestamp', '>=', $midnight)
                 ->where('timestamp', '<', $midnight_plus);
@@ -646,7 +646,7 @@ class Datastore {
                 array_push($result, $walk_data);
             }
 
-
+            //TODO THIS IS FUCKED UP
             //FUCK THIS SHIT FUCK THIS SHIT FUCK IT! SOEM TIMESTAMPS ARE INT SOME ARE STRINGS WHAT THEFUCK MAN
             $midnight       = strval($midnight);
             $midnight_plus  = strval($midnight_plus);

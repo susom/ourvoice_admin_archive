@@ -209,11 +209,12 @@ if(!empty($_POST["action"])){
             $prop           = !empty($_POST["prop"]) ? filter_var($_POST["prop"], FILTER_SANITIZE_STRING) : null;
             if($text_comment){
                 $text_comment = str_replace('"','&#39;', $text_comment);
-                if(isset($photos[$photo_i])){
+                if(!empty($photos[$photo_i])){
                     if($prop == "text_comment"){
                         $photos[$photo_i]["text_comment"] = $text_comment;
                     }
-                    if(isset($photos[$photo_i]["audios"][$prop])){
+
+                    if(array_key_exists($prop, $photos[$photo_i]["audios"])){
                         $photos[$photo_i]["audios"][$prop] = $text_comment;
                     }
 

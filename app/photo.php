@@ -110,8 +110,8 @@ $page = "photo_detail";
 					//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
                     //NEED TO ASSUME THE MP3 will bE THERE I GUESS
 
-                    $filename = str_replace(".wav", ".mp3", $filename);
-                    $attach_url 	= $ds->getStorageFile(cfg::$gcp_bucketName, $_id, $filename);
+                    $filename_mp3   = str_replace(".wav", ".mp3", $filename);
+                    $attach_url 	= $ds->getStorageFile(cfg::$gcp_bucketName, $_id, $filename_mp3);
 
                     //CHECK IF MP3 is THERE BEFORE SHOWING ANYTHING SHEEET
                     $file_check     = get_head($attach_url);
@@ -137,7 +137,7 @@ $page = "photo_detail";
                     $transcription  = "";
                     if(!empty($txn)){
                         $start_text = $txn;
-                        if(array_key_exists("text", $txn)){
+                        if(is_array($txn) && array_key_exists("text", $txn)){
                             $start_text = $txn["text"];
                         }
                         $transcription  = str_replace('&#34;','"', $start_text);
@@ -145,14 +145,13 @@ $page = "photo_detail";
                         $transcription  = str_replace("rnrn", "\r\n\r\n",$transcription);
                     }
 
-
 					$audio_attachments .=   "<div class='audio_clip mic'>
 												<audio controls>
 													<source src='$audio_src'/>
 												</audio> 
 												<a class='refresh_audio' href='$just_file' title='Audio not working?  Click to refresh.'>&#8635;</a> 
 												<div class='forprint'>$transcription</div>
-												<textarea class='audio_txn' name='$filename' placeholder='Click the icon and transcribe what you hear'></textarea>
+												<textarea class='audio_txn' name='$filename' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
 												<p id = 'confidence_exerpt'>$script</p>
 					 						</div>";
 				}
@@ -462,13 +461,11 @@ $(document).ready(function(){
                 data["prop"]    = prop;
                 data["text"]    = val;
                 data["action"]  = prop == "text_comment" ? "save_text_comment" : "save_audio_txn";
-                console.log("fuck now?",ajax_handler,data);
                 $.ajax({
                     method: "POST",
                     url: ajax_handler,
                     data: data,
                     success:function(response){
-                        console.log(response);
                         // window.location.reload(true);
                         $("#save_txns").removeClass("waiting");
                     }
