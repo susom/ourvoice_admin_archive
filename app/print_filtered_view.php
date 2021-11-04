@@ -11,7 +11,7 @@ $pcode 			= isset($_GET["pcode"]) ? filter_var($_GET["pcode"], FILTER_SANITIZE_S
 $project_fs     = $ds->getProject($pcode);
 $project_data   = $project_fs->snapshot()->data();
 $project_tags   = array_key_exists("tags", $project_data) ? $project_data["tags"] : array();
-$google_bucket  = "dev_ov_walk_files";
+$google_bucket  = "ov_walk_files";
 
 
 function generateWalkMap($photo_geos){

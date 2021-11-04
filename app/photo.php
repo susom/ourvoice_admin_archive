@@ -108,7 +108,7 @@ $page = "photo_detail";
 			if(isset($photo["audios"])){
 				foreach($photo["audios"] as $filename => $txn){
 					//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
-	                $attach_url 	= $ds->getStorageFile("dev_ov_walk_files", $_id, $filename);
+	                $attach_url 	= $ds->getStorageFile("ov_walk_files", $_id, $filename);
 					$audio_src 		= $attach_url;
 					$just_file 		= $attach_url;
 					$script 		= "";
