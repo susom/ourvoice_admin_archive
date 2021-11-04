@@ -617,26 +617,43 @@ class Datastore {
             $midnight_plus  = $midnight + 86400000;
             $ov_walks       = $this->firestore->collection($this->walks_collection);
 
+
             $query          = $ov_walks->where('project_id', '=', $project_code)
                 ->where('timestamp', '>=', $midnight)
                 ->where('timestamp', '<', $midnight_plus);
             $snapshot       = $query->documents();
 
-            //FUCK THIS SHIT 1 m illion %
-            $snap_ok = false;
             foreach ($snapshot as $document) {
-                $snap_ok  = true;
-                break;
+                $_id        = $document->id();
+                $walk_data  = $document->data();
+
+                if(array_key_exists("_deleted",$walk_data)){
+                    continue;
+                }
+                $geocoll    = $ov_walks->document($_id)->collection("geotags")->documents();
+                $geotags    = array();
+                if($geocoll){
+                    foreach($geocoll as $fakeidx => $geotag){
+                        $data_array = $geotag->data();
+                        $geo_data   = isset($data_array[0]) ? current($data_array) : $data_array;
+                        $geotags[$geotag->id()] = $geo_data;
+                    }
+                }
+                ksort($geotags);
+
+                $walk_data["_id"]       = $_id;
+                $walk_data["geotags"]   = $geotags;
+                array_push($result, $walk_data);
             }
-            //FUCK THIS SHIT FUCK THIS SHIT FUCK IT!
-            if(!$snap_ok){
-                $midnight       = strval($midnight);
-                $midnight_plus  = strval($midnight_plus);
-                $query          = $ov_walks->where('project_id', '=', $project_code)
-                    ->where('timestamp', '>=', $midnight)
-                    ->where('timestamp', '<', $midnight_plus);
-                $snapshot       = $query->documents();
-            }
+
+
+            //FUCK THIS SHIT FUCK THIS SHIT FUCK IT! SOEM TIMESTAMPS ARE INT SOME ARE STRINGS WHAT THEFUCK MAN
+            $midnight       = strval($midnight);
+            $midnight_plus  = strval($midnight_plus);
+            $query          = $ov_walks->where('project_id', '=', $project_code)
+                ->where('timestamp', '>=', $midnight)
+                ->where('timestamp', '<', $midnight_plus);
+            $snapshot      = $query->documents();
 
 	        foreach ($snapshot as $document) {
 	            $_id        = $document->id();

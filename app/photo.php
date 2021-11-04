@@ -113,7 +113,7 @@ $page = "photo_detail";
                     $filename = str_replace(".wav", ".mp3", $filename);
                     $attach_url 	= $ds->getStorageFile(cfg::$gcp_bucketName, $_id, $filename);
 
-                    //CHECK IF MP3 is THERE
+                    //CHECK IF MP3 is THERE BEFORE SHOWING ANYTHING SHEEET
                     $file_check     = get_head($attach_url);
                     $file_check     = current($file_check);
                     $file_exists    = (!empty($file_check["Status"]) && strpos($file_check["Status"],"OK") > 0 );
@@ -462,16 +462,17 @@ $(document).ready(function(){
                 data["prop"]    = prop;
                 data["text"]    = val;
                 data["action"]  = prop == "text_comment" ? "save_text_comment" : "save_audio_txn";
+                console.log("fuck now?",ajax_handler,data);
                 $.ajax({
                     method: "POST",
                     url: ajax_handler,
                     data: data,
                     success:function(response){
-                        // console.log(response);
+                        console.log(response);
                         // window.location.reload(true);
+                        $("#save_txns").removeClass("waiting");
                     }
                 });
-                $("#save_txns").removeClass("waiting");
             });
         }
     });
