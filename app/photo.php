@@ -108,22 +108,44 @@ $page = "photo_detail";
 			if(isset($photo["audios"])){
 				foreach($photo["audios"] as $filename => $txn){
 					//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
-	                $attach_url 	= $ds->getStorageFile("ov_walk_files", $_id, $filename);
-					$audio_src 		= $attach_url;
+                    //NEED TO ASSUME THE MP3 will bE THERE I GUESS
+
+                    $filename = str_replace(".wav", ".mp3", $filename);
+                    $attach_url 	= $ds->getStorageFile(cfg::$gcp_bucketName, $_id, $filename);
+
+                    //CHECK IF MP3 is THERE
+                    $file_check     = get_head($attach_url);
+                    $file_check     = current($file_check);
+                    $file_exists    = (!empty($file_check["Status"]) && strpos($file_check["Status"],"OK") > 0 );
+
+                    if(!$file_exists){
+                        continue;
+                    }
+
+                    $audio_src 		= $attach_url;
 					$just_file 		= $attach_url;
 					$script 		= "";
+
+                    //ADD AUTO TRANSCRIBE BACK HERE
 	    //             $audio_src 		= getConvertedAudio($attach_url, $lang);
 	    //             $just_file 		= str_replace("./temp/","",$audio_src);
 					// $confidence 	= appendConfidence($attach_url);
 					// $script 		= !empty($confidence) ? "This audio was transcribed using Google's API at ".round($confidence*100,2)."% confidence" : "";
 
 					//Works for archaic saving scheme as well as the new one :
+                    $start_text     = "";
                     $transcription  = "";
                     if(!empty($txn)){
-                        $transcription  = str_replace('&#34;','"', $txn);
+                        $start_text = $txn;
+                        if(array_key_exists("text", $txn)){
+                            $start_text = $txn["text"];
+                        }
+                        $transcription  = str_replace('&#34;','"', $start_text);
                         $transcription  = str_replace('&#34;','"', $transcription);
                         $transcription  = str_replace("rnrn", "\r\n\r\n",$transcription);
                     }
+
+
 					$audio_attachments .=   "<div class='audio_clip mic'>
 												<audio controls>
 													<source src='$audio_src'/>
