@@ -94,8 +94,7 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
     var LatLngBounds = new google.maps.LatLngBounds();
     if(o_walk_geos){
         for(var i in o_walk_geos) {
-            if(o_walk_geos[i] && o_walk_geos[i].hasOwnProperty("lat") && o_walk_geos[i].hasOwnProperty("lng")){
-                console.log("what the fuck now");
+            if(o_walk_geos[i]){
                 var ltlnpt = new google.maps.LatLng(o_walk_geos[i]["lat"], o_walk_geos[i]["lng"]);
                 LatLngBounds.extend(ltlnpt);
             }
@@ -105,7 +104,7 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
             LatLngBounds.extend(walkMap[i]);
         }
     }
-    
+
     window[map_id].fitBounds(LatLngBounds); 
     
 //NEW

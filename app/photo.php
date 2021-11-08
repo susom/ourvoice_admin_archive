@@ -39,25 +39,22 @@ $page = "photo_detail";
 				$_SESSION["DT"]["project_list"][$proj_idx]["tags"] = array();
 			}
 
-			// filter out low accuracy
-		    $forjsongeo = !empty($doc["photo"]["geotag"]) ? $doc["photo"]["geotag"] : array();
-		    $walk_geo 	= json_encode($forjsongeo);
+            $walk_bounding_geos = json_encode($doc["bounding_geos"]);
 
-		    // print_rr($doc);
 
-			$photo 		= $doc["photo"];
+            $photo 		= $doc["photo"];
 			$device 	= $doc["device"]["platform"] ?? null;
 			$prevnext 	= [];
 
 			$lang       = $doc["lang"];
 			$photo_i 	= $photo["i"];
-			//PREV NEXT
-			// if(isset($photos[$i-1])){
-			// 	$prevnext[0] = "photo.php?_id=" . $doc["_id"] . "&_file=photo_" . ($i - 1) . ".jpg";
-			// }
-			// if(isset($photos[$i+1])){
-			// 	$prevnext[1] = "photo.php?_id=" . $doc["_id"] . "&_file=photo_" . ($i + 1) . ".jpg";
-			// }
+			//PREV NEX
+			 if(!empty($photo["prev"]) || $photo["prev"] > -1){
+			 	$prevnext[0] = "photo.php?_id=" . $_id . "&_file=photo_" . $photo["prev"] . ".jpg";
+			 }
+			 if(!empty($photo["next"])){
+			 	$prevnext[1] = "photo.php?_id=" . $_id . "&_file=photo_" . $photo["next"] . ".jpg";
+			 }
 
 			$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
 			$hasrotate 	= isset($photo["rotate"]) ? $photo["rotate"] : 0;
@@ -191,7 +188,8 @@ $page = "photo_detail";
 				$geotags   = array();
 				$geotags[] = array("lat" => $lat, "lng" => $long);
 				$json_geo  = json_encode($geotags);
-				$gmaps[]   = "drawGMap($json_geo, 0, 16, $walk_geo);\n";
+
+				$gmaps[]   = "drawGMap($json_geo, 0, 16, $walk_bounding_geos);\n";
 
 			echo 		"</div>";
 			

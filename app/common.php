@@ -313,7 +313,7 @@ function printRow($doc, $i){
             continue;
         }
 
-        $hasaudio   = !empty($photo["audio"]) ? "has" : "";
+        $hasaudio   = !empty($photo["audios"]) ? "has" : "";
 
         if(isset($photo["geotag"]["lng"]) &&  isset($photo["geotag"]["lat"])){
             $long   = $photo["geotag"]["lng"];
@@ -359,8 +359,8 @@ function printRow($doc, $i){
             $text_comment  = "<a class='audio keyboard'></a> ";
         }
 
-        if(!empty($photo["audio"])){
-            $num_audios = intval($photo["audio"]);
+        if(!empty($photo["audios"])){
+            $num_audios = count($photo["audios"]);
             $num        = $num_audios > 1 ? "<span>x$num_audios</span>" :"";
             $audio_attachments .= "<a class='audio $hasaudio'></a> $num";
         }

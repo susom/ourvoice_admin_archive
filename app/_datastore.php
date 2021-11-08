@@ -459,6 +459,22 @@ class Datastore {
                     break;
                 };
 
+                if($photo){
+                    $photo["prev"] = isset( $data["photos"][$photo["i"]-1] ) ? $photo["i"]-1 : null;
+                    $photo["next"] = isset( $data["photos"][$photo["i"]+1] ) ? $photo["i"]+1 : null;
+                }
+
+                $geocoll    = $ov_projects->collection("geotags")->documents();
+                $geotags    = array();
+                if($geocoll){
+                    foreach($geocoll as $fakeidx => $geotag){
+                        $data_array = $geotag->data();
+                        $geo_data   = isset($data_array[0]) ? current($data_array) : $data_array;
+                        $geotags[$geotag->id()] = $geo_data;
+                    }
+                }
+                ksort($geotags);
+
                 $dt         = new DateTime("now", new DateTimeZone($walk_tz)); //first argument "must" be a string
                 $dt->setTimestamp(round($data["timestamp"]/1000)); //adjust the object to correct timestamp
                 $walk_date  = $dt->format('Y-m-d H:i');
@@ -472,6 +488,7 @@ class Datastore {
                     ,"lang"             => $data["lang"]
                     ,"project_id"       => $pcode
                     ,"photo"            => $photo
+                    ,"bounding_geos"    => $geotags
                 );
             } else {
                 //Walk couldnt be found $snapshot->id();
@@ -918,6 +935,8 @@ class Datastore {
             $nowtime        = time()*1000;
             $nowtime_minus  = $nowtime - ($days*86400000);
 
+
+            //TODO HERE TOO? FUCK THIS SHIT
             $ov_walks       = $this->firestore->collection($this->walks_collection);
             $query          = $ov_walks
                 ->where('timestamp', '>', $nowtime_minus)
@@ -943,6 +962,35 @@ class Datastore {
                     $result[$proj_id] = $ts;
                 }
             }
+
+            //TODO THIS IS SOME FUCKING BULLSHIT, BUT I DONT HAVE ONE FUCKING DAY OF TIME WITHOUT BEING PESTERED WITH URGENT DEMANDS TO ADDRESS IT SO FUCK IT !
+            $nowtime        = strval($nowtime);
+            $nowtime_minus  = strval($nowtime_minus);
+            $query          = $ov_walks
+                ->where('timestamp', '>', $nowtime_minus)
+                ->where('timestamp', '<=', $nowtime);
+
+            $snapshot       = $query->documents();
+            foreach ($snapshot as $document) {
+                $_id        = $document->id();
+                $walk_data  = $document->data();
+
+                $ts         = $walk_data["timestamp"];
+                $proj_id    = $walk_data["project_id"];
+
+                if(array_key_exists("_deleted",$walk_data)){
+                    continue;
+                }
+
+                if(!array_key_exists($proj_id, $result)){
+                    $result[$proj_id]   = $ts;
+                }
+
+                if($result[$proj_id] < $ts){
+                    $result[$proj_id] = $ts;
+                }
+            }
+
             arsort($result);
         }
 
