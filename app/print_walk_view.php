@@ -69,11 +69,10 @@ function generatePhotoPage($photo, $active_pid, $pcode, $page, $total, $highligh
 	///////////////////////////// GET TRANSCRIPTIONS START /////////////////////////////		
 	$retTranscript 	= array();
 	$photo_tags 	= !empty($photo["tags"]) ? $photo["tags"] : array();
-	if(!empty($photo["audios"]) && !empty($photo["transcriptions"])){
-		foreach($photo["audios"] as $audiofile){
-			if(isset($photo["transcriptions"][$audiofile])){
-				$txn 	= $photo["transcriptions"][$audiofile];
-
+	if(!empty($photo["audios"])){
+		foreach($photo["audios"] as $audiofile => $transcription){
+			if(isset($transcription)){
+				$txn 	= is_array($transcription) ? $transcription : array("text" => $transcription);
 				$txns 	= str_replace('&#34;','"', $txn["text"]);
 				$txns 	= str_replace("rnrn","<br><br>", $txns);
 				array_push($retTranscript, array("type" => "audio" , "content" => $txns));
