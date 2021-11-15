@@ -61,26 +61,22 @@ function generatePhotoPage($photo, $pcode, $page, $total, $highlight_tag=null){
 	    exit ("Invalid id or file");
 	}
 
-	// Do initial query to get metadata from couchdb
-	$url        = cfg::$couch_url . "/". cfg::$couch_attach_db."/" . $id;
-
 	$tags 		= !empty($photo["tags"]) ? $photo["tags"] : null;
-	$htmlphoto 	= $photo_uri;
+	$htmlphoto 	= $photo["full_img"];;
 	///////////////////////////// GET MAIN PHOTO END ///////////////////////////// 
 
 	///////////////////////////// GET TRANSCRIPTIONS START /////////////////////////////		
 	$retTranscript 	= array();
 	$photo_tags 	= !empty($photo["tags"]) ? $photo["tags"] : array();
-	if(!empty($photo["audios"]) && !empty($photo["transcriptions"])){
-		foreach($photo["audios"] as $audiofile){
-			if(isset($photo["transcriptions"][$audiofile])){
-				$txn 	= $photo["transcriptions"][$audiofile];
-
-				$txns 	= str_replace('&#34;','"', $txn["text"]);
-				$txns 	= str_replace("rnrn","<br><br>", $txns);
-				array_push($retTranscript, array("type" => "audio" , "content" => $txns));
-			}
-		}
+	if(!empty($photo["audios"]) ){
+        foreach($photo["audios"] as $audiofile => $transcription){
+            if(isset($transcription)){
+                $txn 	= is_array($transcription) ? $transcription : array("text" => $transcription);
+                $txns 	= str_replace('&#34;','"', $txn["text"]);
+                $txns 	= str_replace("rnrn","<br><br>", $txns);
+                array_push($retTranscript, array("type" => "audio" , "content" => $txns));
+            }
+        }
 	}
     if(!empty($photo["text_comment"])){
     	$photo_comment = str_replace("rnrn","<br><br>",$photo["text_comment"]);
@@ -142,17 +138,17 @@ function generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landsc
 	
 	//make sure the image is whole (broken images wont have a resource id)
 //	$resource_id 	= imagecreatefromstring($htmlphoto);
-//	$image_is_gd 	= get_resource_type($resource_id);
+	$image_is_gd 	= "gd";//get_resource_type($resource_id);
 //
 //
 	$gmapsPhoto 		= base64_encode($gmapsPhoto);
 	$html_block[] 		= "<div class='photo_map'>";
-//	if($image_is_gd == "gd"){
+	if($image_is_gd == "gd"){
 		$wh 			= $landscape ? "width='100%'" : "height='100%'";
 		$html_block[] 	= "<div class='photo_cont rotate' rev='$rotation'><img $wh  src='$htmlphoto'/></div>";
-//	}else{
-//		$html_block[] 	= "<div class='photo_cont'><h4>Image Not Available</h4></div>";
-//	}
+	}else{
+		$html_block[] 	= "<div class='photo_cont'><h4>Image Not Available</h4></div>";
+	}
 	$html_block[] 		= "<div class='map_cont'><img class='map' src='data:image/png;base64, $gmapsPhoto' height='100%'/></div>";
 	$html_block[] 		= "</div>";
 
@@ -427,7 +423,7 @@ if(!empty($pcode) ){
 					$page++;
 				}
 			}
-			set_time_limit(10);
+			set_time_limit(5);
 		}
 	}
 ?>

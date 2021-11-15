@@ -399,7 +399,7 @@ if(!empty($_id)){
         foreach($photos as $photo){
             generatePhotoPage($photo, $active_pid, $pcode, $page, $total);
             $page++;
-            set_time_limit(10);
+            set_time_limit(5);
         }
     }
 ?> 
