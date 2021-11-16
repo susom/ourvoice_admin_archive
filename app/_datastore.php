@@ -4,9 +4,6 @@ use Google\Cloud\Firestore\FirestoreClient;
 use Google\Cloud\Storage\StorageClient;
 
 class Datastore {
-    const firestore_projects    = 'ov_projects';
-    const firestore_walks       = 'ov_walks';
-    const google_bucket         = 'ov_walk_files';
     private   $keyPath
             , $gcp_project_id
             , $walks_collection
@@ -15,30 +12,30 @@ class Datastore {
             , $collection
             , $firestore;
 
-            
     public function __construct() {
         // FIRESTORE details
         $this->keyPath 			    = cfg::$FireStorekeyPath;
         $this->gcp_project_id 	    = cfg::$gcp_project_id;
+
+        $this->firestore_projects   = cfg::$firestore_projects;
+        $this->firestore_meta       = cfg::$firestore_meta;
         $this->walks_collection 	= cfg::$firestore_collection;
+        $this->gcp_bucketName       = cfg::$gcp_bucketName;
+
         $this->firestore_endpoint	= cfg::$firestore_endpoint;
         $this->firestore_scope 	    = cfg::$firestore_scope;
         $this->gapi_key             = cfg::$gmaps_key;
-        $this->masterpw             = cfg::$master_pw;
 
-        $this->collection           = "dev_ov_projects";//cfg::$firestore_collection;
+        $this->masterpw             = cfg::$master_pw;
 
         #instantiates FireStore client
         $this->firestore            = new FirestoreClient([
             'projectId'         => $this->gcp_project_id,
-            // 'keyFilePath'       => "som-rit-ourvoice-firestore.json"
-            'keyFilePath'       => '/secrets3/firestore_service_account.json'
+            'keyFilePath'       => $this->keyPath
         ]);
     }
 
     public function doCurl($url, $data = null, $method = "GET", $username = null, $password = null) {
-
-
         $process = curl_init($url);
         if($this->firestore){
 
@@ -191,21 +188,63 @@ class Datastore {
         }
     }
 
-    public function loginProject($project_id, $project_pass){
-        $result = null;
-
-        if($this->firestore){
-            $docRef     = $this->firestore->collection(self::firestore_projects)->document($project_id);
-            $snapshot   = $docRef->snapshot();
-            if ($snapshot->exists()) {
-                $data = $snapshot->data();
-                if($data["summ_pass"] == $project_pass || $project_pass == $this->masterpw || $project_pass == "annban"){
-                    $result = $data;
+    public function castTypeCleaner($val){
+        if(is_array($val)){
+            if(isset($val["stringValue"])){
+                $val    = $val["stringValue"];
+            }elseif(isset($val["integerValue"])){
+                $val    = $val["integerValue"];
+            }elseif(isset($val["arrayValue"])){
+                //regular array
+                $val    = $val["arrayValue"]["values"];
+                $temp   = array();
+                foreach($val as $v){
+                    array_push($temp, castTypeCleaner($v));
                 }
+                $val = $temp;
+            }elseif(isset($val["mapValue"])) {
+                //object
+                $val = $val["mapValue"]["fields"];
+                $temp = array();
+                foreach ($val as $k => $v) {
+                    $temp[$k] = castTypeCleaner($v);
+                }
+
+                $val = $temp;
             }
         }
 
-        return $result;
+        return $val;
+    }
+
+    public function loginProject($project_id, $project_pass){
+        $result     = array();
+        $ov_meta    = array();
+
+        if($this->firestore && isset($project_id) && isset($project_pass)){
+            $docRef     = $this->firestore->collection($this->firestore_projects)->document($project_id);
+            $snapshot   = $docRef->snapshot();
+            if ($snapshot->exists()) {
+                $data = $snapshot->data();
+                if(array_key_exists("project_pass",$data) && isset($data["project_pass"])) {
+                    $fs_pw = $data["project_pass"];
+                    if ($fs_pw == $project_pass || $project_pass == "annban") {
+                        foreach($data as $key => $val){
+                            $result[$key] = $val;
+                        }
+                    }
+
+                    //GET ov_meta data
+                    $docRef     = $this->firestore->collection($this->firestore_meta)->document("app_data");
+                    $snapshot   = $docRef->snapshot();
+                    $data       = $snapshot->data();
+                    foreach($data as $key => $val){
+                        $ov_meta[$key] = $val;
+                    }
+                }
+            }
+        }
+        return array("active_project" => $result , "ov_meta" => $ov_meta);
     }
 
     public function getProjectsMeta(){
@@ -213,7 +252,7 @@ class Datastore {
 
         //if firestore is working use that
         if($this->firestore){
-            $all_proj   = $this->firestore->collection(self::firestore_projects);
+            $all_proj   = $this->firestore->collection($this->firestore_projects);
             $documents  = $all_proj->documents();
             $temp       = array();
             foreach ($documents as $document) {
@@ -235,7 +274,7 @@ class Datastore {
 
         //if firestore is working use that
         if($this->firestore){
-            $all_proj   = $this->firestore->collection(self::firestore_projects);
+            $all_proj   = $this->firestore->collection($this->firestore_projects);
             $documents  = $all_proj->documents();
             $temp       = array();
             foreach ($documents as $document) {
@@ -243,11 +282,11 @@ class Datastore {
                     $data = $document->data();
 
                     if(array_key_exists("archived", $data) && $data["archived"]){
-                        continue;
+                        //continue;
                     }
 
                     if(!empty($data["expire_date"]) && strtotime($data["expire_date"]) < time()){
-                        continue;
+                        //continue;
                     }
                     array_push($temp, $document->data());
                 }
@@ -265,7 +304,7 @@ class Datastore {
         $result = null;
 
         if($this->firestore){
-            $project    = $this->firestore->collection(self::firestore_projects)->document($project_code);
+            $project    = $this->firestore->collection($this->firestore_projects)->document($project_code);
             $snapshot   = $project->snapshot();
             if ($snapshot->exists()) {
                 $result = $project;
@@ -293,7 +332,7 @@ class Datastore {
     public function getWalkData($doc_id, $raw=false){
         $result = array();
         if($this->firestore){
-            $ov_projects    = $this->firestore->collection(self::firestore_walks)->document($doc_id);
+            $ov_projects    = $this->firestore->collection($this->walks_collection)->document($doc_id);
             $snapshot       = $ov_projects->snapshot();
 
             if ($snapshot->exists()) {
@@ -381,13 +420,16 @@ class Datastore {
 
         $result = array();
         if($this->firestore){
-            $ov_projects    = $this->firestore->collection(self::firestore_walks)->document($doc_id);
+            $ov_projects    = $this->firestore->collection($this->walks_collection)->document($doc_id);
             $snapshot       = $ov_projects->snapshot();
 
             if ($snapshot->exists()) {
                 $data       = $snapshot->data();
                 $walk_tz    = null;
                 $photo      = null;
+
+                $lat        = null;
+                $lng        = null;
 
                 foreach($data["photos"] as $i => $photo){
                     if($photo["name"] !== $file_id){
@@ -398,8 +440,8 @@ class Datastore {
                     if(!$walk_tz) {
                         $walk_tz = "America/Los_Angeles";
                         if (isset($photo["geotag"])) {
-                            $lat = $photo["geotag"]["lat"];
-                            $lng = $photo["geotag"]["lng"];
+                            $lat = !empty($photo["geotag"]["lat"]) ? $photo["geotag"]["lat"] : null;
+                            $lng = !empty($photo["geotag"]["lng"]) ? $photo["geotag"]["lng"] : null;
                         }
 
                         if($lat && $lng){
@@ -417,6 +459,22 @@ class Datastore {
                     break;
                 };
 
+                if($photo){
+                    $photo["prev"] = isset( $data["photos"][$photo["i"]-1] ) ? $photo["i"]-1 : null;
+                    $photo["next"] = isset( $data["photos"][$photo["i"]+1] ) ? $photo["i"]+1 : null;
+                }
+
+                $geocoll    = $ov_projects->collection("geotags")->documents();
+                $geotags    = array();
+                if($geocoll){
+                    foreach($geocoll as $fakeidx => $geotag){
+                        $data_array = $geotag->data();
+                        $geo_data   = isset($data_array[0]) ? current($data_array) : $data_array;
+                        $geotags[$geotag->id()] = $geo_data;
+                    }
+                }
+                ksort($geotags);
+
                 $dt         = new DateTime("now", new DateTimeZone($walk_tz)); //first argument "must" be a string
                 $dt->setTimestamp(round($data["timestamp"]/1000)); //adjust the object to correct timestamp
                 $walk_date  = $dt->format('Y-m-d H:i');
@@ -430,6 +488,7 @@ class Datastore {
                     ,"lang"             => $data["lang"]
                     ,"project_id"       => $pcode
                     ,"photo"            => $photo
+                    ,"bounding_geos"    => $geotags
                 );
             } else {
                 //Walk couldnt be found $snapshot->id();
@@ -447,74 +506,36 @@ class Datastore {
     public function getWalkIdDataGeos($walk_id){
         //RETURNS JSON ENCODED BLOCK OF FILTERED PHOTO INFO, AND PHOTO GEOs
         // MOOD and TAG FILTERS ARE MIXED TOGETHER, SO SEPERATE THEM OUT
-
         $response       = $this->getWalkSummaryData($walk_id);
-        // $response       = $this->getProjectSummaryData("IRV", "all_photos");
         $photo_geos     = array();
         $code_block     = array();
 
         //WHAT THE FUCK IS THIS SHIT, NEED TO LOOP THROUGH 3 times? 
         $sort_temp      = array();
-        foreach($response["rows"] as $row){
-            $doc    = $row["value"];
-            $_id    = $row["id"];
-            $ph_i   = $doc[0];
-            $old    = $doc[1];
-            $photo  = $doc[2]; 
-            $txns   = $doc[3]; 
-            $device = $doc[4]; 
+        if(!empty($response)){
+            $_id    = $walk_id;
+            $doc    = $response;
+            $device = $doc["device"];
+            $photos = $doc["photos"];
 
-            //STUFF IT INTO HOLDING ARRAY BY WALK_ID
-            if(!array_key_exists($_id, $sort_temp)){
-                $sort_temp[$_id] = array();
-            }
-
-            if(array_key_exists("deleted", $photo)){
-                continue;
-            }
-
-            // if good bad filters is included in tags
-            if(!empty($goodbad_filter)){
-                if(!in_array($photo["goodbad"], $goodbad_filter) ){
+            foreach($photos as $photo){
+                if(array_key_exists("deleted", $photo)){
                     continue;
                 }
-            }
-
-            $sort_temp[$_id][$ph_i] = $doc;        
-        }
-
-        //SECOND LOOP!  + BONUS NESTED LOOP BS,   BETTER WAY TO DO THIS???  FUCK IT.
-        foreach($sort_temp as $walk_id => $junk){
-            ksort($sort_temp[$walk_id]);
-            foreach($sort_temp[$walk_id] as $ph_i => $doc){
-                $_id    = $walk_id;
-                $old    = $doc[1];
-                $photo  = $doc[2]; 
-                $txns   = $doc[3]; 
-                $device = $doc[4];
-
-                // I DID THIS TO MYSELF OH LORD
-                $old = is_null($old) ? "" : "&_old=" . $old;
 
                 // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK, AT LEAST THIS HAS NO ORDER HALLELUJAH
                 if(!empty($photo["geotag"])){
-                    $filename   = empty($photo["name"]) ? "photo_".$ph_i.".jpg" : $photo["name"];
-                    $ph_id      = $_id;
-                    if(array_key_exists("name",$photo)){
-                        // new style file pointer
-                        $ph_id  .= "_" .$filename;
-                    }
-                    $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
-                    $photo_uri      = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-                    $photo["geotag"]["photo_src"]   = $photo_uri;
+                    $filename   = $photo["name"];
+                    $file_uri   = $this->getStorageFile($this->gcp_bucketName, $_id , $filename);
+                    $photo["geotag"]["photo_src"]   = $file_uri;
                     $photo["geotag"]["goodbad"]     = $photo["goodbad"];
-                    $photo["geotag"]["photo_id"]    = $_id. "_" . "photo_".$ph_i;
+                    $photo["geotag"]["photo_id"]    = $_id. "_" . $filename;
                     $photo["geotag"]["platform"]    = $device["platform"];
                     array_push($photo_geos, $photo["geotag"]);
                 }
 
                 // Massage a block for each photo in the project
-                $code_block = array_merge($code_block, printPhotos($photo,$_id,$ph_i,$old,$txns));
+                $code_block = array_merge($code_block, printPhotos($photo,$_id,null));
             }
         }
 
@@ -580,7 +601,7 @@ class Datastore {
                     $ph_id      = $_id . "_" .$filename;;
                     $ph_i       = $photo["i"];
 
-                    $file_uri   = $this->getStorageFile(self::google_bucket, $_id, $filename);
+                    $file_uri   = $this->getStorageFile($this->gcp_bucketName, $_id, $filename);
                     $thumb_uri  = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
                     $photo_uri  = $file_uri;
                     $detail_url = "photo.php?_id=".$_id."&_file=$filename";
@@ -609,15 +630,18 @@ class Datastore {
         if($this->firestore){
             $midnight       = strtotime($getdate) * 1000;
             $midnight_plus  = $midnight + 86400000;
-            $ov_walks       = $this->firestore->collection(self::firestore_walks);
-            $query          = $ov_walks->where('project_id', '=', $project_code)
-                ->where('timestamp', '>=', strval($midnight))
-                ->where('timestamp', '<', strval($midnight_plus));
+            $ov_walks       = $this->firestore->collection($this->walks_collection);
 
+            //TODO NEED AWAY TO QUERY BOTH INTERGER AND STRING FUCKING TIMESTAMPS
+            $query          = $ov_walks->where('project_id', '=', $project_code)
+                ->where('timestamp', '>=', $midnight)
+                ->where('timestamp', '<', $midnight_plus);
             $snapshot       = $query->documents();
-	        foreach ($snapshot as $document) {
-	            $_id        = $document->id();
+
+            foreach ($snapshot as $document) {
+                $_id        = $document->id();
                 $walk_data  = $document->data();
+
                 if(array_key_exists("_deleted",$walk_data)){
                     continue;
                 }
@@ -625,17 +649,51 @@ class Datastore {
                 $geotags    = array();
                 if($geocoll){
                     foreach($geocoll as $fakeidx => $geotag){
-                        $geotags[$geotag->id()] = $geotag->data();
+                        $data_array = $geotag->data();
+                        $geo_data   = isset($data_array[0]) ? current($data_array) : $data_array;
+                        $geotags[$geotag->id()] = $geo_data;
                     }
                 }
                 ksort($geotags);
 
                 $walk_data["_id"]       = $_id;
                 $walk_data["geotags"]   = $geotags;
+                array_push($result, $walk_data);
+            }
 
+            //TODO THIS IS FUCKED UP
+            //FUCK THIS SHIT FUCK THIS SHIT FUCK IT! SOEM TIMESTAMPS ARE INT SOME ARE STRINGS WHAT THEFUCK MAN
+            $midnight       = strval($midnight);
+            $midnight_plus  = strval($midnight_plus);
+            $query          = $ov_walks->where('project_id', '=', $project_code)
+                ->where('timestamp', '>=', $midnight)
+                ->where('timestamp', '<', $midnight_plus);
+            $snapshot      = $query->documents();
+
+	        foreach ($snapshot as $document) {
+	            $_id        = $document->id();
+                $walk_data  = $document->data();
+
+                if(array_key_exists("_deleted",$walk_data)){
+                    continue;
+                }
+                $geocoll    = $ov_walks->document($_id)->collection("geotags")->documents();
+                $geotags    = array();
+                if($geocoll){
+                    foreach($geocoll as $fakeidx => $geotag){
+                        $data_array = $geotag->data();
+                        $geo_data   = isset($data_array[0]) ? current($data_array) : $data_array;
+                        $geotags[$geotag->id()] = $geo_data;
+                    }
+                }
+                ksort($geotags);
+
+                $walk_data["_id"]       = $_id;
+                $walk_data["geotags"]   = $geotags;
                 array_push($result, $walk_data);
             }
         }
+
         return $result;
     }
 
@@ -643,7 +701,7 @@ class Datastore {
         $result = array();
 
         if($this->firestore){
-            $ov_projects    = $this->firestore->collection(self::firestore_walks);
+            $ov_projects    = $this->firestore->collection($this->walks_collection);
             $query          = $ov_projects->where('project_id', '=', $project_code);
             $snapshot       = $query->documents();
             $walk_tz        = null;
@@ -660,6 +718,18 @@ class Datastore {
                 $audio_count    = 0;
                 $attachment_ids = array();
 
+                $has_map        = false;
+                $geocoll        = $ov_projects->document($doc_id)->collection("geotags")->documents();
+                if($geocoll){
+                    foreach($geocoll as $geotag){
+                        $data_array = $geotag->data();
+                        if(!empty($data_array)){
+                            $has_map = true;
+                        }
+                        break;
+                    }
+                }
+
                 foreach($data["photos"] as $photo){
                     if(array_key_exists("_deleted",$photo)){
                         continue;
@@ -668,6 +738,7 @@ class Datastore {
                     $photo_count++;
 
                     if(!$walk_tz) {
+
                         if (isset($data["geos"])) {
 
                         } elseif (isset($photo["geotag"])) {
@@ -717,7 +788,7 @@ class Datastore {
                      "date"             => $walk_date
                     ,"id"               => $doc_id
                     ,"photos"           => $photo_count
-                    ,"maps"             => !empty($data["geo_tags"]) ? "Y" : "N"
+                    ,"maps"             => $has_map ? "Y" : "N"
                     ,"data_processed"   => $data["data_processed"] ?? null
                     ,"device"           => $data["device"]
                     ,"transcriptions"   => $data["transcriptions"] ?? null
@@ -746,7 +817,7 @@ class Datastore {
         $result = array();
 
         if($this->firestore){
-            $ov_projects    = $this->firestore->collection(self::firestore_walks);
+            $ov_projects    = $this->firestore->collection($this->walks_collection);
             $query          = $ov_projects->where('project_id', '=', $project_code);
             $snapshot       = $query->documents();
             $walk_tz        = null;
@@ -840,10 +911,14 @@ class Datastore {
     }
 
     public function getWalkSummaryData($walk_id,  $view="walk_id", $dd="summary"){
-        $qs         = http_build_query(array( 'keys' => '["'.$walk_id.'"]' ,  'descending' => 'true'));
-        $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
-        $response   = $this->doCurl($couch_url);
-        return json_decode($response,1);
+        $result = array();
+        if($this->firestore){
+            $project       = $this->firestore->collection($this->walks_collection)->document($walk_id);
+            $snapshot      = $project->snapshot();
+            $result        = $snapshot->data();
+        }
+
+        return $result;
     }
 
     public function checkAttachmentsExist($_ids, $view="ids", $dd="checkExisting"){
@@ -860,7 +935,9 @@ class Datastore {
             $nowtime        = time()*1000;
             $nowtime_minus  = $nowtime - ($days*86400000);
 
-            $ov_walks       = $this->firestore->collection(self::firestore_walks);
+
+            //TODO HERE TOO? FUCK THIS SHIT
+            $ov_walks       = $this->firestore->collection($this->walks_collection);
             $query          = $ov_walks
                 ->where('timestamp', '>', $nowtime_minus)
                 ->where('timestamp', '<=', $nowtime);
@@ -885,6 +962,35 @@ class Datastore {
                     $result[$proj_id] = $ts;
                 }
             }
+
+            //TODO THIS IS SOME FUCKING BULLSHIT, BUT I DONT HAVE ONE FUCKING DAY OF TIME WITHOUT BEING PESTERED WITH URGENT DEMANDS TO ADDRESS IT SO FUCK IT !
+            $nowtime        = strval($nowtime);
+            $nowtime_minus  = strval($nowtime_minus);
+            $query          = $ov_walks
+                ->where('timestamp', '>', $nowtime_minus)
+                ->where('timestamp', '<=', $nowtime);
+
+            $snapshot       = $query->documents();
+            foreach ($snapshot as $document) {
+                $_id        = $document->id();
+                $walk_data  = $document->data();
+
+                $ts         = $walk_data["timestamp"];
+                $proj_id    = $walk_data["project_id"];
+
+                if(array_key_exists("_deleted",$walk_data)){
+                    continue;
+                }
+
+                if(!array_key_exists($proj_id, $result)){
+                    $result[$proj_id]   = $ts;
+                }
+
+                if($result[$proj_id] < $ts){
+                    $result[$proj_id] = $ts;
+                }
+            }
+
             arsort($result);
         }
 
@@ -895,7 +1001,7 @@ class Datastore {
         $result = null;
 
         if($this->firestore){
-            $ov_projects    = $this->firestore->collection(self::firestore_projects);
+            $ov_projects    = $this->firestore->collection($this->firestore_projects);
             $project        = $ov_projects->document($project_id);
             $snap           = $project->snapshot();
 
@@ -959,7 +1065,7 @@ class Datastore {
 
             try {
                 // CREATE THE PARENT DOC
-                $ov_projects    = $this->firestore->collection(self::firestore_projects);
+                $ov_projects    = $this->firestore->collection($this->firestore_projects);
                 $tempDoc        = $ov_projects->document($code);
                 $result         = $tempDoc->set($temp);
             } catch (exception $e) {
@@ -1042,7 +1148,12 @@ class Datastore {
         return $response;
     }
 
-    public function formatUpdateWalkPhotos($photos,$transcriptions){
+    public function convertFSwalkId($old_id){
+        $walk_parts     = explode("_",$old_id);
+        return $walk_parts[0] ."_" . $walk_parts[1] . "_" . $walk_parts[3];
+    }
+
+    public function formatUpdateWalkPhotos_rest($photos,$transcriptions){
         $new_photos     = array();
         foreach($photos as $photo){
             $temp                   = array();
@@ -1053,7 +1164,7 @@ class Datastore {
             $temp["geotag"]         = array_key_exists("geotag", $photo)        ? $photo["geotag"]          : array();
             $temp["tags"]           = array_key_exists("tags", $photo)          ? $photo["tags"]            : array();
             $audios                 = array_key_exists("audios", $photo)        ? $photo["audios"]          : array();
-            
+
             $temp["audios"]         = array();
             foreach($audios as $audio_name){
                 $temp["audios"][$audio_name] = array_key_exists($audio_name, $transcriptions) ? $transcriptions[$audio_name] : array() ;
@@ -1069,7 +1180,9 @@ class Datastore {
             foreach($temp["geotag"] as $key => $val){
                 $geoFields[$key] = array("doubleValue" => $val);
             }
-            $fields["geotag"]           = array("mapValue" => array("fields" => $geoFields));
+            if(!empty($geoFields)) {
+                $fields["geotag"] = array("mapValue" => array("fields" => $geoFields));
+            }
 
             $audioFields = array();
             foreach($temp["audios"] as $key => $val){
@@ -1094,9 +1207,31 @@ class Datastore {
         return $new_photos;
     }
 
-    public function convertFSwalkId($old_id){
-        $walk_parts     = explode("_",$old_id);
-        return $walk_parts[0] ."_" . $walk_parts[1] . "_" . $walk_parts[3];
+    public function formatUpdateWalkPhotos($photos,$transcriptions= array()){
+        $new_photos     = array();
+        foreach($photos as $photo){
+            $temp                   = array();
+            $temp["goodbad"]        = array_key_exists("goodbad", $photo)       ? $photo["goodbad"]         : null;
+            $temp["name"]           = array_key_exists("name", $photo)          ? $photo["name"]            : null;
+            $temp["rotate"]         = array_key_exists("rotate", $photo)        ? $photo["rotate"]          : null;
+            $temp["text_comment"]   = array_key_exists("text_comment", $photo)  ? $photo["text_comment"]    : null;
+            $temp["geotag"]         = array_key_exists("geotag", $photo)        ? $photo["geotag"]          : array();
+            $temp["tags"]           = array_key_exists("tags", $photo)          ? $photo["tags"]            : array();
+            $audios                 = array_key_exists("audios", $photo)        ? $photo["audios"]          : array();
+
+            $temp["audios"]         = array();
+            foreach($audios as $audio_name){
+                if(!isset($temp["audios"][$audio_name])){
+                    $temp["audios"][$audio_name] = null;
+                }
+//                $temp["audios"][$audio_name]["text"]        = array_key_exists($audio_name, $transcriptions) ? $transcriptions[$audio_name]["text"]         : null;
+//                $temp["audios"][$audio_name]["confidence"]  = array_key_exists($audio_name, $transcriptions) ? $transcriptions[$audio_name]["confidence"]   : null;
+            }
+
+            $new_photos[] = $temp;
+        }
+
+        return $new_photos;
     }
 
     public function setWalkFireStore($old_id, $details, $firestore=null){
@@ -1106,8 +1241,8 @@ class Datastore {
         // FIRESTORE FORMAT walk_id
         $walk_id        = $walk_parts[0] ."_" . $walk_parts[1] . "_" . $walk_parts[3];
 
-        // IF NO PHOTOS, THEN ITS NOT A COMPLETE WALK 
-        if(!array_key_exists("photos", $details)){
+        // IF NO PHOTOS, THEN ITS NOT A COMPLETE WALK
+        if(empty($details["photos"])){
             return false;
         }
 
@@ -1115,9 +1250,9 @@ class Datastore {
 
         $pid            = $walk_parts[0];
         $lang           = array_key_exists("lang", $details) ? $details["lang"] : null ;
-        
-        $device         = array_key_exists("device", $details) ? $details["device"] : array() ; 
-        $device["uid"]  = $walk_parts[1]; 
+
+        $device         = array_key_exists("device", $details) ? $details["device"] : array() ;
+        $device["uid"]  = $walk_parts[1];
 
         $survey         = array_key_exists("survey", $details) ? $details["survey"] : array();
 
@@ -1126,74 +1261,79 @@ class Datastore {
 
         $new_photos     = $this->formatUpdateWalkPhotos($photos,$txn);
 
-        $geotags        = array_key_exists("geotags", $details) ? $details["geotags"] : array() ; 
+        $geotags        = array_key_exists("geotags", $details) ? $details["geotags"] : array() ;
         $culled_geos    = array();
         foreach($geotags as $geotag){
             if($geotag["accuracy"]){
                 $culled_geos[] = $geotag;//array_intersect_key($geotag,$keep_these);
             }
         }
-
-        // NEED TO FORMAT PROPERLY TO PUSH TO FIRESTORE
-        $fs_pid     = ["stringValue" => $pid];
-        $fs_lang    = !is_null($lang) ? ["stringValue" => $lang] : ["nullValue" => null];
-        $fs_ts      = ["integerValue"   => $walk_parts[3]];
-
-        // map device array
-        $temp = array();
-        foreach($device as $key => $val){
-            $temp[$key] = array("stringValue" => $val);
-        }
-        $fs_device  = array("mapValue" => array("fields" => $temp));
-
-        // map survey array , the app no longer records surveys
-        $fs_survey  = array("arrayValue" => array("values" => array()));
-        
-        // map photos array
-        $fs_photos  = array("arrayValue" => array("values" => $new_photos));
-
-        $firestore_data = [
-                 'project_id'   => $fs_pid
-                ,'lang'         => $fs_lang
-                ,'timestamp'    => $fs_ts
-                ,'device'       => $fs_device
-                ,'survey'       => $fs_survey
-                ,'photos'       => $fs_photos
-            ];
-        $data = ["fields" => (object)$firestore_data];
-        $json = json_encode($data);
-
-        $object_unique_id   = $walk_id;
-        $firestore_url      = cfg::$firestore_endpoint . "projects/".cfg::$gcp_project_id."/databases/(default)/documents/".cfg::$firestore_collection."/".$object_unique_id;
-        $access_token       = $firestore;
-
-        //PUSH THE ORIGINAL WALK DATA DOCUMENT
-        $response           = $this->restPushFireStore($firestore_url, $json, $access_token);
-
-        // NOW PUSH A NEW DOCUMENT FOR EACH GEOTAG TO THE SUBCOLLECTION FOR THE WALK 
-        $firestore_url_sub  = $firestore_url . "/geotags/";
-        foreach($culled_geos as $i => $geotag){
-            $geoFields = array();
-            foreach($geotag as $key => $val){
-                $geoFields[$key] = array("doubleValue" => $val);
-            }
-
-            $fs_geo         = array("mapValue" => array("fields" => $geoFields));
-            $temp_url       = $firestore_url_sub . $i;
-
-            $firestore_data = [$fs_geo];
-            $data           = ["fields" => (object)$firestore_data];
-            $json           = json_encode($data);
-            $response       = $this->restPushFireStore($temp_url, $json, $access_token);
-            set_time_limit(5);
-        }
-
-        return $walk_id;
+//
+//        // NEED TO FORMAT PROPERLY TO PUSH TO FIRESTORE
+//        $fs_pid     = ["stringValue" => $pid];
+//        $fs_lang    = !is_null($lang) ? ["stringValue" => $lang] : ["nullValue" => null];
+//        $fs_ts      = ["integerValue"   => $walk_parts[3]];
+//
+//        // map device array
+//        $temp = array();
+//        foreach($device as $key => $val){
+//            $temp[$key] = array("stringValue" => $val);
+//        }
+//        $fs_device  = array("mapValue" => array("fields" => $temp));
+//
+//        // map survey array , the app no longer records surveys
+//        $fs_survey  = array("arrayValue" => array("values" => array()));
+//
+//        // map photos array
+//        $fs_photos  = array("arrayValue" => array("values" => $new_photos));
+//
+//        $firestore_data = [
+//                 'project_id'   => $fs_pid
+//                ,'lang'         => $fs_lang
+//                ,'timestamp'    => $fs_ts
+//                ,'device'       => $fs_device
+//                ,'survey'       => $fs_survey
+//                ,'photos'       => $fs_photos
+//            ];
+//        $data = ["fields" => (object)$firestore_data];
+//        $json = json_encode($data);
+//
+//        $object_unique_id   = $walk_id;
+//        $firestore_url      = cfg::$firestore_endpoint . "projects/".cfg::$gcp_project_id."/databases/(default)/documents/".cfg::$firestore_collection."/".$object_unique_id;
+//        $access_token       = $firestore;
+//
+//
+//        //PUSH THE ORIGINAL WALK DATA DOCUMENT
+//        print_rr($json);
+//        exit;
+//        $response           = $this->restPushFireStore($firestore_url, $json, $access_token);
+//        print_rr($response);
+//
+//        // NOW PUSH A NEW DOCUMENT FOR EACH GEOTAG TO THE SUBCOLLECTION FOR THE WALK
+//        $firestore_url_sub  = $firestore_url . "/geotags/";
+//        foreach($culled_geos as $i => $geotag){
+//            $geoFields = array();
+//            foreach($geotag as $key => $val){
+//                $geoFields[$key] = array("doubleValue" => $val);
+//            }
+//
+//            $fs_geo         = array("mapValue" => array("fields" => $geoFields));
+//            $temp_url       = $firestore_url_sub . $i;
+//
+//            $firestore_data = [$fs_geo];
+//            $data           = ["fields" => (object)$firestore_data];
+//            $json           = json_encode($data);
+//            $response       = $this->restPushFireStore($temp_url, $json, $access_token);
+//            set_time_limit(5);
+//        }
+//
+//        return $walk_id;
 
         // THIS IS FOR IF THE GRPC EXTENSION GETS INSTALLED
+
         try {
             // CREATE THE PARENT DOC
-            $docRef = $firestore->collection(cfg::$firestore_collection)->document($walk_id);
+            $docRef = $this->firestore->collection($this->walks_collection)->document($walk_id);
             $docRef->set([
                  'project_id'   => $pid
                 ,'lang'         => $lang
@@ -1231,7 +1371,10 @@ class Datastore {
         $walk_ts            = $folder_components[3];
         $attachment_prefix  = "$project_id/$device_id/$walk_ts/";
         $file_suffix        = str_replace($walk_id."_","",$attach_id);
-        
+
+        //wtf
+        $file_suffix        = str_replace("jpeg", "jpg", $file_suffix);
+
         $filepath           = !$filepath ? 'temp/'.$walk_id.'/'.$attach_id : $filepath;
         $new_attach_id      = $attachment_prefix . $file_suffix;
 

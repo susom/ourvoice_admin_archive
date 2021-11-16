@@ -1,4 +1,6 @@
-<?php     
+<?php
+header("Access-Control-Allow-Origin: *");
+
 require_once "common.php";
 require_once "inc/class.mail.php";
 
@@ -14,7 +16,7 @@ use Google\Cloud\Firestore\FirestoreClient;
 
 // FIRESTORE details
 $keyPath            = cfg::$FireStorekeyPath;
-$gcp_project_id     = cfg::$gcp_project_id; 
+$gcp_project_id     = cfg::$gcp_project_id;
 $walks_collection   = cfg::$firestore_collection; 
 $firestore_endpoint = cfg::$firestore_endpoint; 
 $firestore_scope    = cfg::$firestore_scope;
@@ -22,6 +24,9 @@ $gcp_bucketID       = cfg::$gcp_bucketID;
 $gcp_bucketName     = cfg::$gcp_bucketName;
 $access_token       = $ds->getGCPRestToken($keyPath, $firestore_scope);
 
+if(isset($_GET["irvin"])){
+    $_POST["uploaded_walk_id"] = $_GET["irvin"];
+}
 // GET WALK ID , FROM THE PING
 $uploaded_walk_id   = isset($_POST["uploaded_walk_id"]) ? filter_var($_POST["uploaded_walk_id"], FILTER_SANITIZE_STRING) : null;
 
@@ -75,14 +80,17 @@ if(!empty($uploaded_walk_id)){
         // # Instantiates a Storage client
         $storageCLient = new StorageClient([
             'keyFilePath'   => $keyPath,
-            'projectId'     => $gcp_project_id
+            'projectId'     => $gcp_bucketID
         ]);
+
 
         foreach($backup_files as $file){
             $path = $backup_folder . "/" . $file;
             if(strpos($file,".json") > 0){
                 // STORE WALK DATA INTO FIRESTORE FORMAT
-                $old_walk_id    = str_replace(".json","",$file); 
+                $old_walk_id    = str_replace(".json","",$file);
+                $payload        = file_get_contents($path);
+
                 $fs_walk_id     = $ds->setWalkFireStore($old_walk_id, json_decode($payload,1), $access_token);
             }else{
                 //UPLOAD TO GOOGLE BUCKET

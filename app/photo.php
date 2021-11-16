@@ -39,25 +39,22 @@ $page = "photo_detail";
 				$_SESSION["DT"]["project_list"][$proj_idx]["tags"] = array();
 			}
 
-			// filter out low accuracy
-		    $forjsongeo = $doc["photo"]["geotag"];
-		    $walk_geo 	= json_encode($forjsongeo);
+            $walk_bounding_geos = json_encode($doc["bounding_geos"]);
 
-		    // print_rr($doc);
 
-			$photo 		= $doc["photo"];
+            $photo 		= $doc["photo"];
 			$device 	= $doc["device"]["platform"] ?? null;
 			$prevnext 	= [];
 
 			$lang       = $doc["lang"];
 			$photo_i 	= $photo["i"];
-			//PREV NEXT
-			// if(isset($photos[$i-1])){
-			// 	$prevnext[0] = "photo.php?_id=" . $doc["_id"] . "&_file=photo_" . ($i - 1) . ".jpg";
-			// }
-			// if(isset($photos[$i+1])){
-			// 	$prevnext[1] = "photo.php?_id=" . $doc["_id"] . "&_file=photo_" . ($i + 1) . ".jpg";
-			// }
+			//PREV NEX
+			 if(!empty($photo["prev"]) || $photo["prev"] > -1){
+			 	$prevnext[0] = "photo.php?_id=" . $_id . "&_file=photo_" . $photo["prev"] . ".jpg";
+			 }
+			 if(!empty($photo["next"])){
+			 	$prevnext[1] = "photo.php?_id=" . $_id . "&_file=photo_" . $photo["next"] . ".jpg";
+			 }
 
 			$hasaudio 	= !empty($photo["audio"]) ? "has" : "";
 			$hasrotate 	= isset($photo["rotate"]) ? $photo["rotate"] : 0;
@@ -95,7 +92,7 @@ $page = "photo_detail";
 //	            date_default_timezone_set($response->timeZoneId);
 //	        }
 
-			$photo_uri 	= $ds->getStorageFile("dev_ov_walk_files", $_id, $_file);
+			$photo_uri 	= $ds->getStorageFile(cfg::$gcp_bucketName, $_id, $_file);
 			// detectFaces($ph_id,$old, $photo_name);
 
 			$attach_url = "#";
@@ -105,23 +102,46 @@ $page = "photo_detail";
 			$photo_comment  = str_replace("rnrn", "\r\n\r\n",$photo['text_comment']);
 	        $text_comment   = "<div class='audio_clip'><textarea id='text_comment' name='text_comment' class='keyboard'>".  $photo_comment  ."</textarea></div>";
 
-
 			if(isset($photo["audios"])){
 				foreach($photo["audios"] as $filename => $txn){
 					//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
-	                $attach_url 	= $ds->getStorageFile("dev_ov_walk_files", $_id, $filename);
-					$audio_src 		= $attach_url;
+                    //NEED TO ASSUME THE MP3 will bE THERE I GUESS
+
+                    $filename_mp3   = str_replace(".wav", ".mp3", $filename);
+                    $attach_url 	= $ds->getStorageFile(cfg::$gcp_bucketName, $_id, $filename_mp3);
+
+                    //CHECK IF MP3 is THERE BEFORE SHOWING ANYTHING SHEEET
+                    $file_check     = get_head($attach_url);
+                    $file_check     = current($file_check);
+                    $file_exists    = (!empty($file_check["Status"]) && strpos($file_check["Status"],"OK") > 0 );
+
+                    if(!$file_exists){
+                        continue;
+                    }
+
+                    $audio_src 		= $attach_url;
 					$just_file 		= $attach_url;
 					$script 		= "";
+
+                    //ADD AUTO TRANSCRIBE BACK HERE
 	    //             $audio_src 		= getConvertedAudio($attach_url, $lang);
 	    //             $just_file 		= str_replace("./temp/","",$audio_src);
 					// $confidence 	= appendConfidence($attach_url);
 					// $script 		= !empty($confidence) ? "This audio was transcribed using Google's API at ".round($confidence*100,2)."% confidence" : "";
 
-					//Works for archaic saving scheme as well as the new one : 
-                    $transcription  = str_replace('&#34;','"', $txn);
-                    $transcription  = str_replace('&#34;','"', $transcription);
-					$transcription  = str_replace("rnrn", "\r\n\r\n",$transcription);
+					//Works for archaic saving scheme as well as the new one :
+                    $start_text     = "";
+                    $transcription  = "";
+                    if(!empty($txn)){
+                        $start_text = $txn;
+                        if(is_array($txn) && array_key_exists("text", $txn)){
+                            $start_text = $txn["text"];
+                        }
+                        $transcription  = str_replace('&#34;','"', $start_text);
+                        $transcription  = str_replace('&#34;','"', $transcription);
+                        $transcription  = str_replace("rnrn", "\r\n\r\n",$transcription);
+                    }
+
 					$audio_attachments .=   "<div class='audio_clip mic'>
 												<audio controls>
 													<source src='$audio_src'/>
@@ -133,7 +153,6 @@ $page = "photo_detail";
 					 						</div>";
 				}
 			}
-			
 
 			echo "<form id='photo_detail' method='POST'>";
 			echo "<input type='hidden' name='doc_id' value='".$doc["id"]."'/>";
@@ -141,8 +160,17 @@ $page = "photo_detail";
 			
 			echo "<div class='user_entry'>";
 			echo "<hgroup>";
+            $photo_date = "N/A";
+            $photo_ts   = "N/A";
+            if(!empty($photo["geotag"]["timestamp"])) {
+                $photo_ts   = $photo["geotag"]["timestamp"];
+                $photo_date = date("F j, Y", floor($photo["geotag"]["timestamp"] / 1000));
+            }
+            if(!empty($timestamp)){
+                $photo_ts = date("g:i a", floor($timestamp/1000));
+            }
 			echo "<h4>Photo Detail : 
-			<b>".date("F j, Y", floor($photo["geotag"]["timestamp"]/1000))." <span class='time'>@".date("g:i a", floor($timestamp/1000))."</span></b> 
+			<b>".$photo_date." <span class='time'>@".$photo_ts."</span></b> 
 			<i>".substr($doc["id"],-4)."</i></h4>";
 			echo "</hgroup>";
 
@@ -157,11 +185,11 @@ $page = "photo_detail";
 				</a>
 
 				</figure>";
-				
 				$geotags   = array();
 				$geotags[] = array("lat" => $lat, "lng" => $long);
 				$json_geo  = json_encode($geotags);
-				$gmaps[]   = "drawGMap($json_geo, 0, 16, $walk_geo);\n";
+
+				$gmaps[]   = "drawGMap($json_geo, 0, 16, $walk_bounding_geos);\n";
 
 			echo 		"</div>";
 			
@@ -436,11 +464,10 @@ $(document).ready(function(){
                     url: ajax_handler,
                     data: data,
                     success:function(response){
-                        // console.log(response);
                         // window.location.reload(true);
+                        $("#save_txns").removeClass("waiting");
                     }
                 });
-                $("#save_txns").removeClass("waiting");
             });
         }
     });

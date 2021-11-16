@@ -202,20 +202,6 @@ function scanBackUpFolder($backup_dir){
                 if(strpos($file,".json") > 0){
                     $split          = explode(".",$file);
                     $backup         = $split[0];
-                    $walk_json      = $couch_url . "/".cfg::$couch_users_db."/" . $backup ;
-                    $check_walk_id  = get_head($walk_json);
-                    if(array_key_exists("ETag", $check_walk_id[0])){
-                         // DOESNT EXIST SO NEED TO UPLOAD TO disc_users
-                         continue;
-                    }
-                }else{
-                    $attach_file    = $couch_url . "/".cfg::$couch_attach_db."/" . $file ;
-                    $check_attach   = get_head($attach_file);
-                    if(array_key_exists("ETag", $check_attach[0])){
-                         // DOESNT EXIST SO NEED TO UPLOAD TO disc_users
-                         // re upload no matter what. 11/12/19
-                         //continue;
-                    }
                 }
                 $backedup[] = $file;
             }
@@ -241,7 +227,6 @@ function printRow($doc, $i){
     $photos         = $doc["photos"];
 
     $geotags        = !empty($doc["geotags"]) ? $doc["geotags"] : array();
-
     $survey         = !empty($doc["survey"]) ? $doc["survey"] : array();
     $processed      = !empty($doc["data_processed"]) ? $doc["data_processed"] : null;
 
@@ -328,7 +313,7 @@ function printRow($doc, $i){
             continue;
         }
 
-        $hasaudio   = !empty($photo["audio"]) ? "has" : "";
+        $hasaudio   = !empty($photo["audios"]) ? "has" : "";
 
         if(isset($photo["geotag"]["lng"]) &&  isset($photo["geotag"]["lat"])){
             $long   = $photo["geotag"]["lng"];
@@ -358,13 +343,11 @@ function printRow($doc, $i){
         $img_id         = $doc["_id"]."_".$photo_name;
 
         //https://storage.googleapis.com/$google_bucket/$project_id/$uuid/$ts/$photo_name
-        $google_bucket  = "dev_ov_walk_files";
         $uuid           = $doc["device"]["uid"];
         $walk_ts        = $doc["timestamp"];
 
-
-        $file_uri   = $ds->getStorageFile($google_bucket, $doc["_id"], $photo_name);
-        $thumb_uri  = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+        $file_uri   = $ds->getStorageFile(cfg::$gcp_bucketName, $doc["_id"], $photo_name);
+//        $thumb_uri  = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
         $photo_uri  = $file_uri;
         $detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 
@@ -376,8 +359,8 @@ function printRow($doc, $i){
             $text_comment  = "<a class='audio keyboard'></a> ";
         }
 
-        if(!empty($photo["audio"])){
-            $num_audios = intval($photo["audio"]);
+        if(!empty($photo["audios"])){
+            $num_audios = count($photo["audios"]);
             $num        = $num_audios > 1 ? "<span>x$num_audios</span>" :"";
             $audio_attachments .= "<a class='audio $hasaudio'></a> $num";
         }
@@ -421,7 +404,7 @@ function printRow($doc, $i){
 function printPhotos($photo, $_id, $n, $old=null, $txns=null){
     $codeblock  = array();
 
-    $walk_ts_sub = isset($photo["geotag"]) ? $photo["geotag"]["timestamp"] : null;
+    $walk_ts_sub = !empty($photo["geotag"]["timestamp"]) ? $photo["geotag"]["timestamp"] : null;
     $date_ts     = date("F j, Y", floor($walk_ts_sub/1000)) ;
     $host        = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : "";
     $url_path    = $host .dirname($_SERVER['PHP_SELF']); 
@@ -436,19 +419,18 @@ function printPhotos($photo, $_id, $n, $old=null, $txns=null){
     if(empty($photo["geotag"])){
         $nogeo  = "nogeo";
     }else{
-        $lat    = $photo["geotag"]["lat"];
-        $long   = $photo["geotag"]["lng"];
-
+        $lat    = isset($photo["geotag"]["latitude"]) ? $photo["geotag"]["latitude"] : $photo["geotag"]["lat"];
+        $long   = isset($photo["geotag"]["longitude"]) ? $photo["geotag"]["longitude"] : $photo["geotag"]["lng"];
     }
 
-    $timestamp  = isset($photo["geotag"]["timestamp"])  ? $photo["geotag"]["timestamp"] : null;
+    $timestamp  = !empty($photo["geotag"]["timestamp"])  ? $photo["geotag"]["timestamp"] : null;
     $txt        = array_key_exists("text_comment",$photo) ? $photo["text_comment"] : null;
 
-    $rotate     = isset($photo["rotate"]) ? $photo["rotate"] : 0;
+    $rotate     = !empty($photo["rotate"]) ? $photo["rotate"] : 0;
     $filename   = $photo["name"];
-    $ph_id      = isset($photo["geotag"]) ? $photo["geotag"]["photo_id"] : null;
+    $ph_id      = !empty($photo["geotag"]) ? $photo["geotag"]["photo_id"] : null;
 
-    $file_uri       = isset($photo["geotag"]) ? $photo["geotag"]["photo_src"] : null;
+    $file_uri       = !empty($photo["geotag"]) ? $photo["geotag"]["photo_src"] : null;
     $thumb_uri      = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
     $photo_uri      = $file_uri;
 
@@ -456,7 +438,7 @@ function printPhotos($photo, $_id, $n, $old=null, $txns=null){
     $pic_time       = date("g:i a", floor($timestamp/1000));
     $photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
     
-    $photoblock["id"]            = $_id."_photo_".$n;
+    $photoblock["id"]            = $_id."_".$photo["name"];
     $photoblock["tags"]          = $photo_tags;
     $photoblock["detail_url"]    = $detail_url;
     $photoblock["pic_time"]      = $pic_time;

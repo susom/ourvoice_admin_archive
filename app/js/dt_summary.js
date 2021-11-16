@@ -91,19 +91,20 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
           strokeWeight: 0
         });
     }
-
     var LatLngBounds = new google.maps.LatLngBounds();
     if(o_walk_geos){
         for(var i in o_walk_geos) {
-            var ltlnpt = new google.maps.LatLng(o_walk_geos[i]["lat"], o_walk_geos[i]["lng"]);
-            LatLngBounds.extend(ltlnpt);
+            if(o_walk_geos[i]){
+                var ltlnpt = new google.maps.LatLng(o_walk_geos[i]["lat"], o_walk_geos[i]["lng"]);
+                LatLngBounds.extend(ltlnpt);
+            }
         }
     }else{
         for(var i in geotags) {
             LatLngBounds.extend(walkMap[i]);
         }
     }
-    
+
     window[map_id].fitBounds(LatLngBounds); 
     
 //NEW
