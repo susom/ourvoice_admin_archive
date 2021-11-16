@@ -19,7 +19,7 @@ This repository contains a docker-compose file pre-configured for local deployme
 
 The ourvoice data portal is currently integrated with TravisCI & deployed via Cloud Run automatically.
 
-Any commits to the travis branch will be built to configuration & deployed as a primary service on cloud run.
+Any commits to the dev and main branches will be built to configuration & deployed as services on cloud run.
 
 Secrets are injected at deploy time and stored within GCloud.
 
