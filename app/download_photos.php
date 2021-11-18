@@ -10,26 +10,23 @@ if(empty($_GET["doc_id"]) && !empty($_SERVER["HTTP_REFERER"])){
 
 $doc_id 		= filter_var($_GET["doc_id"], FILTER_SANITIZE_STRING);
 $walk_data 		= $ds->getWalkData($doc_id);
-$walk_photos 	= !empty($walk_data["attachment_ids"]) ? $walk_data["attachment_ids"] : array();
-$walk_photos	= array_filter($walk_photos, function($item){
-						return strpos($item,"_photo") > -1 && strpos($item,"jpg") > -1;
-					});
-
-$photo_names 	= array();
-foreach($walk_photos as $photo){
-	$file_name 	= substr($photo, strlen($doc_id) + 1);
+$partial_files 	= !empty($walk_data["partial_files"]) ? $walk_data["partial_files"] : array();
+$photo_names 	= !empty($walk_data["photo_names"]) ? $walk_data["photo_names"] : array();
+$photos 		= array();
+$existing_files = array_diff($photo_names, $partial_files);
+foreach($existing_files as $file_name){
 	$img_url 	= $ds->getStorageFile($google_bucket, $doc_id , $file_name);
-	$photo_names[$file_name] = $img_url;
+	$photos[$file_name] = $img_url;
 }
 
 $zip 		= new ZipArchive();
-$zip_name 	= $doc["_id"] ."_photos.zip"; // Zip name
+$zip_name 	= $doc_id ."_photos.zip"; // Zip name
 if($zip->open($zip_name, ZIPARCHIVE::CREATE)!==TRUE){ 
  	// Opening zip file to load files
 	$error .= "* Sorry ZIP creation failed at this time";
 }
 
-foreach($photo_names as $filename => $file){
+foreach($photos as $filename => $file){
 	$fileContent = file_get_contents($file);
 	$zip->addFromString($filename, $fileContent);
 }

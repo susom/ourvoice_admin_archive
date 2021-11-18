@@ -74,141 +74,28 @@ $page = "summary";
     <div id="main_box">
         <?php
         if( $active_project_id ){
-            //FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
-            $response       = $ds->getProjectSummaryData($active_project_id);
-            $response_rows  = $response;
-
-            $date_headers 	= [];
-            $summ_buffer    = [];
-            $summ_buffer[]  = "<div id='summary'>";
-            $summ_buffer[]  = "<table cellpadding='0' cellspacing='0' width='100%'>";
-            $summ_buffer[]  = "<thead>";
-            $summ_buffer[]  = "<th>Date</th>";
-            $summ_buffer[]  = "<th>Walk Id</th>";
-            $summ_buffer[]  = "<th>Device</th>";
-            $summ_buffer[]  = "<th>Photos #</th>";
-            $summ_buffer[]  = "<th>Audios #</th>";
-            $summ_buffer[]  = "<th>Texts #</th>";
-            $summ_buffer[]  = "<th>Map Available</th>";
-            $summ_buffer[]  = "<th>Upload Complete</th>";
-            $summ_buffer[]  = "<th>Processed</th>";
-            $summ_buffer[]  = "</thead>";
-            $summ_buffer[]  = "</table>";
-            $summ_buffer[]  = "<table cellpadding='0' cellspacing='0' width='100%'>";
-            $summ_buffer[]  = "<tbody>";
-
-            $total_photos = 0;
-            $total_audios = 0;
-            $total_texts  = 0;
-
-            $dates      = array();
-            $sum_row    = array();
-
-            foreach($response_rows as $i => $walk){
-                $date    = $walk["date"];
-                $temp    = explode("-",$date);
-                $dateB   = $temp[2]."-".$temp[0]."-".$temp[1];
-
-                if(array_key_exists($date, $date_headers)){ //if the date already exists in dateheaders
-                    $date_headers[$date]++;					// increment the counter
-                }else{
-                    $date_headers[$date] = 1;				//otherwise create an element [date -> #occurrences]
-                }
-
-                $device     = $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
-                $processed  = isset($walk["data_processed"]) ? $walk["data_processed"] : false;
-
-                //check for attachment ids existing
-                //IMPORTANT TO FORMAT THIS RIGHT OR ELSE WILL GET INVALID JSON ERROR
-                $partial    = '["'.implode('","',$walk["attachment_ids"]).'"]';
-                $_id        = $walk["id"];
-
-                if(isset($walk["complete_upload"]) && $walk["complete_upload"]){
-                    $expect_cnt = 0;
-                }else{
-                    $count_att  = $ds->checkAttachmentsExist($partial);
-                    $expect_cnt = count($response_rows) - count($walk["attachment_ids"]);
-                    if($expect_cnt === 0){
-                        //PUSH Y flag TO THE COUCH SO WE DONT HAVE TO RUN THIS CHECK NEXT TIME
-                        $url        = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $row["id"];
-                        $keyvalues  = array("complete_upload" => true);
-                        $resp       = $ds->updateDoc($url,$keyvalues);
-                    }
-                }
-                $uploaded       = $expect_cnt === 0 ? "Y" : "N ($expect_cnt files)";
-                $data_processed = $processed ? "data_checked" : "";
-
-                $sum_buffer_item = array();
-                $sum_buffer_item[] = "<tr>";
-                $sum_buffer_item[] = "<td>" . $date . "</td>";
-                $sum_buffer_item[] = "<td><a href='#".$walk["id"]."'>" . substr($_id, -4) . "</a></td>";
-                $sum_buffer_item[] = "<td>" . $device . "</td>";
-                $sum_buffer_item[] = "<td>" . $walk["photos"]. "</td>";
-                $sum_buffer_item[] = "<td>" . $walk["audios"]. "</td>";
-                $sum_buffer_item[] = "<td>" . $walk["texts"]. "</td>";
-                $sum_buffer_item[] = "<td class='".$walk["maps"]."'>" . $walk["maps"]. "</td>";
-                $sum_buffer_item[] = "<td class='$uploaded'>" . $uploaded. "</td>";
-                $sum_buffer_item[] = "<td class='$data_processed'>" . ($processed ? "Y" : "") . "</td>";
-                $sum_buffer_item[] = "</tr>";
-
-
-                array_push($dates, $dateB);
-                array_push($sum_row,$sum_buffer_item);
-
-                $total_photos += $walk["photos"];
-                $total_audios += $walk["audios"];
-                $total_texts  += $walk["texts"];
-            }
-            arsort($dates);
-            foreach($dates as $idx => $date){
-                $summ_buffer = array_merge($summ_buffer, $sum_row[$idx]);
-            }
-
-            // FILL OUT REST OF TABLE EMPTY SPACE
-            $x = $i;
-            while($x < 10){
-                $summ_buffer[] = "<tr>";
-                $summ_buffer[] = "<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
-                $summ_buffer[] = "</tr>";
-                $x++;
-            }
-
-            $summ_buffer[] = "</tbody>";
-            $summ_buffer[] = "</table>";
-            $summ_buffer[] = "<table cellpadding='0' cellspacing='0' width='100%'>";
-            $summ_buffer[] = "<tfoot>";
-            $summ_buffer[] = "<td>Totals:</td>";
-            $summ_buffer[] = "<td>".($i+1)." walks</td>";
-            $summ_buffer[] = "<td></td>";
-            $summ_buffer[] = "<td>$total_photos</td>";
-            $summ_buffer[] = "<td>$total_audios</td>";
-            $summ_buffer[] = "<td>$total_texts</td>";
-            $summ_buffer[] = "<td></td>";
-            $summ_buffer[] = "<td></td>";
-            $summ_buffer[] = "<td></td>";
-            $summ_buffer[] = "</tfoot>";
-            $summ_buffer[] = "</table>";
-            $summ_buffer[] = "</div>";
-            //ORDER AND SORT BY DATES
-        	uksort($date_headers, "cmp_date"); //sorts date headers in reverse order starting with date
-
         	//PRINT TO SCREEN
-        	echo "<h1 id='viewsumm'>Discovery Tool Data Summary for $active_project_id</h1>";
-        	echo implode("\r\n",$summ_buffer);
+        	echo "<h1 id='viewsumm' data-pcode='$active_project_id'>Discovery Tool Data Summary for $active_project_id</h1>";
+            echo "<div id='summary'><div class='loading'></div></div>";
 
         	echo "<form id='project_summary' method='post'>";
         	echo "<input type='hidden' name='proj_id' value='".filter_var($_POST["proj_id"], FILTER_SANITIZE_STRING)."'/>";
         	echo "<input type='hidden' name='summ_pw' value='".filter_var($_POST["summ_pw"], FILTER_SANITIZE_STRING)."'/>";
 
+            $date_headers       = $ds->getProjectDateBuckets($active_project_id);
         	$most_recent_date 	= true;
-        	foreach($date_headers as $date => $record_count){
+        	foreach($date_headers as $date => $walk_ids){
+                $record_count   = count($walk_ids);
+                $plural         = $record_count == 1 ? "" : "s";
+
         		if($most_recent_date){
         			echo "<aside>";
-        			echo "<h4 class='day' rel='true' rev='$active_project_id' data-toggle='collapse' data-target='#day_$date'>$date</h4>";
+        			echo "<h4 class='day' rel='true' data-walkids='".json_encode($walk_ids)."' rev='$active_project_id' data-toggle='collapse' data-target='#day_$date'>$date <span>$record_count walks</span></h4>";
         			echo "<div id='day_$date' class='collapse in'>";
 
         			//AUTOMATICALLY SHOW MOST RECENT DATE's DATA, AJAX THE REST
-        			$response 	= $ds->filter_by_projid($active_project_id, $date);
+//        			$response 	= $ds->filter_by_projid($active_project_id, $date);
+                    $response 	= $ds->getWalksByIds($walk_ids);
         			foreach($response as $i => $row){
                         $doc = $row;
                         echo "<a name='".$doc["project_id"]."'></a>";
@@ -223,7 +110,7 @@ $page = "summary";
 
         		//SHOW THE HEADERS OF ALL THE OTHER ONES
         		echo "<aside>";
-        		echo "<h4 class='day' rel='false' rev='$active_project_id' data-toggle='collapse' data-target='#day_$date'>$date</h4>";
+        		echo "<h4 class='day' rel='false' data-walkids='".json_encode($walk_ids)."' rev='$active_project_id' data-toggle='collapse' data-target='#day_$date'>$date <span>$record_count walk$plural</span></h4>";
         		echo "<div id='day_$date' class='collapse'>";
         		echo "<div class='loading'></div>";
         		echo "</div>";
@@ -342,6 +229,27 @@ $(document).ready(function(){
         }else{
             $("#summary").slideDown("medium");
             $(this).addClass("open");
+
+            if($("#summary .loading").length){
+                var active_pid 	= $(this).data("pcode");
+                $.ajax({
+                    type 		: "POST",
+                    url 		: ajax_handler,
+                    data 		: { active_project_id: active_pid, action : "project_summary"},
+                }).done(function(response) {
+                    setTimeout(function(){
+                        $("#summary .loading").fadeOut("fast",function(){
+                            $(this).remove()
+                        });
+                    },1500);
+
+                    setTimeout(function(){
+                        $("#summary").append(response);
+                    },1600);
+                }).fail(function(msg){
+                    console.log("summary fetch failed");
+                });
+            }
         }
     });
 
@@ -351,16 +259,19 @@ $(document).ready(function(){
 		var active_pid 	= $(this).attr("rev");
 		var date 		= $(this).text();
 		var target 		= $(this).data("target");
+        var walkids     = $(this).data("walkids");
 		if(hasData == "false"){
 			$.ajax({
 			  type 		: "POST",
 			  url 		: ajax_handler,
-			  data 		: { active_pid: active_pid, date: date , action : "day_walks"},
+			  data 		: { active_pid: active_pid, date: date , walkids : walkids, action : "day_walks"},
 			}).done(function(response) {
 				setTimeout(function(){
 					$(target).find(".loading").fadeOut("fast",function(){
 						$(this).remove() });
 				},1500);
+
+                console.log("wtf", response);
 				setTimeout(function(){
 					$(target).append(response);
 					$(".thumbs").find("li").unbind();

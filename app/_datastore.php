@@ -314,6 +314,302 @@ class Datastore {
         return $result;
     }
 
+    public function getWalkData($doc_id, $raw=false){
+        $result = array();
+
+        if($this->firestore){
+            $ov_projects    = $this->firestore->collection($this->walks_collection)->document($doc_id);
+            $snapshot       = $ov_projects->snapshot();
+
+            if ($snapshot->exists()) {
+                if($raw){
+                    return $ov_projects;
+                }
+
+                $data           = $snapshot->data();
+                $walk_tz        = null;
+                $lat_for_tz     = null;
+                $lng_for_tz     = null;
+
+                $text_count     = 0;
+                $photo_count    = 0;
+                $audio_count    = 0;
+
+                $complete_upload    = $data["completed_upload"] ?? null;
+                $partial_files      = array();
+
+                $has_map        = false;
+                $geocoll        = $ov_projects->collection("geotags")->documents();
+                if($geocoll){
+                    foreach($geocoll as $geotag){
+                        $data_array = $geotag->data();
+                        if(!empty($data_array)){
+                            $has_map    = true;
+                            $lat_for_tz = $data_array["lat"] ?? null;
+                            $lng_for_tz = $data_array["lng"] ?? null;
+                        }
+                        break;
+                    }
+                }
+
+                $photo_names    = array();
+                foreach($data["photos"] as $photo){
+                    if(array_key_exists("_deleted",$photo)){
+                        continue;
+                    }
+
+                    if(!$lat_for_tz && !$lng_for_tz && isset($photo["geotag"])) {
+                        $lat_for_tz = $photo["geotag"]["lat"] ?? null;
+                        $lng_for_tz = $photo["geotag"]["lng"] ?? null;
+                    }
+
+                    $photo_count++;
+                    array_push($photo_names, $photo["name"]);
+
+                    if(isset($photo["text_comment"])){
+                        $text_count++;
+                    }
+
+                    if(isset($photo["audios"])){
+                        if(count($photo["audios"])){
+                            $audio_count += count($photo["audios"]);
+
+                            if(!$complete_upload){
+                                foreach($photo["audios"] as $audio_name => $txn){
+                                    $filename_mp3   = str_replace(".wav", ".mp3", $audio_name);
+                                    $filename_mp3   = str_replace(".amr", ".mp3", $audio_name);
+                                    $attach_url 	= $this->getStorageFile(cfg::$gcp_bucketName, $doc_id, $filename_mp3);
+
+                                    $check          = get_head($attach_url);
+                                    if(!empty($check) && isset($check[0])){
+                                        $current = current($check);
+                                        if(strpos($current["Status"], "200 OK") < 0){
+                                            array_push($partial_files, $attach_url);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+
+                if(!$complete_upload && !count($partial_files)){
+                    $complete_upload = true;
+                    $ov_projects->update([
+                        ['path' => 'completed_upload', 'value' => true]
+                    ]);
+                }
+
+                if($lat_for_tz && $lng_for_tz){
+                    $gkey       = $this->gapi_key;
+                    $ts         = round($data["timestamp"]/1000);
+                    $url        ="https://maps.googleapis.com/maps/api/timezone/json?location=$lat_for_tz,$lng_for_tz&timestamp=$ts&key=$gkey";
+                    $g_result   = $this->doCurl($url);
+                    $g_arr      = json_decode($g_result,1);
+                    if(isset($g_arr["timeZoneId"])){
+                        $walk_tz = $g_arr["timeZoneId"];
+                    }
+                }
+                if(!$walk_tz) {
+                    $walk_tz = "America/Los_Angeles";
+                }
+
+                $dt = new DateTime("now", new DateTimeZone($walk_tz)); //first argument "must" be a string
+                $dt->setTimestamp(round($data["timestamp"]/1000)); //adjust the object to correct timestamp
+                $walk_date = $dt->format('Y-m-d');
+                
+                $result = array(
+                     "date"             => $walk_date
+                    ,"id"               => $doc_id
+                    ,"photos"           => $photo_count
+                    ,"photo_names"      => $photo_names
+                    ,"maps"             => $has_map ? "Y" : "N"
+                    ,"data_processed"   => $data["data_processed"] ?? null
+                    ,"device"           => $data["device"]
+                    ,"audios"           => $audio_count
+                    ,"texts"            => $text_count
+                    ,"timezone"         => $walk_tz
+                    ,"completed_upload" => $complete_upload
+                    ,"partial_files"   => $partial_files
+                );
+            } else {
+                //Walk couldnt be found $snapshot->id();
+            }
+        }
+        return $result;
+    }
+
+    public function getProjectSummaryData($project_code){
+        $result = array();
+
+        if($this->firestore){
+            $ov_projects    = $this->firestore->collection($this->walks_collection);
+            $query          = $ov_projects
+                ->where('project_id', '=', $project_code)
+                ->orderBy("timestamp", "DESC");
+
+            $dt             = new DateTime("now"); //first argument "must" be a string
+            $snapshot       = $query->documents();
+            foreach ($snapshot as $document) {
+                $data           = $document->data();
+                if(array_key_exists("_deleted",$data) || !array_key_exists("photos",$data) || !count($data["photos"])){
+                    continue;
+                }
+
+                $doc_id         = $document->id();
+                $walk_tz        = null;
+                $lat_for_tz     = null;
+                $lng_for_tz     = null;
+
+                $text_count     = 0;
+                $photo_count    = 0;
+                $audio_count    = 0;
+
+                //Once files are checked one time, flag it so wont have to do the check again
+                $complete_upload    = $data["completed_upload"] ?? null;
+                $partial_files      = array();
+
+
+                $has_map        = false;
+                $geocoll        = $ov_projects->document($doc_id)->collection("geotags")->documents();
+                if($geocoll){
+                    foreach($geocoll as $geotag){
+                        $data_array = $geotag->data();
+                        if(!empty($data_array)){
+                            $has_map    = true;
+
+                            $lat_for_tz = $data_array["lat"] ?? null;
+                            $lng_for_tz = $data_array["lng"] ?? null;
+                        }
+                        break;
+                    }
+                }
+
+                foreach($data["photos"] as $photo){
+                    if(array_key_exists("_deleted",$photo)){
+                        continue;
+                    }
+
+                    if(!$lat_for_tz && !$lng_for_tz && isset($photo["geotag"])) {
+                        $lat_for_tz = $photo["geotag"]["lat"] ?? null;
+                        $lng_for_tz = $photo["geotag"]["lng"] ?? null;
+                    }
+
+                    $photo_count++;
+
+                    if(isset($photo["text_comment"])){
+                        $text_count++;
+                    }
+
+                    if(!$complete_upload){
+                        $photo_url  = $this->getStorageFile(cfg::$gcp_bucketName, $doc_id, $photo["name"]);
+                        $check      = get_head($photo_url);
+                        if(!empty($check) && isset($check[0])){
+                            $current = current($check);
+                            if(strpos($current["Status"], "200 OK") < 0){
+                                array_push($partial_files, $photo_url);
+                            }
+                        }
+                    }
+
+                    if(isset($photo["audios"])){
+                        if(count($photo["audios"])){
+                            $audio_count += count($photo["audios"]);
+
+                            if(!$complete_upload){
+                                foreach($photo["audios"] as $audio_name => $txn){
+                                    $filename_mp3   = str_replace(".wav", ".mp3", $audio_name);
+                                    $filename_mp3   = str_replace(".amr", ".mp3", $audio_name);
+                                    $attach_url 	= $this->getStorageFile(cfg::$gcp_bucketName, $doc_id, $filename_mp3);
+
+                                    $check          = get_head($attach_url);
+                                    if(!empty($check) && isset($check[0])){
+                                        $current = current($check);
+                                        if(strpos($current["Status"], "200 OK") < 0){
+                                            array_push($partial_files, $attach_url);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+
+                if(!$complete_upload && !count($partial_files)){
+                    $complete_upload    = true;
+                    $payload            = $ov_projects->document($doc_id);
+                    $payload->update([
+                        ['path' => 'completed_upload', 'value' => true]
+                    ]);
+                }
+
+                if($lat_for_tz && $lng_for_tz){
+                    $gkey       = $this->gapi_key;
+                    $ts         = round($data["timestamp"]/1000);
+                    $url        ="https://maps.googleapis.com/maps/api/timezone/json?location=$lat_for_tz,$lng_for_tz&timestamp=$ts&key=$gkey";
+                    $g_result   = $this->doCurl($url);
+                    $g_arr      = json_decode($g_result,1);
+                    if(isset($g_arr["timeZoneId"])){
+                        $walk_tz = $g_arr["timeZoneId"];
+                    }
+                }
+                if(!$walk_tz){
+                    $walk_tz = "America/Los_Angeles";
+                }
+
+//                , new DateTimeZone($walk_tz) do this on display not before querying
+                $dt->setTimestamp(round($data["timestamp"]/1000)); //adjust the object to correct timestamp
+                $walk_date = $dt->format('Y-m-d');
+
+                $temp = array(
+                     "date"             => $walk_date
+                    ,"id"               => $doc_id
+                    ,"photos"           => $photo_count
+                    ,"maps"             => $has_map ? "Y" : "N"
+                    ,"data_processed"   => $data["data_processed"] ?? null
+                    ,"device"           => $data["device"]
+                    ,"audios"           => $audio_count
+                    ,"texts"            => $text_count
+                    ,"timezone"         => $walk_tz
+                    ,"completed_upload" => $complete_upload
+                    ,"partial_files"    => $partial_files
+                );
+                array_push($result, $temp);
+            }
+        }
+        return $result;
+    }
+
+    public function getProjectDateBuckets($project_code){
+        $result = array();
+
+        if($this->firestore){
+            $ov_projects    = $this->firestore->collection($this->walks_collection);
+            $query          = $ov_projects->where('project_id', '=', $project_code);
+
+            $just_ts        = $query->select(["project_id", "timestamp", "device"]);
+            $ts_snap        = $just_ts->documents();
+
+            $dt             = new DateTime("now"); //first argument "must" be a string
+            $date_buckets   = array();
+            foreach($ts_snap as $doc){
+                $data       = $doc->data();
+                $doc_id     = $data["project_id"] . "_" . $data["device"]["uid"]. "_" . $data["timestamp"];
+
+                $dt->setTimestamp(round($data["timestamp"]/1000)); //adjust the object to correct timestamp
+                $walk_date  = $dt->format('Y-m-d');
+                if(!array_key_exists($walk_date, $date_buckets)){
+                    $date_buckets[$walk_date] = array();
+                }
+                array_push($date_buckets[$walk_date], $doc_id);
+            }
+
+            $result = $date_buckets;
+        }
+
+        return $result;
+    }
+
     public function getWalks($ids=array()){
         $result = array();
 
@@ -329,86 +625,113 @@ class Datastore {
         return $result;
     }
 
-    public function getWalkData($doc_id, $raw=false){
-        $result = array();
-        if($this->firestore){
-            $ov_projects    = $this->firestore->collection($this->walks_collection)->document($doc_id);
-            $snapshot       = $ov_projects->snapshot();
+    public function getWalksByIds($ids=array()){
+        $result     = array();
 
-            if ($snapshot->exists()) {
-                $data = $snapshot->data();
-                if($raw){
-                    return $ov_projects;
+        if($this->firestore) {
+            $ov_walks = $this->firestore->collection($this->walks_collection);
+            foreach($ids as $doc_id){
+                $document   = $ov_walks->document($doc_id);
+                $snapshot   = $document->snapshot();
+
+                if ($snapshot->exists()) {
+                    $walk_data = $snapshot->data();
+
+                    if (array_key_exists("_deleted", $walk_data)) {
+                        continue;
+                    }
+
+                    $geocoll = $document->collection("geotags")->documents();
+                    $geotags = array();
+                    if ($geocoll) {
+                        foreach ($geocoll as $fakeidx => $geotag) {
+                            $data_array = $geotag->data();
+                            $geo_data = isset($data_array[0]) ? current($data_array) : $data_array;
+                            $geotags[$geotag->id()] = $geo_data;
+                        }
+                    }
+                    ksort($geotags);
+
+                    $walk_data["_id"] = $doc_id;
+                    $walk_data["geotags"] = $geotags;
+                    array_push($result, $walk_data);
                 }
-
-                $text_count     = 0;
-                $photo_count    = 0;
-                $audio_count    = 0;
-                $attachment_ids = array();
-                $walk_tz        = null;
-
-                foreach($data["photos"] as $photo){
-                    if(!$walk_tz) {
-                        if (isset($data["geos"])) {
-                            // print_rr($data["geos"][0]);
-                        } elseif (isset($photo["geotag"])) {
-                            $lat = $photo["geotag"]["lat"];
-                            $lng = $photo["geotag"]["lng"];
-                        }else{
-                            $walk_tz = "America/Los_Angeles";
-                        }
-
-                        if($lat && $lng){
-                            $gkey       = $this->gapi_key;
-                            $ts         = round($data["timestamp"]/1000);
-                            $url        ="https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$lng&timestamp=$ts&key=$gkey";
-                            $g_result   = $this->doCurl($url);
-                            $g_arr      = json_decode($g_result,1);
-                            if(isset($g_arr["timeZoneId"])){
-                                $walk_tz = $g_arr["timeZoneId"];
-                            }
-                        }
-                    }
-
-                    if(isset($photo["text_comment"])){
-                        $text_count++;
-                    }
-                    if(!isset($photo["text_comment"])){
-                        $photo_count++;
-                    }
-
-                    if(isset($photo["audios"])){
-                        array_push($attachment_ids, $doc_id . "_" . $photo["name"]);
-                        if(count($photo["audios"])){
-                            $audio_count += count($photo["audios"]);
-                            foreach($photo["audios"] as $audio_name => $audio){
-                                array_push($attachment_ids,$doc_id . "_" . $audio_name);
-                            }
-                        }
-                    }
-                };
-
-                $dt = new DateTime("now", new DateTimeZone($walk_tz)); //first argument "must" be a string
-                $dt->setTimestamp(round($data["timestamp"]/1000)); //adjust the object to correct timestamp
-                $walk_date = $dt->format('Y-m-d');
-                
-                $result = array(
-                     "date"             => $walk_date
-                    ,"id"               => $doc_id
-                    ,"photos"           => $photo_count
-                    ,"maps"             => !empty($data["geo_tags"]) ? "Y" : "N"
-                    ,"data_processed"   => $data["data_processed"] ?? null
-                    ,"device"           => $data["device"]
-                    ,"transcriptions"   => $data["transcriptions"] ?? null
-                    ,"attachment_ids"   => $attachment_ids
-                    ,"audios"           => $audio_count
-                    ,"texts"            => $text_count
-                    ,"completed_upload" => $data["completed_upload"] ?? null
-                );
-            } else {
-                //Walk couldnt be found $snapshot->id();
             }
         }
+
+        return $result;
+    }
+
+    public function filter_by_projid($project_code, $getdate){ //keys array is the # integer of the PrID
+        $result = array();
+
+        if($this->firestore){
+            $midnight       = strtotime($getdate) * 1000;
+            $midnight_plus  = $midnight + 86400000;
+            $ov_walks       = $this->firestore->collection($this->walks_collection);
+
+            //TODO NEED AWAY TO QUERY BOTH INTERGER AND STRING FUCKING TIMESTAMPS
+            $query          = $ov_walks->where('project_id', '=', $project_code)
+                ->where('timestamp', '>=', $midnight)
+                ->where('timestamp', '<', $midnight_plus);
+            $snapshot       = $query->documents();
+
+            foreach ($snapshot as $document) {
+                $_id        = $document->id();
+                $walk_data  = $document->data();
+
+                if(array_key_exists("_deleted",$walk_data)){
+                    continue;
+                }
+                $geocoll    = $ov_walks->document($_id)->collection("geotags")->documents();
+                $geotags    = array();
+                if($geocoll){
+                    foreach($geocoll as $fakeidx => $geotag){
+                        $data_array = $geotag->data();
+                        $geo_data   = isset($data_array[0]) ? current($data_array) : $data_array;
+                        $geotags[$geotag->id()] = $geo_data;
+                    }
+                }
+                ksort($geotags);
+
+                $walk_data["_id"]       = $_id;
+                $walk_data["geotags"]   = $geotags;
+//                array_push($result, $walk_data);
+            }
+
+            //TODO THIS IS FUCKED UP, BOTH BLOCKS EXACTLY THE SAME EXCEPT FOR THE STRVAL()
+            //FUCK THIS SHIT FUCK THIS SHIT FUCK IT! SOEM TIMESTAMPS ARE INT SOME ARE STRINGS WHAT THEFUCK MAN
+            $midnight       = strval($midnight);
+            $midnight_plus  = strval($midnight_plus);
+            $query          = $ov_walks->where('project_id', '=', $project_code)
+                ->where('timestamp', '>=', $midnight)
+                ->where('timestamp', '<', $midnight_plus);
+            $snapshot      = $query->documents();
+
+            foreach ($snapshot as $document) {
+                $_id        = $document->id();
+                $walk_data  = $document->data();
+
+                if(array_key_exists("_deleted",$walk_data)){
+                    continue;
+                }
+                $geocoll    = $ov_walks->document($_id)->collection("geotags")->documents();
+                $geotags    = array();
+                if($geocoll){
+                    foreach($geocoll as $fakeidx => $geotag){
+                        $data_array = $geotag->data();
+                        $geo_data   = isset($data_array[0]) ? current($data_array) : $data_array;
+                        $geotags[$geotag->id()] = $geo_data;
+                    }
+                }
+                ksort($geotags);
+
+                $walk_data["_id"]       = $_id;
+                $walk_data["geotags"]   = $geotags;
+                array_push($result, $walk_data);
+            }
+        }
+
         return $result;
     }
 
@@ -545,7 +868,6 @@ class Datastore {
         return $data;
     }
 
-    //DESIGN DOCUMENT CALLS
     public function getFilteredDataGeos($pcode, $pfilters){
         //RETURNS JSON ENCODED BLOCK OF FILTERED PHOTO INFO, AND PHOTO GEOs
         // MOOD and TAG FILTERS ARE MIXED TOGETHER, SO SEPERATE THEM OUT
@@ -622,195 +944,6 @@ class Datastore {
         $code_block = array_unique($code_block,SORT_REGULAR);
         $data       = array("photo_geos" => $photo_geos, "code_block" => $code_block);
         return $data;
-    }
-
-    public function filter_by_projid($project_code, $getdate){ //keys array is the # integer of the PrID
-        $result = array();
-        
-        if($this->firestore){
-            $midnight       = strtotime($getdate) * 1000;
-            $midnight_plus  = $midnight + 86400000;
-            $ov_walks       = $this->firestore->collection($this->walks_collection);
-
-            //TODO NEED AWAY TO QUERY BOTH INTERGER AND STRING FUCKING TIMESTAMPS
-            $query          = $ov_walks->where('project_id', '=', $project_code)
-                ->where('timestamp', '>=', $midnight)
-                ->where('timestamp', '<', $midnight_plus);
-            $snapshot       = $query->documents();
-
-            foreach ($snapshot as $document) {
-                $_id        = $document->id();
-                $walk_data  = $document->data();
-
-                if(array_key_exists("_deleted",$walk_data)){
-                    continue;
-                }
-                $geocoll    = $ov_walks->document($_id)->collection("geotags")->documents();
-                $geotags    = array();
-                if($geocoll){
-                    foreach($geocoll as $fakeidx => $geotag){
-                        $data_array = $geotag->data();
-                        $geo_data   = isset($data_array[0]) ? current($data_array) : $data_array;
-                        $geotags[$geotag->id()] = $geo_data;
-                    }
-                }
-                ksort($geotags);
-
-                $walk_data["_id"]       = $_id;
-                $walk_data["geotags"]   = $geotags;
-                array_push($result, $walk_data);
-            }
-
-            //TODO THIS IS FUCKED UP
-            //FUCK THIS SHIT FUCK THIS SHIT FUCK IT! SOEM TIMESTAMPS ARE INT SOME ARE STRINGS WHAT THEFUCK MAN
-            $midnight       = strval($midnight);
-            $midnight_plus  = strval($midnight_plus);
-            $query          = $ov_walks->where('project_id', '=', $project_code)
-                ->where('timestamp', '>=', $midnight)
-                ->where('timestamp', '<', $midnight_plus);
-            $snapshot      = $query->documents();
-
-	        foreach ($snapshot as $document) {
-	            $_id        = $document->id();
-                $walk_data  = $document->data();
-
-                if(array_key_exists("_deleted",$walk_data)){
-                    continue;
-                }
-                $geocoll    = $ov_walks->document($_id)->collection("geotags")->documents();
-                $geotags    = array();
-                if($geocoll){
-                    foreach($geocoll as $fakeidx => $geotag){
-                        $data_array = $geotag->data();
-                        $geo_data   = isset($data_array[0]) ? current($data_array) : $data_array;
-                        $geotags[$geotag->id()] = $geo_data;
-                    }
-                }
-                ksort($geotags);
-
-                $walk_data["_id"]       = $_id;
-                $walk_data["geotags"]   = $geotags;
-                array_push($result, $walk_data);
-            }
-        }
-
-        return $result;
-    }
-
-    public function getProjectSummaryData($project_code){
-        $result = array();
-
-        if($this->firestore){
-            $ov_projects    = $this->firestore->collection($this->walks_collection);
-            $query          = $ov_projects->where('project_id', '=', $project_code);
-            $snapshot       = $query->documents();
-            $walk_tz        = null;
-
-            foreach ($snapshot as $document) {
-                $data           = $document->data();
-                if(array_key_exists("_deleted",$data)){
-                    continue;
-                }
-
-                $doc_id         = $data["project_id"] . "_" . $data["device"]["uid"]. "_" . $data["timestamp"];
-                $text_count     = 0;
-                $photo_count    = 0;
-                $audio_count    = 0;
-                $attachment_ids = array();
-
-                $has_map        = false;
-                $geocoll        = $ov_projects->document($doc_id)->collection("geotags")->documents();
-                if($geocoll){
-                    foreach($geocoll as $geotag){
-                        $data_array = $geotag->data();
-                        if(!empty($data_array)){
-                            $has_map = true;
-                        }
-                        break;
-                    }
-                }
-
-                foreach($data["photos"] as $photo){
-                    if(array_key_exists("_deleted",$photo)){
-                        continue;
-                    }
-
-                    $photo_count++;
-
-                    if(!$walk_tz) {
-
-                        if (isset($data["geos"])) {
-
-                        } elseif (isset($photo["geotag"])) {
-                            $lat = $photo["geotag"]["lat"];
-                            $lng = $photo["geotag"]["lng"];
-                        }else{
-                            $walk_tz = "America/Los_Angeles";
-                        }
-
-                        if($lat && $lng){
-                            $gkey       = $this->gapi_key;
-                            $ts         = round($data["timestamp"]/1000);
-                            $url        ="https://maps.googleapis.com/maps/api/timezone/json?location=$lat,$lng&timestamp=$ts&key=$gkey";
-                            $g_result   = $this->doCurl($url);
-                            $g_arr      = json_decode($g_result,1);
-                            if(isset($g_arr["timeZoneId"])){
-                                $walk_tz = $g_arr["timeZoneId"];
-                            }
-                        }
-                    }
-
-                    if(isset($photo["text_comment"])){
-                        $text_count++;
-                    }
-
-                    if(isset($photo["audios"])){
-                        array_push($attachment_ids, $doc_id . "_" . $photo["name"]);
-                        if(count($photo["audios"])){
-                            $audio_count += count($photo["audios"]);
-                            foreach($photo["audios"] as $audio_name => $audio){
-                                array_push($attachment_ids,$doc_id . "_" . $audio_name);
-                            }
-				        }
-                    }
-                };
-
-                if(!$photo_count){
-                    continue;
-                }
-
-                //, new DateTimeZone($walk_tz) do this on display not before querying
-                $dt = new DateTime("now"); //first argument "must" be a string
-                $dt->setTimestamp(round($data["timestamp"]/1000)); //adjust the object to correct timestamp
-                $walk_date = $dt->format('Y-m-d');
-                
-                $temp = array(
-                     "date"             => $walk_date
-                    ,"id"               => $doc_id
-                    ,"photos"           => $photo_count
-                    ,"maps"             => $has_map ? "Y" : "N"
-                    ,"data_processed"   => $data["data_processed"] ?? null
-                    ,"device"           => $data["device"]
-                    ,"transcriptions"   => $data["transcriptions"] ?? null
-                    ,"attachment_ids"   => $attachment_ids
-                    ,"audios"           => $audio_count
-                    ,"texts"            => $text_count
-                    ,"completed_upload" => $data["completed_upload"] ?? null
-                );
-
-
-                array_push($result, $temp);
-            }
-        }
-
-        return $result;
-    }
-
-    public function getProjectSummaryData_bak($project_code, $view="walk", $dd="project"){
-        $qs         = http_build_query(array( 'keys' => '["'.$project_code.'"]' ,  'descending' => 'true'));
-        $couch_url  = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
-        $response   = doCurl($couch_url);
-        return json_decode($response,1);
     }
 
     public function filterProjectPhotos($project_code, $tags=array(), $goodbad=array()){
@@ -921,11 +1054,15 @@ class Datastore {
         return $result;
     }
 
-    public function checkAttachmentsExist($_ids, $view="ids", $dd="checkExisting"){
-        $qs         = http_build_query(array( 'keys' => $_ids, 'group' => 'true'));
-        $couch_url  = cfg::$couch_url . "/" . cfg::$couch_attach_db . "/" . "_design/$dd/_view/".$view."?" .$qs;
-        $response   = $this->doCurl($couch_url);
-        return json_decode($response,1);
+    public function checkAttachmentsExist($file_url){
+        $check = get_head($file_url);
+        if(!empty($check) && isset($check[0])){
+            $current = current($check);
+            if(strpos($current["Status"], "200 OK") > -1){
+                return true;
+            }
+        }
+        return false;
     }
 
     public function getRecentWalkActivity($days=30){
@@ -969,6 +1106,7 @@ class Datastore {
             $query          = $ov_walks
                 ->where('timestamp', '>', $nowtime_minus)
                 ->where('timestamp', '<=', $nowtime);
+
 
             $snapshot       = $query->documents();
             foreach ($snapshot as $document) {

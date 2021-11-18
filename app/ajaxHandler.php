@@ -9,7 +9,7 @@ if(!empty($_POST["action"])){
     $lang       = !empty($_POST["lang"])        ? filter_var($_POST["lang"], FILTER_SANITIZE_STRING) :null;
     $photo_i    = isset($_POST["photo_i"])      ? filter_var($_POST["photo_i"], FILTER_SANITIZE_NUMBER_INT) : null;
     $filename   = isset($_POST["_filename"])    ? filter_var($_POST["_filename"], FILTER_SANITIZE_STRING) : null;
-
+    $active_project_id = !empty($_POST["active_project_id"])  ? filter_var($_POST["active_project_id"], FILTER_SANITIZE_STRING) : null;
     // GET WALK DATA
     if($_id){
         $payload    = $ds->getWalkData($_id, true);
@@ -21,6 +21,92 @@ if(!empty($_POST["action"])){
     $response   = null;
 
 	switch($action){
+        case 'project_summary' :
+            $summ_buffer = array();
+            if($active_project_id){
+                $response_rows  = $ds->getProjectSummaryData($active_project_id);
+
+                $summ_buffer[]  = "<table cellpadding='0' cellspacing='0' width='100%'>";
+                $summ_buffer[]  = "<thead>";
+                $summ_buffer[]  = "<th>Date</th>";
+                $summ_buffer[]  = "<th>Walk Id</th>";
+                $summ_buffer[]  = "<th>Device</th>";
+                $summ_buffer[]  = "<th>Photos #</th>";
+                $summ_buffer[]  = "<th>Audios #</th>";
+                $summ_buffer[]  = "<th>Texts #</th>";
+                $summ_buffer[]  = "<th>Map Available</th>";
+                $summ_buffer[]  = "<th>Upload Complete</th>";
+                $summ_buffer[]  = "<th>Processed</th>";
+                $summ_buffer[]  = "</thead>";
+                $summ_buffer[]  = "</table>";
+                $summ_buffer[]  = "<table cellpadding='0' cellspacing='0' width='100%'>";
+                $summ_buffer[]  = "<tbody>";
+
+                $total_photos = 0;
+                $total_audios = 0;
+                $total_texts  = 0;
+
+                foreach($response_rows as $i => $walk){
+                    $_id        = $walk["id"];
+                    $date       = $walk["date"];
+
+                    $device     = $walk["device"]["platform"] . " (".$walk["device"]["version"].")";
+                    $processed  = isset($walk["data_processed"]) ? $walk["data_processed"] : false;
+
+                    //check for attachment ids existing
+                    //IMPORTANT TO FORMAT THIS RIGHT OR ELSE WILL GET INVALID JSON ERROR
+
+                    $partial_files  = count($walk["partial_files"]);
+                    $uploaded       = array_key_exists("completed_upload", $walk) ? "Y" : "N ($partial_files files)";
+                    $data_processed = $processed ? "data_checked" : "";
+
+                    $summ_buffer[] = "<tr>";
+                    $summ_buffer[] = "<td>" . $date . "</td>";
+                    $summ_buffer[] = "<td><a href='#".$walk["id"]."'>" . substr($_id, -4) . "</a></td>";
+                    $summ_buffer[] = "<td>" . $device . "</td>";
+                    $summ_buffer[] = "<td>" . $walk["photos"]. "</td>";
+                    $summ_buffer[] = "<td>" . $walk["audios"]. "</td>";
+                    $summ_buffer[] = "<td>" . $walk["texts"]. "</td>";
+                    $summ_buffer[] = "<td class='".$walk["maps"]."'>" . $walk["maps"]. "</td>";
+                    $summ_buffer[] = "<td class='$uploaded'>" . $uploaded. "</td>";
+                    $summ_buffer[] = "<td class='$data_processed'>" . ($processed ? "Y" : "") . "</td>";
+                    $summ_buffer[] = "</tr>";
+
+                    $total_photos += $walk["photos"];
+                    $total_audios += $walk["audios"];
+                    $total_texts  += $walk["texts"];
+                }
+
+                // FILL OUT REST OF TABLE EMPTY SPACE
+                $x = $i;
+                while($x < 10){
+                    $summ_buffer[] = "<tr>";
+                    $summ_buffer[] = "<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
+                    $summ_buffer[] = "</tr>";
+                    $x++;
+                }
+
+                $summ_buffer[] = "</tbody>";
+                $summ_buffer[] = "</table>";
+                $summ_buffer[] = "<table cellpadding='0' cellspacing='0' width='100%'>";
+                $summ_buffer[] = "<tfoot>";
+                $summ_buffer[] = "<td>Totals:</td>";
+                $summ_buffer[] = "<td>".($i+1)." walks</td>";
+                $summ_buffer[] = "<td></td>";
+                $summ_buffer[] = "<td>$total_photos</td>";
+                $summ_buffer[] = "<td>$total_audios</td>";
+                $summ_buffer[] = "<td>$total_texts</td>";
+                $summ_buffer[] = "<td></td>";
+                $summ_buffer[] = "<td></td>";
+                $summ_buffer[] = "<td></td>";
+                $summ_buffer[] = "</tfoot>";
+                $summ_buffer[] = "</table>";
+                $summ_buffer[] = "</div>";
+            }
+
+            echo  implode("\r\n", $summ_buffer);
+        break;
+
         case 'rotation':
             $rotate = filter_var($_POST["rotate"], FILTER_SANITIZE_NUMBER_INT);
             if(isset($photos[$photo_i])){
@@ -41,9 +127,11 @@ if(!empty($_POST["action"])){
         case 'day_walks':
             $active_pid 	= isset($_POST["active_pid"]) ? filter_var($_POST["active_pid"], FILTER_SANITIZE_STRING) : null;
             $date 			= isset($_POST["date"]) ? filter_var($_POST["date"], FILTER_SANITIZE_STRING) : null;
+            $walkids 		= isset($_POST["walkids"]) ? $_POST["walkids"] : null;
 
             //GET THE DATA FROM disc_users
-            $response 		= $ds->filter_by_projid($active_pid ,$date);
+//            $response 		= $ds->filter_by_projid($active_pid ,$date);
+            $response 		= $ds->getWalksByIds( $walkids );
             $code_block 	= array();
 
             foreach($response as $i => $row){
