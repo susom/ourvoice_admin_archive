@@ -604,6 +604,7 @@ class Datastore {
                 array_push($date_buckets[$walk_date], $doc_id);
             }
 
+            krsort($date_buckets);
             $result = $date_buckets;
         }
 
