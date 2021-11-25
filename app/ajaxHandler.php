@@ -319,7 +319,7 @@ if(!empty($_POST["action"])){
             $proj_idx 	        = !empty($_POST["pcode"]) ? filter_var($_POST["pcode"], FILTER_SANITIZE_STRING) : null;
             $pfilters 		    = !empty($_POST["filters"]) ? $_POST["filters"] : array();
 
-            $data 			    = $ds->getFilteredDataGeos($proj_idx, $pfilters);
+            $data 			    = $ds->getFilteredDataGeos($proj_idx, $pfilters, true);
             $data["code_block"] = printAllDataThumbs($data["code_block"]);
 
             $response 		    = json_encode($data);

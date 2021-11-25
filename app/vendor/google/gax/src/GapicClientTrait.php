@@ -43,12 +43,14 @@ use Google\ApiCore\Transport\GrpcFallbackTransport;
 use Google\ApiCore\Transport\GrpcTransport;
 use Google\ApiCore\Transport\RestTransport;
 use Google\ApiCore\Transport\TransportInterface;
+use Google\Auth\CredentialsLoader;
 use Google\Auth\FetchAuthTokenInterface;
 use Google\LongRunning\Operation;
 use Google\Protobuf\Internal\Message;
 use Grpc\Gcp\ApiConfig;
 use Grpc\Gcp\Config;
 use GuzzleHttp\Promise\PromiseInterface;
+use LogicException;
 
 /**
  * Common functions used to work with various clients.
@@ -56,7 +58,9 @@ use GuzzleHttp\Promise\PromiseInterface;
 trait GapicClientTrait
 {
     use ArrayTrait;
-    use ValidationTrait;
+    use ValidationTrait {
+        ValidationTrait::validate as traitValidate;
+    }
     use GrpcSupportTrait;
 
     /** @var TransportInterface */
@@ -158,12 +162,21 @@ trait GapicClientTrait
             'gapicVersion' => self::getGapicVersion($options),
             'libName' => null,
             'libVersion' => null,
+            'apiEndpoint' => null,
+            'clientCertSource' => null,
         ];
-        $defaultOptions['transportConfig'] += [
-            'grpc' => ['stubOpts' => ['grpc.service_config_disable_resolution' => 1]],
-            'rest' => [],
-            'grpc-fallback' => [],
-        ];
+
+        $supportedTransports = $this->supportedTransports();
+        foreach ($supportedTransports as $transportName) {
+            if (!array_key_exists($transportName, $defaultOptions['transportConfig'])) {
+                $defaultOptions['transportConfig'][$transportName] = [];
+            }
+        }
+        if (in_array('grpc', $supportedTransports)) {
+            $defaultOptions['transportConfig']['grpc'] = [
+                'stubOpts' => ['grpc.service_config_disable_resolution' => 1]
+            ];
+        }
 
         // Merge defaults into $options starting from top level
         // variables, then going into deeper nesting, so that
@@ -171,16 +184,28 @@ trait GapicClientTrait
         $options += $defaultOptions;
         $options['credentialsConfig'] += $defaultOptions['credentialsConfig'];
         $options['transportConfig'] += $defaultOptions['transportConfig'];
-        $options['transportConfig']['grpc'] += $defaultOptions['transportConfig']['grpc'];
-        $options['transportConfig']['grpc']['stubOpts'] += $defaultOptions['transportConfig']['grpc']['stubOpts'];
-        $options['transportConfig']['rest'] += $defaultOptions['transportConfig']['rest'];
-        $options['transportConfig']['grpc-fallback'] += $defaultOptions['transportConfig']['grpc-fallback'];
+        if (isset($options['transportConfig']['grpc'])) {
+            $options['transportConfig']['grpc'] += $defaultOptions['transportConfig']['grpc'];
+            $options['transportConfig']['grpc']['stubOpts'] += $defaultOptions['transportConfig']['grpc']['stubOpts'];
+        }
+        if (isset($options['transportConfig']['rest'])) {
+            $options['transportConfig']['rest'] += $defaultOptions['transportConfig']['rest'];
+        }
 
         $this->modifyClientOptions($options);
 
         // serviceAddress is now deprecated and acts as an alias for apiEndpoint
         if (isset($options['serviceAddress'])) {
             $options['apiEndpoint'] = $this->pluck('serviceAddress', $options, false);
+        }
+
+        // If an API endpoint is set, ensure the "audience" does not conflict
+        // with the custom endpoint by setting "user defined" scopes.
+        if ($options['apiEndpoint'] != $defaultOptions['apiEndpoint']
+            && empty($options['credentialsConfig']['scopes'])
+            && !empty($options['credentialsConfig']['defaultScopes'])
+        ) {
+            $options['credentialsConfig']['scopes'] = $options['credentialsConfig']['defaultScopes'];
         }
 
         if (extension_loaded('sysvshm')
@@ -205,7 +230,50 @@ trait GapicClientTrait
             }
         }
 
+        // mTLS: detect and load the default clientCertSource if the environment variable
+        // "GOOGLE_API_USE_CLIENT_CERTIFICATE" is true, and the cert source is available
+        if (empty($options['clientCertSource']) && CredentialsLoader::shouldLoadClientCertSource()) {
+            if ($defaultCertSource = CredentialsLoader::getDefaultClientCertSource()) {
+                $options['clientCertSource'] = function () use ($defaultCertSource) {
+                    $cert = call_user_func($defaultCertSource);
+
+                    // the key and the cert are returned in one string
+                    return [$cert, $cert];
+                };
+            }
+        }
+
+        // mTLS: If no apiEndpoint has been supplied by the user, and either
+        // GOOGLE_API_USE_MTLS_ENDPOINT tells us to, or mTLS is available, use the mTLS endpoint.
+        if ($options['apiEndpoint'] === $defaultOptions['apiEndpoint']
+            && $this->shouldUseMtlsEndpoint($options)
+        ) {
+            $options['apiEndpoint'] = self::determineMtlsEndpoint($options['apiEndpoint']);
+        }
+
         return $options;
+    }
+
+    private function shouldUseMtlsEndpoint($options)
+    {
+        $mtlsEndpointEnvVar = getenv('GOOGLE_API_USE_MTLS_ENDPOINT');
+        if ('always' === $mtlsEndpointEnvVar) {
+            return true;
+        }
+        if ('never' === $mtlsEndpointEnvVar) {
+            return false;
+        }
+        // For all other cases, assume "auto" and return true if clientCertSource exists
+        return !empty($options['clientCertSource']);
+    }
+
+    private static function determineMtlsEndpoint($apiEndpoint)
+    {
+        $parts = explode('.', $apiEndpoint);
+        if (count($parts) < 3) {
+            return $apiEndpoint; // invalid endpoint!
+        }
+        return sprintf('%s.mtls.%s', array_shift($parts), implode('.', $parts));
     }
 
     /**
@@ -269,6 +337,8 @@ trait GapicClientTrait
      *           The version of the client application.
      *     @type string $gapicVersion
      *           The code generator version of the GAPIC library.
+     *     @type callable $clientCertSource
+     *           A callable which returns the client cert as a string.
      * }
      * @throws ValidationException
      */
@@ -287,7 +357,7 @@ trait GapicClientTrait
             'credentialsConfig',
             'transportConfig',
         ]);
-        $this->validate($options, [
+        $this->traitValidate($options, [
             'credentials',
             'transport',
             'gapicVersion',
@@ -305,6 +375,18 @@ trait GapicClientTrait
             $clientConfig,
             $options['disableRetries']
         );
+
+        // Edge case: If the client has the gRPC extension installed, but is
+        // a REST-only library, then the grpcVersion header should not be set.
+        if ($this->transport instanceof GrpcTransport) {
+            $options['grpcVersion'] = phpversion('grpc');
+            unset($options['restVersion']);
+        } elseif ($this->transport instanceof RestTransport
+            || $this->transport instanceof GrpcFallbackTransport) {
+            unset($options['grpcVersion']);
+            $options['restVersion'] = Version::getApiCoreVersion();
+        }
+
         $this->agentHeader = AgentHeader::buildAgentHeader(
             $this->pluckArray([
                 'libName',
@@ -324,7 +406,12 @@ trait GapicClientTrait
         $transport = $options['transport'] ?: self::defaultTransport();
         $this->transport = $transport instanceof TransportInterface
             ? $transport
-            : $this->createTransport($options['apiEndpoint'], $transport, $options['transportConfig']);
+            : $this->createTransport(
+                $options['apiEndpoint'],
+                $transport,
+                $options['transportConfig'],
+                $options['clientCertSource']
+            );
     }
 
     /**
@@ -358,20 +445,34 @@ trait GapicClientTrait
      * @param string $apiEndpoint
      * @param string $transport
      * @param array $transportConfig
+     * @param callable $clientCertSource
      * @return TransportInterface
      * @throws ValidationException
      */
-    private function createTransport($apiEndpoint, $transport, array $transportConfig)
-    {
+    private function createTransport(
+        $apiEndpoint,
+        $transport,
+        array $transportConfig,
+        callable $clientCertSource = null
+    ) {
         if (!is_string($transport)) {
             throw new ValidationException(
                 "'transport' must be a string, instead got:" .
                 print_r($transport, true)
             );
         }
+        $supportedTransports = self::supportedTransports();
+        if (!in_array($transport, $supportedTransports)) {
+            throw new ValidationException(sprintf(
+                'Unexpected transport option "%s". Supported transports: %s',
+                $transport,
+                implode(', ', $supportedTransports)
+            ));
+        }
         $configForSpecifiedTransport = isset($transportConfig[$transport])
             ? $transportConfig[$transport]
             : [];
+        $configForSpecifiedTransport['clientCertSource'] = $clientCertSource;
         switch ($transport) {
             case 'grpc':
                 return GrpcTransport::build($apiEndpoint, $configForSpecifiedTransport);
@@ -405,8 +506,15 @@ trait GapicClientTrait
             'descriptorsConfigPath',
         ], $options);
 
-        return $this->pluck('operationsClient', $options, false)
-            ?: new OperationsClient($options);
+        // User-supplied operations client
+        if ($operationsClient = $this->pluck('operationsClient', $options, false)) {
+            return $operationsClient;
+        }
+
+        // operationsClientClass option
+        $operationsClientClass = $this->pluck('operationsClientClass', $options, false)
+            ?: OperationsCLient::class;
+        return new $operationsClientClass($options);
     }
 
     /**
@@ -428,8 +536,8 @@ trait GapicClientTrait
      *     @type array $headers [optional] key-value array containing headers
      *     @type int $timeoutMillis [optional] the timeout in milliseconds for the call
      *     @type array $transportOptions [optional] transport-specific call options
-     *     @type RetrySettings $retrySettings [optional] A retry settings override
-     *           For the call.
+     *     @type RetrySettings|array $retrySettings [optional] A retry settings
+     *           override for the call.
      * }
      * @param Message $request
      * @param int $callType
@@ -471,7 +579,9 @@ trait GapicClientTrait
                 break;
         }
 
-        return $callStack($call, $optionalArgs);
+        return $callStack($call, $optionalArgs + array_filter([
+            'audience' => self::getDefaultAudience()
+        ]));
     }
 
     /**
@@ -486,18 +596,26 @@ trait GapicClientTrait
      */
     private function createCallStack(array $callConstructionOptions)
     {
+        $quotaProject = $this->credentialsWrapper->getQuotaProject();
+        $fixedHeaders = $this->agentHeader;
+        if ($quotaProject) {
+            $fixedHeaders += [
+                'X-Goog-User-Project' => [$quotaProject]
+            ];
+        }
         $callStack = function (Call $call, array $options) {
             $startCallMethod = $this->transportCallMethods[$call->getCallType()];
             return $this->transport->$startCallMethod($call, $options);
         };
         $callStack = new CredentialsWrapperMiddleware($callStack, $this->credentialsWrapper);
-        $callStack = new FixedHeaderMiddleware($callStack, $this->agentHeader, true);
+        $callStack = new FixedHeaderMiddleware($callStack, $fixedHeaders, true);
         $callStack = new RetryMiddleware($callStack, $callConstructionOptions['retrySettings']);
         $callStack = new OptionsFilterMiddleware($callStack, [
             'headers',
             'timeoutMillis',
             'transportOptions',
             'metadataCallback',
+            'audience',
         ]);
 
         return $callStack;
@@ -508,8 +626,8 @@ trait GapicClientTrait
      * @param array $optionalArgs {
      *     Optional arguments
      *
-     *     @type RetrySettings $retrySettings [optional] A retry settings override
-     *           For the call.
+     *     @type RetrySettings|array $retrySettings [optional] A retry settings
+     *           override for the call.
      * }
      *
      * @return array
@@ -519,9 +637,13 @@ trait GapicClientTrait
         $retrySettings = $this->retrySettings[$methodName];
         // Allow for retry settings to be changed at call time
         if (isset($optionalArgs['retrySettings'])) {
-            $retrySettings = $retrySettings->with(
-                $optionalArgs['retrySettings']
-            );
+            if ($optionalArgs['retrySettings'] instanceof RetrySettings) {
+                $retrySettings = $optionalArgs['retrySettings'];
+            } else {
+                $retrySettings = $retrySettings->with(
+                    $optionalArgs['retrySettings']
+                );
+            }
         }
         return [
             'retrySettings' => $retrySettings,
@@ -538,8 +660,10 @@ trait GapicClientTrait
      *     @type array $transportOptions [optional] transport-specific call options
      * }
      * @param Message $request
-     * @param OperationsClient $client
+     * @param OperationsClient|object $client
      * @param string $interfaceName
+     * @param string $operationClass If provided, will be used instead of the default
+     *                               operation response class of {@see Google\LongRunning\Operation}.
      *
      * @return PromiseInterface
      */
@@ -547,25 +671,41 @@ trait GapicClientTrait
         $methodName,
         array $optionalArgs,
         Message $request,
-        OperationsClient $client,
-        $interfaceName = null
+        $client,
+        $interfaceName = null,
+        $operationClass = null
     ) {
         $callStack = $this->createCallStack(
             $this->configureCallConstructionOptions($methodName, $optionalArgs)
         );
+
         $descriptor = $this->descriptors[$methodName]['longRunning'];
+
+        // Call the methods supplied in "additionalArgumentMethods" on the request Message object
+        // to build the "additionalOperationArguments" option for the operation response.
+        if (isset($descriptor['additionalArgumentMethods'])) {
+            $additionalArgs = [];
+            foreach ($descriptor['additionalArgumentMethods'] as $additionalArgsMethodName) {
+                $additionalArgs[] = $request->$additionalArgsMethodName();
+            }
+            $descriptor['additionalOperationArguments'] = $additionalArgs;
+            unset($descriptor['additionalArgumentMethods']);
+        }
+
         $callStack = new OperationsMiddleware($callStack, $client, $descriptor);
 
         $call = new Call(
             $this->buildMethod($interfaceName, $methodName),
-            Operation::class,
+            $operationClass ?: Operation::class,
             $request,
             [],
             Call::UNARY_CALL
         );
 
         $this->modifyUnaryCallable($callStack);
-        return $callStack($call, $optionalArgs);
+        return $callStack($call, $optionalArgs + array_filter([
+            'audience' => self::getDefaultAudience()
+        ]));
     }
 
     /**
@@ -601,7 +741,9 @@ trait GapicClientTrait
         );
 
         $this->modifyUnaryCallable($callStack);
-        return $callStack($call, $optionalArgs)->wait();
+        return $callStack($call, $optionalArgs + array_filter([
+            'audience' => self::getDefaultAudience()
+        ]))->wait();
     }
 
     /**
@@ -617,6 +759,26 @@ trait GapicClientTrait
             $interfaceName ?: $this->serviceName,
             $methodName
         );
+    }
+
+    /**
+     * The SERVICE_ADDRESS constant is set by GAPIC clients
+     */
+    private static function getDefaultAudience()
+    {
+        if (!defined('self::SERVICE_ADDRESS')) {
+            return null;
+        }
+        return 'https://' . self::SERVICE_ADDRESS . '/';
+    }
+
+    /**
+     * This defaults to all three transports, which One-Platform supports.
+     * Discovery clients should define this function and only return ['rest'].
+     */
+    private static function supportedTransports()
+    {
+        return ['grpc', 'grpc-fallback', 'rest'];
     }
 
     // Gapic Client Extension Points

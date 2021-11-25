@@ -251,20 +251,22 @@ a.preview em{
 .thumbs .rotate img {
 	max-width:140px;
 	max-height:140px;
+}
+.thumbs .rotate.temp_rotate img {
 	transform: rotate(0) translate(0,0);
 	image-orientation: from-image;
-	border-radius: 5px;
 }
-.thumbs .rotate[rev='1'] img {
+
+.thumbs .rotate[rev='1'].temp_rotate img {
 	margin-top: 15px;
 	transform: rotate(90deg) translate(0,0);
 	image-orientation: from-image;
 }
-.thumbs .rotate[rev='2'] img {
+.thumbs .rotate[rev='2'].temp_rotate img {
 	transform: rotate(180deg) translate(0,0);
 	image-orientation: from-image;
 }
-.thumbs .rotate[rev='3'] img {
+.thumbs .rotate[rev='3'].temp_rotate img {
 	margin-top: 15px;
 	transform: rotate(270deg) translate(0,0);
 	image-orientation: from-image;
@@ -368,25 +370,24 @@ label span {
 }
 
 .photo_detail figure img{
-	max-width:525px;
+	max-width:670px;
 	max-height:700px;
-	transform:rotate(90deg) translate(90px,0);
 }
 
-.photo_detail .rotate img {
+.photo_detail .rotate.temp_rotate img {
 	transform: rotate(0) translate(0,0);
 	image-orientation: from-image;
 }
-.photo_detail .rotate[rev='1'] img {
-	transform: rotate(90deg) translate(90px,-70px);
+.photo_detail .rotate[rev='1'].temp_rotate img {
+	transform: rotate(90deg) translate(25%, 0);
 	image-orientation: from-image;
 }
-.photo_detail .rotate[rev='2'] img {
+.photo_detail .rotate[rev='2'].temp_rotate img {
 	transform: rotate(180deg) translate(0,0);
 	image-orientation: from-image;
 }
-.photo_detail .rotate[rev='3'] img {
-	transform: rotate(270deg) translate(-90px,-70px);
+.photo_detail .rotate[rev='3'].temp_rotate img {
+	transform: rotate(270deg) translate(-25%, 0);
 	image-orientation: from-image;
 }
 .print_logo{
@@ -800,14 +801,14 @@ label span {
 	opacity:1;
 }
 #hover_zoom[rev='1'] {
-	transform: rotate(90deg) translateX(-100%);
+	/*transform: rotate(90deg) translateX(-100%);*/
 	transform-origin: left bottom;
 }
 #hover_zoom[rev='2'] {
-	transform: rotate(180deg) translate(0,0);
+	/*transform: rotate(180deg) translate(0,0);*/
 }
 #hover_zoom[rev='3'] {
-	transform: rotate(-90deg) translateY(100%);
+	/*transform: rotate(-90deg) translateY(100%);*/
 	transform-origin: bottom left;
 }
 

@@ -387,6 +387,8 @@ $page = "allwalks";
 
 		//ROTATE
 		$(".collapse").on("click",".preview span",function(){
+            $(this).parent().addClass("temp_rotate");
+
 			var rotate = $(this).parent().attr("rev");
 			if(rotate < 3){
 				rotate++;

@@ -346,8 +346,8 @@ function printRow($doc, $i){
         $uuid           = $doc["device"]["uid"];
         $walk_ts        = $doc["timestamp"];
 
-        $file_uri   = $ds->getStorageFile(cfg::$gcp_bucketName, $doc["_id"], $photo_name);
-//        $thumb_uri  = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+        $transform  = array("transform" => "thumbnail", "rotate" => $rotate);
+        $file_uri   = $ds->getStorageFile(cfg::$gcp_bucketName, $doc["_id"], $photo_name, $transform);
         $photo_uri  = $file_uri;
         $detail_url = "photo.php?_id=".$doc["_id"]."&_file=$photo_name";
 

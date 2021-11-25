@@ -78,6 +78,7 @@ class RestTransport implements TransportInterface
      *    Config options used to construct the gRPC transport.
      *
      *    @type callable $httpHandler A handler used to deliver PSR-7 requests.
+     *    @type callable $clientCertSource A callable which returns the client cert as a string.
      * }
      * @return RestTransport
      * @throws ValidationException
@@ -86,11 +87,16 @@ class RestTransport implements TransportInterface
     {
         $config += [
             'httpHandler'  => null,
+            'clientCertSource' => null,
         ];
         list($baseUri, $port) = self::normalizeServiceAddress($apiEndpoint);
         $requestBuilder = new RequestBuilder("$baseUri:$port", $restConfigPath);
         $httpHandler = $config['httpHandler'] ?: self::buildHttpHandlerAsync();
-        return new RestTransport($requestBuilder, $httpHandler);
+        $transport = new RestTransport($requestBuilder, $httpHandler);
+        if ($config['clientCertSource']) {
+            $transport->configureMtlsChannel($config['clientCertSource']);
+        }
+        return $transport;
     }
 
     /**
@@ -115,7 +121,8 @@ class RestTransport implements TransportInterface
                 /** @var Message $return */
                 $return = new $decodeType;
                 $return->mergeFromJsonString(
-                    (string) $response->getBody()
+                    (string) $response->getBody(),
+                    true
                 );
 
                 if (isset($options['metadataCallback'])) {
@@ -145,6 +152,12 @@ class RestTransport implements TransportInterface
             $callOptions['timeout'] = $options['timeoutMillis'] / 1000;
         }
 
+        if ($this->clientCertSource) {
+            list($cert, $key) = self::loadClientCertSource();
+            $callOptions['cert'] = $cert;
+            $callOptions['key'] = $key;
+        }
+
         return $callOptions;
     }
 
@@ -159,7 +172,9 @@ class RestTransport implements TransportInterface
         $body = (string) $res->getBody();
         if ($error = json_decode($body, true)['error']) {
             $basicMessage = $error['message'];
-            $code = ApiStatus::rpcCodeFromStatus($error['status']);
+            $code = isset($error['status'])
+                ? ApiStatus::rpcCodeFromStatus($error['status'])
+                : $ex->getCode();
             $metadata = isset($error['details']) ? $error['details'] : null;
             return ApiException::createFromApiResponse($basicMessage, $code, $metadata);
         }

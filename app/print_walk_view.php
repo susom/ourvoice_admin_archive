@@ -1,6 +1,6 @@
 <?php 
 require_once "common.php";
-require_once "vendor/tcpdf/tcpdf.php";
+//require_once "vendor/tcpdf/tcpdf.php";
 
 //ini_set('display_errors', 1);
 //ini_set('display_startup_errors', 1);
@@ -281,27 +281,12 @@ if(!empty($_id)){
 		.photo_map {
 			overflow:hidden;
 		}
-		.photo_map .rotate img {
-			transform: rotate(0) translate(0,0);
-			image-orientation: from-image;
-		}
-		.photo_map .rotate[rev='1'] img {
-			transform: rotate(90deg) translate(90px,0px);
-			image-orientation: from-image;
-		}
-		.photo_map .rotate[rev='2'] img {
-			transform: rotate(180deg) translate(0,0);
-			image-orientation: from-image;
-		}
-		.photo_map .rotate[rev='3'] img {
-			transform: rotate(270deg) translate(-90px,-70px);
-			image-orientation: from-image;
-		}
+
 		.photo_cont{
-			max-height:400px; max-width:50%;
-			width:50%;
-			height:400px;
-			float:left;
+            max-width:50%;
+            max-height:700px;
+            width:50%;
+            float:left;
 		}
 		.map_cont{
 			max-height:400px; max-width:48%;

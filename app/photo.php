@@ -92,7 +92,8 @@ $page = "photo_detail";
 //	            date_default_timezone_set($response->timeZoneId);
 //	        }
 
-			$photo_uri 	= $ds->getStorageFile(cfg::$gcp_bucketName, $_id, $_file);
+            $transform  = array("transform" => "photo_detail", "rotate" => $hasrotate);
+			$photo_uri 	= $ds->getStorageFile(cfg::$gcp_bucketName, $_id, $_file, $transform);
 			// detectFaces($ph_id,$old, $photo_name);
 
 			$attach_url = "#";
@@ -348,6 +349,13 @@ $(document).ready(function(){
 	});
 
 	$(".preview span").click(function(){
+        var _el = $(this);
+        $(this).parent().addClass("temp_rotate");
+
+        setTimeout(function(){
+            _el.removeClass("temp_rotate");
+        }, 1500);
+
 		var rotate = $(this).parent().attr("rev");
 		if(rotate < 3){
 			rotate++;
@@ -364,7 +372,11 @@ $(document).ready(function(){
 		  data: { doc_id: doc_id, photo_i: photo_i, rotate: rotate, action:"rotation" },
 		  dataType: "text",
 		  success:function(result){
-	      	console.log(result);
+              if(!_el.hasClass("temp_rotate")){
+                  location.href=location.href;
+              }else{
+                  console.log("still clicking");
+              }
 	      },
 	      error:function(e){
 	      	console.log(e);

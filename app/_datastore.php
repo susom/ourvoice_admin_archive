@@ -2,6 +2,7 @@
 
 use Google\Cloud\Firestore\FirestoreClient;
 use Google\Cloud\Storage\StorageClient;
+use ImageKit\ImageKit;
 
 class Datastore {
     private   $keyPath
@@ -33,6 +34,12 @@ class Datastore {
             'projectId'         => $this->gcp_project_id,
             'keyFilePath'       => $this->keyPath
         ]);
+
+        $this->imageKit             = new ImageKit(
+                                cfg::$imgkit_pub,
+                                cfg::$imgkit_priv,
+                                cfg::$imgkit_url
+                            );
     }
 
     public function doCurl($url, $data = null, $method = "GET", $username = null, $password = null) {
@@ -850,7 +857,8 @@ class Datastore {
                 // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK, AT LEAST THIS HAS NO ORDER HALLELUJAH
                 if(!empty($photo["geotag"])){
                     $filename   = $photo["name"];
-                    $file_uri   = $this->getStorageFile($this->gcp_bucketName, $_id , $filename);
+                    $transform  = array("transform" => "print_view");
+                    $file_uri   = $this->getStorageFile($this->gcp_bucketName, $_id , $filename, $transform);
                     $photo["geotag"]["photo_src"]   = $file_uri;
                     $photo["geotag"]["goodbad"]     = $photo["goodbad"];
                     $photo["geotag"]["photo_id"]    = $_id. "_" . $filename;
@@ -869,7 +877,7 @@ class Datastore {
         return $data;
     }
 
-    public function getFilteredDataGeos($pcode, $pfilters){
+    public function getFilteredDataGeos($pcode, $pfilters, $all_walks=false){
         //RETURNS JSON ENCODED BLOCK OF FILTERED PHOTO INFO, AND PHOTO GEOs
         // MOOD and TAG FILTERS ARE MIXED TOGETHER, SO SEPERATE THEM OUT
 
@@ -923,9 +931,12 @@ class Datastore {
                     $filename   = $photo["name"];
                     $ph_id      = $_id . "_" .$filename;;
                     $ph_i       = $photo["i"];
-
-                    $file_uri   = $this->getStorageFile($this->gcp_bucketName, $_id, $filename);
-                    $thumb_uri  = "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
+                    $rotate     = !empty($photo["rotate"]) ? $photo["rotate"] : 0;
+                    $transform  = array("transform" => "print_view", "rotate" => $rotate);
+                    if($all_walks){
+                        $transform["transform"] = "thumbnail";
+                    }
+                    $file_uri   = $this->getStorageFile($this->gcp_bucketName, $_id, $filename, $transform);
                     $photo_uri  = $file_uri;
                     $detail_url = "photo.php?_id=".$_id."&_file=$filename";
 
@@ -1034,14 +1045,82 @@ class Datastore {
         }
     }
 
-    public function getStorageFile($google_bucket, $id_string , $file_name){
+    public function getStorageFile($google_bucket, $id_string , $file_name, $image_transform=array()){
         $temp       = explode("_", $id_string);
         $pcode      = $temp[0];
         $uuid       = $temp[1];
         $walk_ts    = $temp[2];
 
-        $file_uri   = "https://storage.googleapis.com/$google_bucket/$pcode/$uuid/$walk_ts/$file_name";
-        return $file_uri;
+        //once fix pixelation, need to "purge cache"
+        /*
+         $this->imageKit->purgeCacheApi(array(
+                                            "url" => "https://ik.imagekit.io/your_imagekit_id/default-image.jpg"
+                                        ));
+        */
+
+        if(!empty($image_transform)){
+            //for image kit CDN photos only
+            $file_uri   = "/$pcode/$uuid/$walk_ts/$file_name";
+            $transform  = array();
+            $transform["width"] = '1.0';
+            $transform["c"]     = 'maintain_ratio';
+            //            $transform["ar"]    = '4-3';
+
+
+            switch($image_transform["transform"]){
+                case "thumbnail":
+                    $transform["width"]     = '140';
+                    $transform["r"]         = '10';
+                    break;
+
+                case "print_view":
+                    $transform["width"]     = '570';
+                    $transform["q"]         = '50';
+                break;
+
+                case "photo_detail":
+                    $transform["width"]     = '670';
+                break;
+
+                case "coverflow":
+                    $transform["width"] = '140';
+                break;
+            }
+
+            if(isset($image_transform["rotate"])){
+                switch($image_transform["rotate"]){
+                    case 1:
+                        $transform["rotate"] = '90';
+                        break;
+
+                    case 2:
+                        $transform["rotate"] = '180';
+                        break;
+
+                    case 3:
+                        $transform["rotate"] = '270';
+                        break;
+
+                    default:
+                        $transform["rotate"] = '0';
+                        break;
+                }
+            }
+
+            $imageURL   = $this->imageKit->url(
+                [
+                    'path' => $file_uri,
+                    'transformation' => [
+                        $transform
+                    ]
+                ]
+            );
+            return $imageURL;
+        }else{
+            //for audio/mp3/rawphotos
+            $file_uri   = "https://storage.googleapis.com/$google_bucket/$pcode/$uuid/$walk_ts/$file_name";
+            return $file_uri;
+        }
     }
 
     public function getWalkSummaryData($walk_id,  $view="walk_id", $dd="summary"){

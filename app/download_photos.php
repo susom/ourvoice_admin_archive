@@ -15,6 +15,7 @@ $photo_names 	= !empty($walk_data["photo_names"]) ? $walk_data["photo_names"] : 
 $photos 		= array();
 $existing_files = array_diff($photo_names, $partial_files);
 foreach($existing_files as $file_name){
+	//want full size
 	$img_url 	= $ds->getStorageFile($google_bucket, $doc_id , $file_name);
 	$photos[$file_name] = $img_url;
 }

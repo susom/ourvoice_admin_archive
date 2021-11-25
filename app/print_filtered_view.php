@@ -70,7 +70,7 @@ function generatePhotoPage($photo, $pcode, $page, $total, $highlight_tag=null){
 	$photo_tags 	= !empty($photo["tags"]) ? $photo["tags"] : array();
 	if(!empty($photo["audios"]) ){
         foreach($photo["audios"] as $audiofile => $transcription){
-            if(isset($transcription)){
+            if(isset($transcription) && !empty($transcription)){
                 $txn 	= is_array($transcription) ? $transcription : array("text" => $transcription);
                 $txns 	= str_replace('&#34;','"', $txn["text"]);
                 $txns 	= str_replace("rnrn","<br><br>", $txns);
@@ -271,26 +271,11 @@ if(!empty($pcode) ){
 		.photo_map {
 			overflow:hidden;
 		}
-		.photo_map .rotate img {
-			transform: rotate(0) translate(0,0);
-			image-orientation: from-image;
-		}
-		.photo_map .rotate[rev='1'] img {
-			transform: rotate(90deg) translate(90px,0px);
-			image-orientation: from-image;
-		}
-		.photo_map .rotate[rev='2'] img {
-			transform: rotate(180deg) translate(0,0);
-			image-orientation: from-image;
-		}
-		.photo_map .rotate[rev='3'] img {
-			transform: rotate(270deg) translate(-90px,-70px);
-			image-orientation: from-image;
-		}
+
 		.photo_cont{
-			max-height:400px; max-width:50%;
+			max-width:50%;
+            max-height:700px;
 			width:50%;
-			height:400px;
 			float:left;
 		}
 		.map_cont{
