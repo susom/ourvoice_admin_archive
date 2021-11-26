@@ -307,6 +307,9 @@ if(!empty($pcode) ){
 			margin: 0px auto 20px;
 		}
 
+        #google_map_photos.tall{
+            height:80vh;
+        }
 
 		dl{ margin-bottom: 10px; font-size: 140%; }
 		dt{ display:inline-block; vertical-align: top}
@@ -364,7 +367,14 @@ if(!empty($pcode) ){
 <div id="main">
 <?php
 	if(empty($pfilters)){
-		$total = count($photos);
+		?>
+        <section>
+            <h2 class="pghdr">Project : <?=$pcode?></h2>
+            <div id='google_map_photos' class='gmap tall'></div>
+            <small>Generated using the Stanford Discovery Tool, © Stanford University 2020</small>
+        </section>
+        <?php
+        $total = count($photos);
 		$page  = 1;
 		foreach($photos as $photo){
 			generatePhotoPage($photo,$pcode, $page, $total);
