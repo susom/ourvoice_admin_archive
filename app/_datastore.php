@@ -1085,6 +1085,10 @@ class Datastore {
                 case "coverflow":
                     $transform["width"] = '140';
                 break;
+
+                case "custom_rasi":
+                    $transform["width"] = '365';
+                break;
             }
 
             if(isset($image_transform["rotate"])){

@@ -157,7 +157,7 @@ if(!isset($_SESSION["discpw"])) {
                 </label>
 
                 <label><span >Custom "Take Photo" Text</span>
-                    <input type="text" name="custom_takephoto_text" placeholder="eg; Remember to smell roses." value="<?=$custom_takephoto_text?>"/>
+                    <textarea style="width: 24%; height: 8vh; vertical-align: text-top;" name="custom_takephoto_text" placeholder="eg; Remember to smell roses."><?=$custom_takephoto_text?></textarea>
                 </label>
 
 

@@ -11,16 +11,12 @@ $response       = $ds->loadAllProjectThumbs($pcode, $pfilters, $goodbad_filter);
 
 $walks          = array();
 $photo_geos     = array();
-foreach($response["rows"] as $row){
-    $doc    = $row["value"];
+foreach($response as $row){
     $_id    = $row["id"];
-    $ph_i   = $doc[0];
-    $old    = $doc[1];
-    $photo  = $doc[2]; 
-    $txns   = $doc[3]; 
+    $ph_i   = $row["photo_i"];
+    $photo  = $row["photo"];
 
-    // I DID THIS TO MYSELF OH LORD
-    $old = is_null($old) ? "" : "&_old=" . $old;
+    $hasrotate = !empty($photo["rotate"]) ? $photo["rotate"] : 0;
 
     // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK
     if(!empty($photo["geotag"])){
@@ -30,12 +26,22 @@ foreach($response["rows"] as $row){
             // new style file pointer
             $ph_id  .= "_" .$filename;
         }
-        $file_uri       = "passthru.php?_id=".$ph_id."&_file=$filename" . $old;
-        $photo_uri      = "https://ourvoice-projects.med.stanford.edu/thumbnail.php?file=".urlencode($file_uri)."&maxw=365&maxh=365";
+
+        $transform  = array("transform" => "custom_rasi", "rotate" => $hasrotate);
+        $photo_uri 	= $ds->getStorageFile(cfg::$gcp_bucketName, $_id, $filename, $transform);
+
         $photo["geotag"]["photo_src"]   = $photo_uri;
         $photo["geotag"]["goodbad"]     = $photo["goodbad"];
         $photo["geotag"]["photo_id"]    = $_id. "_" . "photo_".$ph_i;
-        $photo["geotag"]["audio_txn"]	= !empty($photo["audios"]) && array_key_exists(end($photo["audios"]),$txns) ? $txns[end($photo["audios"])]["text"] : "na";
+
+        $audios = array_keys($photo["audios"]);
+        $temp   = array();
+        foreach($photo["audios"] as $audiofile =>  $audio){
+            if(!empty($audio["text"])){
+                $temp[] = $audio["text"];
+            }
+        }
+        $photo["geotag"]["audio_txn"]	= !empty($temp) ?  implode("\r\n\r\n",$temp) : "na";
 
         unset($photo["geotag"]["accuracy"]);
         unset($photo["geotag"]["altitude"]);
