@@ -508,16 +508,16 @@ class Datastore {
                         $text_count++;
                     }
 
-                    if(!$complete_upload){
-                        $photo_url  = $this->getStorageFile(cfg::$gcp_bucketName, $doc_id, $photo["name"]);
-                        $check      = get_head($photo_url);
-                        if(!empty($check) && isset($check[0])){
-                            $current = current($check);
-                            if(strpos($current["Status"], "200 OK") < 0){
-                                array_push($partial_files, $photo_url);
-                            }
-                        }
-                    }
+                    // if(!$complete_upload){
+                    //     $photo_url  = $this->getStorageFile(cfg::$gcp_bucketName, $doc_id, $photo["name"]);
+                    //     $check      = get_head($photo_url);
+                    //     if(!empty($check) && isset($check[0])){
+                    //         $current = current($check);
+                    //         if(strpos($current["Status"], "200 OK") < 0){
+                    //             array_push($partial_files, $photo_url);
+                    //         }
+                    //     }
+                    // }
 
                     if(isset($photo["audios"])){
                         if(count($photo["audios"])){
@@ -529,26 +529,26 @@ class Datastore {
                                     $filename_mp3   = str_replace(".amr", ".mp3", $audio_name);
                                     $attach_url 	= $this->getStorageFile(cfg::$gcp_bucketName, $doc_id, $filename_mp3);
 
-                                    $check          = get_head($attach_url);
-                                    if(!empty($check) && isset($check[0])){
-                                        $current = current($check);
-                                        if(strpos($current["Status"], "200 OK") < 0){
-                                            array_push($partial_files, $attach_url);
-                                        }
-                                    }
+                                    // $check          = get_head($attach_url);
+                                    // if(!empty($check) && isset($check[0])){
+                                    //     $current = current($check);
+                                    //     if(strpos($current["Status"], "200 OK") < 0){
+                                    //         array_push($partial_files, $attach_url);
+                                    //     }
+                                    // }
                                 }
                             }
                         }
                     }
                 };
 
-                if(!$complete_upload && !count($partial_files)){
-                    $complete_upload    = true;
-                    $payload            = $ov_projects->document($doc_id);
-                    $payload->update([
-                        ['path' => 'completed_upload', 'value' => true]
-                    ]);
-                }
+                // if(!$complete_upload && !count($partial_files)){
+                //     $complete_upload    = true;
+                //     $payload            = $ov_projects->document($doc_id);
+                //     $payload->update([
+                //         ['path' => 'completed_upload', 'value' => true]
+                //     ]);
+                // }
 
                 if($lat_for_tz && $lng_for_tz){
                     $gkey       = $this->gapi_key;
@@ -572,14 +572,14 @@ class Datastore {
                      "date"             => $walk_date
                     ,"id"               => $doc_id
                     ,"photos"           => $photo_count
-                    ,"maps"             => $has_map ? "Y" : "N"
+                    // ,"maps"             => $has_map ? "Y" : "N"
                     ,"data_processed"   => $data["data_processed"] ?? null
                     ,"device"           => $data["device"]
                     ,"audios"           => $audio_count
                     ,"texts"            => $text_count
                     ,"timezone"         => $walk_tz
-                    ,"completed_upload" => $complete_upload
-                    ,"partial_files"    => $partial_files
+                    // ,"completed_upload" => $complete_upload
+                    // ,"partial_files"    => $partial_files
                 );
                 array_push($result, $temp);
             }

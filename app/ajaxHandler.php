@@ -34,8 +34,8 @@ if(!empty($_POST["action"])){
                 $summ_buffer[]  = "<th>Photos #</th>";
                 $summ_buffer[]  = "<th>Audios #</th>";
                 $summ_buffer[]  = "<th>Texts #</th>";
-                $summ_buffer[]  = "<th>Map Available</th>";
-                $summ_buffer[]  = "<th>Upload Complete</th>";
+                // $summ_buffer[]  = "<th>Map Available</th>";
+                // $summ_buffer[]  = "<th>Upload Complete</th>";
                 $summ_buffer[]  = "<th>Processed</th>";
                 $summ_buffer[]  = "</thead>";
                 $summ_buffer[]  = "</table>";
@@ -56,8 +56,8 @@ if(!empty($_POST["action"])){
                     //check for attachment ids existing
                     //IMPORTANT TO FORMAT THIS RIGHT OR ELSE WILL GET INVALID JSON ERROR
 
-                    $partial_files  = count($walk["partial_files"]);
-                    $uploaded       = array_key_exists("completed_upload", $walk) ? "Y" : "N ($partial_files files)";
+                    // $partial_files  = count($walk["partial_files"]);
+                    // $uploaded       = array_key_exists("completed_upload", $walk) ? "Y" : "N ($partial_files files)";
                     $data_processed = $processed ? "data_checked" : "";
 
                     $summ_buffer[] = "<tr>";
@@ -67,8 +67,8 @@ if(!empty($_POST["action"])){
                     $summ_buffer[] = "<td>" . $walk["photos"]. "</td>";
                     $summ_buffer[] = "<td>" . $walk["audios"]. "</td>";
                     $summ_buffer[] = "<td>" . $walk["texts"]. "</td>";
-                    $summ_buffer[] = "<td class='".$walk["maps"]."'>" . $walk["maps"]. "</td>";
-                    $summ_buffer[] = "<td class='$uploaded'>" . $uploaded. "</td>";
+                    // $summ_buffer[] = "<td class='".$walk["maps"]."'>" . $walk["maps"]. "</td>";
+                    // $summ_buffer[] = "<td class='$uploaded'>" . $uploaded. "</td>";
                     $summ_buffer[] = "<td class='$data_processed'>" . ($processed ? "Y" : "") . "</td>";
                     $summ_buffer[] = "</tr>";
 
@@ -81,7 +81,8 @@ if(!empty($_POST["action"])){
                 $x = $i;
                 while($x < 10){
                     $summ_buffer[] = "<tr>";
-                    $summ_buffer[] = "<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
+                    // removed 2 <td>
+                    $summ_buffer[] = "<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
                     $summ_buffer[] = "</tr>";
                     $x++;
                 }
@@ -96,8 +97,8 @@ if(!empty($_POST["action"])){
                 $summ_buffer[] = "<td>$total_photos</td>";
                 $summ_buffer[] = "<td>$total_audios</td>";
                 $summ_buffer[] = "<td>$total_texts</td>";
-                $summ_buffer[] = "<td></td>";
-                $summ_buffer[] = "<td></td>";
+                // $summ_buffer[] = "<td></td>";
+                // $summ_buffer[] = "<td></td>";
                 $summ_buffer[] = "<td></td>";
                 $summ_buffer[] = "</tfoot>";
                 $summ_buffer[] = "</table>";

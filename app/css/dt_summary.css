@@ -125,7 +125,7 @@ h4 span::before{
     border-left:1px solid #000;
 }
 #summary td,#summary th {
-    width:114px;
+    width:145px;
     border-right:1px solid #000;
     border-bottom:1px solid #000;
     text-align:center;
