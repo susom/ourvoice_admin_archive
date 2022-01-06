@@ -92,6 +92,7 @@ if(!isset($_SESSION["discpw"])) {
         $audios     = isset($p["audio_comments"]) ? $p["audio_comments"] : false;
         $custom_takephoto_text  = isset($p["custom_takephoto_text"]) ? $p["custom_takephoto_text"] : null;
         $expire_date 		    = isset($p["expire_date"]) ? $p["expire_date"] : "";
+        $tags                   = isset($p["tags"]) ? $p["tags"] : array();
 
         $tpl_project            = $ds->getProject("TPLFULL");
         $tpl_p                  = $tpl_project->snapshot()->data();
@@ -160,14 +161,26 @@ if(!isset($_SESSION["discpw"])) {
                     <textarea style="width: 24%; height: 8vh; vertical-align: text-top;" name="custom_takephoto_text" placeholder="eg; Remember to smell roses."><?=$custom_takephoto_text?></textarea>
                 </label>
 
+                <label class="proj_tags">
+                    <p><span>Project Tags</span>
+                    </p>
+                    <p><input type='text' data-proj_idx='<?=$proj_id?>' id='newtag_txt' placeholder="+ Add a New Tag"> <input id="savetag" type='submit' value='Save'/></p>
+                    <div id="project_tags">
+                        <?php
+                        foreach($tags as $tag){
+                            $delete_button = "<a href='#' data-proj_idx='$proj_id' data-tag='$tag' class='delete_tag'>&#215;</a>" ;
+                            echo "<div class='pricetag'>$tag $delete_button</div>";
+                        }
+                        ?>
+                    </div>
+                </label>
 
+                <br><br>
 				<label class="languages">
 					<p><span>Languages</span>
 					</p>
 					<?php
 					$lang_codes = array();
-					
-					
 					foreach($langs as $lang){
 						array_push($lang_codes,$lang["lang"]);
 						$readonly = "readonly";
@@ -650,6 +663,62 @@ $(document).ready(function(){
     let search = document.getElementById(dropBox_name);
     $(search).append(div);
   }
+
+    var ajax_handler  = 'ajaxHandler.php';
+    //AJAX SAVE PROJECT TAGS
+    $("#savetag").click(function(){
+      var proj_idx 	    = $("#newtag_txt").data("proj_idx");
+      var tagtxt 	    = $("#newtag_txt").val().trim();
+
+      if(tagtxt){
+          // add tag to project's tags and update disc_project
+          // ADD new tag to UI
+          var data = { proj_idx: proj_idx, tag_text: tagtxt, action: "add_project_tag" };
+
+          $.ajax({
+              method: "POST",
+              url: ajax_handler,
+              data: data,
+              dataType : "JSON",
+              success: function(response){
+                  if(response["new_project_tag"]){
+                      // add to drop down
+                      var delete_button = $("<a>").attr("href","#").data("proj_idx",proj_idx).data("tag", tagtxt).addClass("delete_tag").html("&#215;") ;
+                      var newtag = $("<div>").addClass("pricetag").html(tagtxt);
+                      newtag.append(delete_button);
+                      $("#project_tags").append(newtag)	;
+                  }
+              },
+              error: function(e){
+                  console.log("error",e, data);
+              }
+          }).done(function( msg ) {
+              $("#newtag_txt").val("");
+          });
+      }
+      return false;
+    });
+
+    //DELETE PROJECT TAGS
+    $("#project_tags").on("click",".delete_tag", function(){
+        var ele 	= $(this).closest("div");
+        var tag 	= $(this).data("tag");
+        var pcode 	= $(this).data("proj_idx");
+
+        $.ajax({
+            url:  ajax_handler,
+            type:'POST',
+            data: { deleteTag: tag, project_code: pcode, action : "delete_project_tag"},
+            success:function(result){
+                // remove from UI: tag list, dropdown and tagged photos
+                ele.fadeOut("medium",function(){ $(this).remove(); });
+            },
+            error:function(e){
+                console.log(tag + " wasn't removed");
+            }
+        });
+        return false;
+    });
 </script>	
 </html>
 <style>
@@ -828,4 +897,36 @@ $(document).ready(function(){
 	    left: 56px;
 	    top: 15px;
 	}
+
+    .pricetag{
+        white-space:nowrap;
+        position:relative;
+        margin:0 15px 15px 10px;
+        displaY:inline-block;
+        height:25px;
+        border-radius: 5px 5px 5px 5px;
+        padding: 0 25px 0 15px;
+        background:#E8EDF0;
+        border: 0 solid #C7D2D4;
+        border-top-width:1px;
+        border-bottom-width:1px;
+        color:#999;
+        line-height:23px;
+    }
+    .pricetag .delete_tag{
+        position: absolute;
+        right: 0;
+        font-weight: bold;
+        font-size: 19px;
+        width: 23px;
+        height: 23px;
+        text-align: center;
+        line-height: 100%;
+        color:red;
+        text-decoration: none;
+    }
+
+    #project_tags{
+        max-width:700px;
+    }
 </style>
