@@ -81,7 +81,7 @@ $page = "allwalks";
 				<ul>
 					<li class="addnewtag nobor">
 						<form id="addnewtag" name="newtag" method='post'>
-							<input type='text' id='newtag_txt' placeholder="+ Add a New Tag"> <input class="savetag" type='submit' value='Save'/>
+							<input type='text' data-proj_idx='<?=$active_project_id?>' id='newtag_txt' placeholder="+ Add a New Tag"> <input class="savetag" type='submit' value='Save'/>
 						</form>
 					</li>
 				</ul>
@@ -615,6 +615,7 @@ $page = "allwalks";
 				// add tag to project's tags and update disc_project
 				// ADD new tag to UI
 				var data = { proj_idx: proj_idx, tag_text: tagtxt, action: "add_project_tag" };
+
 				$.ajax({
 					method: "POST",
 					url: ajax_handler, //"project_agg_photos.php",
@@ -636,8 +637,8 @@ $page = "allwalks";
 							bindTagDragProperties();
 						}
 					},
-					error: function(){
-						console.log("error");
+					error: function(e){
+						console.log("error",e, data);
 					}
 				}).done(function( msg ) {
 					$("#newtag_txt").val("");
