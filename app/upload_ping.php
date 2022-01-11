@@ -95,8 +95,8 @@ if(!empty($uploaded_walk_id)){
                 $fs_walk_id     = $ds->setWalkFireStore($old_walk_id, json_decode($payload,1), $access_token);
             }else{
                 //UPLOAD TO GOOGLE BUCKET
-                $uploaded_transform     = $ds->uploadCloudStorage($file ,$_id , $gcp_transform_bucketName, $storageCLient);
                 $uploaded               = $ds->uploadCloudStorage($file ,$_id , $gcp_bucketName, $storageCLient);
+                $uploaded_transform     = $ds->uploadCloudStorage($file ,$_id , $gcp_transform_bucketName, $storageCLient);
             }
         }
 
