@@ -22,6 +22,7 @@ $firestore_endpoint = cfg::$firestore_endpoint;
 $firestore_scope    = cfg::$firestore_scope;
 $gcp_bucketID       = cfg::$gcp_bucketID;
 $gcp_bucketName     = cfg::$gcp_bucketName;
+$gcp_transform_bucketName  = cfg::$gcp_transform_bucketName;
 $access_token       = $ds->getGCPRestToken($keyPath, $firestore_scope);
 
 if(isset($_GET["irvin"])){
@@ -94,7 +95,8 @@ if(!empty($uploaded_walk_id)){
                 $fs_walk_id     = $ds->setWalkFireStore($old_walk_id, json_decode($payload,1), $access_token);
             }else{
                 //UPLOAD TO GOOGLE BUCKET
-                $uploaded   = $ds->uploadCloudStorage($file ,$_id , $gcp_bucketName, $storageCLient);
+                $uploaded_transform     = $ds->uploadCloudStorage($file ,$_id , $gcp_transform_bucketName, $storageCLient);
+                $uploaded               = $ds->uploadCloudStorage($file ,$_id , $gcp_bucketName, $storageCLient);
             }
         }
 
