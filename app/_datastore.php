@@ -1238,7 +1238,7 @@ class Datastore {
         return $result;
     }
 
-    public function putProject($project){
+    public function putProject($project, $updateflag=false){
         $result     = null;
 
         if($this->firestore){
@@ -1271,6 +1271,9 @@ class Datastore {
             if(!array_key_exists("text_comments", $temp)){
                 $temp["text_comments"] = "1";
             }
+            if(!array_key_exists("show_project_tags", $temp)){
+                $temp["show_project_tags"] = "1";
+            }
             if(!array_key_exists("custom_takephoto_text", $temp)){
                 $temp["custom_takephoto_text"] = "";
             }
@@ -1289,7 +1292,16 @@ class Datastore {
                 // CREATE THE PARENT DOC
                 $ov_projects    = $this->firestore->collection($this->firestore_projects);
                 $tempDoc        = $ov_projects->document($code);
-                $result         = $tempDoc->set($temp);
+
+                if($updateflag){
+                    $update_arr = array();
+                    foreach($temp as $path => $value){
+                        array_push($update_arr, array("path"=>$path, "value" => $value));
+                    }
+                    $result = $tempDoc->update($update_arr);
+                }else{
+                    $result = $tempDoc->set($temp);
+                }
             } catch (exception $e) {
                 echo "bad opperation";
             }

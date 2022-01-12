@@ -20,6 +20,7 @@ if(!empty($_POST["action"])){
 	$ajax_resp  = null;
     $response   = null;
     $from_admin = false;
+    $updateflag = false;
 
 	switch($action){
         case 'project_summary' :
@@ -486,6 +487,7 @@ if(!empty($_POST["action"])){
         break;
 
         case "edit_project":
+            $updateflag = true;
         case "new_project":
             // REDIRECT IF NO OTHER ACTION
             $redi = true;
@@ -521,7 +523,7 @@ if(!empty($_POST["action"])){
             );
 
             $pidx   = $_POST["project_id"];
-            $result = $ds->putProject($updated_project);
+            $result = $ds->putProject($updated_project, $updateflag);
 
             if($result){
                 if($redi){
