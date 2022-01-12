@@ -683,7 +683,7 @@ $(document).ready(function(){
       if(tagtxt){
           // add tag to project's tags and update disc_project
           // ADD new tag to UI
-          var data = { proj_idx: proj_idx, tag_text: tagtxt, action: "add_project_tag" };
+          var data = { proj_idx: proj_idx, tag_text: tagtxt, action: "add_project_tag_admin" };
 
           $.ajax({
               method: "POST",
@@ -718,7 +718,7 @@ $(document).ready(function(){
         $.ajax({
             url:  ajax_handler,
             type:'POST',
-            data: { deleteTag: tag, project_code: pcode, action : "delete_project_tag"},
+            data: { deleteTag: tag, project_code: pcode, action : "delete_project_tag_admin"},
             success:function(result){
                 // remove from UI: tag list, dropdown and tagged photos
                 ele.fadeOut("medium",function(){ $(this).remove(); });

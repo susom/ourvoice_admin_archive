@@ -19,6 +19,7 @@ if(!empty($_POST["action"])){
 
 	$ajax_resp  = null;
     $response   = null;
+    $from_admin = false;
 
 	switch($action){
         case 'project_summary' :
@@ -221,6 +222,8 @@ if(!empty($_POST["action"])){
             }
         break;
 
+        case 'add_project_tag_admin':
+            $from_admin = true;
         case 'add_project_tag':
             //POSSIBLE NEW PROJECT TAG, SAVE TO disc_projects
             $json_response 	= array("new_project_tag" => false);
@@ -244,10 +247,18 @@ if(!empty($_POST["action"])){
                 ['path' => 'tags', 'value' => $project_data["tags"]]
             ]);
 
+            if($from_admin){
+                $result = $project_fs->update([
+                    ['path' => 'admin_tags', 'value' => $project_data["tags"]]
+                ]);
+            }
+
             $response   = json_encode($json_response);
             $ajax_resp  = true;
         break;
 
+        case 'delete_project_tag_admin':
+            $from_admin = true;
         case 'delete_project_tag':
             $delete_tag = !empty($_POST["deleteTag"]) ? filter_var($_POST["deleteTag"], FILTER_SANITIZE_STRING) : null;
             $proj_idx   = !empty($_POST["project_code"]) ? filter_var($_POST["project_code"], FILTER_SANITIZE_STRING) : null;
@@ -263,6 +274,12 @@ if(!empty($_POST["action"])){
                     $result = $project_fs->update([
                         ['path' => 'tags', 'value' => $project_data["tags"]]
                     ]);
+
+                    if($from_admin){
+                        $result = $project_fs->update([
+                            ['path' => 'admin_tags', 'value' => $project_data["tags"]]
+                        ]);
+                    }
 
                     //delete tag from all individual photos that have it
                     $walks_w_tags 	= $ds->filterProjectByTags($proj_idx, array($delete_tag));
@@ -494,6 +511,7 @@ if(!empty($_POST["action"])){
                 ,"template_type"	=> filter_var($_POST["template_type"], FILTER_SANITIZE_NUMBER_INT)
                 ,"text_comments"    => filter_var($_POST["text_comments"], FILTER_SANITIZE_NUMBER_INT)
                 ,"audio_comments"  	=> filter_var($_POST["audio_comments"], FILTER_SANITIZE_NUMBER_INT)
+                ,"show_project_tags"  => filter_var($_POST["show_project_tags"], FILTER_SANITIZE_NUMBER_INT)
                 ,"custom_takephoto_text"  => filter_var($_POST["custom_takephoto_text"], FILTER_SANITIZE_STRING)
 
                 // ,"include_surveys"  => $_POST["include_surveys"]
