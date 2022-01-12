@@ -93,7 +93,8 @@ if(!isset($_SESSION["discpw"])) {
         $custom_takephoto_text  = isset($p["custom_takephoto_text"]) ? $p["custom_takephoto_text"] : null;
         $expire_date 		    = isset($p["expire_date"]) ? $p["expire_date"] : "";
         $tags                   = isset($p["tags"]) ? $p["tags"] : array();
-
+        $show_proj_tags         = isset($p["show_project_tags"]) ? $p["show_project_tags"] : false;
+        $showhideprojtags       = $show_proj_tags ? "display:block" : "display:none";
         $tpl_project            = $ds->getProject("TPLFULL");
         $tpl_p                  = $tpl_project->snapshot()->data();
         $available_langs 	    = $tpl_p["languages"];
@@ -161,9 +162,13 @@ if(!isset($_SESSION["discpw"])) {
                     <textarea style="width: 24%; height: 8vh; vertical-align: text-top;" name="custom_takephoto_text" placeholder="eg; Remember to smell roses."><?=$custom_takephoto_text?></textarea>
                 </label>
 
-                <label class="proj_tags">
-                    <p><span>Project Tags</span>
-                    </p>
+                <label class="proj_tags"><span>Project Tags</span>
+                    <input type="radio" name="show_project_tags" <?php if(!$show_proj_tags) echo "checked"; ?> value="0"/> No Project Tags
+                    <input type="radio" name="show_project_tags" <?php if($show_proj_tags) echo "checked"; ?> value="1"/> Allow Project Tags
+                </label>
+
+                <div class="project_tags" style="<?=$showhideprojtags?>">
+                    <?php if($new_edit == "edit_project"){ ?>
                     <p><input type='text' data-proj_idx='<?=$proj_id?>' id='newtag_txt' placeholder="+ Add a New Tag"> <input id="savetag" type='submit' value='Save'/></p>
                     <div id="project_tags">
                         <?php
@@ -173,7 +178,12 @@ if(!isset($_SESSION["discpw"])) {
                         }
                         ?>
                     </div>
-                </label>
+                    <?php
+                        }else {
+                            echo "<p><em>To add Project Tags, Please save this new project and return in 'edit' mode</em></p>";
+                        }
+                    ?>
+                </div>
 
                 <br><br>
 				<label class="languages">
@@ -719,6 +729,16 @@ $(document).ready(function(){
         });
         return false;
     });
+
+    $("input[name='show_project_tags']").on("change",function(){
+        var val = parseInt( $(this).val() );
+
+        if(val){
+            $(".project_tags").slideDown("fast");
+        }else{
+            $(".project_tags").slideUp("medium");
+        }
+    });
 </script>	
 </html>
 <style>
@@ -928,5 +948,8 @@ $(document).ready(function(){
 
     #project_tags{
         max-width:700px;
+    }
+    .project_tags{
+        padding:10px;
     }
 </style>
