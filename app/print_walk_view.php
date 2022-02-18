@@ -341,7 +341,7 @@ if(!empty($_id)){
 		@media print {
 			#main {
     			width:auto; 
-    			margin:auto
+    			margin:auto;
     		}
 
 
@@ -361,6 +361,10 @@ if(!empty($_id)){
 				bottom:0; 
 			}
 
+            .photo_map img {
+                height:auto;
+            }
+            
 		  @page {
 		    size: 210mm 297mm; /* landscape */
 		    /* you can also specify margins here: */

@@ -334,7 +334,7 @@ if(!empty($pcode) ){
 		@media print {
 			#main {
     			width:auto; 
-    			margin:auto
+    			margin:auto;
     		}
 
 
@@ -354,10 +354,13 @@ if(!empty($pcode) ){
 				bottom:0; 
 			}
 
+            .photo_map img {
+                height:auto;
+            }
 		  @page {
 		    size: 210mm 297mm; /* landscape */
 		    /* you can also specify margins here: */
-		    margin: 10mm;
+		    margin: 1mm;
 		  }
 
 		}
