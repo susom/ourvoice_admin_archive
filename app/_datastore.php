@@ -857,7 +857,11 @@ class Datastore {
                 // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK, AT LEAST THIS HAS NO ORDER HALLELUJAH
                 if(!empty($photo["geotag"])){
                     $filename   = $photo["name"];
-                    $transform  = array("transform" => "print_view");
+                    $rotate     = !empty($photo["rotate"]) ? $photo["rotate"] : 0;
+                    $transform  = array("transform" => "print_view", "rotate" => $rotate);
+
+
+
                     $file_uri   = $this->getStorageFile($this->gcp_bucketName, $_id , $filename, $transform);
                     $photo["geotag"]["photo_src"]   = $file_uri;
                     $photo["geotag"]["goodbad"]     = $photo["goodbad"];

@@ -360,7 +360,7 @@ if(!empty($pcode) ){
 		  @page {
 		    size: 210mm 297mm; /* landscape */
 		    /* you can also specify margins here: */
-		    margin: 1mm;
+		    margin: 10mm;
 		  }
 
 		}
