@@ -375,7 +375,7 @@ function printRow($doc, $i){
 //            curl_close($ch);
 //            $response = json_decode($responseJson);
 //            date_default_timezone_set($response->timeZoneId);
-//        }
+
         $codeblock[] = "
         <li data-phid='$img_id'>
         <div class = 'load'>
@@ -403,6 +403,9 @@ function printRow($doc, $i){
 
 function printPhotos($photo, $_id, $n, $old=null, $txns=null){
     $codeblock  = array();
+    if(array_key_exists("_deleted", $photo)){
+        return $codeblock;
+    }
 
     $walk_ts_sub = !empty($photo["geotag"]["timestamp"]) ? $photo["geotag"]["timestamp"] : null;
     $date_ts     = date("F j, Y", floor($walk_ts_sub/1000)) ;
@@ -456,6 +459,7 @@ function printPhotos($photo, $_id, $n, $old=null, $txns=null){
     $photoblock["text_comment"]  = $txt;
     $photoblock["full_img"]      = $file_uri;
     $photoblock["transcriptions"]  = $txns;
+
 
     array_push($codeblock, $photoblock);
     return $codeblock;
@@ -616,90 +620,80 @@ function scanForBackUpFiles($backedup, $backup_dir){
     }
 }
 
-function getConvertedAudio($attach_url, $lang){
-    //FIRST DOWNLOAD THE AUDIO FILE
+function getConvertedAudio($attach_url){
+    //FIRST DOWNLOAD THE AUDIO FILE to TEMP;
 
-    $fullURL    = getFullUrl($attach_url);
-    $ch         = curl_init($fullURL);
+    $ch             = curl_init($attach_url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    $data       = curl_exec($ch);
-    $errors     = curl_error($ch);
+    $data           = curl_exec($ch);
+    $errors         = curl_error($ch);
     curl_close ($ch);
-    $newAudioPath = "";
-    // echo $errors;
+
+    $newAudioPath   = "";
     if(empty($errors)){
         //THEN EXTRACT THE FILE NAME
-        $split              = explode("=",$attach_url);
-        $filename_or_old    = array_pop($split);
+        $split      = explode("/ov_walk_files/",$attach_url);
+        $filename   = str_replace("/","_", $split[1]);
 
-        if($filename_or_old == 1 || $filename_or_old == 2){
-            $old_           = explode("&",array_pop($split));
-            $filename       = $old_[0];
-            $full_proj_code = explode("&",array_pop($split));
-        }else{
-            $filename       = $filename_or_old;
-            $full_proj_code = explode("_audio",array_pop($split));
-        }
-        // echo $filename; //audio1.amr
-        //save to server as audio_x_x.wav/AMR
-        //if(file_exists)
         $localfile  = "./temp/$filename";
         $file       = fopen($localfile, "w+");
         fputs($file, $data);
         fclose($file);
 
         //THEN CONVERT THE AUDIO
-        $newAudioPath = convertAudio($filename, $full_proj_code[0], $lang);
+        $newAudioPath = $localfile;
     }
     return $newAudioPath;
 }
 
-function transcribeAudio($cFile,$filename){
-    $split = explode("." , $filename);
-    $noext = $split[0];
 
-    $ffmpeg_url = cfg::$ffmpeg_url;
-    $postfields = array(
-        "file"     => $cFile
-    ,"format"   => "flac"
+use Google\Cloud\Speech\SpeechClient;
+
+function transcribeAudio($attach_url, $lang=null){
+    $gcp_lang = array(
+        "en"    => "en-US",
+        "es"    => "es-MX",
+        "nl"    => "nl-NL",
+        "am"    => "am-ET",
+        "ar"    => "ar-AE",
+        "tw"    => "zh-TW",
+        "ch"    => "zh-CN",
+        "pt"    => "pt-PT",
+        "iw"    => "iw-IL",
+        "fr"    => "fr-FR",
+        "sw"    => "sv-SE",
+        "ru"    => "ru-RU",
+        "th"    => "th-TH"
     );
 
-    // print_rr($postfields);
-    // print_rr($ffmpeg_url);
-    // CURL OPTIONS
-    // POST IT TO FFMPEG SERVICE, Convert to FLAC
-    $ch = curl_init($ffmpeg_url);
-    curl_setopt($ch, CURLOPT_POST, 'POST'); //PUT to UPDATE/CREATE IF NOT EXIST
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    // print_rr($response);
-    curl_close($ch);
+    $txn_lang   = !empty($lang) && isset($gcp_lang[$lang]) ? $gcp_lang[$lang] : "en-US";
+    $localfile  = getConvertedAudio($attach_url);
+    $newfile    = $localfile;
 
-    // REPLACE ATTACHMENT
-    $newfile    = "./temp/".$noext.".flac";
-    $handle     = fopen($newfile, 'w');
-    fwrite($handle, $response); //what if no response  ?
+    $newfile    = "./temp/sample.mp3";
+
+    $split      = explode("." , $attach_url);
+    $ext        = strtoupper(array_pop($split));
 
     //Convert to base 64 for google's API
-    $flac = file_get_contents($newfile);
-    $flac = base64_encode($flac);
+    $for_txn    = file_get_contents($newfile);
+    $for_txn    = base64_encode($for_txn);
 
-    // WE NEED TO json_encode the base64 of the flac file
+    // WE NEED TO json_encode the base64 of the audio file
     // Set some options
     $data = array(
         "config" => array(
-            "encoding" => "FLAC",
-            "languageCode" => "en-US"
+            "encoding" => $ext,
+            "languageCode" => $txn_lang
         ),
         "audio" => array(
-            "content" => $flac
+            "content" => $for_txn
         )
     );
     $data_string = json_encode($data);
 
     //POST to google's service
-    $ch = curl_init('https://speech.googleapis.com/v1/speech:recognize?key='.cfg::$gvoice_key);
+    $ch = curl_init('https://speech.googleapis.com/v1p1beta1/speech:recognize?key='.cfg::$gvoice_key);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -707,13 +701,18 @@ function transcribeAudio($cFile,$filename){
             'Content-Type: application/json',
             'Content-Length: ' . strlen($data_string))
     );
-    $resp = curl_exec($ch); //NO flac data returned as a result , can we even convert to flac using ffmpeg?
+    $resp = curl_exec($ch);
     curl_close($ch);
+
     $resp = json_decode($resp,1);
-    // print_rr($resp); //error here, response doesnt have an audio file to process results in ERROR
-    $count = 0;
+
+    print_rr($resp); //error here, response doesnt have an audio file to process results in ERROR
+
+    return;
+    $count      = 0;
     $transcript = '';
     $confidence = 0;
+
     if(!empty($resp["results"])){
         foreach($resp["results"] as $results){
             $transcript = $transcript . $results["alternatives"][0]["transcript"];
@@ -721,15 +720,17 @@ function transcribeAudio($cFile,$filename){
             $count++;
         }
     }
+
     if(isset($confidence) && $count != 0){
         $confidence = $confidence / $count;
         $data["transcript"] = $transcript;
         $data["confidence"] = $confidence;
-        if($confidence > 0.7)
+        if($confidence > 0.7) {
             return $data;
-
+        }
     }
-    return "";
+
+    return null;
 }
 
 function appendConfidence($attach_url){
