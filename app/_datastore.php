@@ -931,6 +931,7 @@ class Datastore {
         foreach($sort_temp as $_id => $photos){
             foreach($photos as $photo){
                 // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK, AT LEAST THIS HAS NO ORDER HALLELUJAH
+                $ph_i = null;
                 if(!empty($photo["geotag"])){
                     $filename   = $photo["name"];
                     $ph_id      = $_id . "_" .$filename;;
@@ -994,8 +995,8 @@ class Datastore {
 
                     if(!$walk_tz) {
                         if (isset($photo["geotag"])) {
-                            $lat = $photo["geotag"]["lat"];
-                            $lng = $photo["geotag"]["lng"];
+                            $lat = isset($photo["geotag"]["lat"]) ? $photo["geotag"]["lat"] : null;
+                            $lng = isset($photo["geotag"]["lng"]) ? $photo["geotag"]["lng"] : null;
                         }else{
                             $walk_tz = "America/Los_Angeles";
                         }
