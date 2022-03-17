@@ -512,6 +512,7 @@ if(!empty($_POST["action"])){
                 ,"project_email" 	=> filter_var($_POST["project_email"], FILTER_SANITIZE_STRING)
                 ,"template_type"	=> filter_var($_POST["template_type"], FILTER_SANITIZE_NUMBER_INT)
                 ,"text_comments"    => filter_var($_POST["text_comments"], FILTER_SANITIZE_NUMBER_INT)
+                ,"forever_login"    => filter_var($_POST["forever_login"], FILTER_SANITIZE_NUMBER_INT)
                 ,"audio_comments"  	=> filter_var($_POST["audio_comments"], FILTER_SANITIZE_NUMBER_INT)
                 ,"show_project_tags"  => filter_var($_POST["show_project_tags"], FILTER_SANITIZE_NUMBER_INT)
                 ,"custom_takephoto_text"  => filter_var($_POST["custom_takephoto_text"], FILTER_SANITIZE_STRING)

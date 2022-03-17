@@ -90,6 +90,8 @@ if(!isset($_SESSION["discpw"])) {
 		$thumbs     = $p["thumbs"];
         $texts      = isset($p["text_comments"]) ? $p["text_comments"] : true;
         $audios     = isset($p["audio_comments"]) ? $p["audio_comments"] : false;
+        $forever_login 		    = isset($p["forever_login"]) ? $p["forever_login"] : false;
+
         $custom_takephoto_text  = isset($p["custom_takephoto_text"]) ? $p["custom_takephoto_text"] : null;
         $expire_date 		    = isset($p["expire_date"]) ? $p["expire_date"] : "";
         $tags                   = isset($p["tags"]) ? $p["tags"] : array();
@@ -156,6 +158,11 @@ if(!isset($_SESSION["discpw"])) {
                 <label><span>Text Comments</span>
                     <input type="radio" name="text_comments" <?php if(!$texts) echo "checked"; ?> value="0"/> No Texting
                     <input type="radio" name="text_comments" <?php if($texts) echo "checked"; ?> value="1"/> Allow Texting
+                </label>
+
+                <label><span>Forever Logged In</span>
+                    <input type="radio" name="forever_login" <?php if(!$forever_login) echo "checked"; ?> value="0"/> Login Once Daily
+                    <input type="radio" name="forever_login" <?php if($forever_login) echo "checked"; ?> value="1"/> Never Login Again (after first time)
                 </label>
 
                 <label><span >Custom "Take Photo" Text</span>
