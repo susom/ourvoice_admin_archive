@@ -74,6 +74,8 @@ function generatePhotoPage($photo, $pcode, $page, $total, $highlight_tag=null){
                 $txn 	= is_array($transcription) ? $transcription : array("text" => $transcription);
                 $txns 	= str_replace('&#34;','"', $txn["text"]);
                 $txns 	= str_replace("rnrn","<br><br>", $txns);
+                $txns 	= str_replace("\n\n","<br><br>", $txns);
+
                 array_push($retTranscript, array("type" => "audio" , "content" => $txns));
             }
         }
@@ -168,7 +170,7 @@ function generatePage($htmlobj, $htmlphoto, $retTranscript, $gmapsPhoto, $landsc
 			$type 			= $trans["type"];
 			$content 		= $trans["content"];
             $typeicon 		= $type == "audio" ? "[<img src='./img/icon_mic.png'/ width=10> ".($k + 1)."]" : "[text]";
-            $html_block[] 	= "<dl><dt>$typeicon :</dt><dd>'$content'</dd></dl>";
+            $html_block[] 	= "<dl><dt>$typeicon :</dt><dd>".nl2br($content)."</dd></dl>";
         }
 	}else{
 		$html_block[] 		= "<h4>No Transcript Available</h4>";
