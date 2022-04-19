@@ -38,7 +38,7 @@ if(!empty($_POST["action"])){
                 $summ_buffer[]  = "<th>Texts #</th>";
                 // $summ_buffer[]  = "<th>Map Available</th>";
                 // $summ_buffer[]  = "<th>Upload Complete</th>";
-                $summ_buffer[]  = "<th>Processed</th>";
+                // $summ_buffer[]  = "<th>Processed</th>";
                 $summ_buffer[]  = "</thead>";
                 $summ_buffer[]  = "</table>";
                 $summ_buffer[]  = "<table cellpadding='0' cellspacing='0' width='100%'>";
@@ -84,7 +84,7 @@ if(!empty($_POST["action"])){
                 while($x < 10){
                     $summ_buffer[] = "<tr>";
                     // removed 2 <td>
-                    $summ_buffer[] = "<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>";
+                    $summ_buffer[] = "<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></td><td>&nbsp;</td>";
                     $summ_buffer[] = "</tr>";
                     $x++;
                 }
@@ -105,6 +105,7 @@ if(!empty($_POST["action"])){
                 $summ_buffer[] = "</tfoot>";
                 $summ_buffer[] = "</table>";
                 $summ_buffer[] = "</div>";
+                // button link to csv
             }
 
             echo  implode("\r\n", $summ_buffer);
