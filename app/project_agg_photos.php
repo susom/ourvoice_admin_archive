@@ -17,6 +17,10 @@ $project_fs         = $ds->getProject($active_project_id);
 $project_data       = $project_fs->snapshot()->data();
 $project_tags       = array_key_exists("tags", $project_data) ? $project_data["tags"] : array();
 
+//$data 			    = $ds->getFilteredDataGeos($active_project_id, array(), true);
+//$data["code_block"] = printAllDataThumbs($data["code_block"]);
+//print_rr($data["code_block"]);
+//exit;
 // PROJECT TAGS
 $page = "allwalks";
 ?>
@@ -853,7 +857,7 @@ $page = "allwalks";
 
             var figure 	= $("<figure>").attr("data-next",next).attr("data-prev",prev);
             var fig 	= $("<fig>");
-            var figimg 	= $("<img>").attr("rev",rotation).attr("src",fullimgsrc).attr("data-phid",phid).addClass("ui-widget-drop");
+            var figimg 	= $("<img>").attr("src",fullimgsrc).attr("data-phid",phid).addClass("ui-widget-drop");
             var imgtxt 	= $("<div>").addClass("imgtxt");
 
             // ADD THIS TO COVER FLOW
@@ -932,9 +936,7 @@ $page = "allwalks";
                     transy 	= (ori_h + Math.abs(diff_hw)/2) + "px";
                 }
 
-
-
-                $(this).css("transform","rotate("+deg+") translateX("+transx+") translateY("+transy+")").css("border","3px solid gree");
+                // $(this).css("transform","rotate("+deg+") translateX("+transx+") translateY("+transy+")").css("border","3px solid gree");
             });
 
             bindCFDroppable();

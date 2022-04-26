@@ -848,7 +848,6 @@ class Datastore {
             $doc    = $response;
             $device = $doc["device"];
             $photos = $doc["photos"];
-
             foreach($photos as $photo){
                 if(array_key_exists("deleted", $photo)){
                     continue;

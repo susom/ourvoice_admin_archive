@@ -402,6 +402,8 @@ function printRow($doc, $i){
 }
 
 function printPhotos($photo, $_id, $n, $old=null, $txns=null){
+    global $ds;
+
     $codeblock  = array();
     if(array_key_exists("_deleted", $photo)){
         return $codeblock;
@@ -433,9 +435,10 @@ function printPhotos($photo, $_id, $n, $old=null, $txns=null){
     $filename   = $photo["name"];
     $ph_id      = !empty($photo["geotag"]) ? $photo["geotag"]["photo_id"] : null;
 
-    $file_uri       = !empty($photo["geotag"]) ? $photo["geotag"]["photo_src"] : null;
-    $thumb_uri      = $url_path. "thumbnail.php?file=".urlencode($file_uri)."&maxw=140&maxh=140";
-    $photo_uri      = $file_uri;
+    $transform      = array("transform" => "photo_detail", "rotate" => $rotate);
+    $file_uri 	    = $ds->getStorageFile(cfg::$gcp_bucketName, $_id, $filename, $transform);
+    $thumb_uri      = !empty($photo["geotag"]) ? $photo["geotag"]["photo_src"] : null;;
+    $photo_uri      = $thumb_uri;
 
     $detail_url     = "photo.php?_id=".$_id."&_file=$filename";
     $pic_time       = date("g:i a", floor($timestamp/1000));
