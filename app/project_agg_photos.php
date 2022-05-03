@@ -471,16 +471,16 @@ $page = "allwalks";
 		});
 		$("body").on("click","#coverflow .cf_prev", function(e){
 			var prev 	= $("#coverflow figure").data("prev");
-			var lid 	= "#"+prev;
-			if($(lid).length){
+            var lid 	= "li[data-phid='"+prev+"']";
+            if($(lid).length){
 				setCoverFlowSlide($(lid));
 			}
 			e.preventDefault();
 		});
 		$("body").on("click","#coverflow .cf_next", function(e){
 			var next = $("#coverflow figure").data("next");
-			var lid 	= "#"+next;
-			if($(lid).length){
+			var lid 	= "li[data-phid='"+next+"']";
+            if($(lid).length){
 				setCoverFlowSlide($(lid));
 			}
 			e.preventDefault();
@@ -494,48 +494,54 @@ $page = "allwalks";
 	    		$(this).removeClass("draghover");
 		} );
 		$( "body" ).on("drop", ".ui-widget-drop", function( event, ui ) {
-				$(this).removeClass("draghover"); 
+            $(this).removeClass("draghover");
 
-	    		var drag 	= $(ui.draggable[0]).find("b").attr("datakey");  //tag
-		      	var drop 	= $(event.target).data("phid");
-		      	var temp 	= drop.split("_");
-		      	var proj 	= temp[0];
-		      	var p_ref 	= temp[0] +"_"+ temp[1] +"_"+ temp[2] +"_"+ temp[3];
+            var drag 	= $(ui.draggable[0]).find("b").attr("datakey");  //tag
+            var drop 	= $(event.target).data("phid");
+            var temp 	= drop.split("_");
+            var proj 	= temp[0];
+            var p_ref 	= temp[0] +"_"+ temp[1] +"_"+ temp[2] +"_"+ temp[3];
+            var datakey = temp[(temp.length-1)];
+            var temp2   = datakey.split(".");
 
-		      	var exists 	= false;
-		      	var datakey = temp[(temp.length-1)];
+            var doc_id  = temp[0] +"_"+ temp[1] +"_"+ temp[2] ;
+            var photo_i = temp2[0];
 
-		        $.ajax({
-			          url:  ajax_handler, //"aggregate_post.php",
-			          type:'POST',
-			          data: { DragTag: drag, DropTag: drop, Project: proj, Key: datakey, action : "tag_text" },
-			          success:function(result){
-			          	var appendloc 	= $("#"+drop).find("ul"); //for thumbs
-			          	var cf_tags 	= $("#coverflow ul"); //for cover flow
+            var exists 	= false;
 
-			          	for(var i = 0 ; i < appendloc[0].childNodes.length; i++){
-			          		//console.log(appendloc[0].childNodes[i].childNodes);
-			          		if(appendloc[0].childNodes[i].childNodes[0].data == drag) //X is appended had to find a work around to get name
-			          			exists = true;
-			          	}
-			          	if(!exists){
-				            var newli 	= $("<li>").text(drag).addClass(drag);
-				            var newa 	= $("<a href='#'>").attr("data-deletetag",drag).attr("data-doc_id",p_ref).attr("data-photo_i",datakey).text("x").addClass("deletetag");
-							newli.append(newa);
-				            appendloc.prepend(newli);
+            console.log("drag drop photo tag",  doc_id, photo_i );
+            $.ajax({
+                  url:  ajax_handler, //"aggregate_post.php",
+                  type:'POST',
+                  data: { doc_id: doc_id, photo_i: photo_i,  DragTag: drag, DropTag: drop, Project: proj, Key: datakey, action : "tag_text" },
+                  success:function(result){
+                    var appendloc 	= $("li[data-phid='"+drop+"']").find("ul"); //for thumbs
+                    var cf_tags 	= $("#coverflow ul"); //for cover flow
 
-				            if(cf_tags.length){
-				            	cf_tags.prepend(newli.clone());
-				            }
-			          	}
+                    appendloc.find("li").each(function(){
+                        if($(this).find("a[data-deletetag='"+drag+"']").length) { //X is appended had to find a work around to get name
+                            exists = true;
+                        }
+                    });
 
-						setTagCounts();
-			          }        
-			            //THIS JUST STORES IS 
-			          },function(err){
-			          console.log("ERRROR");
-			          console.log(err);
-		        });
+                    if(!exists){
+                        var newli 	= $("<li>").text(drag).addClass(drag);
+                        var newa 	= $("<a href='#'>").attr("data-deletetag",drag).attr("data-doc_id",doc_id).attr("data-photo_i",photo_i).text("x").addClass("deletetag");
+                        newli.append(newa);
+                        appendloc.append(newli);
+
+                        if(cf_tags.length){
+                            cf_tags.prepend(newli.clone());
+                        }
+                    }
+
+                    setTagCounts();
+                  }
+                    //THIS JUST STORES IS
+                  },function(err){
+                  console.log("ERRROR");
+                  console.log(err);
+            });
 		} );
 
 		//DELETE PHOTO TAG
@@ -554,7 +560,9 @@ $page = "allwalks";
 				url: ajax_handler,
 				data: { doc_id: doc_id, photo_i: photo_i, delete_tag_text: tagtxt, action :"delete_tag_text"},
 				success:function(result){
-					
+					console.log("deleteing " + tagtxt);
+                    $("a[data-deletetag='"+tagtxt+"']").parent("li").remove();
+                    setTagCounts();
 				}
 
 			}).done(function( msg ) {
@@ -776,14 +784,14 @@ $page = "allwalks";
         }
         function loadThumbs(pcode, filters){
             var data = { pcode: pcode, filters: filters, action:"load_thumbs" };
-            console.log("hit load thumbs", data);
+            // console.log("hit load thumbs", data);
             $.ajax({
                 method: "POST",
                 url: ajax_handler,
                 data: data,
                 dataType : "json",
                 success: function(response){
-                    console.log(data,response);
+                    // console.log(data,response);
                     // why the fuck was this container id with "tags"?
                     $("#tags").empty();
                     $("#tags").html(response.code_block);
@@ -835,6 +843,7 @@ $page = "allwalks";
             // TAKES A SINGLE thumb jquery OBj , needs context for PREV NEXT
             //_el needs to inform previous and next somehow
             var phid 		= _el.data("phid");
+            var doc_id      = _el.find(".walk_photo").data("doc_id");
             var fullimgsrc 	= _el.find(".walk_photo").data("fullimgsrc");
             var goodbad 	= _el.find(".walk_photo").data("goodbad");
             var textcomment = _el.find(".walk_photo").data("textcomment");
@@ -880,7 +889,7 @@ $page = "allwalks";
             if(audios_txn.length> 0){
                 for(var i in audios_txn){
                     if(audios_txn[i]){
-                        var txp = $("<p>").addClass("audios_txns").text(audios_txn[i]);
+                        var txp = $("<p>").addClass("audios_txns").text(audios_txn[i]["text"]);
                         imgtxt.append(txp);
                     }
                 }

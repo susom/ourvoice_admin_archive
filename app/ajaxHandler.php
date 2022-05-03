@@ -163,9 +163,11 @@ if(!empty($_POST["action"])){
 
         case 'tag_text':
             //SAVE TAG
-            $photo_tag 		= !empty($_POST["tag_text"]) ? filter_var($_POST["tag_text"], FILTER_SANITIZE_STRING) : null;
+            $photo_tag 		= !empty($_POST["DragTag"]) ? filter_var($_POST["DragTag"], FILTER_SANITIZE_STRING) : null;
             $photo_tag 		= str_replace('"',"'",$photo_tag);
-            $proj_idx 		= !empty($_POST["proj_idx"]) ? filter_var($_POST["proj_idx"], FILTER_SANITIZE_STRING) : null;
+            $proj_idx 		= !empty($_POST["Project"]) ? filter_var($_POST["Project"], FILTER_SANITIZE_STRING) : null;
+
+            $ajax_resp  = true;
 
             if($photo_tag){
                 $json_response 	= array("new_photo_tag" => false, "new_project_tag" => false);
