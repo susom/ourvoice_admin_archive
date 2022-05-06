@@ -17,68 +17,166 @@
 
 namespace Google\Service\OnDemandScanning;
 
-class PackageData extends \Google\Model
+class PackageData extends \Google\Collection
 {
+  protected $collection_key = 'fileLocation';
+  /**
+   * @var string
+   */
   public $cpeUri;
+  protected $fileLocationType = FileLocation::class;
+  protected $fileLocationDataType = 'array';
+  /**
+   * @var string
+   */
+  public $hashDigest;
+  /**
+   * @var string
+   */
   public $os;
+  /**
+   * @var string
+   */
   public $osVersion;
+  /**
+   * @var string
+   */
   public $package;
+  /**
+   * @var string
+   */
   public $packageType;
+  /**
+   * @var string
+   */
   public $unused;
+  /**
+   * @var string
+   */
   public $version;
 
+  /**
+   * @param string
+   */
   public function setCpeUri($cpeUri)
   {
     $this->cpeUri = $cpeUri;
   }
+  /**
+   * @return string
+   */
   public function getCpeUri()
   {
     return $this->cpeUri;
   }
+  /**
+   * @param FileLocation[]
+   */
+  public function setFileLocation($fileLocation)
+  {
+    $this->fileLocation = $fileLocation;
+  }
+  /**
+   * @return FileLocation[]
+   */
+  public function getFileLocation()
+  {
+    return $this->fileLocation;
+  }
+  /**
+   * @param string
+   */
+  public function setHashDigest($hashDigest)
+  {
+    $this->hashDigest = $hashDigest;
+  }
+  /**
+   * @return string
+   */
+  public function getHashDigest()
+  {
+    return $this->hashDigest;
+  }
+  /**
+   * @param string
+   */
   public function setOs($os)
   {
     $this->os = $os;
   }
+  /**
+   * @return string
+   */
   public function getOs()
   {
     return $this->os;
   }
+  /**
+   * @param string
+   */
   public function setOsVersion($osVersion)
   {
     $this->osVersion = $osVersion;
   }
+  /**
+   * @return string
+   */
   public function getOsVersion()
   {
     return $this->osVersion;
   }
+  /**
+   * @param string
+   */
   public function setPackage($package)
   {
     $this->package = $package;
   }
+  /**
+   * @return string
+   */
   public function getPackage()
   {
     return $this->package;
   }
+  /**
+   * @param string
+   */
   public function setPackageType($packageType)
   {
     $this->packageType = $packageType;
   }
+  /**
+   * @return string
+   */
   public function getPackageType()
   {
     return $this->packageType;
   }
+  /**
+   * @param string
+   */
   public function setUnused($unused)
   {
     $this->unused = $unused;
   }
+  /**
+   * @return string
+   */
   public function getUnused()
   {
     return $this->unused;
   }
+  /**
+   * @param string
+   */
   public function setVersion($version)
   {
     $this->version = $version;
   }
+  /**
+   * @return string
+   */
   public function getVersion()
   {
     return $this->version;

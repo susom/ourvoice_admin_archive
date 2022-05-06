@@ -548,6 +548,10 @@ function getAllDataPicLI($photo_o){
 }
 
 
+
+
+
+
 //SOME PHOTO PAGE FUNCTIONALITY
 // PHOTO PAGE FUNCTIONS (AUDIO TRANSCRIPTION, FACE PIXELATION)
 function getFullUrl($partialUrl){
@@ -898,4 +902,32 @@ function pixelate($image, $pixelate_x = 12, $pixelate_y = 12){
             }
         }
     }
+}
+
+
+//TEXT TRANSLATION
+use Google\Cloud\Translate\TranslateClient;
+function detectLanguage($text){
+    $translationServiceClient = new TranslateClient([
+        'projectId'     => cfg::$gcp_project_id,
+        'keyFilePath'   => cfg::$FireStorekeyPath
+    ]);
+    $formattedParent    = $translationServiceClient->detectLanguage($text);
+
+    return $formattedParent;
+}
+
+function translateToEnglish($text){
+    $formattedParent    = detectLanguage($text);
+    $languageCode       = array_key_exists("languageCode", $formattedParent) ? $formattedParent["languageCode"] : "null";
+    $confidence         = array_key_exists("confidence", $formattedParent) ? $formattedParent["confidence"] : "null";
+
+    $translationServiceClient = new TranslateClient([
+        'projectId'     => cfg::$gcp_project_id,
+        'keyFilePath'   => cfg::$FireStorekeyPath
+    ]);
+    $translation    = $translationServiceClient->translate($text, [$languageCode, "en"]);
+
+
+    return $translation;
 }

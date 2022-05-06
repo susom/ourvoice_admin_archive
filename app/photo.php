@@ -101,7 +101,7 @@ $page = "photo_detail";
 			
 			$photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
 			$photo_comment  = str_replace("rnrn", "\r\n\r\n",$photo['text_comment']);
-	        $text_comment   = "<div class='audio_clip'><textarea id='text_comment' name='text_comment' class='keyboard'>".  $photo_comment  ."</textarea></div>";
+	        $text_comment   = "<div class='audio_clip'><textarea id='text_comment' name='text_comment' class='keyboard'>".  $photo_comment  ."</textarea><button id='translate'>Translate to English</button></div>";
 
 			if(isset($photo["audios"])){
 				foreach($photo["audios"] as $filename => $txn){
@@ -486,6 +486,51 @@ $(document).ready(function(){
 
 	$("#text_comment, .audio_txn").change(function(){
 	    $(this).attr("data-dirty",true);
+    });
+
+
+
+    //DETECT LANGUAGE IN text_comment
+    if($("#text_comment").val().trim()){
+        var text = $("#text_comment").val().trim();
+        $.ajax({
+            method: "POST",
+            url: ajax_handler,
+            data: { text: text,  action:"detectLanguage"},
+            dataType : "JSON",
+            success:function(response){
+                console.log(response);
+                if(response.hasOwnProperty("languageCode") && response.languageCode !== "en"){
+                    $("#translate").html("Translate " + response.languageCode + " to English");
+                    $("#translate").show();
+                }
+            },
+            error: function(e){
+                console.log("detectLanguage error", e);
+            }
+        });
+    }
+
+    $("#translate").on("click", function(e){
+        e.preventDefault();
+        var text = $("#text_comment").val();
+
+        $.ajax({
+            method: "POST",
+            url: ajax_handler,
+            data: { text: text,  action:"translateText"},
+            dataType : "JSON",
+            success:function(response){
+                console.log(response);
+                var translation = response.hasOwnProperty("text") ? "\r\n" + response.text : "";
+                var cur_height  = $("#text_comment").height();
+                var new_height  = (cur_height * 2);
+                $("#text_comment").height(new_height).val(text + translation);
+            },
+            error: function(e){
+                console.log("translateText error", e);
+            }
+        });
     });
 });
 

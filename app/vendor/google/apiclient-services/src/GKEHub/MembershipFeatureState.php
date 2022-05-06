@@ -23,6 +23,10 @@ class MembershipFeatureState extends \Google\Model
   protected $appdevexperienceDataType = '';
   protected $configmanagementType = ConfigManagementMembershipState::class;
   protected $configmanagementDataType = '';
+  protected $identityserviceType = IdentityServiceMembershipState::class;
+  protected $identityserviceDataType = '';
+  protected $servicemeshType = ServiceMeshMembershipState::class;
+  protected $servicemeshDataType = '';
   protected $stateType = FeatureState::class;
   protected $stateDataType = '';
 
@@ -53,6 +57,34 @@ class MembershipFeatureState extends \Google\Model
   public function getConfigmanagement()
   {
     return $this->configmanagement;
+  }
+  /**
+   * @param IdentityServiceMembershipState
+   */
+  public function setIdentityservice(IdentityServiceMembershipState $identityservice)
+  {
+    $this->identityservice = $identityservice;
+  }
+  /**
+   * @return IdentityServiceMembershipState
+   */
+  public function getIdentityservice()
+  {
+    return $this->identityservice;
+  }
+  /**
+   * @param ServiceMeshMembershipState
+   */
+  public function setServicemesh(ServiceMeshMembershipState $servicemesh)
+  {
+    $this->servicemesh = $servicemesh;
+  }
+  /**
+   * @return ServiceMeshMembershipState
+   */
+  public function getServicemesh()
+  {
+    return $this->servicemesh;
   }
   /**
    * @param FeatureState

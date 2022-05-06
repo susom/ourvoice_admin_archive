@@ -351,6 +351,11 @@ label span {
 }
 
 
+
+#translate{
+	margin-left:40px;
+	display:none;
+}
 .photo_detail .user_entry {
 	margin:30px auto;
 }	

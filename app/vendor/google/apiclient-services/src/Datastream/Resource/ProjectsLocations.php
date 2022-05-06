@@ -32,12 +32,11 @@ use Google\Service\Datastream\Location;
 class ProjectsLocations extends \Google\Service\Resource
 {
   /**
-   * The FetchStaticIps API call exposes the static ips used by Datastream.
-   * Typically, a request returns children data objects under a parent data object
-   * that's optionally supplied in the request. (locations.fetchStaticIps)
+   * The FetchStaticIps API call exposes the static IP addresses used by
+   * Datastream. (locations.fetchStaticIps)
    *
-   * @param string $name Required. The name resource of the Response type. Must be
-   * in the format `projects/locations`.
+   * @param string $name Required. The resource name for the location for which
+   * static IPs should be returned. Must be in the format `projects/locations`.
    * @param array $optParams Optional parameters.
    *
    * @opt_param int pageSize Maximum number of Ips to return, will likely not be
@@ -74,8 +73,8 @@ class ProjectsLocations extends \Google\Service\Resource
    * @param array $optParams Optional parameters.
    *
    * @opt_param string filter A filter to narrow down results to a preferred
-   * subset. The filtering language accepts strings like "displayName=tokyo", and
-   * is documented in more detail in [AIP-160](https://google.aip.dev/160).
+   * subset. The filtering language accepts strings like `"displayName=tokyo"`,
+   * and is documented in more detail in [AIP-160](https://google.aip.dev/160).
    * @opt_param int pageSize The maximum number of results to return. If not set,
    * the service selects a default.
    * @opt_param string pageToken A page token received from the `next_page_token`

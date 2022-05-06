@@ -32,11 +32,12 @@ use Google\Service\Document\GoogleCloudLocationLocation;
 class ProjectsLocations extends \Google\Service\Resource
 {
   /**
-   * Fetches processor types. (locations.fetchProcessorTypes)
+   * Fetches processor types. Note that we do not use ListProcessorTypes here
+   * because it is not paginated. (locations.fetchProcessorTypes)
    *
    * @param string $parent Required. The project of processor type to list. The
-   * available processor types may depend on the whitelisting on projects. Format:
-   * projects/{project}/locations/{location}
+   * available processor types may depend on the allow-listing on projects.
+   * Format: `projects/{project}/locations/{location}`
    * @param array $optParams Optional parameters.
    * @return GoogleCloudDocumentaiV1FetchProcessorTypesResponse
    */
@@ -68,8 +69,8 @@ class ProjectsLocations extends \Google\Service\Resource
    * @param array $optParams Optional parameters.
    *
    * @opt_param string filter A filter to narrow down results to a preferred
-   * subset. The filtering language accepts strings like "displayName=tokyo", and
-   * is documented in more detail in [AIP-160](https://google.aip.dev/160).
+   * subset. The filtering language accepts strings like `"displayName=tokyo"`,
+   * and is documented in more detail in [AIP-160](https://google.aip.dev/160).
    * @opt_param int pageSize The maximum number of results to return. If not set,
    * the service selects a default.
    * @opt_param string pageToken A page token received from the `next_page_token`

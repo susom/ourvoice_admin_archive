@@ -1,6 +1,8 @@
 <?php
 require_once "common.php";
 
+
+
 $action = filter_var($_POST["action"], FILTER_SANITIZE_STRING);
 if(!empty($_POST["action"])){
     // POSSIBLE POST VARS COMING IN
@@ -560,6 +562,18 @@ if(!empty($_POST["action"])){
                 print_rr($payload);
             }
         break;
+
+        case "detectLanguage":
+            $ajax_resp  = true;
+            $text       = !empty($_POST["text"]) ? filter_var($_POST["text"], FILTER_SANITIZE_STRING) : null;
+            $response   = json_encode(detectLanguage($text));
+            break;
+
+        case "translateText":
+            $ajax_resp  = true;
+            $text       = !empty($_POST["text"]) ? filter_var($_POST["text"], FILTER_SANITIZE_STRING) : null;
+            $response   = json_encode(translateToEnglish($text));
+            break;
     }
 
     if($ajax_resp) {
