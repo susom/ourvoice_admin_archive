@@ -38,7 +38,7 @@ $page = "photo_detail";
             $project_langs  = array();
             foreach($project_data["languages"] as $lang){
                 if($gcp_lang = convertGoogleLanguageCode($lang["lang"])){
-                    if( $gcp_lang == "en-US"){ continue; }
+//                    if( $gcp_lang == "en-US"){ continue; }
                     array_push($project_langs, $gcp_lang);
                 }
             }
@@ -111,7 +111,6 @@ $page = "photo_detail";
 	        $text_comment   = "<div class='audio_clip'><textarea id='text_comment' name='text_comment' class='keyboard'>".  $photo_comment  ."</textarea><button id='translate'>Translate to English</button></div>";
 
 			if(isset($photo["audios"])){
-                print_rr($photo["audios"]);
 				foreach($photo["audios"] as $filename => $txn){
 					//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
                     //NEED TO ASSUME THE MP3 will bE THERE I GUESS
@@ -153,7 +152,7 @@ $page = "photo_detail";
 												</audio> 
 												<a class='refresh_audio' href='$just_file' title='Audio not working?  Click to refresh.'>&#8635;</a> 
 												<div class='forprint'>$transcription</div>
-												<textarea class='audio_txn' name='$filename' data-gs_ref='$gs_ref' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
+												<label><textarea class='audio_txn' name='$filename' data-gs_ref='$gs_ref' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></label>
 												<p id = 'confidence_exerpt'>$script</p>
 					 						</div>";
 				}
@@ -229,7 +228,10 @@ $page = "photo_detail";
 					$text_comment
 					
 					$audio_attachments
-					<input type='submit' id='save_txns' value='Save Transcriptions'/>
+					
+					<div style='text-align:center'>
+					<button type='submit' id='save_txns'>Save Transcriptions</button>
+					</div>
 				</aside>";
 
 			if(count($prevnext)> 0){
@@ -264,6 +266,7 @@ $page = "photo_detail";
 <script>
 var ajax_handler    = "ajaxHandler.php";
 var proj_langs      = <?=json_encode($project_langs)?>;
+proj_langs.reverse();
 
 function addmarker(latilongi,map_id) {
     var marker = new google.maps.Marker({
@@ -564,13 +567,8 @@ $(document).ready(function(){
         var data    = {doc_id : _id, photo_i : _i };
 
         var changed = $("textarea[data-dirty='true']");
+
         if(changed.length){
-            $("#save_txns").addClass("waiting", function(){
-                var _el = $(this);
-                setTimeout(function(){
-                    _el.removeClass("waiting");
-                },2000);
-            });
             changed.each(function(){
                 var prop    = $(this).attr("name");
                 var val     = $(this).val();
@@ -578,20 +576,31 @@ $(document).ready(function(){
                 data["prop"]    = prop;
                 data["text"]    = val;
                 data["action"]  = prop == "text_comment" ? "save_text_comment" : "save_audio_txn";
+
+                $("#save_txns").attr("disabled", true).addClass("ajax");
                 $.ajax({
                     method: "POST",
                     url: ajax_handler,
                     data: data,
                     success:function(response){
                         // window.location.reload(true);
-                        $("#save_txns").removeClass("waiting");
+                        $("#save_txns").attr("disabled", false).removeClass("waiting").removeClass("ajax");
                     }
                 });
             });
+        }else{
+            //nothing to save
+            $("#save_txns").attr("disabled", false).removeClass("ajax");
         }
+    });
+    $("#save_txns").on("click",function(e){
+        e.preventDefault();
+        $("#save_txns").attr("disabled", true).addClass("ajax");
+        $("#photo_detail").submit();
     });
 
     $("#text_comment, .audio_txn").change(function(){
+        console.log("dirtying some textareas");
         $(this).attr("data-dirty",true);
     });
 
@@ -620,6 +629,8 @@ $(document).ready(function(){
         e.preventDefault();
         var text = $("#text_comment").val();
 
+        var _this = $(this);
+        _this.attr("disabled",true).addClass("ajax");
         $.ajax({
             method: "POST",
             url: ajax_handler,
@@ -630,7 +641,8 @@ $(document).ready(function(){
                 var translation = response.hasOwnProperty("text") ? "\r\n" + response.text : "";
                 var cur_height  = $("#text_comment").height();
                 var new_height  = (cur_height * 2);
-                $("#text_comment").height(new_height).val(text + translation);
+                $("#text_comment").height(new_height).val(text + translation).trigger("change");
+                _this.attr("disabled",false).removeClass("ajax");
             },
             error: function(e){
                 console.log("translateText error", e);
@@ -647,6 +659,9 @@ $(document).ready(function(){
                 var data    = { gs_ref: gs_ref, proj_langs: proj_langs,  action:"transcribeAudio"};
 
                 var _el     = $(this);
+                var _par    = _el.parent();
+                _el.attr("disabled",true);
+                _par.addClass("txn_ajax");
                 $.ajax({
                     method: "POST",
                     url: ajax_handler,
@@ -656,6 +671,9 @@ $(document).ready(function(){
                         console.log(response);
                         if(response.hasOwnProperty("transcript")){
                             _el.val(response["transcript"]);
+                            _el.attr("disabled",false);
+                            _par.removeClass("txn_ajax");
+                            _el.trigger("change");
                         }
                     },
                     error: function(e){
@@ -664,7 +682,6 @@ $(document).ready(function(){
                 });
             }
         });
-        $("#save_txns").submit();
     }
 });
 

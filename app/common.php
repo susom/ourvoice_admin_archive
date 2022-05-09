@@ -953,6 +953,7 @@ function transcribeSpeech($uri, $alt_language_codes=array()){
     $audio = (new RecognitionAudio())
         ->setUri($uri);
 
+    $max_alternatives = count($alt_language_codes) > 1 ? count($alt_language_codes)  : 1;
     // set config
     $config = (new RecognitionConfig())
         ->setEncoding($encoding)
@@ -972,19 +973,16 @@ function transcribeSpeech($uri, $alt_language_codes=array()){
 
         // each result is for a consecutive portion of the audio. iterate
         // through them to get the transcripts for the entire audio file.
-        $txns = array();
         foreach ($response->getResults() as $result) {
             $alternatives   = $result->getAlternatives();
             $mostLikely     = $alternatives[0];
             $transcript     = $mostLikely->getTranscript();
             $confidence     = $mostLikely->getConfidence();
-            $txns[$confidence] = array("transcript" => $transcript, "confidence" => $confidence);
+            $txn            = array("transcript" => $transcript, "confidence" => $confidence);
         }
 
-        ksort($txns);
-
         $client->close();
-        return array_pop($txns);
+        return $txn;
     } else {
         $client->close();
         return $operation->getError();
