@@ -48,6 +48,7 @@ if(!empty($_POST["action"])){
                 $summ_buffer[] = "<table cellpadding='0' cellspacing='0' width='100%'>";
                 $summ_buffer[] = "<thead>";
 
+
                 $total_photos = 0;
                 $total_audios = 0;
                 $total_texts = 0;
@@ -73,9 +74,10 @@ if(!empty($_POST["action"])){
                     $summ_buffer[] = "<th>" . $walk["photos"] . "</th>";
                     $summ_buffer[] = "<th>" . $walk["audios"] . "</th>";
                     $summ_buffer[] = "<th>" . $walk["texts"] . "</th>";
+
                     // $summ_buffer[] = "<td class='".$walk["maps"]."'>" . $walk["maps"]. "</td>";
                     // $summ_buffer[] = "<td class='$uploaded'>" . $uploaded. "</td>";
-//                    $summ_buffer[] = "<td class='$data_processed'>" . ($processed ? "Y" : "") . "</td>";
+                    $summ_buffer[] = "<td class='$data_processed'>" . ($processed ? "Y" : "") . "</td>";
                     $summ_buffer[] = "</tr>";
 
                     $total_photos += $walk["photos"];
@@ -93,18 +95,21 @@ if(!empty($_POST["action"])){
                     $x++;
                 }
 
-                $summ_buffer[] = "</thead>";
+                $summ_buffer[] = "</tbody>";
                 $summ_buffer[] = "</table>";
                 $summ_buffer[] = "<table cellpadding='0' cellspacing='0' width='100%'>";
                 $summ_buffer[] = "<tfoot>";
-                $summ_buffer[] = "<tr><td>Totals:</td>";
-                $summ_buffer[] = "<td>" . ($i + 1) . " walks</td>";
+
+                $summ_buffer[] = "<td>Totals:</td>";
+                $summ_buffer[] = "<td>".($i+1)." walks</td>";
+
                 $summ_buffer[] = "<td></td>";
                 $summ_buffer[] = "<td>$total_photos</td>";
                 $summ_buffer[] = "<td>$total_audios</td>";
-                $summ_buffer[] = "<td>$total_texts</td></tr>";
-                $summ_buffer[] = "<tr><td colspan='6' ><a target='_blank' href='project_view_summary_csv.php?active_project_id=$active_project_id' class='btn btn-lg btn-info pull-right' id='download_summary'>Download CSV</a></td></tr>";
-
+                $summ_buffer[] = "<td>$total_texts</td>";
+                // $summ_buffer[] = "<td></td>";
+                // $summ_buffer[] = "<td></td>";
+                $summ_buffer[] = "<td></td>";
                 $summ_buffer[] = "</tfoot>";
                 $summ_buffer[] = "</table>";
                 $summ_buffer[] = "</div>";
