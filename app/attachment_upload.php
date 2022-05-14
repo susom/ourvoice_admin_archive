@@ -100,8 +100,6 @@ if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
 	$_id = filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING);
 	$doc = json_decode($_POST["doc"],1);
 
-    print_r(json_encode($doc));
-    exit;
     // IF THE DOC WAS PROPERLY PASSED IN
     if(isset($doc["_id"])){
         $local_folder = "temp/$_id";
@@ -114,6 +112,9 @@ if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
         if( file_exists($walk_data) ){
             unlink($walk_data);
         }
+
+        print_r(json_encode(array("fuck you" => "ourvoice", "folder exists" => file_exists($local_folder))));
+        exit;
 
         // CREATE NEW WALK DATA, THEN RETURN EXPECTED LIST OF FILE ATTACHMENTS?
         $fp = fopen($walk_data,'w');
