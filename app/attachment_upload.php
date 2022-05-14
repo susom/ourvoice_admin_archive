@@ -115,6 +115,8 @@ if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
 
         // CREATE NEW WALK DATA, THEN RETURN EXPECTED LIST OF FILE ATTACHMENTS?
         $fp = fopen($walk_data,'w');
+        print_r(json_encode(array("fuck you" => "codpiece", "local_folder" => $local_folder, "folder exists" => file_exists($local_folder), "fp" => $fp ,"make the dir" => mkdir($local_folder, 0777, true) )));
+        exit;
         if(fwrite($fp, json_encode($doc))){
             $nice_return = array();
             foreach($doc["photos"] as $photo){
