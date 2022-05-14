@@ -105,6 +105,9 @@ if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
         $local_folder = "temp/$_id";
         if( !file_exists($local_folder) ){
             mkdir($local_folder, 0777, true);
+        }else{
+            print_r(json_encode(array("fuck you" => "shitpiece", "local_folder" => $local_folder, "folder exists" => file_exists($local_folder))));
+            exit;
         }
 
         // CHECK IF WALK DATA ALREADY EXISTS, NEED TO DELETE IT TO WRITE IT AGAIN, NO OVERWRITE FEATURE?
@@ -113,7 +116,7 @@ if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
             unlink($walk_data);
         }
 
-        print_r(json_encode(array("fuck you" => "ourvoice", "folder exists" => file_exists($local_folder))));
+        print_r(json_encode(array("fuck you" => "fuckface", "local_folder" => $local_folder, "folder exists" => file_exists($local_folder))));
         exit;
 
         // CREATE NEW WALK DATA, THEN RETURN EXPECTED LIST OF FILE ATTACHMENTS?
