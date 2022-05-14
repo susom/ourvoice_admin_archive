@@ -95,22 +95,13 @@ $_POST["doc"]       = json_encode(array (
     '_rev' => '2-45c7bf31278180e86fc24c84a190511c',
 ));
 
-
-
-print_r(json_encode($_POST));
-
-exit;
-
-
-
-
-
-
 //THIS WORKS ON DEV!
 if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
 	$_id = filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING);
 	$doc = json_decode($_POST["doc"],1);
 
+    print_r(json_encode($doc));
+    exit;
     // IF THE DOC WAS PROPERLY PASSED IN
     if(isset($doc["_id"])){
         $local_folder = "temp/$_id";
