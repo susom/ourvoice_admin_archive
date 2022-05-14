@@ -105,7 +105,7 @@ if(isset($_POST["doc"]) && isset($_POST["doc_id"])){
         $local_folder = "temp/$_id";
         if( !file_exists($local_folder) ){
             mkdir($local_folder, 0777, true);
-        }else{
+
             print_r(json_encode(array("fuck you" => "shitpiece", "local_folder" => $local_folder, "folder exists" => file_exists($local_folder))));
             exit;
         }
