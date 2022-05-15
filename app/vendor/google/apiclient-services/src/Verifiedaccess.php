@@ -20,7 +20,7 @@ namespace Google\Service;
 use Google\Client;
 
 /**
- * Service definition for Verifiedaccess (v2).
+ * Service definition for Verifiedaccess (v1).
  *
  * <p>
  * API for Verified Access chrome extension to provide credential verification
@@ -54,7 +54,7 @@ class Verifiedaccess extends \Google\Service
     $this->rootUrl = $rootUrl ?: 'https://verifiedaccess.googleapis.com/';
     $this->servicePath = '';
     $this->batchPath = 'batch';
-    $this->version = 'v2';
+    $this->version = 'v1';
     $this->serviceName = 'verifiedaccess';
 
     $this->challenge = new Verifiedaccess\Resource\Challenge(
@@ -63,12 +63,12 @@ class Verifiedaccess extends \Google\Service
         'challenge',
         [
           'methods' => [
-            'generate' => [
-              'path' => 'v2/challenge:generate',
+            'create' => [
+              'path' => 'v1/challenge',
               'httpMethod' => 'POST',
               'parameters' => [],
             ],'verify' => [
-              'path' => 'v2/challenge:verify',
+              'path' => 'v1/challenge:verify',
               'httpMethod' => 'POST',
               'parameters' => [],
             ],

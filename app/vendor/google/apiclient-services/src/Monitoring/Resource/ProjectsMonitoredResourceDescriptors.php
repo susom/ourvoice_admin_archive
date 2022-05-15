@@ -31,8 +31,8 @@ use Google\Service\Monitoring\MonitoredResourceDescriptor;
 class ProjectsMonitoredResourceDescriptors extends \Google\Service\Resource
 {
   /**
-   * Gets a single monitored resource descriptor.
-   * (monitoredResourceDescriptors.get)
+   * Gets a single monitored resource descriptor. This method does not require a
+   * Workspace. (monitoredResourceDescriptors.get)
    *
    * @param string $name Required. The monitored resource descriptor to get. The
    * format is:
@@ -48,7 +48,8 @@ class ProjectsMonitoredResourceDescriptors extends \Google\Service\Resource
     return $this->call('get', [$params], MonitoredResourceDescriptor::class);
   }
   /**
-   * Lists monitored resource descriptors that match a filter.
+   * Lists monitored resource descriptors that match a filter. This method does
+   * not require a Workspace.
    * (monitoredResourceDescriptors.listProjectsMonitoredResourceDescriptors)
    *
    * @param string $name Required. The project

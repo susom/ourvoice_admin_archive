@@ -22,10 +22,6 @@ class GoogleCloudRetailV2SearchRequestBoostSpec extends \Google\Collection
   protected $collection_key = 'conditionBoostSpecs';
   protected $conditionBoostSpecsType = GoogleCloudRetailV2SearchRequestBoostSpecConditionBoostSpec::class;
   protected $conditionBoostSpecsDataType = 'array';
-  /**
-   * @var bool
-   */
-  public $skipBoostSpecValidation;
 
   /**
    * @param GoogleCloudRetailV2SearchRequestBoostSpecConditionBoostSpec[]
@@ -40,20 +36,6 @@ class GoogleCloudRetailV2SearchRequestBoostSpec extends \Google\Collection
   public function getConditionBoostSpecs()
   {
     return $this->conditionBoostSpecs;
-  }
-  /**
-   * @param bool
-   */
-  public function setSkipBoostSpecValidation($skipBoostSpecValidation)
-  {
-    $this->skipBoostSpecValidation = $skipBoostSpecValidation;
-  }
-  /**
-   * @return bool
-   */
-  public function getSkipBoostSpecValidation()
-  {
-    return $this->skipBoostSpecValidation;
   }
 }
 

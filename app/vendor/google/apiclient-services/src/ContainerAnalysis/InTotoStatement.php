@@ -23,13 +23,7 @@ class InTotoStatement extends \Google\Collection
   protected $internal_gapi_mappings = [
         "type" => "_type",
   ];
-  /**
-   * @var string
-   */
   public $type;
-  /**
-   * @var string
-   */
   public $predicateType;
   protected $provenanceType = InTotoProvenance::class;
   protected $provenanceDataType = '';
@@ -38,30 +32,18 @@ class InTotoStatement extends \Google\Collection
   protected $subjectType = Subject::class;
   protected $subjectDataType = 'array';
 
-  /**
-   * @param string
-   */
   public function setType($type)
   {
     $this->type = $type;
   }
-  /**
-   * @return string
-   */
   public function getType()
   {
     return $this->type;
   }
-  /**
-   * @param string
-   */
   public function setPredicateType($predicateType)
   {
     $this->predicateType = $predicateType;
   }
-  /**
-   * @return string
-   */
   public function getPredicateType()
   {
     return $this->predicateType;

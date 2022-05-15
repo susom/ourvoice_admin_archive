@@ -22,9 +22,6 @@ class ListDealsResponse extends \Google\Collection
   protected $collection_key = 'deals';
   protected $dealsType = Deal::class;
   protected $dealsDataType = 'array';
-  /**
-   * @var string
-   */
   public $nextPageToken;
 
   /**
@@ -41,16 +38,10 @@ class ListDealsResponse extends \Google\Collection
   {
     return $this->deals;
   }
-  /**
-   * @param string
-   */
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
-  /**
-   * @return string
-   */
   public function getNextPageToken()
   {
     return $this->nextPageToken;

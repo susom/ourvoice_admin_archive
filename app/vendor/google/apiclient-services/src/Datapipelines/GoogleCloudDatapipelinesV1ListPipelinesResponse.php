@@ -20,23 +20,14 @@ namespace Google\Service\Datapipelines;
 class GoogleCloudDatapipelinesV1ListPipelinesResponse extends \Google\Collection
 {
   protected $collection_key = 'pipelines';
-  /**
-   * @var string
-   */
   public $nextPageToken;
   protected $pipelinesType = GoogleCloudDatapipelinesV1Pipeline::class;
   protected $pipelinesDataType = 'array';
 
-  /**
-   * @param string
-   */
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
-  /**
-   * @return string
-   */
   public function getNextPageToken()
   {
     return $this->nextPageToken;

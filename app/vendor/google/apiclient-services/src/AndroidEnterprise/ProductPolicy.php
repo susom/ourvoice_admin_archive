@@ -22,25 +22,11 @@ class ProductPolicy extends \Google\Collection
   protected $collection_key = 'tracks';
   protected $autoInstallPolicyType = AutoInstallPolicy::class;
   protected $autoInstallPolicyDataType = '';
-  /**
-   * @var string
-   */
   public $autoUpdateMode;
-  protected $enterpriseAuthenticationAppLinkConfigsType = EnterpriseAuthenticationAppLinkConfig::class;
-  protected $enterpriseAuthenticationAppLinkConfigsDataType = 'array';
   protected $managedConfigurationType = ManagedConfiguration::class;
   protected $managedConfigurationDataType = '';
-  /**
-   * @var string
-   */
   public $productId;
-  /**
-   * @var string[]
-   */
   public $trackIds;
-  /**
-   * @var string[]
-   */
   public $tracks;
 
   /**
@@ -57,33 +43,13 @@ class ProductPolicy extends \Google\Collection
   {
     return $this->autoInstallPolicy;
   }
-  /**
-   * @param string
-   */
   public function setAutoUpdateMode($autoUpdateMode)
   {
     $this->autoUpdateMode = $autoUpdateMode;
   }
-  /**
-   * @return string
-   */
   public function getAutoUpdateMode()
   {
     return $this->autoUpdateMode;
-  }
-  /**
-   * @param EnterpriseAuthenticationAppLinkConfig[]
-   */
-  public function setEnterpriseAuthenticationAppLinkConfigs($enterpriseAuthenticationAppLinkConfigs)
-  {
-    $this->enterpriseAuthenticationAppLinkConfigs = $enterpriseAuthenticationAppLinkConfigs;
-  }
-  /**
-   * @return EnterpriseAuthenticationAppLinkConfig[]
-   */
-  public function getEnterpriseAuthenticationAppLinkConfigs()
-  {
-    return $this->enterpriseAuthenticationAppLinkConfigs;
   }
   /**
    * @param ManagedConfiguration
@@ -99,44 +65,26 @@ class ProductPolicy extends \Google\Collection
   {
     return $this->managedConfiguration;
   }
-  /**
-   * @param string
-   */
   public function setProductId($productId)
   {
     $this->productId = $productId;
   }
-  /**
-   * @return string
-   */
   public function getProductId()
   {
     return $this->productId;
   }
-  /**
-   * @param string[]
-   */
   public function setTrackIds($trackIds)
   {
     $this->trackIds = $trackIds;
   }
-  /**
-   * @return string[]
-   */
   public function getTrackIds()
   {
     return $this->trackIds;
   }
-  /**
-   * @param string[]
-   */
   public function setTracks($tracks)
   {
     $this->tracks = $tracks;
   }
-  /**
-   * @return string[]
-   */
   public function getTracks()
   {
     return $this->tracks;

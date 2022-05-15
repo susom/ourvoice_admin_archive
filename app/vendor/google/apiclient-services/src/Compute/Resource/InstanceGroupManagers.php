@@ -92,24 +92,20 @@ class InstanceGroupManagers extends \Google\Service\Resource
    * @param array $optParams Optional parameters.
    *
    * @opt_param string filter A filter expression that filters resources listed in
-   * the response. The expression must specify the field name, an operator, and
-   * the value that you want to use for filtering. The value must be a string, a
-   * number, or a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`,
-   * `>=` or `:`. For example, if you are filtering Compute Engine instances, you
-   * can exclude instances named `example-instance` by specifying `name !=
-   * example-instance`. The `:` operator can be used with string fields to match
-   * substrings. For non-string fields it is equivalent to the `=` operator. The
-   * `:*` comparison can be used to test whether a key has been defined. For
-   * example, to find all objects with `owner` label use: ``` labels.owner:* ```
-   * You can also filter nested fields. For example, you could specify
-   * `scheduling.automaticRestart = false` to include instances only if they are
-   * not scheduled for automatic restarts. You can use filtering on nested fields
-   * to filter based on resource labels. To filter on multiple expressions,
-   * provide each separate expression within parentheses. For example: ```
-   * (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ``` By
-   * default, each expression is an `AND` expression. However, you can include
-   * `AND` and `OR` expressions explicitly. For example: ``` (cpuPlatform = "Intel
-   * Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+   * the response. The expression must specify the field name, a comparison
+   * operator, and the value that you want to use for filtering. The value must be
+   * a string, a number, or a boolean. The comparison operator must be either `=`,
+   * `!=`, `>`, or `<`. For example, if you are filtering Compute Engine
+   * instances, you can exclude instances named `example-instance` by specifying
+   * `name != example-instance`. You can also filter nested fields. For example,
+   * you could specify `scheduling.automaticRestart = false` to include instances
+   * only if they are not scheduled for automatic restarts. You can use filtering
+   * on nested fields to filter based on resource labels. To filter on multiple
+   * expressions, provide each separate expression within parentheses. For
+   * example: ``` (scheduling.automaticRestart = true) (cpuPlatform = "Intel
+   * Skylake") ``` By default, each expression is an `AND` expression. However,
+   * you can include `AND` and `OR` expressions explicitly. For example: ```
+   * (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
    * (scheduling.automaticRestart = true) ```
    * @opt_param bool includeAllScopes Indicates whether every visible scope for
    * each scope type (zone, region, global) should be included in the response.
@@ -166,8 +162,8 @@ class InstanceGroupManagers extends \Google\Service\Resource
     return $this->call('applyUpdatesToInstances', [$params], Operation::class);
   }
   /**
-   * Creates instances with per-instance configurations in this managed instance
-   * group. Instances are created using the current instance template. The create
+   * Creates instances with per-instance configs in this managed instance group.
+   * Instances are created using the current instance template. The create
    * instances operation is marked DONE if the createInstances request is
    * successful. The underlying actions take additional time. You must separately
    * verify the status of the creating or actions with the listmanagedinstances
@@ -268,7 +264,7 @@ class InstanceGroupManagers extends \Google\Service\Resource
     return $this->call('deleteInstances', [$params], Operation::class);
   }
   /**
-   * Deletes selected per-instance configurations for the managed instance group.
+   * Deletes selected per-instance configs for the managed instance group.
    * (instanceGroupManagers.deletePerInstanceConfigs)
    *
    * @param string $project Project ID for this request.
@@ -348,24 +344,20 @@ class InstanceGroupManagers extends \Google\Service\Resource
    * @param array $optParams Optional parameters.
    *
    * @opt_param string filter A filter expression that filters resources listed in
-   * the response. The expression must specify the field name, an operator, and
-   * the value that you want to use for filtering. The value must be a string, a
-   * number, or a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`,
-   * `>=` or `:`. For example, if you are filtering Compute Engine instances, you
-   * can exclude instances named `example-instance` by specifying `name !=
-   * example-instance`. The `:` operator can be used with string fields to match
-   * substrings. For non-string fields it is equivalent to the `=` operator. The
-   * `:*` comparison can be used to test whether a key has been defined. For
-   * example, to find all objects with `owner` label use: ``` labels.owner:* ```
-   * You can also filter nested fields. For example, you could specify
-   * `scheduling.automaticRestart = false` to include instances only if they are
-   * not scheduled for automatic restarts. You can use filtering on nested fields
-   * to filter based on resource labels. To filter on multiple expressions,
-   * provide each separate expression within parentheses. For example: ```
-   * (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ``` By
-   * default, each expression is an `AND` expression. However, you can include
-   * `AND` and `OR` expressions explicitly. For example: ``` (cpuPlatform = "Intel
-   * Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+   * the response. The expression must specify the field name, a comparison
+   * operator, and the value that you want to use for filtering. The value must be
+   * a string, a number, or a boolean. The comparison operator must be either `=`,
+   * `!=`, `>`, or `<`. For example, if you are filtering Compute Engine
+   * instances, you can exclude instances named `example-instance` by specifying
+   * `name != example-instance`. You can also filter nested fields. For example,
+   * you could specify `scheduling.automaticRestart = false` to include instances
+   * only if they are not scheduled for automatic restarts. You can use filtering
+   * on nested fields to filter based on resource labels. To filter on multiple
+   * expressions, provide each separate expression within parentheses. For
+   * example: ``` (scheduling.automaticRestart = true) (cpuPlatform = "Intel
+   * Skylake") ``` By default, each expression is an `AND` expression. However,
+   * you can include `AND` and `OR` expressions explicitly. For example: ```
+   * (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
    * (scheduling.automaticRestart = true) ```
    * @opt_param string maxResults The maximum number of results per page that
    * should be returned. If the number of available results is larger than
@@ -409,24 +401,20 @@ class InstanceGroupManagers extends \Google\Service\Resource
    * @param array $optParams Optional parameters.
    *
    * @opt_param string filter A filter expression that filters resources listed in
-   * the response. The expression must specify the field name, an operator, and
-   * the value that you want to use for filtering. The value must be a string, a
-   * number, or a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`,
-   * `>=` or `:`. For example, if you are filtering Compute Engine instances, you
-   * can exclude instances named `example-instance` by specifying `name !=
-   * example-instance`. The `:` operator can be used with string fields to match
-   * substrings. For non-string fields it is equivalent to the `=` operator. The
-   * `:*` comparison can be used to test whether a key has been defined. For
-   * example, to find all objects with `owner` label use: ``` labels.owner:* ```
-   * You can also filter nested fields. For example, you could specify
-   * `scheduling.automaticRestart = false` to include instances only if they are
-   * not scheduled for automatic restarts. You can use filtering on nested fields
-   * to filter based on resource labels. To filter on multiple expressions,
-   * provide each separate expression within parentheses. For example: ```
-   * (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ``` By
-   * default, each expression is an `AND` expression. However, you can include
-   * `AND` and `OR` expressions explicitly. For example: ``` (cpuPlatform = "Intel
-   * Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+   * the response. The expression must specify the field name, a comparison
+   * operator, and the value that you want to use for filtering. The value must be
+   * a string, a number, or a boolean. The comparison operator must be either `=`,
+   * `!=`, `>`, or `<`. For example, if you are filtering Compute Engine
+   * instances, you can exclude instances named `example-instance` by specifying
+   * `name != example-instance`. You can also filter nested fields. For example,
+   * you could specify `scheduling.automaticRestart = false` to include instances
+   * only if they are not scheduled for automatic restarts. You can use filtering
+   * on nested fields to filter based on resource labels. To filter on multiple
+   * expressions, provide each separate expression within parentheses. For
+   * example: ``` (scheduling.automaticRestart = true) (cpuPlatform = "Intel
+   * Skylake") ``` By default, each expression is an `AND` expression. However,
+   * you can include `AND` and `OR` expressions explicitly. For example: ```
+   * (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
    * (scheduling.automaticRestart = true) ```
    * @opt_param string maxResults The maximum number of results per page that
    * should be returned. If the number of available results is larger than
@@ -471,24 +459,20 @@ class InstanceGroupManagers extends \Google\Service\Resource
    * @param array $optParams Optional parameters.
    *
    * @opt_param string filter A filter expression that filters resources listed in
-   * the response. The expression must specify the field name, an operator, and
-   * the value that you want to use for filtering. The value must be a string, a
-   * number, or a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`,
-   * `>=` or `:`. For example, if you are filtering Compute Engine instances, you
-   * can exclude instances named `example-instance` by specifying `name !=
-   * example-instance`. The `:` operator can be used with string fields to match
-   * substrings. For non-string fields it is equivalent to the `=` operator. The
-   * `:*` comparison can be used to test whether a key has been defined. For
-   * example, to find all objects with `owner` label use: ``` labels.owner:* ```
-   * You can also filter nested fields. For example, you could specify
-   * `scheduling.automaticRestart = false` to include instances only if they are
-   * not scheduled for automatic restarts. You can use filtering on nested fields
-   * to filter based on resource labels. To filter on multiple expressions,
-   * provide each separate expression within parentheses. For example: ```
-   * (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ``` By
-   * default, each expression is an `AND` expression. However, you can include
-   * `AND` and `OR` expressions explicitly. For example: ``` (cpuPlatform = "Intel
-   * Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+   * the response. The expression must specify the field name, a comparison
+   * operator, and the value that you want to use for filtering. The value must be
+   * a string, a number, or a boolean. The comparison operator must be either `=`,
+   * `!=`, `>`, or `<`. For example, if you are filtering Compute Engine
+   * instances, you can exclude instances named `example-instance` by specifying
+   * `name != example-instance`. You can also filter nested fields. For example,
+   * you could specify `scheduling.automaticRestart = false` to include instances
+   * only if they are not scheduled for automatic restarts. You can use filtering
+   * on nested fields to filter based on resource labels. To filter on multiple
+   * expressions, provide each separate expression within parentheses. For
+   * example: ``` (scheduling.automaticRestart = true) (cpuPlatform = "Intel
+   * Skylake") ``` By default, each expression is an `AND` expression. However,
+   * you can include `AND` and `OR` expressions explicitly. For example: ```
+   * (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
    * (scheduling.automaticRestart = true) ```
    * @opt_param string maxResults The maximum number of results per page that
    * should be returned. If the number of available results is larger than
@@ -518,8 +502,8 @@ class InstanceGroupManagers extends \Google\Service\Resource
     return $this->call('listManagedInstances', [$params], InstanceGroupManagersListManagedInstancesResponse::class);
   }
   /**
-   * Lists all of the per-instance configurations defined for the managed instance
-   * group. The orderBy query parameter is not supported.
+   * Lists all of the per-instance configs defined for the managed instance group.
+   * The orderBy query parameter is not supported.
    * (instanceGroupManagers.listPerInstanceConfigs)
    *
    * @param string $project Project ID for this request.
@@ -530,24 +514,20 @@ class InstanceGroupManagers extends \Google\Service\Resource
    * @param array $optParams Optional parameters.
    *
    * @opt_param string filter A filter expression that filters resources listed in
-   * the response. The expression must specify the field name, an operator, and
-   * the value that you want to use for filtering. The value must be a string, a
-   * number, or a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`,
-   * `>=` or `:`. For example, if you are filtering Compute Engine instances, you
-   * can exclude instances named `example-instance` by specifying `name !=
-   * example-instance`. The `:` operator can be used with string fields to match
-   * substrings. For non-string fields it is equivalent to the `=` operator. The
-   * `:*` comparison can be used to test whether a key has been defined. For
-   * example, to find all objects with `owner` label use: ``` labels.owner:* ```
-   * You can also filter nested fields. For example, you could specify
-   * `scheduling.automaticRestart = false` to include instances only if they are
-   * not scheduled for automatic restarts. You can use filtering on nested fields
-   * to filter based on resource labels. To filter on multiple expressions,
-   * provide each separate expression within parentheses. For example: ```
-   * (scheduling.automaticRestart = true) (cpuPlatform = "Intel Skylake") ``` By
-   * default, each expression is an `AND` expression. However, you can include
-   * `AND` and `OR` expressions explicitly. For example: ``` (cpuPlatform = "Intel
-   * Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+   * the response. The expression must specify the field name, a comparison
+   * operator, and the value that you want to use for filtering. The value must be
+   * a string, a number, or a boolean. The comparison operator must be either `=`,
+   * `!=`, `>`, or `<`. For example, if you are filtering Compute Engine
+   * instances, you can exclude instances named `example-instance` by specifying
+   * `name != example-instance`. You can also filter nested fields. For example,
+   * you could specify `scheduling.automaticRestart = false` to include instances
+   * only if they are not scheduled for automatic restarts. You can use filtering
+   * on nested fields to filter based on resource labels. To filter on multiple
+   * expressions, provide each separate expression within parentheses. For
+   * example: ``` (scheduling.automaticRestart = true) (cpuPlatform = "Intel
+   * Skylake") ``` By default, each expression is an `AND` expression. However,
+   * you can include `AND` and `OR` expressions explicitly. For example: ```
+   * (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
    * (scheduling.automaticRestart = true) ```
    * @opt_param string maxResults The maximum number of results per page that
    * should be returned. If the number of available results is larger than
@@ -614,9 +594,9 @@ class InstanceGroupManagers extends \Google\Service\Resource
     return $this->call('patch', [$params], Operation::class);
   }
   /**
-   * Inserts or patches per-instance configurations for the managed instance
-   * group. perInstanceConfig.name serves as a key used to distinguish whether to
-   * perform insert or patch. (instanceGroupManagers.patchPerInstanceConfigs)
+   * Inserts or patches per-instance configs for the managed instance group.
+   * perInstanceConfig.name serves as a key used to distinguish whether to perform
+   * insert or patch. (instanceGroupManagers.patchPerInstanceConfigs)
    *
    * @param string $project Project ID for this request.
    * @param string $zone The name of the zone where the managed instance group is
@@ -793,9 +773,9 @@ class InstanceGroupManagers extends \Google\Service\Resource
     return $this->call('setTargetPools', [$params], Operation::class);
   }
   /**
-   * Inserts or updates per-instance configurations for the managed instance
-   * group. perInstanceConfig.name serves as a key used to distinguish whether to
-   * perform insert or patch. (instanceGroupManagers.updatePerInstanceConfigs)
+   * Inserts or updates per-instance configs for the managed instance group.
+   * perInstanceConfig.name serves as a key used to distinguish whether to perform
+   * insert or patch. (instanceGroupManagers.updatePerInstanceConfigs)
    *
    * @param string $project Project ID for this request.
    * @param string $zone The name of the zone where the managed instance group is

@@ -22,9 +22,6 @@ class ListAttachmentsResponse extends \Google\Collection
   protected $collection_key = 'attachments';
   protected $attachmentsType = Attachment::class;
   protected $attachmentsDataType = 'array';
-  /**
-   * @var string
-   */
   public $nextPageToken;
 
   /**
@@ -41,16 +38,10 @@ class ListAttachmentsResponse extends \Google\Collection
   {
     return $this->attachments;
   }
-  /**
-   * @param string
-   */
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
-  /**
-   * @return string
-   */
   public function getNextPageToken()
   {
     return $this->nextPageToken;

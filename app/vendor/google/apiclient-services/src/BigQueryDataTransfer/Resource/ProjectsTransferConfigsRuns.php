@@ -66,7 +66,7 @@ class ProjectsTransferConfigsRuns extends \Google\Service\Resource
     return $this->call('get', [$params], TransferRun::class);
   }
   /**
-   * Returns information about running and completed transfer runs.
+   * Returns information about running and completed jobs.
    * (runs.listProjectsTransferConfigsRuns)
    *
    * @param string $parent Required. Name of transfer configuration for which

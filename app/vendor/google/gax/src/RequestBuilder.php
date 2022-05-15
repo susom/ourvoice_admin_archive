@@ -67,16 +67,6 @@ class RequestBuilder
 
     /**
      * @param string $path
-     * @return bool
-     */
-    public function pathExists($path)
-    {
-        list($interface, $method) = explode('/', $path);
-        return isset($this->restConfig['interfaces'][$interface][$method]);
-    }
-
-    /**
-     * @param string $path
      * @param Message $message
      * @param array $headers
      * @return RequestInterface

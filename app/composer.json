@@ -4,7 +4,6 @@
         "google/cloud": "^0.113.0",
         "google/protobuf": "^v3.3.0",
         "google/apiclient": "^2.11",
-        "imagekit/imagekit": "^2.0",
-        "google/cloud-core": "*"
+        "imagekit/imagekit": "^2.0"
     }
 }

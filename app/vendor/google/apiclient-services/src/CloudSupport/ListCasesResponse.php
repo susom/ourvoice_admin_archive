@@ -22,9 +22,6 @@ class ListCasesResponse extends \Google\Collection
   protected $collection_key = 'cases';
   protected $casesType = CloudsupportCase::class;
   protected $casesDataType = 'array';
-  /**
-   * @var string
-   */
   public $nextPageToken;
 
   /**
@@ -41,16 +38,10 @@ class ListCasesResponse extends \Google\Collection
   {
     return $this->cases;
   }
-  /**
-   * @param string
-   */
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
-  /**
-   * @return string
-   */
   public function getNextPageToken()
   {
     return $this->nextPageToken;

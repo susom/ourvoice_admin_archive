@@ -207,7 +207,7 @@ EOF;
         list($header, $value) = explode(': ', $headerLine, 2);
         $header = strtolower($header);
         if (isset($headers[$header])) {
-          $headers[$header] = array_merge((array)$headers[$header], (array)$value);
+          $headers[$header] .= "\n" . $value;
         } else {
           $headers[$header] = $value;
         }

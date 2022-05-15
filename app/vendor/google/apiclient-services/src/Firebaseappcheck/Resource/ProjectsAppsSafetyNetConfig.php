@@ -31,7 +31,7 @@ use Google\Service\Firebaseappcheck\GoogleFirebaseAppcheckV1betaSafetyNetConfig;
 class ProjectsAppsSafetyNetConfig extends \Google\Service\Resource
 {
   /**
-   * Atomically gets the SafetyNetConfigs for the specified list of apps.
+   * Gets the SafetyNetConfigs for the specified list of apps atomically.
    * (safetyNetConfig.batchGet)
    *
    * @param string $parent Required. The parent project name shared by all

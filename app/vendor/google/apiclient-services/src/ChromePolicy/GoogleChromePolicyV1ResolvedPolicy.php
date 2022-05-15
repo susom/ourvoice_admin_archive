@@ -19,8 +19,6 @@ namespace Google\Service\ChromePolicy;
 
 class GoogleChromePolicyV1ResolvedPolicy extends \Google\Model
 {
-  protected $addedSourceKeyType = GoogleChromePolicyV1PolicyTargetKey::class;
-  protected $addedSourceKeyDataType = '';
   protected $sourceKeyType = GoogleChromePolicyV1PolicyTargetKey::class;
   protected $sourceKeyDataType = '';
   protected $targetKeyType = GoogleChromePolicyV1PolicyTargetKey::class;
@@ -28,20 +26,6 @@ class GoogleChromePolicyV1ResolvedPolicy extends \Google\Model
   protected $valueType = GoogleChromePolicyV1PolicyValue::class;
   protected $valueDataType = '';
 
-  /**
-   * @param GoogleChromePolicyV1PolicyTargetKey
-   */
-  public function setAddedSourceKey(GoogleChromePolicyV1PolicyTargetKey $addedSourceKey)
-  {
-    $this->addedSourceKey = $addedSourceKey;
-  }
-  /**
-   * @return GoogleChromePolicyV1PolicyTargetKey
-   */
-  public function getAddedSourceKey()
-  {
-    return $this->addedSourceKey;
-  }
   /**
    * @param GoogleChromePolicyV1PolicyTargetKey
    */

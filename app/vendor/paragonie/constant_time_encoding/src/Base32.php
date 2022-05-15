@@ -60,13 +60,13 @@ abstract class Base32 implements EncoderInterface
     /**
      * Encode into Base32 (RFC 4648)
      *
-     * @param string $binString
+     * @param string $src
      * @return string
      * @throws \TypeError
      */
-    public static function encode(string $binString): string
+    public static function encode(string $src): string
     {
-        return static::doEncode($binString, false, true);
+        return static::doEncode($src, false, true);
     }
     /**
      * Encode into Base32 (RFC 4648)
@@ -367,6 +367,7 @@ abstract class Base32 implements EncoderInterface
                 $err |= ($c0) >> 8;
             }
         }
+        /** @var bool $check */
         $check = ($err === 0);
         if (!$check) {
             throw new \RangeException(

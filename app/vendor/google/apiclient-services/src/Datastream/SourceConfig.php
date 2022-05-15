@@ -23,9 +23,6 @@ class SourceConfig extends \Google\Model
   protected $mysqlSourceConfigDataType = '';
   protected $oracleSourceConfigType = OracleSourceConfig::class;
   protected $oracleSourceConfigDataType = '';
-  /**
-   * @var string
-   */
   public $sourceConnectionProfile;
 
   /**
@@ -56,16 +53,10 @@ class SourceConfig extends \Google\Model
   {
     return $this->oracleSourceConfig;
   }
-  /**
-   * @param string
-   */
   public function setSourceConnectionProfile($sourceConnectionProfile)
   {
     $this->sourceConnectionProfile = $sourceConnectionProfile;
   }
-  /**
-   * @return string
-   */
   public function getSourceConnectionProfile()
   {
     return $this->sourceConnectionProfile;

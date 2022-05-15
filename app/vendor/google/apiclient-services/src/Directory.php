@@ -535,10 +535,6 @@ class Directory extends \Google\Service
                   'location' => 'query',
                   'type' => 'string',
                 ],
-                'orderBy' => [
-                  'location' => 'query',
-                  'type' => 'string',
-                ],
                 'orgUnitId' => [
                   'location' => 'query',
                   'type' => 'string',

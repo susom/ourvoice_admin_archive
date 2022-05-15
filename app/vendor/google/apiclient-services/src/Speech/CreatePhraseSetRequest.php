@@ -21,9 +21,6 @@ class CreatePhraseSetRequest extends \Google\Model
 {
   protected $phraseSetType = PhraseSet::class;
   protected $phraseSetDataType = '';
-  /**
-   * @var string
-   */
   public $phraseSetId;
 
   /**
@@ -40,16 +37,10 @@ class CreatePhraseSetRequest extends \Google\Model
   {
     return $this->phraseSet;
   }
-  /**
-   * @param string
-   */
   public function setPhraseSetId($phraseSetId)
   {
     $this->phraseSetId = $phraseSetId;
   }
-  /**
-   * @return string
-   */
   public function getPhraseSetId()
   {
     return $this->phraseSetId;

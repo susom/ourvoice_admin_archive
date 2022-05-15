@@ -35,19 +35,12 @@ $page = "photo_detail";
 			$project_data   = $snapshot->data();
             $project_tags   = array_key_exists("tags", $project_data) ? $project_data["tags"] : array();
 
-            $project_langs  = array();
-            foreach($project_data["languages"] as $lang){
-                if($gcp_lang = convertGoogleLanguageCode($lang["lang"])){
-//                    if( $gcp_lang == "en-US"){ continue; }
-                    array_push($project_langs, $gcp_lang);
-                }
-            }
-
 			if(!isset($_SESSION["DT"]["project_list"][$proj_idx]["tags"])){
 				$_SESSION["DT"]["project_list"][$proj_idx]["tags"] = array();
 			}
 
             $walk_bounding_geos = json_encode($doc["bounding_geos"]);
+
 
             $photo 		= $doc["photo"];
 			$device 	= $doc["device"]["platform"] ?? null;
@@ -108,17 +101,15 @@ $page = "photo_detail";
 			
 			$photo_tags     = isset($photo["tags"]) ? $photo["tags"] : array();
 			$photo_comment  = str_replace("rnrn", "\r\n\r\n",$photo['text_comment']);
-	        $text_comment   = "<div class='audio_clip'><textarea id='text_comment' name='text_comment' class='keyboard'>".  $photo_comment  ."</textarea><button id='translate'>Translate to English</button></div>";
+	        $text_comment   = "<div class='audio_clip'><textarea id='text_comment' name='text_comment' class='keyboard'>".  $photo_comment  ."</textarea></div>";
 
 			if(isset($photo["audios"])){
 				foreach($photo["audios"] as $filename => $txn){
 					//WONT NEED THIS FOR IOS, BUT FOR NOW CANT TELL DIFF
                     //NEED TO ASSUME THE MP3 will bE THERE I GUESS
 
-                    $filename_mp3   = str_replace(".amr", ".mp3", $filename);
-                    $filename_mp3   = str_replace(".wav", ".mp3", $filename_mp3);
+                    $filename_mp3   = str_replace(".wav", ".mp3", $filename);
                     $attach_url 	= $ds->getStorageFile(cfg::$gcp_bucketName, $_id, $filename_mp3);
-                    $gs_ref         = convertGoogleBucketRef($attach_url);
 
                     //CHECK IF MP3 is THERE BEFORE SHOWING ANYTHING SHEEET
                     $file_check     = get_head($attach_url);
@@ -132,6 +123,12 @@ $page = "photo_detail";
                     $audio_src 		= $attach_url;
 					$just_file 		= $attach_url;
 					$script 		= "";
+
+                    //ADD AUTO TRANSCRIBE BACK HERE
+	    //             $audio_src 		= getConvertedAudio($attach_url, $lang);
+	    //             $just_file 		= str_replace("./temp/","",$audio_src);
+					// $confidence 	= appendConfidence($attach_url);
+					// $script 		= !empty($confidence) ? "This audio was transcribed using Google's API at ".round($confidence*100,2)."% confidence" : "";
 
 					//Works for archaic saving scheme as well as the new one :
                     $start_text     = "";
@@ -152,7 +149,7 @@ $page = "photo_detail";
 												</audio> 
 												<a class='refresh_audio' href='$just_file' title='Audio not working?  Click to refresh.'>&#8635;</a> 
 												<div class='forprint'>$transcription</div>
-												<label><textarea class='audio_txn' name='$filename' data-gs_ref='$gs_ref' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea></label>
+												<textarea class='audio_txn' name='$filename' placeholder='Click the icon and transcribe what you hear'>$transcription</textarea>
 												<p id = 'confidence_exerpt'>$script</p>
 					 						</div>";
 				}
@@ -228,10 +225,7 @@ $page = "photo_detail";
 					$text_comment
 					
 					$audio_attachments
-					
-					<div style='text-align:center'>
-					<button type='submit' id='save_txns'>Save Transcriptions</button>
-					</div>
+					<input type='submit' id='save_txns' value='Save Transcriptions'/>
 				</aside>";
 
 			if(count($prevnext)> 0){
@@ -251,8 +245,6 @@ $page = "photo_detail";
 			echo "</form>";
 		}
 
-
-
 		include("inc/modal_tag.php");
 		?>
 	</div>
@@ -264,10 +256,7 @@ $page = "photo_detail";
 <script src="js/jquery-ui.js"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
 <script>
-var ajax_handler    = "ajaxHandler.php";
-var proj_langs      = <?=json_encode($project_langs)?>;
-proj_langs.reverse();
-
+var ajax_handler = "ajaxHandler.php";
 function addmarker(latilongi,map_id) {
     var marker = new google.maps.Marker({
         position  : latilongi,
@@ -320,6 +309,185 @@ function saveTag(doc_id,photo_i,tagtxt,proj_idx){
 	});
 	return;
 }
+
+$(document).ready(function(){
+	<?php
+		echo implode($gmaps);
+	?>
+	if(!$("#long").attr('value') && !$("#lat").attr('value')){
+		$("#cover").append("<p>No location data was found. Please enable location services on future walks</p>");
+		$("#cover").css("background-color","rgba(248,247,216,0.7)").css("z-index","2");
+
+	}
+
+	$("#pixelate").on("click", function(){
+		var doc_id 	= $(".preview span").parent().data("doc_id"); //AFUM23894572093482093.. etc
+		var photo_i = $(".preview span").parent().data("photo_i"); //Photo1.jpg
+		var rotationOffset = $(".preview").attr("rev"); // rotation
+
+		console.log(rotationOffset);
+		$("#pixelateSubmit").off(); //on reclick, turn off events
+		$(".covering_canvas").off();
+		if($("#pixelate").css("background-color") == 'rgb(255, 0, 0)'){
+			$("#pixelate").css("background-color","#4CAF50");
+			$(".covering_canvas").css("cursor", "");
+			$("#pixelateSubmit").addClass("hidden");
+		}else{
+			$("#pixelate").css("background-color","red");
+			$("#pixelateSubmit").removeClass("hidden");
+			drawPixelation(doc_id, photo_i,rotationOffset);		
+		}
+
+	});
+
+	window.snd_o           = null;
+	$(".audio").click(function(){
+		var soundclip 	= $(this).attr("href");
+		window.snd_o	= new Audio(soundclip);
+		window.snd_o.play();
+		return false;
+	});
+
+	$(".preview span").click(function(){
+        var _el = $(this);
+        $(this).parent().addClass("temp_rotate");
+
+        setTimeout(function(){
+            _el.removeClass("temp_rotate");
+        }, 1500);
+
+		var rotate = $(this).parent().attr("rev");
+		if(rotate < 3){
+			rotate++;
+		}else{
+			rotate = 0;
+		}
+		$(this).parent().attr("rev",rotate);
+
+		var doc_id 	= $(this).parent().data("doc_id");
+		var photo_i = $(this).parent().data("photo_i");
+		$.ajax({
+		  method: "POST",
+		  url: ajax_handler,
+		  data: { doc_id: doc_id, photo_i: photo_i, rotate: rotate, action:"rotation" },
+		  dataType: "text",
+		  success:function(result){
+              if(!_el.hasClass("temp_rotate")){
+                  location.href=location.href;
+              }else{
+                  console.log("still clicking");
+              }
+	      },
+	      error:function(e){
+	      	console.log(e);
+	      }
+		}).done(function( msg ) {
+			// alert( "Data Saved: " + msg );
+		});
+		
+		return false;
+	});
+
+	autosize($('textarea'));
+
+	$("#tags").on("click",".deletetag",function(){
+		// get the tag index/photo index
+		var doc_id 	= $(this).data("doc_id");
+		var photo_i = $(this).data("photo_i");
+		var tagtxt 	= $(this).data("deletetag");
+		
+		var _this 	= $(this);
+		$.ajax({
+			method: "POST",
+			url: ajax_handler,
+			data: { doc_id: doc_id, photo_i: photo_i, delete_tag_text: tagtxt, action:"delete_tag_text"}
+		}).done(function( msg ) {
+            _this.parent("li").fadeOut("medium",function(){
+				_this.remove();
+			});
+		});
+		return false;
+	});
+	
+	$("#newtag").on("click",".tagphoto",function(){
+		// get the tag index/photo index
+		var doc_id 	= $(this).data("doc_id");
+		var photo_i = $(this).data("photo_i");
+		var tagtxt	= $(this).text();
+
+		saveTag(doc_id,photo_i,tagtxt);
+
+		//close tag picker
+		$(document).click();
+		return false;
+	});
+
+	$("#newtag form").submit(function(){
+		var doc_id 		= $("#newtag_txt").data("doc_id");
+		var photo_i 	= $("#newtag_txt").data("photo_i");
+		var proj_idx 	= $("#newtag_txt").data("proj_idx");
+		var tagtxt 		= $("#newtag_txt").val();
+
+		if(tagtxt){
+			$("#newtag_txt").val("");
+			
+			// add tag to project's tags and update disc_project
+			// ADD new tag to UI
+			saveTag(doc_id,photo_i,tagtxt,proj_idx);
+
+			//close tag picker?
+			setTimeout(function(){
+				$(document).click();
+			},750);
+		}
+		return false
+	});
+
+	$(".opentag").click(function(){
+		//opens up the tag picker modal
+		$("#newtag").fadeIn("fast");
+	
+		return false;
+	});
+
+	$("#photo_detail").submit(function(e){
+	    e.preventDefault();
+        var _id     = $('input[name=doc_id]').val();
+        var _i      = $('input[name=photo_i]').val();
+        var data    = {doc_id : _id, photo_i : _i };
+
+        var changed = $("textarea[data-dirty='true']");
+        if(changed.length){
+            $("#save_txns").addClass("waiting", function(){
+                var _el = $(this);
+                setTimeout(function(){
+                    _el.removeClass("waiting");
+                },2000);
+            });
+            changed.each(function(){
+                var prop    = $(this).attr("name");
+                var val     = $(this).val();
+
+                data["prop"]    = prop;
+                data["text"]    = val;
+                data["action"]  = prop == "text_comment" ? "save_text_comment" : "save_audio_txn";
+                $.ajax({
+                    method: "POST",
+                    url: ajax_handler,
+                    data: data,
+                    success:function(response){
+                        // window.location.reload(true);
+                        $("#save_txns").removeClass("waiting");
+                    }
+                });
+            });
+        }
+    });
+
+	$("#text_comment, .audio_txn").change(function(){
+	    $(this).attr("data-dirty",true);
+    });
+});
 
 function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 	var canvas = $(".covering_canvas")[0];
@@ -420,270 +588,6 @@ function setCanvas(canvas, rotationOffset, width_pic, height_pic){
 			break;
 	}
 }
-
-$(document).ready(function(){
-    <?php
-    echo implode($gmaps);
-    ?>
-    if(!$("#long").attr('value') && !$("#lat").attr('value')){
-        $("#cover").append("<p>No location data was found. Please enable location services on future walks</p>");
-        $("#cover").css("background-color","rgba(248,247,216,0.7)").css("z-index","2");
-    }
-
-    $("#pixelate").on("click", function(){
-        var doc_id 	= $(".preview span").parent().data("doc_id"); //AFUM23894572093482093.. etc
-        var photo_i = $(".preview span").parent().data("photo_i"); //Photo1.jpg
-        var rotationOffset = $(".preview").attr("rev"); // rotation
-
-        console.log(rotationOffset);
-        $("#pixelateSubmit").off(); //on reclick, turn off events
-        $(".covering_canvas").off();
-        if($("#pixelate").css("background-color") == 'rgb(255, 0, 0)'){
-            $("#pixelate").css("background-color","#4CAF50");
-            $(".covering_canvas").css("cursor", "");
-            $("#pixelateSubmit").addClass("hidden");
-        }else{
-            $("#pixelate").css("background-color","red");
-            $("#pixelateSubmit").removeClass("hidden");
-            drawPixelation(doc_id, photo_i,rotationOffset);
-        }
-
-    });
-
-    window.snd_o           = null;
-    $(".audio").click(function(){
-        var soundclip 	= $(this).attr("href");
-        window.snd_o	= new Audio(soundclip);
-        window.snd_o.play();
-        return false;
-    });
-
-    $(".preview span").click(function(){
-        var _el = $(this);
-        $(this).parent().addClass("temp_rotate");
-
-        setTimeout(function(){
-            _el.removeClass("temp_rotate");
-        }, 1500);
-
-        var rotate = $(this).parent().attr("rev");
-        if(rotate < 3){
-            rotate++;
-        }else{
-            rotate = 0;
-        }
-        $(this).parent().attr("rev",rotate);
-
-        var doc_id 	= $(this).parent().data("doc_id");
-        var photo_i = $(this).parent().data("photo_i");
-        $.ajax({
-            method: "POST",
-            url: ajax_handler,
-            data: { doc_id: doc_id, photo_i: photo_i, rotate: rotate, action:"rotation" },
-            dataType: "text",
-            success:function(result){
-                if(!_el.hasClass("temp_rotate")){
-                    location.href=location.href;
-                }else{
-                    console.log("still clicking");
-                }
-            },
-            error:function(e){
-                console.log(e);
-            }
-        }).done(function( msg ) {
-            // alert( "Data Saved: " + msg );
-        });
-
-        return false;
-    });
-
-    autosize($('textarea'));
-
-    $("#tags").on("click",".deletetag",function(){
-        // get the tag index/photo index
-        var doc_id 	= $(this).data("doc_id");
-        var photo_i = $(this).data("photo_i");
-        var tagtxt 	= $(this).data("deletetag");
-
-        var _this 	= $(this);
-        $.ajax({
-            method: "POST",
-            url: ajax_handler,
-            data: { doc_id: doc_id, photo_i: photo_i, delete_tag_text: tagtxt, action:"delete_tag_text"}
-        }).done(function( msg ) {
-            _this.parent("li").fadeOut("medium",function(){
-                _this.remove();
-            });
-        });
-        return false;
-    });
-
-    $("#newtag").on("click",".tagphoto",function(){
-        // get the tag index/photo index
-        var doc_id 	= $(this).data("doc_id");
-        var photo_i = $(this).data("photo_i");
-        var tagtxt	= $(this).text();
-
-        saveTag(doc_id,photo_i,tagtxt);
-
-        //close tag picker
-        $(document).click();
-        return false;
-    });
-
-    $("#newtag form").submit(function(){
-        var doc_id 		= $("#newtag_txt").data("doc_id");
-        var photo_i 	= $("#newtag_txt").data("photo_i");
-        var proj_idx 	= $("#newtag_txt").data("proj_idx");
-        var tagtxt 		= $("#newtag_txt").val();
-
-        if(tagtxt){
-            $("#newtag_txt").val("");
-
-            // add tag to project's tags and update disc_project
-            // ADD new tag to UI
-            saveTag(doc_id,photo_i,tagtxt,proj_idx);
-
-            //close tag picker?
-            setTimeout(function(){
-                $(document).click();
-            },750);
-        }
-        return false
-    });
-
-    $(".opentag").click(function(){
-        //opens up the tag picker modal
-        $("#newtag").fadeIn("fast");
-
-        return false;
-    });
-
-    $("#photo_detail").submit(function(e){
-        e.preventDefault();
-        var _id     = $('input[name=doc_id]').val();
-        var _i      = $('input[name=photo_i]').val();
-        var data    = {doc_id : _id, photo_i : _i };
-
-        var changed = $("textarea[data-dirty='true']");
-
-        if(changed.length){
-            changed.each(function(){
-                var prop    = $(this).attr("name");
-                var val     = $(this).val();
-
-                data["prop"]    = prop;
-                data["text"]    = val;
-                data["action"]  = prop == "text_comment" ? "save_text_comment" : "save_audio_txn";
-
-                $("#save_txns").attr("disabled", true).addClass("ajax");
-                $.ajax({
-                    method: "POST",
-                    url: ajax_handler,
-                    data: data,
-                    success:function(response){
-                        // window.location.reload(true);
-                        $("#save_txns").attr("disabled", false).removeClass("waiting").removeClass("ajax");
-                    }
-                });
-            });
-        }else{
-            //nothing to save
-            $("#save_txns").attr("disabled", false).removeClass("ajax");
-        }
-    });
-    $("#save_txns").on("click",function(e){
-        e.preventDefault();
-        $("#save_txns").attr("disabled", true).addClass("ajax");
-        $("#photo_detail").submit();
-    });
-
-    $("#text_comment, .audio_txn").change(function(){
-        console.log("dirtying some textareas");
-        $(this).attr("data-dirty",true);
-    });
-
-    //DETECT LANGUAGE IN text_comment
-    if($("#text_comment").val().trim()){
-        var text = $("#text_comment").val().trim();
-        $.ajax({
-            method: "POST",
-            url: ajax_handler,
-            data: { text: text,  action:"detectLanguage"},
-            dataType : "JSON",
-            success:function(response){
-                console.log(response);
-                if(response.hasOwnProperty("languageCode") && response.languageCode !== "en"){
-                    $("#translate").html("Translate " + response.languageCode + " to English");
-                    $("#translate").show();
-                }
-            },
-            error: function(e){
-                console.log("detectLanguage error", e);
-            }
-        });
-    }
-    //INLINE TRANSLATE
-    $("#translate").on("click", function(e){
-        e.preventDefault();
-        var text = $("#text_comment").val();
-
-        var _this = $(this);
-        _this.attr("disabled",true).addClass("ajax");
-        $.ajax({
-            method: "POST",
-            url: ajax_handler,
-            data: { text: text,  action:"translateText"},
-            dataType : "JSON",
-            success:function(response){
-                console.log(response);
-                var translation = response.hasOwnProperty("text") ? "\r\n" + response.text : "";
-                var cur_height  = $("#text_comment").height();
-                var new_height  = (cur_height * 2);
-                $("#text_comment").height(new_height).val(text + translation).trigger("change");
-                _this.attr("disabled",false).removeClass("ajax");
-            },
-            error: function(e){
-                console.log("translateText error", e);
-            }
-        });
-    });
-
-    //DETECT AUDIO FILES THAT NEED TRANSCRIBING, DO IT INLINE FOR NOW, BUT LATER DO IT AUTOMATED STYLE
-    if($(".audio_txn").length){
-        $(".audio_txn").each(function(){
-            var text = $(this).val().trim();
-            if(!text){
-                var gs_ref  = $(this).data("gs_ref");
-                var data    = { gs_ref: gs_ref, proj_langs: proj_langs,  action:"transcribeAudio"};
-
-                var _el     = $(this);
-                var _par    = _el.parent();
-                _el.attr("disabled",true);
-                _par.addClass("txn_ajax");
-                $.ajax({
-                    method: "POST",
-                    url: ajax_handler,
-                    data: data,
-                    dataType : "JSON",
-                    success:function(response){
-                        console.log(response);
-                        if(response.hasOwnProperty("transcript")){
-                            _el.val(response["transcript"]);
-                            _el.attr("disabled",false);
-                            _par.removeClass("txn_ajax");
-                            _el.trigger("change");
-                        }
-                    },
-                    error: function(e){
-                        console.log("transcribeAudio error", e);
-                    }
-                });
-            }
-        });
-    }
-});
 
 $(document).on('click', function(event) {
 	if (!$(event.target).closest('#newtag').length ) {

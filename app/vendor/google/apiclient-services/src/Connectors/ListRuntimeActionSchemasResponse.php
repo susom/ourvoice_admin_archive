@@ -20,23 +20,14 @@ namespace Google\Service\Connectors;
 class ListRuntimeActionSchemasResponse extends \Google\Collection
 {
   protected $collection_key = 'runtimeActionSchemas';
-  /**
-   * @var string
-   */
   public $nextPageToken;
   protected $runtimeActionSchemasType = RuntimeActionSchema::class;
   protected $runtimeActionSchemasDataType = 'array';
 
-  /**
-   * @param string
-   */
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
-  /**
-   * @return string
-   */
   public function getNextPageToken()
   {
     return $this->nextPageToken;

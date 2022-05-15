@@ -19,21 +19,12 @@ namespace Google\Service\Container;
 
 class AdvancedMachineFeatures extends \Google\Model
 {
-  /**
-   * @var string
-   */
   public $threadsPerCore;
 
-  /**
-   * @param string
-   */
   public function setThreadsPerCore($threadsPerCore)
   {
     $this->threadsPerCore = $threadsPerCore;
   }
-  /**
-   * @return string
-   */
   public function getThreadsPerCore()
   {
     return $this->threadsPerCore;

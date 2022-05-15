@@ -20,9 +20,6 @@ namespace Google\Service\ChromePolicy;
 class GoogleChromePolicyV1PolicySchema extends \Google\Collection
 {
   protected $collection_key = 'validTargetResources';
-  /**
-   * @var string[]
-   */
   public $accessRestrictions;
   protected $additionalTargetKeyNamesType = GoogleChromePolicyV1AdditionalTargetKeyName::class;
   protected $additionalTargetKeyNamesDataType = 'array';
@@ -30,41 +27,20 @@ class GoogleChromePolicyV1PolicySchema extends \Google\Collection
   protected $definitionDataType = '';
   protected $fieldDescriptionsType = GoogleChromePolicyV1PolicySchemaFieldDescription::class;
   protected $fieldDescriptionsDataType = 'array';
-  /**
-   * @var string
-   */
   public $name;
   protected $noticesType = GoogleChromePolicyV1PolicySchemaNoticeDescription::class;
   protected $noticesDataType = 'array';
   protected $policyApiLifeycleType = ChromeCrosDpanelAutosettingsProtoPolicyApiLifecycle::class;
   protected $policyApiLifeycleDataType = '';
-  /**
-   * @var string
-   */
   public $policyDescription;
-  /**
-   * @var string
-   */
   public $schemaName;
-  /**
-   * @var string
-   */
   public $supportUri;
-  /**
-   * @var string[]
-   */
   public $validTargetResources;
 
-  /**
-   * @param string[]
-   */
   public function setAccessRestrictions($accessRestrictions)
   {
     $this->accessRestrictions = $accessRestrictions;
   }
-  /**
-   * @return string[]
-   */
   public function getAccessRestrictions()
   {
     return $this->accessRestrictions;
@@ -111,16 +87,10 @@ class GoogleChromePolicyV1PolicySchema extends \Google\Collection
   {
     return $this->fieldDescriptions;
   }
-  /**
-   * @param string
-   */
   public function setName($name)
   {
     $this->name = $name;
   }
-  /**
-   * @return string
-   */
   public function getName()
   {
     return $this->name;
@@ -153,58 +123,34 @@ class GoogleChromePolicyV1PolicySchema extends \Google\Collection
   {
     return $this->policyApiLifeycle;
   }
-  /**
-   * @param string
-   */
   public function setPolicyDescription($policyDescription)
   {
     $this->policyDescription = $policyDescription;
   }
-  /**
-   * @return string
-   */
   public function getPolicyDescription()
   {
     return $this->policyDescription;
   }
-  /**
-   * @param string
-   */
   public function setSchemaName($schemaName)
   {
     $this->schemaName = $schemaName;
   }
-  /**
-   * @return string
-   */
   public function getSchemaName()
   {
     return $this->schemaName;
   }
-  /**
-   * @param string
-   */
   public function setSupportUri($supportUri)
   {
     $this->supportUri = $supportUri;
   }
-  /**
-   * @return string
-   */
   public function getSupportUri()
   {
     return $this->supportUri;
   }
-  /**
-   * @param string[]
-   */
   public function setValidTargetResources($validTargetResources)
   {
     $this->validTargetResources = $validTargetResources;
   }
-  /**
-   * @return string[]
-   */
   public function getValidTargetResources()
   {
     return $this->validTargetResources;

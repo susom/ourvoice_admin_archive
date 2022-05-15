@@ -19,8 +19,6 @@ namespace Google\Service\GKEHub;
 
 class MembershipEndpoint extends \Google\Model
 {
-  protected $edgeClusterType = EdgeCluster::class;
-  protected $edgeClusterDataType = '';
   protected $gkeClusterType = GkeCluster::class;
   protected $gkeClusterDataType = '';
   protected $kubernetesMetadataType = KubernetesMetadata::class;
@@ -32,20 +30,6 @@ class MembershipEndpoint extends \Google\Model
   protected $onPremClusterType = OnPremCluster::class;
   protected $onPremClusterDataType = '';
 
-  /**
-   * @param EdgeCluster
-   */
-  public function setEdgeCluster(EdgeCluster $edgeCluster)
-  {
-    $this->edgeCluster = $edgeCluster;
-  }
-  /**
-   * @return EdgeCluster
-   */
-  public function getEdgeCluster()
-  {
-    return $this->edgeCluster;
-  }
   /**
    * @param GkeCluster
    */

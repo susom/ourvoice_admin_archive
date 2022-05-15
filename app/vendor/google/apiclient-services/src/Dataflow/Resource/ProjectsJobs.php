@@ -63,8 +63,7 @@ class ProjectsJobs extends \Google\Service\Resource
    * `projects.locations.jobs.create` with a [regional endpoint]
    * (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints). Using
    * `projects.jobs.create` is not recommended, as your job will always start in
-   * `us-central1`. Do not enter confidential information when you supply string
-   * values using the API. (jobs.create)
+   * `us-central1`. (jobs.create)
    *
    * @param string $projectId The ID of the Cloud Platform project that the job
    * belongs to.

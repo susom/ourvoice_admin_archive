@@ -22,9 +22,6 @@ class SpeechAdaptation extends \Google\Collection
   protected $collection_key = 'phraseSets';
   protected $customClassesType = CustomClass::class;
   protected $customClassesDataType = 'array';
-  /**
-   * @var string[]
-   */
   public $phraseSetReferences;
   protected $phraseSetsType = PhraseSet::class;
   protected $phraseSetsDataType = 'array';
@@ -43,16 +40,10 @@ class SpeechAdaptation extends \Google\Collection
   {
     return $this->customClasses;
   }
-  /**
-   * @param string[]
-   */
   public function setPhraseSetReferences($phraseSetReferences)
   {
     $this->phraseSetReferences = $phraseSetReferences;
   }
-  /**
-   * @return string[]
-   */
   public function getPhraseSetReferences()
   {
     return $this->phraseSetReferences;

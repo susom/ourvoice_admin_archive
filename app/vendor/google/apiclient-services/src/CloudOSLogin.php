@@ -49,6 +49,7 @@ class CloudOSLogin extends \Google\Service
 
   public $users;
   public $users_projects;
+  public $users_sshPublicKey;
   public $users_sshPublicKeys;
 
   /**
@@ -129,14 +130,14 @@ class CloudOSLogin extends \Google\Service
           ]
         ]
     );
-    $this->users_sshPublicKeys = new CloudOSLogin\Resource\UsersSshPublicKeys(
+    $this->users_sshPublicKey = new CloudOSLogin\Resource\UsersSshPublicKey(
         $this,
         $this->serviceName,
-        'sshPublicKeys',
+        'sshPublicKey',
         [
           'methods' => [
             'create' => [
-              'path' => 'v1/{+parent}/sshPublicKeys',
+              'path' => 'v1/{+parent}/sshPublicKey',
               'httpMethod' => 'POST',
               'parameters' => [
                 'parent' => [
@@ -145,7 +146,17 @@ class CloudOSLogin extends \Google\Service
                   'required' => true,
                 ],
               ],
-            ],'delete' => [
+            ],
+          ]
+        ]
+    );
+    $this->users_sshPublicKeys = new CloudOSLogin\Resource\UsersSshPublicKeys(
+        $this,
+        $this->serviceName,
+        'sshPublicKeys',
+        [
+          'methods' => [
+            'delete' => [
               'path' => 'v1/{+name}',
               'httpMethod' => 'DELETE',
               'parameters' => [

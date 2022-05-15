@@ -15,12 +15,13 @@
 
 namespace phpseclib3\Crypt\Common;
 
-use phpseclib3\Crypt\DSA;
+use phpseclib3\Exception\UnsupportedFormatException;
+use phpseclib3\Exception\NoKeyLoadedException;
+use phpseclib3\Math\BigInteger;
 use phpseclib3\Crypt\Hash;
 use phpseclib3\Crypt\RSA;
-use phpseclib3\Exception\NoKeyLoadedException;
-use phpseclib3\Exception\UnsupportedFormatException;
-use phpseclib3\Math\BigInteger;
+use phpseclib3\Crypt\DSA;
+use phpseclib3\Crypt\ECDSA;
 
 /**
  * Base Class for all asymmetric cipher classes
@@ -123,12 +124,6 @@ abstract class AsymmetricKey
     private $comment;
 
     /**
-     * @param string $type
-     * @return string
-     */
-    abstract public function toString($type, array $options = []);
-
-    /**
      * The constructor
      */
     protected function __construct()
@@ -145,7 +140,7 @@ abstract class AsymmetricKey
     protected static function initialize_static_variables()
     {
         if (!isset(self::$zero)) {
-            self::$zero = new BigInteger(0);
+            self::$zero= new BigInteger(0);
             self::$one = new BigInteger(1);
         }
 
@@ -250,7 +245,7 @@ abstract class AsymmetricKey
      * @param string $type
      * @param string $key
      * @param string $password optional
-     * @return static
+     * @return AsymmetricKey
      */
     public static function loadFormat($type, $key, $password = false)
     {
@@ -337,7 +332,7 @@ abstract class AsymmetricKey
      * @param string $method optional
      * @return mixed
      */
-    protected static function validatePlugin($format, $type, $method = null)
+    protected static function validatePlugin($format, $type, $method = NULL)
     {
         $type = strtolower($type);
         if (!isset(self::$plugins[static::ALGORITHM][$format][$type])) {
@@ -519,7 +514,7 @@ abstract class AsymmetricKey
      */
     public function getHash()
     {
-        return clone $this->hash;
+       return clone $this->hash;
     }
 
     /**
@@ -581,7 +576,7 @@ abstract class AsymmetricKey
         $rolen = $this->q->getLengthInBytes();
         if (strlen($out) < $rolen) {
             return str_pad($out, $rolen, "\0", STR_PAD_LEFT);
-        } elseif (strlen($out) > $rolen) {
+        } else if (strlen($out) > $rolen) {
             return substr($out, -$rolen);
         } else {
             return $out;

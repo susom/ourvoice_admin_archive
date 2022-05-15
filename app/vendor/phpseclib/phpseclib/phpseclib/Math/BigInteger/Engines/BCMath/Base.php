@@ -54,11 +54,11 @@ abstract class Base extends BCMath
     /**
      * Performs modular exponentiation.
      *
-     * @param BCMath $x
-     * @param BCMath $e
-     * @param BCMath $n
+     * @param \phpseclib3\Math\BigInteger\Engines\BCMath $x
+     * @param \phpseclib3\Math\BigInteger\Engines\BCMath $e
+     * @param \phpseclib3\Math\BigInteger\Engines\BCMath $n
      * @param string $class
-     * @return BCMath
+     * @return \phpseclib3\Math\BigInteger\Engines\BCMath
      */
     protected static function powModHelper(BCMath $x, BCMath $e, BCMath $n, $class)
     {

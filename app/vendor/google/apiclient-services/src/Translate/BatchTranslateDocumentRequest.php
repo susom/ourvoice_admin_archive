@@ -20,39 +20,21 @@ namespace Google\Service\Translate;
 class BatchTranslateDocumentRequest extends \Google\Collection
 {
   protected $collection_key = 'targetLanguageCodes';
-  /**
-   * @var string[]
-   */
   public $formatConversions;
   protected $glossariesType = TranslateTextGlossaryConfig::class;
   protected $glossariesDataType = 'map';
   protected $inputConfigsType = BatchDocumentInputConfig::class;
   protected $inputConfigsDataType = 'array';
-  /**
-   * @var string[]
-   */
   public $models;
   protected $outputConfigType = BatchDocumentOutputConfig::class;
   protected $outputConfigDataType = '';
-  /**
-   * @var string
-   */
   public $sourceLanguageCode;
-  /**
-   * @var string[]
-   */
   public $targetLanguageCodes;
 
-  /**
-   * @param string[]
-   */
   public function setFormatConversions($formatConversions)
   {
     $this->formatConversions = $formatConversions;
   }
-  /**
-   * @return string[]
-   */
   public function getFormatConversions()
   {
     return $this->formatConversions;
@@ -85,16 +67,10 @@ class BatchTranslateDocumentRequest extends \Google\Collection
   {
     return $this->inputConfigs;
   }
-  /**
-   * @param string[]
-   */
   public function setModels($models)
   {
     $this->models = $models;
   }
-  /**
-   * @return string[]
-   */
   public function getModels()
   {
     return $this->models;
@@ -113,30 +89,18 @@ class BatchTranslateDocumentRequest extends \Google\Collection
   {
     return $this->outputConfig;
   }
-  /**
-   * @param string
-   */
   public function setSourceLanguageCode($sourceLanguageCode)
   {
     $this->sourceLanguageCode = $sourceLanguageCode;
   }
-  /**
-   * @return string
-   */
   public function getSourceLanguageCode()
   {
     return $this->sourceLanguageCode;
   }
-  /**
-   * @param string[]
-   */
   public function setTargetLanguageCodes($targetLanguageCodes)
   {
     $this->targetLanguageCodes = $targetLanguageCodes;
   }
-  /**
-   * @return string[]
-   */
   public function getTargetLanguageCodes()
   {
     return $this->targetLanguageCodes;

@@ -19,21 +19,12 @@ namespace Google\Service\Connectors;
 
 class Secret extends \Google\Model
 {
-  /**
-   * @var string
-   */
   public $secretVersion;
 
-  /**
-   * @param string
-   */
   public function setSecretVersion($secretVersion)
   {
     $this->secretVersion = $secretVersion;
   }
-  /**
-   * @return string
-   */
   public function getSecretVersion()
   {
     return $this->secretVersion;

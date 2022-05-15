@@ -20,63 +20,29 @@ namespace Google\Service\DisplayVideo;
 class LineItem extends \Google\Collection
 {
   protected $collection_key = 'warningMessages';
-  /**
-   * @var string
-   */
   public $advertiserId;
   protected $bidStrategyType = BiddingStrategy::class;
   protected $bidStrategyDataType = '';
   protected $budgetType = LineItemBudget::class;
   protected $budgetDataType = '';
-  /**
-   * @var string
-   */
   public $campaignId;
   protected $conversionCountingType = ConversionCountingConfig::class;
   protected $conversionCountingDataType = '';
-  /**
-   * @var string[]
-   */
   public $creativeIds;
-  /**
-   * @var string
-   */
   public $displayName;
-  /**
-   * @var string
-   */
   public $entityStatus;
-  /**
-   * @var bool
-   */
-  public $excludeNewExchanges;
   protected $flightType = LineItemFlight::class;
   protected $flightDataType = '';
   protected $frequencyCapType = FrequencyCap::class;
   protected $frequencyCapDataType = '';
-  /**
-   * @var string
-   */
   public $insertionOrderId;
   protected $integrationDetailsType = IntegrationDetails::class;
   protected $integrationDetailsDataType = '';
-  /**
-   * @var string[]
-   */
   public $inventorySourceIds;
-  /**
-   * @var string
-   */
   public $lineItemId;
-  /**
-   * @var string
-   */
   public $lineItemType;
   protected $mobileAppType = MobileApp::class;
   protected $mobileAppDataType = '';
-  /**
-   * @var string
-   */
   public $name;
   protected $pacingType = Pacing::class;
   protected $pacingDataType = '';
@@ -84,31 +50,15 @@ class LineItem extends \Google\Collection
   protected $partnerCostsDataType = 'array';
   protected $partnerRevenueModelType = PartnerRevenueModel::class;
   protected $partnerRevenueModelDataType = '';
-  /**
-   * @var string
-   */
-  public $reservationType;
   protected $targetingExpansionType = TargetingExpansionConfig::class;
   protected $targetingExpansionDataType = '';
-  /**
-   * @var string
-   */
   public $updateTime;
-  /**
-   * @var string[]
-   */
   public $warningMessages;
 
-  /**
-   * @param string
-   */
   public function setAdvertiserId($advertiserId)
   {
     $this->advertiserId = $advertiserId;
   }
-  /**
-   * @return string
-   */
   public function getAdvertiserId()
   {
     return $this->advertiserId;
@@ -141,16 +91,10 @@ class LineItem extends \Google\Collection
   {
     return $this->budget;
   }
-  /**
-   * @param string
-   */
   public function setCampaignId($campaignId)
   {
     $this->campaignId = $campaignId;
   }
-  /**
-   * @return string
-   */
   public function getCampaignId()
   {
     return $this->campaignId;
@@ -169,61 +113,29 @@ class LineItem extends \Google\Collection
   {
     return $this->conversionCounting;
   }
-  /**
-   * @param string[]
-   */
   public function setCreativeIds($creativeIds)
   {
     $this->creativeIds = $creativeIds;
   }
-  /**
-   * @return string[]
-   */
   public function getCreativeIds()
   {
     return $this->creativeIds;
   }
-  /**
-   * @param string
-   */
   public function setDisplayName($displayName)
   {
     $this->displayName = $displayName;
   }
-  /**
-   * @return string
-   */
   public function getDisplayName()
   {
     return $this->displayName;
   }
-  /**
-   * @param string
-   */
   public function setEntityStatus($entityStatus)
   {
     $this->entityStatus = $entityStatus;
   }
-  /**
-   * @return string
-   */
   public function getEntityStatus()
   {
     return $this->entityStatus;
-  }
-  /**
-   * @param bool
-   */
-  public function setExcludeNewExchanges($excludeNewExchanges)
-  {
-    $this->excludeNewExchanges = $excludeNewExchanges;
-  }
-  /**
-   * @return bool
-   */
-  public function getExcludeNewExchanges()
-  {
-    return $this->excludeNewExchanges;
   }
   /**
    * @param LineItemFlight
@@ -253,16 +165,10 @@ class LineItem extends \Google\Collection
   {
     return $this->frequencyCap;
   }
-  /**
-   * @param string
-   */
   public function setInsertionOrderId($insertionOrderId)
   {
     $this->insertionOrderId = $insertionOrderId;
   }
-  /**
-   * @return string
-   */
   public function getInsertionOrderId()
   {
     return $this->insertionOrderId;
@@ -281,44 +187,26 @@ class LineItem extends \Google\Collection
   {
     return $this->integrationDetails;
   }
-  /**
-   * @param string[]
-   */
   public function setInventorySourceIds($inventorySourceIds)
   {
     $this->inventorySourceIds = $inventorySourceIds;
   }
-  /**
-   * @return string[]
-   */
   public function getInventorySourceIds()
   {
     return $this->inventorySourceIds;
   }
-  /**
-   * @param string
-   */
   public function setLineItemId($lineItemId)
   {
     $this->lineItemId = $lineItemId;
   }
-  /**
-   * @return string
-   */
   public function getLineItemId()
   {
     return $this->lineItemId;
   }
-  /**
-   * @param string
-   */
   public function setLineItemType($lineItemType)
   {
     $this->lineItemType = $lineItemType;
   }
-  /**
-   * @return string
-   */
   public function getLineItemType()
   {
     return $this->lineItemType;
@@ -337,16 +225,10 @@ class LineItem extends \Google\Collection
   {
     return $this->mobileApp;
   }
-  /**
-   * @param string
-   */
   public function setName($name)
   {
     $this->name = $name;
   }
-  /**
-   * @return string
-   */
   public function getName()
   {
     return $this->name;
@@ -394,20 +276,6 @@ class LineItem extends \Google\Collection
     return $this->partnerRevenueModel;
   }
   /**
-   * @param string
-   */
-  public function setReservationType($reservationType)
-  {
-    $this->reservationType = $reservationType;
-  }
-  /**
-   * @return string
-   */
-  public function getReservationType()
-  {
-    return $this->reservationType;
-  }
-  /**
    * @param TargetingExpansionConfig
    */
   public function setTargetingExpansion(TargetingExpansionConfig $targetingExpansion)
@@ -421,30 +289,18 @@ class LineItem extends \Google\Collection
   {
     return $this->targetingExpansion;
   }
-  /**
-   * @param string
-   */
   public function setUpdateTime($updateTime)
   {
     $this->updateTime = $updateTime;
   }
-  /**
-   * @return string
-   */
   public function getUpdateTime()
   {
     return $this->updateTime;
   }
-  /**
-   * @param string[]
-   */
   public function setWarningMessages($warningMessages)
   {
     $this->warningMessages = $warningMessages;
   }
-  /**
-   * @return string[]
-   */
   public function getWarningMessages()
   {
     return $this->warningMessages;

@@ -19,21 +19,12 @@ namespace Google\Service\ContainerAnalysis;
 
 class ContaineranalysisGoogleDevtoolsCloudbuildV1BuildOptionsPoolOption extends \Google\Model
 {
-  /**
-   * @var string
-   */
   public $name;
 
-  /**
-   * @param string
-   */
   public function setName($name)
   {
     $this->name = $name;
   }
-  /**
-   * @return string
-   */
   public function getName()
   {
     return $this->name;

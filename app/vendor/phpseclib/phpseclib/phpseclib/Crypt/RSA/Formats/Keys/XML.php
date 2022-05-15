@@ -23,10 +23,9 @@
 namespace phpseclib3\Crypt\RSA\Formats\Keys;
 
 use ParagonIE\ConstantTime\Base64;
-use phpseclib3\Common\Functions\Strings;
-use phpseclib3\Exception\BadConfigurationException;
-use phpseclib3\Exception\UnsupportedFormatException;
 use phpseclib3\Math\BigInteger;
+use phpseclib3\Common\Functions\Strings;
+use phpseclib3\Exception\UnsupportedFormatException;
 
 /**
  * XML Formatted RSA Key Handler
@@ -51,10 +50,6 @@ abstract class XML
             throw new \UnexpectedValueException('Key should be a string - not a ' . gettype($key));
         }
 
-        if (!class_exists('DOMDocument')) {
-            throw new BadConfigurationException('The dom extension is not setup correctly on this system');
-        }
-
         $components = [
             'isPublicKey' => false,
             'primes' => [],
@@ -69,7 +64,6 @@ abstract class XML
             $key = '<xml>' . $key . '</xml>';
         }
         if (!$dom->loadXML($key)) {
-            libxml_use_internal_errors($use_errors);
             throw new \UnexpectedValueException('Key does not appear to contain XML');
         }
         $xpath = new \DOMXPath($dom);

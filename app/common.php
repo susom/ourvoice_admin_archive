@@ -548,10 +548,6 @@ function getAllDataPicLI($photo_o){
 }
 
 
-
-
-
-
 //SOME PHOTO PAGE FUNCTIONALITY
 // PHOTO PAGE FUNCTIONS (AUDIO TRANSCRIPTION, FACE PIXELATION)
 function getFullUrl($partialUrl){
@@ -627,11 +623,6 @@ function scanForBackUpFiles($backedup, $backup_dir){
     }
 }
 
-
-
-
-
-
 function getConvertedAudio($attach_url){
     //FIRST DOWNLOAD THE AUDIO FILE to TEMP;
 
@@ -658,7 +649,9 @@ function getConvertedAudio($attach_url){
     return $newAudioPath;
 }
 
-//use Google\Cloud\Speech\SpeechClient;
+
+use Google\Cloud\Speech\SpeechClient;
+
 function transcribeAudio($attach_url, $lang=null){
     $gcp_lang = array(
         "en"    => "en-US",
@@ -905,115 +898,4 @@ function pixelate($image, $pixelate_x = 12, $pixelate_y = 12){
             }
         }
     }
-}
-
-
-//TEXT TRANSLATION
-use Google\Cloud\Translate\TranslateClient;
-function detectLanguage($text){
-    $translationServiceClient = new TranslateClient([
-        'projectId'     => cfg::$gcp_project_id,
-        'keyFilePath'   => cfg::$FireStorekeyPath
-    ]);
-    $formattedParent    = $translationServiceClient->detectLanguage($text);
-
-    return $formattedParent;
-}
-
-function translateToEnglish($text){
-    $formattedParent    = detectLanguage($text);
-    $languageCode       = array_key_exists("languageCode", $formattedParent) ? $formattedParent["languageCode"] : "null";
-    $confidence         = array_key_exists("confidence", $formattedParent) ? $formattedParent["confidence"] : "null";
-
-    $translationServiceClient = new TranslateClient([
-        'projectId'     => cfg::$gcp_project_id,
-        'keyFilePath'   => cfg::$FireStorekeyPath
-    ]);
-    $translation    = $translationServiceClient->translate($text, [$languageCode, "en"]);
-
-
-    return $translation;
-}
-
-//SPEECH TO TEXT
-use Google\Cloud\Speech\V1p1beta1\SpeechClient;
-use Google\Cloud\Speech\V1p1beta1\RecognitionAudio;
-use Google\Cloud\Speech\V1p1beta1\RecognitionConfig;
-use Google\Cloud\Speech\V1p1beta1\RecognitionConfig\AudioEncoding;
-$fskp = cfg::$FireStorekeyPath;
-putenv("GOOGLE_APPLICATION_CREDENTIALS={$fskp}");
-function transcribeSpeech($uri, $alt_language_codes=array()){
-    $main_languageCode = "en-US";
-
-    // change these variables if necessary
-    $encoding           = AudioEncoding::MP3;
-    $sampleRateHertz    = 16000;
-
-    // set string as audio content
-    $audio = (new RecognitionAudio())
-        ->setUri($uri);
-
-    $max_alternatives = count($alt_language_codes) > 1 ? count($alt_language_codes)  : 1;
-    // set config
-    $config = (new RecognitionConfig())
-        ->setEncoding($encoding)
-        ->setSampleRateHertz($sampleRateHertz)
-        ->setLanguageCode($main_languageCode)
-        ->setAlternativeLanguageCodes($alt_language_codes);
-
-    // create the speech client
-    $client     = new SpeechClient();
-
-    // create the asyncronous recognize operation
-    $operation  = $client->longRunningRecognize($config, $audio);
-    $operation->pollUntilComplete();
-
-    if ($operation->operationSucceeded()) {
-        $response = $operation->getResult();
-
-        // each result is for a consecutive portion of the audio. iterate
-        // through them to get the transcripts for the entire audio file.
-        foreach ($response->getResults() as $result) {
-            $alternatives   = $result->getAlternatives();
-            $mostLikely     = $alternatives[0];
-            $transcript     = $mostLikely->getTranscript();
-            $confidence     = $mostLikely->getConfidence();
-            $txn            = array("transcript" => $transcript, "confidence" => $confidence);
-        }
-
-        $client->close();
-        return $txn;
-    } else {
-        $client->close();
-        return $operation->getError();
-    }
-}
-
-function convertGoogleLanguageCode($ov_lang_code){
-    $ret_lang = null;
-    $gcp_lang = array(
-        "en"    => "en-US",
-        "es"    => "es-MX",
-        "nl"    => "nl-NL",
-        "am"    => "am-ET",
-        "ar"    => "ar-AE",
-        "tw"    => "zh-TW",
-        "ch"    => "zh-CN",
-        "pt"    => "pt-PT",
-        "iw"    => "iw-IL",
-        "fr"    => "fr-FR",
-        "sw"    => "sv-SE",
-        "ru"    => "ru-RU",
-        "th"    => "th-TH"
-    );
-
-    if(array_key_exists($ov_lang_code,$gcp_lang)){
-        $ret_lang = $gcp_lang[$ov_lang_code];
-    }
-
-    return $ret_lang;
-}
-
-function convertGoogleBucketRef($uri){
-    return str_replace("https://storage.googleapis.com", "gs:/" ,$uri);
 }

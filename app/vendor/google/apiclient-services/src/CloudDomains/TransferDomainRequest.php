@@ -22,15 +22,9 @@ class TransferDomainRequest extends \Google\Collection
   protected $collection_key = 'contactNotices';
   protected $authorizationCodeType = AuthorizationCode::class;
   protected $authorizationCodeDataType = '';
-  /**
-   * @var string[]
-   */
   public $contactNotices;
   protected $registrationType = Registration::class;
   protected $registrationDataType = '';
-  /**
-   * @var bool
-   */
   public $validateOnly;
   protected $yearlyPriceType = Money::class;
   protected $yearlyPriceDataType = '';
@@ -49,16 +43,10 @@ class TransferDomainRequest extends \Google\Collection
   {
     return $this->authorizationCode;
   }
-  /**
-   * @param string[]
-   */
   public function setContactNotices($contactNotices)
   {
     $this->contactNotices = $contactNotices;
   }
-  /**
-   * @return string[]
-   */
   public function getContactNotices()
   {
     return $this->contactNotices;
@@ -77,16 +65,10 @@ class TransferDomainRequest extends \Google\Collection
   {
     return $this->registration;
   }
-  /**
-   * @param bool
-   */
   public function setValidateOnly($validateOnly)
   {
     $this->validateOnly = $validateOnly;
   }
-  /**
-   * @return bool
-   */
   public function getValidateOnly()
   {
     return $this->validateOnly;

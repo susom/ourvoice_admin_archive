@@ -20,8 +20,6 @@ namespace Google\Service\ChromeManagement;
 class GoogleChromeManagementV1TelemetryDevice extends \Google\Collection
 {
   protected $collection_key = 'storageStatusReport';
-  protected $audioStatusReportType = GoogleChromeManagementV1AudioStatusReport::class;
-  protected $audioStatusReportDataType = 'array';
   protected $batteryInfoType = GoogleChromeManagementV1BatteryInfo::class;
   protected $batteryInfoDataType = 'array';
   protected $batteryStatusReportType = GoogleChromeManagementV1BatteryStatusReport::class;
@@ -30,13 +28,7 @@ class GoogleChromeManagementV1TelemetryDevice extends \Google\Collection
   protected $cpuInfoDataType = 'array';
   protected $cpuStatusReportType = GoogleChromeManagementV1CpuStatusReport::class;
   protected $cpuStatusReportDataType = 'array';
-  /**
-   * @var string
-   */
   public $customer;
-  /**
-   * @var string
-   */
   public $deviceId;
   protected $graphicsInfoType = GoogleChromeManagementV1GraphicsInfo::class;
   protected $graphicsInfoDataType = '';
@@ -46,41 +38,18 @@ class GoogleChromeManagementV1TelemetryDevice extends \Google\Collection
   protected $memoryInfoDataType = '';
   protected $memoryStatusReportType = GoogleChromeManagementV1MemoryStatusReport::class;
   protected $memoryStatusReportDataType = 'array';
-  /**
-   * @var string
-   */
   public $name;
   protected $networkStatusReportType = GoogleChromeManagementV1NetworkStatusReport::class;
   protected $networkStatusReportDataType = 'array';
-  /**
-   * @var string
-   */
   public $orgUnitId;
   protected $osUpdateStatusType = GoogleChromeManagementV1OsUpdateStatus::class;
   protected $osUpdateStatusDataType = 'array';
-  /**
-   * @var string
-   */
   public $serialNumber;
   protected $storageInfoType = GoogleChromeManagementV1StorageInfo::class;
   protected $storageInfoDataType = '';
   protected $storageStatusReportType = GoogleChromeManagementV1StorageStatusReport::class;
   protected $storageStatusReportDataType = 'array';
 
-  /**
-   * @param GoogleChromeManagementV1AudioStatusReport[]
-   */
-  public function setAudioStatusReport($audioStatusReport)
-  {
-    $this->audioStatusReport = $audioStatusReport;
-  }
-  /**
-   * @return GoogleChromeManagementV1AudioStatusReport[]
-   */
-  public function getAudioStatusReport()
-  {
-    return $this->audioStatusReport;
-  }
   /**
    * @param GoogleChromeManagementV1BatteryInfo[]
    */
@@ -137,30 +106,18 @@ class GoogleChromeManagementV1TelemetryDevice extends \Google\Collection
   {
     return $this->cpuStatusReport;
   }
-  /**
-   * @param string
-   */
   public function setCustomer($customer)
   {
     $this->customer = $customer;
   }
-  /**
-   * @return string
-   */
   public function getCustomer()
   {
     return $this->customer;
   }
-  /**
-   * @param string
-   */
   public function setDeviceId($deviceId)
   {
     $this->deviceId = $deviceId;
   }
-  /**
-   * @return string
-   */
   public function getDeviceId()
   {
     return $this->deviceId;
@@ -221,16 +178,10 @@ class GoogleChromeManagementV1TelemetryDevice extends \Google\Collection
   {
     return $this->memoryStatusReport;
   }
-  /**
-   * @param string
-   */
   public function setName($name)
   {
     $this->name = $name;
   }
-  /**
-   * @return string
-   */
   public function getName()
   {
     return $this->name;
@@ -249,16 +200,10 @@ class GoogleChromeManagementV1TelemetryDevice extends \Google\Collection
   {
     return $this->networkStatusReport;
   }
-  /**
-   * @param string
-   */
   public function setOrgUnitId($orgUnitId)
   {
     $this->orgUnitId = $orgUnitId;
   }
-  /**
-   * @return string
-   */
   public function getOrgUnitId()
   {
     return $this->orgUnitId;
@@ -277,16 +222,10 @@ class GoogleChromeManagementV1TelemetryDevice extends \Google\Collection
   {
     return $this->osUpdateStatus;
   }
-  /**
-   * @param string
-   */
   public function setSerialNumber($serialNumber)
   {
     $this->serialNumber = $serialNumber;
   }
-  /**
-   * @return string
-   */
   public function getSerialNumber()
   {
     return $this->serialNumber;

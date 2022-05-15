@@ -38,13 +38,13 @@ class ProjectsLocationsGameServerDeploymentsConfigs extends \Google\Service\Reso
    * (configs.create)
    *
    * @param string $parent Required. The parent resource name, in the following
-   * form: `projects/{project}/locations/{locationId}/gameServerDeployments/{deplo
-   * ymentId}/`.
+   * form: `projects/{project}/locations/{location}/gameServerDeployments/{deploym
+   * ent}/`.
    * @param GameServerConfig $postBody
    * @param array $optParams Optional parameters.
    *
    * @opt_param string configId Required. The ID of the game server config
-   * resource to create.
+   * resource to be created.
    * @return Operation
    */
   public function create($parent, GameServerConfig $postBody, $optParams = [])
@@ -54,12 +54,13 @@ class ProjectsLocationsGameServerDeploymentsConfigs extends \Google\Service\Reso
     return $this->call('create', [$params], Operation::class);
   }
   /**
-   * Deletes a single game server config. The deletion fails if the game server
-   * config is referenced in a game server deployment rollout. (configs.delete)
+   * Deletes a single game server config. The deletion will fail if the game
+   * server config is referenced in a game server deployment rollout.
+   * (configs.delete)
    *
    * @param string $name Required. The name of the game server config to delete,
-   * in the following form: `projects/{project}/locations/{locationId}/gameServerD
-   * eployments/{deploymentId}/configs/{configId}`.
+   * in the following form: `projects/{project}/locations/{location}/gameServerDep
+   * loyments/{deployment}/configs/{config}`.
    * @param array $optParams Optional parameters.
    * @return Operation
    */
@@ -73,8 +74,8 @@ class ProjectsLocationsGameServerDeploymentsConfigs extends \Google\Service\Reso
    * Gets details of a single game server config. (configs.get)
    *
    * @param string $name Required. The name of the game server config to retrieve,
-   * in the following form: `projects/{project}/locations/{locationId}/gameServerD
-   * eployments/{deploymentId}/configs/{configId}`.
+   * in the following form: `projects/{project}/locations/{location}/gameServerDep
+   * loyments/{deployment}/configs/{config}`.
    * @param array $optParams Optional parameters.
    * @return GameServerConfig
    */
@@ -89,20 +90,18 @@ class ProjectsLocationsGameServerDeploymentsConfigs extends \Google\Service\Reso
    * deployment. (configs.listProjectsLocationsGameServerDeploymentsConfigs)
    *
    * @param string $parent Required. The parent resource name, in the following
-   * form: `projects/{project}/locations/{locationId}/gameServerDeployments/{deplo
-   * ymentId}/configs`.
+   * form: `projects/{project}/locations/{location}/gameServerDeployments/{deploym
+   * ent}/configs`.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string filter Optional. The filter to apply to list results (see
-   * [Filtering](https://google.aip.dev/160)).
+   * @opt_param string filter Optional. The filter to apply to list results.
    * @opt_param string orderBy Optional. Specifies the ordering of results
-   * following [Cloud API
-   * syntax](https://cloud.google.com/apis/design/design_patterns#sorting_order).
+   * following syntax at
+   * https://cloud.google.com/apis/design/design_patterns#sorting_order.
    * @opt_param int pageSize Optional. The maximum number of items to return. If
-   * unspecified, the server picks an appropriate default. The server may return
-   * fewer items than requested. A caller should only rely on response's
-   * next_page_token to determine if there are more GameServerConfigs left to be
-   * queried.
+   * unspecified, server will pick an appropriate default. Server may return fewer
+   * items than requested. A caller should only rely on response's next_page_token
+   * to determine if there are more GameServerConfigs left to be queried.
    * @opt_param string pageToken Optional. The next_page_token value returned from
    * a previous list request, if any.
    * @return ListGameServerConfigsResponse

@@ -21,9 +21,6 @@ class UserPassword extends \Google\Model
 {
   protected $passwordType = Secret::class;
   protected $passwordDataType = '';
-  /**
-   * @var string
-   */
   public $username;
 
   /**
@@ -40,16 +37,10 @@ class UserPassword extends \Google\Model
   {
     return $this->password;
   }
-  /**
-   * @param string
-   */
   public function setUsername($username)
   {
     $this->username = $username;
   }
-  /**
-   * @return string
-   */
   public function getUsername()
   {
     return $this->username;

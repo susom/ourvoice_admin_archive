@@ -22,9 +22,6 @@ class PackageNote extends \Google\Collection
   protected $collection_key = 'distribution';
   protected $distributionType = Distribution::class;
   protected $distributionDataType = 'array';
-  /**
-   * @var string
-   */
   public $name;
 
   /**
@@ -41,16 +38,10 @@ class PackageNote extends \Google\Collection
   {
     return $this->distribution;
   }
-  /**
-   * @param string
-   */
   public function setName($name)
   {
     $this->name = $name;
   }
-  /**
-   * @return string
-   */
   public function getName()
   {
     return $this->name;

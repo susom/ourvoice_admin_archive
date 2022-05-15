@@ -17,45 +17,17 @@
 
 namespace Google\Service\Script;
 
-class GoogleAppsScriptTypeFunction extends \Google\Collection
+class GoogleAppsScriptTypeFunction extends \Google\Model
 {
-  protected $collection_key = 'parameters';
-  /**
-   * @var string
-   */
   public $name;
-  /**
-   * @var string[]
-   */
-  public $parameters;
 
-  /**
-   * @param string
-   */
   public function setName($name)
   {
     $this->name = $name;
   }
-  /**
-   * @return string
-   */
   public function getName()
   {
     return $this->name;
-  }
-  /**
-   * @param string[]
-   */
-  public function setParameters($parameters)
-  {
-    $this->parameters = $parameters;
-  }
-  /**
-   * @return string[]
-   */
-  public function getParameters()
-  {
-    return $this->parameters;
   }
 }
 

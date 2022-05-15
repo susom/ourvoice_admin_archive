@@ -38,13 +38,13 @@ abstract class Base64 implements EncoderInterface
      *
      * Base64 character set "[A-Z][a-z][0-9]+/"
      *
-     * @param string $binString
+     * @param string $src
      * @return string
      * @throws \TypeError
      */
-    public static function encode(string $binString): string
+    public static function encode(string $src): string
     {
-        return static::doEncode($binString, true);
+        return static::doEncode($src, true);
     }
 
     /**
@@ -196,10 +196,11 @@ abstract class Base64 implements EncoderInterface
                     ((($c0 << 2) | ($c1 >> 4)) & 0xff)
                 );
                 $err |= ($c0 | $c1) >> 8;
-            } elseif ($strictPadding) {
+            } elseif ($i < $srcLen && $strictPadding) {
                 $err |= 1;
             }
         }
+        /** @var bool $check */
         $check = ($err === 0);
         if (!$check) {
             throw new \RangeException(

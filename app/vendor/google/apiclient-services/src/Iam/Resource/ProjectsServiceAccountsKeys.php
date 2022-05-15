@@ -123,9 +123,8 @@ class ProjectsServiceAccountsKeys extends \Google\Service\Resource
    * account.
    * @param array $optParams Optional parameters.
    *
-   * @opt_param string publicKeyType Optional. The output format of the public
-   * key. The default is `TYPE_NONE`, which means that the public key is not
-   * returned.
+   * @opt_param string publicKeyType The output format of the public key
+   * requested. X509_PEM is the default output format.
    * @return ServiceAccountKey
    */
   public function get($name, $optParams = [])
@@ -157,9 +156,7 @@ class ProjectsServiceAccountsKeys extends \Google\Service\Resource
     return $this->call('list', [$params], ListServiceAccountKeysResponse::class);
   }
   /**
-   * Uploads the public key portion of a key pair that you manage, and associates
-   * the public key with a ServiceAccount. After you upload the public key, you
-   * can use the private key from the key pair as a service account key.
+   * Creates a ServiceAccountKey, using a public key that you provide.
    * (keys.upload)
    *
    * @param string $name The resource name of the service account in the following

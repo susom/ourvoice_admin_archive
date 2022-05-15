@@ -20,27 +20,10 @@ namespace Google\Service\ShoppingContent;
 class ShoppingAdsProgramStatus extends \Google\Collection
 {
   protected $collection_key = 'regionStatuses';
-  /**
-   * @var string
-   */
-  public $globalState;
   protected $regionStatusesType = ShoppingAdsProgramStatusRegionStatus::class;
   protected $regionStatusesDataType = 'array';
+  public $state;
 
-  /**
-   * @param string
-   */
-  public function setGlobalState($globalState)
-  {
-    $this->globalState = $globalState;
-  }
-  /**
-   * @return string
-   */
-  public function getGlobalState()
-  {
-    return $this->globalState;
-  }
   /**
    * @param ShoppingAdsProgramStatusRegionStatus[]
    */
@@ -54,6 +37,14 @@ class ShoppingAdsProgramStatus extends \Google\Collection
   public function getRegionStatuses()
   {
     return $this->regionStatuses;
+  }
+  public function setState($state)
+  {
+    $this->state = $state;
+  }
+  public function getState()
+  {
+    return $this->state;
   }
 }
 
