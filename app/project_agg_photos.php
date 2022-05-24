@@ -889,7 +889,8 @@ $page = "allwalks";
             if(audios_txn.length> 0){
                 for(var i in audios_txn){
                     if(audios_txn[i]){
-                        var txp = $("<p>").addClass("audios_txns").text(audios_txn[i]["text"]);
+                        var actual  = audios_txn[i].hasOwnProperty("text") ? audios_txn[i]["text"] : audios_txn[i];
+                        var txp     = $("<p>").addClass("audios_txns").text(actual);
                         imgtxt.append(txp);
                     }
                 }
