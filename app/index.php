@@ -111,7 +111,7 @@ if(!isset($_SESSION["discpw"])) {
 		if($proj_id == "TPLFULL" || $proj_id == "TPLSHORT"){
 			$template = true;
             $new_edit = "new_project";
-			$template_instructions = "<strong class='tpl_instructions'>*Input a new Project ID & Name to create a new project</strong>";
+			$template_instructions = "*Input a new Project ID & Name to create a new project";
 		}else{
 			$show_archive_btn = true;
             $new_edit = "edit_project";
@@ -124,8 +124,8 @@ if(!isset($_SESSION["discpw"])) {
                 <input type="hidden" name="action" value="<?=$new_edit?>"/>
 				<input type="hidden" name="proj_id" value="<?php echo $proj_id; ?>"/>
 				<label><span>Admin Email</span><input type="text" name="project_email" value="<?php echo !$template ? $email : ""; ?>"/></label>
-				<label><span>Project Id</span><input <?php echo $template ? "" : "readonly"; ?>  type="text" name="project_id" value="<?php echo !$template ? $pid : ""; ?>"/><?php echo $template_instructions ?></label>
-				<label><span>Project Name</span><input  type="text" name="project_name" value="<?php echo !$template ? $pname : ""; ?>"/></label>
+                <label id="proj_id_label"><span>Project Id</span><input <?php echo $template ? "" : "readonly"; ?>  type="text" name="project_id" value="<?php echo !$template ? $pid : ""; ?>"/><strong class='tpl_instructions'><?php echo $template_instructions ?></strong></label>
+				<label id="proj_name_label"><span>Project Name</span><input  type="text" name="project_name" value="<?php echo !$template ? $pname : ""; ?>"/></label>
 				<label><span>Project Pass</span><input type="text" name="project_pass" value="<?php echo $ppass; ?>"/></label>
 				<label><span>Portal Pass</span><input type="text" name="summ_pass" value="<?php echo $spass; ?>"/></label>
                 <input type="hidden" name="template_type" value="1"/>
@@ -233,7 +233,9 @@ if(!isset($_SESSION["discpw"])) {
 					}
 				?>
 			</fieldset>
-			<button type="submit" class="btn btn-primary">Save Project</button>
+			<button type="submit" id="save_project" class="btn btn-primary">Save Project</button>
+            <button id="copy_project" class="btn btn-info">Copy Project</button>
+            <button id="cancel_copy" class="btn btn-danger">Cancel Copy</button>
 			<?php echo '</form>'.'<form action="summary.php" form id="route_summary" method="get">';	?>
 		</form>
 		<?php
@@ -682,6 +684,9 @@ $(document).ready(function(){
   }
 
     var ajax_handler  = 'ajaxHandler.php';
+    var cash = {};
+
+    $("#cancel_copy").hide();
     //AJAX SAVE PROJECT TAGS
     $("#savetag").click(function(){
       var proj_idx 	    = $("#newtag_txt").data("proj_idx");
@@ -745,6 +750,34 @@ $(document).ready(function(){
         }else{
             $(".project_tags").slideUp("medium");
         }
+    });
+
+    $("#copy_project").click(function(e){
+        e.preventDefault();
+
+        $("input[name='action']").val("copy_project");
+        $("input[name='project_id']").prop("readonly", false).val("");
+        var old_val = $("input[name='project_name']").val();
+        $("input[name='project_name']").data("old_val", old_val);
+        $("input[name='project_name']").val("");
+
+        $("#delete_project, #active_archive, #copy_project").fadeOut(function(){
+            $(".tpl_instructions").html("*Input a new Project ID / Name to create a new project with these settings");
+            $("#cancel_copy").fadeIn();
+        });
+    });
+    $("#cancel_copy").click(function(e){
+        e.preventDefault();
+
+        $("input[name='action']").val("edit_project");
+        $("input[name='project_id']").prop("readonly", true).val($("input[name='proj_id']").val());
+        var old_val = $("input[name='project_name']").data("old_val");
+        $("input[name='project_name']").val(old_val);
+
+        $("#cancel_copy").fadeOut(function(){
+            $(".tpl_instructions").html("");
+            $("#delete_project, #active_archive, #copy_project").fadeIn();
+        });
     });
 </script>	
 </html>

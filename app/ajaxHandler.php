@@ -492,6 +492,16 @@ if(!empty($_POST["action"])){
 
         case "edit_project":
             $updateflag = true;
+        case "copy_project":
+            //CHECK IF THERE IS AN EXISTING PID?
+            $check_pid  = strtoupper(filter_var($_POST["project_id"], FILTER_SANITIZE_STRING));
+            $project    = $ds->getProject($check_pid);
+            if(!empty($project)){
+                $old_proj_id    = strtoupper(filter_var($_POST["proj_id"], FILTER_SANITIZE_STRING));
+                $msg            = "Project ID " . $check_pid . " already exists.  Please choose another.";
+                header("location:index.php?proj_id=$old_proj_id&msg=$msg");
+                break;
+            }
         case "new_project":
             // REDIRECT IF NO OTHER ACTION
             $redi = true;
@@ -509,17 +519,17 @@ if(!empty($_POST["action"])){
             }
 
             $updated_project = array(
-                 "project_id" 		=> strtoupper(filter_var($_POST["project_id"], FILTER_SANITIZE_STRING))
-                ,"project_name" 	=> filter_var($_POST["project_name"], FILTER_SANITIZE_STRING)
-                ,"project_pass" 	=> filter_var($_POST["project_pass"], FILTER_SANITIZE_STRING)
-                ,"summ_pass" 		=> filter_var($_POST["summ_pass"], FILTER_SANITIZE_STRING)
-                ,"project_email" 	=> filter_var($_POST["project_email"], FILTER_SANITIZE_STRING)
-                ,"template_type"	=> filter_var($_POST["template_type"], FILTER_SANITIZE_NUMBER_INT)
-                ,"text_comments"    => filter_var($_POST["text_comments"], FILTER_SANITIZE_NUMBER_INT)
-                ,"forever_login"    => filter_var($_POST["forever_login"], FILTER_SANITIZE_NUMBER_INT)
-                ,"audio_comments"  	=> filter_var($_POST["audio_comments"], FILTER_SANITIZE_NUMBER_INT)
-                ,"show_project_tags"  => filter_var($_POST["show_project_tags"], FILTER_SANITIZE_NUMBER_INT)
-                ,"custom_takephoto_text"  => filter_var($_POST["custom_takephoto_text"], FILTER_SANITIZE_STRING)
+                 "project_id" 		        => strtoupper(filter_var($_POST["project_id"], FILTER_SANITIZE_STRING))
+                ,"project_name" 	        => filter_var($_POST["project_name"], FILTER_SANITIZE_STRING)
+                ,"project_pass" 	        => filter_var($_POST["project_pass"], FILTER_SANITIZE_STRING)
+                ,"summ_pass" 		        => filter_var($_POST["summ_pass"], FILTER_SANITIZE_STRING)
+                ,"project_email" 	        => filter_var($_POST["project_email"], FILTER_SANITIZE_STRING)
+                ,"template_type"	        => filter_var($_POST["template_type"], FILTER_SANITIZE_NUMBER_INT)
+                ,"text_comments"            => filter_var($_POST["text_comments"], FILTER_SANITIZE_NUMBER_INT)
+                ,"forever_login"            => filter_var($_POST["forever_login"], FILTER_SANITIZE_NUMBER_INT)
+                ,"audio_comments"  	        => filter_var($_POST["audio_comments"], FILTER_SANITIZE_NUMBER_INT)
+                ,"show_project_tags"        => filter_var($_POST["show_project_tags"], FILTER_SANITIZE_NUMBER_INT)
+                ,"custom_takephoto_text"    => filter_var($_POST["custom_takephoto_text"], FILTER_SANITIZE_STRING)
 
                 // ,"include_surveys"  => $_POST["include_surveys"]
                 ,"expire_date"  	=> $expire_date
