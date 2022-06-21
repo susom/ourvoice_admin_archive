@@ -491,18 +491,26 @@ if(!empty($_POST["action"])){
         break;
 
         case "edit_project":
-            $updateflag = true;
+            $updateflag     = true;
+            $delete_project =  !empty($_POST["delete_project_id"]) ? filter_var($_POST["delete_project_id"], FILTER_SANITIZE_STRING) : null;
         case "copy_project":
             //CHECK IF THERE IS AN EXISTING PID?
             $check_pid  = strtoupper(filter_var($_POST["project_id"], FILTER_SANITIZE_STRING));
             $project    = $ds->getProject($check_pid);
-            if(!empty($project) && !$updateflag){
+            if(!empty($project) && !$updateflag && !$delete_project){
                 $old_proj_id    = strtoupper(filter_var($_POST["proj_id"], FILTER_SANITIZE_STRING));
                 $msg            = "Project ID " . $check_pid . " already exists.  Please choose another.";
                 header("location:index.php?proj_id=$old_proj_id&msg=$msg");
                 break;
             }
         case "new_project":
+            if(!empty($delete_project)){
+                // Create the Cloud Firestore client
+                $ds->deleteProject($delete_project);
+                header("location:project_configuration.php?msg=Project $delete_project has been deleted");
+                exit;
+            }
+
             // REDIRECT IF NO OTHER ACTION
             $redi = true;
 

@@ -1314,6 +1314,21 @@ class Datastore {
         return $result;
     }
 
+    public function deleteProject($code){
+        $result     = null;
+        if($this->firestore){
+            try {
+                // CREATE THE PARENT DOC
+                $ov_projects    = $this->firestore->collection($this->firestore_projects);
+                $tempDoc        = $ov_projects->document($code);
+                $tempDoc->delete();
+            } catch (exception $e) {
+                echo "bad opperation";
+            }
+        }
+        return $result;
+    }
+
     // GOOGLE FIRESTORE AND CLOUD STORAGE 
     /**
      * Upload a file.

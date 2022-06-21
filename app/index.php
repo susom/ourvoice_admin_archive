@@ -422,7 +422,7 @@ $(document).ready(function(){
 
 	$("#delete_project").click(function(){
 		var delete_project_id 	= prompt("Please type the Project Id of this project to confirm that you are deleting it.");
-		var hinput 				= $("<input type='hidden' name='delete_project_id'/>").val(delete_project);
+		var hinput 				= $("<input type='hidden' name='delete_project_id'/>").val(delete_project_id);
 		if(delete_project_id 	== current_project_id){
 			$("#project_config").append(hinput);
 			$("#project_config").submit();
