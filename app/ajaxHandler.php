@@ -496,7 +496,7 @@ if(!empty($_POST["action"])){
             //CHECK IF THERE IS AN EXISTING PID?
             $check_pid  = strtoupper(filter_var($_POST["project_id"], FILTER_SANITIZE_STRING));
             $project    = $ds->getProject($check_pid);
-            if(!empty($project)){
+            if(!empty($project) && !$updateflag){
                 $old_proj_id    = strtoupper(filter_var($_POST["proj_id"], FILTER_SANITIZE_STRING));
                 $msg            = "Project ID " . $check_pid . " already exists.  Please choose another.";
                 header("location:index.php?proj_id=$old_proj_id&msg=$msg");
