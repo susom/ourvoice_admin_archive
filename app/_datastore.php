@@ -254,6 +254,15 @@ class Datastore {
         return array("active_project" => $result , "ov_meta" => $ov_meta);
     }
 
+    public function getAppVersion(){
+        //GET ov_meta data
+        $docRef     = $this->firestore->collection($this->firestore_meta)->document("app_data");
+        $snapshot   = $docRef->snapshot();
+        $data       = $snapshot->data();
+
+        return $data;
+    }
+
     public function getProjectsMeta(){
         $ap = null;
 
