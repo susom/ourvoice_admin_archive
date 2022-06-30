@@ -3,7 +3,7 @@ require_once "common.php";
 
 header("Access-Control-Allow-Origin: *");
 
-$meta       = $ds->getAppVersion();
+$meta       = $ds->getAppVersion(); 
 
 $versions   = array("ios" => null, "android" => null);
 
