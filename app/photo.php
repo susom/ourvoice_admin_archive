@@ -273,7 +273,7 @@ function addmarker(latilongi,map_id) {
 }
 
 function saveTag(doc_id,photo_i,tagtxt,proj_idx){
-	var data = { doc_id: doc_id, photo_i: photo_i, tag_text: tagtxt, action:"tag_text"};
+	var data = { doc_id: doc_id, photo_i: photo_i, DragTag: tagtxt, action:"tag_text"};
 	if(proj_idx){
 		data["proj_idx"] = proj_idx
 	}
@@ -301,8 +301,8 @@ function saveTag(doc_id,photo_i,tagtxt,proj_idx){
 				$("#newtag .notags").remove();
 			}
 		},
-		error: function(){
-			console.log("error");
+		error: function(e){
+			console.log("error",e.responseText);
 		}
 	}).done(function( msg ) {
 		// no need here
