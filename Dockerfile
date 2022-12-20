@@ -20,6 +20,8 @@ ADD vhost.conf /etc/apache2/sites-enabled/vhost.conf
 # https://github.com/docker-library/docs/blob/master/php/README.md#configuration
 
 RUN cp -r "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+# RUN apt-get update && apt-get install -y php-gd
+
 
 ## ADD A PHP.INI FILE
 #ADD php.ini /usr/local/etc/php/php.ini

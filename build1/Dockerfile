@@ -24,6 +24,7 @@ RUN set -eux; \
      wget \
      ca-certificates \
      libpng-dev \
+     libjpeg62-turbo-dev \
      libzip-dev \
      zip \
      vim \
@@ -36,6 +37,9 @@ RUN set -eux; \
 # ZipArchive
   && docker-php-ext-configure zip \
   && docker-php-ext-install zip \
+# GD extention 
+  && docker-php-ext-configure gd --with-jpeg \
+  && docker-php-ext-install gd \
 # CLEANUP
   && rm -rf /var/log/dpkg.log /var/log/alternatives.log /var/log/apt \
   && rm libapache2-mod-auth-openidc_2.4.6-1.buster+1_amd64.deb
