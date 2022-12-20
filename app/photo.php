@@ -310,6 +310,14 @@ function saveTag(doc_id,photo_i,tagtxt,proj_idx){
 	return;
 }
 
+function bindPixleationEvents(){
+    var doc_id 	= $(".preview span").parent().data("doc_id"); //AFUM23894572093482093.. etc
+    var photo_i = $(".preview span").parent().data("photo_i"); //Photo1.jpg
+    var rotationOffset = $(".preview").attr("rev"); // rotation
+    drawPixelation(doc_id, photo_i, rotationOffset);
+
+}
+
 $(document).ready(function(){
 	<?php
 		echo implode($gmaps);
@@ -319,13 +327,18 @@ $(document).ready(function(){
 		$("#cover").css("background-color","rgba(248,247,216,0.7)").css("z-index","2");
 
 	}
+    // bindPixleationEvents();
 
 	$("#pixelate").on("click", function(){
 		var doc_id 	= $(".preview span").parent().data("doc_id"); //AFUM23894572093482093.. etc
 		var photo_i = $(".preview span").parent().data("photo_i"); //Photo1.jpg
 		var rotationOffset = $(".preview").attr("rev"); // rotation
+        var canvas = $(".covering_canvas")[0];
+        var width_pic = $("#main_photo")[0].getBoundingClientRect().width;
+        var height_pic = $("#main_photo")[0].getBoundingClientRect().height;
 
-		console.log(rotationOffset);
+        setCanvas(canvas, rotationOffset, width_pic, height_pic);
+
 		$("#pixelateSubmit").off(); //on reclick, turn off events
 		$(".covering_canvas").off();
 		if($("#pixelate").css("background-color") == 'rgb(255, 0, 0)'){
@@ -335,7 +348,7 @@ $(document).ready(function(){
 		}else{
 			$("#pixelate").css("background-color","red");
 			$("#pixelateSubmit").removeClass("hidden");
-			drawPixelation(doc_id, photo_i,rotationOffset);		
+			drawPixelation(doc_id, photo_i,rotationOffset);
 		}
 
 	});
@@ -490,13 +503,8 @@ $(document).ready(function(){
 });
 
 function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
-	var canvas = $(".covering_canvas")[0];
-	var width_pic = $("#main_photo")[0].getBoundingClientRect().width;
-	var height_pic = $("#main_photo")[0].getBoundingClientRect().height;
-	setCanvas(canvas, rotationOffset, width_pic, height_pic);
-	//css and pixel count set
-	
-	var ctx = canvas.getContext('2d');
+    var canvas = $(".covering_canvas")[0];
+    var ctx = canvas.getContext('2d');
 	var canvasx = $(canvas).offset().left;
 	var canvasy = $(canvas).offset().top;
 	var last_mousex = last_mousey = 0;
@@ -507,28 +515,30 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 	var scrollOffset = 0; //necessary for scaling pixels from top of page for Y coordinate
 
 	$("#pixelateSubmit").on("click",function(){
-			if(confirm('Are you sure you want to pixelate this area? This action cannot be undone.')){
-				$.ajax({
-			 		method: "POST",
-			  	 	url: ajax_handler,
-			  	 	data: { pic_id: doc_id, photo_num: photo_i, coordinates: data, rotation: rotationOffset, action:"pixelation"},
-			  	 	success:function(response){
-			  	 		console.log(response);
-			  			window.location.reload(true);
-			 	 	}
-				});
-				$("#pixelate").css("background-color", "#4CAF50"); //change color back to reg
-				ctx.clearRect(0,0,canvas.width,canvas.height); //clear rect
-				data = {};
-				$(canvas).off();	//turn off events 
-				$(".covering_canvas").css("cursor", "");
-				$("#pixelateSubmit").addClass("hidden");
-			}
+        if(confirm('Are you sure you want to pixelate this area? This action cannot be undone.')){
+            $.ajax({
+                method: "POST",
+                url: ajax_handler,
+                data: { pic_id: doc_id, photo_num: photo_i, coordinates: data, rotation: rotationOffset, action:"pixelation"},
+                success:function(response){
+                    console.log(response);
+                    window.location.reload();
+                }
+            }).fail((e) => console.log(e));
+
+            $("#pixelate").css("background-color", "#4CAF50"); //change color back to reg
+
+            ctx.clearRect(0,0,canvas.width,canvas.height); //clear rect
+            data = {};
+
+            $(canvas).off();	//turn off events
+            $(".covering_canvas").css("cursor", "");
+            $("#pixelateSubmit").addClass("hidden");
+        }
 
 	});
 
 	$(".covering_canvas").on("mousedown", function(e){
-		console.log(scrollOffset);
 		scrollOffset = window.scrollY;
 		last_mousex = parseInt(e.clientX-canvasx);
 		last_mousey = parseInt(e.clientY-canvasy+scrollOffset);
@@ -541,8 +551,8 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 			coord_array.height = (mousey-last_mousey);
 			coord_array.x = last_mousex;
 			coord_array.y = last_mousey;
-			coord_array.width_pic = width_pic;
-			coord_array.height_pic = height_pic;
+			coord_array.width_pic = $("#main_photo")[0].getBoundingClientRect().width;;
+			coord_array.height_pic = $("#main_photo")[0].getBoundingClientRect().height;;
 			if(coord_array.width && coord_array.height){ 
 				data = JSON.stringify(coord_array);
 			}
@@ -566,15 +576,14 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
 }
 
 function setCanvas(canvas, rotationOffset, width_pic, height_pic){
-	// $(".covering_canvas").css("width",width_pic).css("height", height_pic);
 	$(".covering_canvas").css("cursor", "crosshair");
 
 	//set the canvas for drawing to be the same dimensions as the photo
 	canvas.width = width_pic;
 	canvas.height = height_pic;
-	canvas.style.position = "relative";
-	$(".covering_canvas").css("left",$("#main_photo").position().left);
-	$(".covering_canvas").css("top",$("#main_photo").position().top);
+	// canvas.style.position = "relative";
+	// $(".covering_canvas").css("left",$("#main_photo").position().left);
+	// $(".covering_canvas").css("top",$("#main_photo").position().top);
 
 	switch(rotationOffset){
 		case 0,1,3: 

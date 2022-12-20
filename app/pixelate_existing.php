@@ -115,7 +115,7 @@ function detectFaces($id, $old, $photo_name, $rev){
 
 }
 
-
+//Not used
 function filterFaces($vertices,$image,$id, $pixel_count){
 	$passed = false;
 	foreach($vertices as $faces){
