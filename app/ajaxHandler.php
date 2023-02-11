@@ -541,7 +541,7 @@ if(!empty($_POST["action"])){
 
                 // ,"include_surveys"  => $_POST["include_surveys"]
                 ,"expire_date"  	=> $expire_date
-                ,"project_created"  => date("Y-m-d H:i:s"),
+                ,"project_created"  => date("Y-m-d H:i:s")
                 ,"thumbs"			=> isset($_POST["thumbs"]) ? filter_var($_POST["thumbs"], FILTER_SANITIZE_NUMBER_INT) : 0
                 ,"app_lang" 		=> $app_lang
             );
