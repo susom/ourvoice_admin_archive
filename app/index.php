@@ -100,6 +100,7 @@ if(!isset($_SESSION["discpw"])) {
         $tpl_project            = $ds->getProject("TPLFULL");
         $tpl_p                  = $tpl_project->snapshot()->data();
         $available_langs 	    = $tpl_p["languages"];
+        $project_created        = isset($p["project_created"]) ? $p["project_created"] : null;
 
         $langs 	  			    = $p["languages"];
 		$template_type          = isset($p["template_type"]) ? $p["template_type"] : "1";
@@ -120,7 +121,7 @@ if(!isset($_SESSION["discpw"])) {
 		?>
 		<form id="project_config" action="ajaxHandler.php" method="post" class='<?php echo $template ? "template" : ""?>'>
 			<fieldset class="app_meta">
-				<legend>Project Meta</legend>
+				<legend>Project Meta <?= $project_created ? "<em>created: $project_created</em>" : "" ?></legend>
                 <input type="hidden" name="action" value="<?=$new_edit?>"/>
 				<input type="hidden" name="proj_id" value="<?php echo $proj_id; ?>"/>
 				<label><span>Admin Email</span><input type="text" name="project_email" value="<?php echo !$template ? $email : ""; ?>"/></label>
