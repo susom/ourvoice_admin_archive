@@ -526,6 +526,12 @@ if(!empty($_POST["action"])){
                 $expire_date 	= date('Y-m-d',$exp_time);
             }
 
+
+            // Convert raw text linebreaks to <p> tags
+            $custom_takephoto_text = filter_var($_POST["custom_takephoto_text"], FILTER_SANITIZE_STRING);
+            $custom_takephoto_text = '<p>' . preg_replace('/(?:\r?\n){2,}/', '</p><p>', $custom_takephoto_text) . '</p>';
+
+
             $updated_project = array(
                  "project_id" 		        => strtoupper(filter_var($_POST["project_id"], FILTER_SANITIZE_STRING))
                 ,"project_name" 	        => filter_var($_POST["project_name"], FILTER_SANITIZE_STRING)
@@ -537,7 +543,7 @@ if(!empty($_POST["action"])){
                 ,"forever_login"            => filter_var($_POST["forever_login"], FILTER_SANITIZE_NUMBER_INT)
                 ,"audio_comments"  	        => filter_var($_POST["audio_comments"], FILTER_SANITIZE_NUMBER_INT)
                 ,"show_project_tags"        => filter_var($_POST["show_project_tags"], FILTER_SANITIZE_NUMBER_INT)
-                ,"custom_takephoto_text"    => filter_var($_POST["custom_takephoto_text"], FILTER_SANITIZE_STRING)
+                ,"custom_takephoto_text"    => $custom_takephoto_text
 
                 // ,"include_surveys"  => $_POST["include_surveys"]
                 ,"expire_date"  	=> $expire_date

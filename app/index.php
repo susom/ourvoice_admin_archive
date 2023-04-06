@@ -92,7 +92,12 @@ if(!isset($_SESSION["discpw"])) {
         $audios     = isset($p["audio_comments"]) ? $p["audio_comments"] : false;
         $forever_login 		    = isset($p["forever_login"]) ? $p["forever_login"] : false;
 
-        $custom_takephoto_text  = isset($p["custom_takephoto_text"]) ? $p["custom_takephoto_text"] : null;
+
+        // Convert <p> tags back to raw HTML text with linebreaks
+        $custom_takephoto_text = isset($p["custom_takephoto_text"]) ? $p["custom_takephoto_text"] : null;
+        $custom_takephoto_text = preg_replace('#</p>\s*<p>#', "\n\n", $custom_takephoto_text);
+        $custom_takephoto_text = preg_replace('#<p>|</p>#', '', $custom_takephoto_text);
+
         $expire_date 		    = isset($p["expire_date"]) ? $p["expire_date"] : "";
         $tags                   = isset($p["tags"]) ? $p["tags"] : array();
         $show_proj_tags         = isset($p["show_project_tags"]) ? $p["show_project_tags"] : false;
