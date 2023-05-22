@@ -610,7 +610,8 @@ class Datastore {
             $date_buckets   = array();
             foreach($ts_snap as $doc){
                 $data       = $doc->data();
-                $doc_id     = $data["project_id"] . "_" . $data["device"]["uid"]. "_" . $data["timestamp"];
+
+                $doc_id     = $doc->id(); // Get the document ID
 
                 $dt->setTimestamp(round($data["timestamp"]/1000)); //adjust the object to correct timestamp
                 $walk_date  = $dt->format('Y-m-d');

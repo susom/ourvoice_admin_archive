@@ -72,10 +72,12 @@ $page = "photo_detail";
 			}
 
 	        $timestamp = $long = $lat = "";
+            list($project_id, $device_uuid, $walk_timestamp) = explode("_", $_id);
+
 			if(array_key_exists("geotag", $photo)){
 	            $long 		= isset($photo["geotag"]["lng"])?  $photo["geotag"]["lng"] : $photo["geotag"]["longitude"];
 	            $lat 		= isset($photo["geotag"]["lat"]) ? $photo["geotag"]["lat"] : $photo["geotag"]["latitude"];
-	            $timestamp  = $photo["geotag"]["timestamp"];
+	            $timestamp  = array_key_exists("timestamp", $photo["geotag"]) ? $photo["geotag"]["timestamp"] :  $walk_timestamp;
 	        }
 
 
@@ -163,11 +165,9 @@ $page = "photo_detail";
 			echo "<hgroup>";
             $photo_date = "N/A";
             $photo_ts   = "N/A";
-            if(!empty($photo["geotag"]["timestamp"])) {
-                $photo_ts   = $photo["geotag"]["timestamp"];
-                $photo_date = date("F j, Y", floor($photo["geotag"]["timestamp"] / 1000));
-            }
+
             if(!empty($timestamp)){
+                $photo_date = date("F j, Y", floor($timestamp / 1000));
                 $photo_ts = date("g:i a", floor($timestamp/1000));
             }
 			echo "<h4>Photo Detail : 

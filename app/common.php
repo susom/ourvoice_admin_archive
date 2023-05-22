@@ -245,7 +245,11 @@ function printRow($doc, $i){
 
     // filter out low accuracy
     $forjsongeo = array_filter($geotags,function($tag){
-        return $tag["accuracy"] <= 50;
+        if(isset($tag["geotag"])){
+            $tag = $tag["geotag"];
+        }
+
+        return isset($tag["accuracy"]) ? $tag["accuracy"] <= 50 : true;
     });
 
     // use the unaccurate if nothing was marked high acc.
@@ -260,6 +264,10 @@ function printRow($doc, $i){
     $n              = 0;
     $path_coords    = array();
     foreach($forjsongeo as $geotag){
+        if(isset($geotag["geotag"])){
+            $geotag = $geotag["geotag"];
+        }
+
         $coord = $geotag["lat"].",".$geotag["lng"];
         if($n%$n_jump == 0){
             $path_coords[] = $coord;
@@ -343,8 +351,8 @@ function printRow($doc, $i){
         $img_id         = $doc["_id"]."_".$photo_name;
 
         //https://storage.googleapis.com/$google_bucket/$project_id/$uuid/$ts/$photo_name
-        $uuid           = $doc["device"]["uid"];
-        $walk_ts        = $doc["timestamp"];
+//        $uuid           = $doc["device"]["uid"];
+//        $walk_ts        = $doc["timestamp"];
 
         $transform  = array("transform" => "thumbnail", "rotate" => $rotate);
         $file_uri   = $ds->getStorageFile(cfg::$gcp_bucketName, $doc["_id"], $photo_name, $transform);
