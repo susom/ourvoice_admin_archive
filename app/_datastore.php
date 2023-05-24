@@ -936,6 +936,16 @@ class Datastore {
             $sort_temp[$_id][$photo_i] = $doc["photo"];
         }
 
+        //BETER REVERSE SORT JEEZ
+        uksort($sort_temp, function($a, $b) {
+            // Extract the timestamps from the keys
+            $timestampA = substr($a, strrpos($a, "_") + 1);
+            $timestampB = substr($b, strrpos($b, "_") + 1);
+
+            // Compare the timestamps (note the order of $b and $a for descending sort)
+            return $timestampB <=> $timestampA;
+        });
+
         //SECOND LOOP!  + BONUS NESTED LOOP BS,   BETTER WAY TO DO THIS???  FUCK IT.
         foreach($sort_temp as $_id => $photos){
             foreach($photos as $photo){
