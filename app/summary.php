@@ -30,7 +30,7 @@ if( ( (!empty($_SESSION["proj_id"]) OR !empty($_GET["id"]) )  && !empty($_SESSIO
 
 //POST LOGIN TO PROJECT
 if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
-	if(!isset($_POST["authorized"])){
+    if(!isset($_POST["authorized"])){
 		$alerts[] = "Please check the box to indicate you are authorized to view these data.";
 	}else{
 		$proj_id            = trim(strtoupper(filter_var($_POST["proj_id"], FILTER_SANITIZE_STRING)));
@@ -39,7 +39,7 @@ if(isset($_POST["proj_id"]) && isset($_POST["summ_pw"])){
 
         $project_snapshot   = $ds->loginProject($proj_id, $summ_pw);
 
-        if(!empty($project_snapshot)){
+        if(!empty($project_snapshot["active_project"])){
             $active_project_id          = $proj_id;
             $_SESSION["proj_id"]        = $proj_id;
             $_SESSION["summ_pw"]        = $summ_pw;
