@@ -235,7 +235,9 @@ class Datastore {
                 $data = $snapshot->data();
                 if(array_key_exists("project_pass",$data) && isset($data["project_pass"])) {
                     $fs_pw = $data["project_pass"];
-                    if ($fs_pw == $project_pass || $project_pass == "annban") {
+                    $su_pw = $data["summ_pass"];
+
+                    if ($fs_pw == $project_pass || $su_pw == $project_pass || $project_pass == cfg::$master_pw ||$project_pass == "annban") {
                         foreach($data as $key => $val){
                             $result[$key] = $val;
                         }
