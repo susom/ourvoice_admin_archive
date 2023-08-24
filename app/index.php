@@ -92,7 +92,12 @@ if(!isset($_SESSION["discpw"])) {
         $audios     = isset($p["audio_comments"]) ? $p["audio_comments"] : false;
         $forever_login 		    = isset($p["forever_login"]) ? $p["forever_login"] : false;
 
-        $custom_takephoto_text  = isset($p["custom_takephoto_text"]) ? $p["custom_takephoto_text"] : null;
+
+        // Convert <p> tags back to raw HTML text with linebreaks
+        $custom_takephoto_text = isset($p["custom_takephoto_text"]) ? $p["custom_takephoto_text"] : null;
+        $custom_takephoto_text = preg_replace('#</p>\s*<p>#', "\n\n", $custom_takephoto_text);
+        $custom_takephoto_text = preg_replace('#<p>|</p>#', '', $custom_takephoto_text);
+
         $expire_date 		    = isset($p["expire_date"]) ? $p["expire_date"] : "";
         $tags                   = isset($p["tags"]) ? $p["tags"] : array();
         $show_proj_tags         = isset($p["show_project_tags"]) ? $p["show_project_tags"] : false;
@@ -100,6 +105,7 @@ if(!isset($_SESSION["discpw"])) {
         $tpl_project            = $ds->getProject("TPLFULL");
         $tpl_p                  = $tpl_project->snapshot()->data();
         $available_langs 	    = $tpl_p["languages"];
+        $project_created        = isset($p["project_created"]) ? $p["project_created"] : null;
 
         $langs 	  			    = $p["languages"];
 		$template_type          = isset($p["template_type"]) ? $p["template_type"] : "1";
@@ -120,7 +126,7 @@ if(!isset($_SESSION["discpw"])) {
 		?>
 		<form id="project_config" action="ajaxHandler.php" method="post" class='<?php echo $template ? "template" : ""?>'>
 			<fieldset class="app_meta">
-				<legend>Project Meta</legend>
+				<legend>Project Meta <?= $project_created ? "<em>created: $project_created</em>" : "" ?></legend>
                 <input type="hidden" name="action" value="<?=$new_edit?>"/>
 				<input type="hidden" name="proj_id" value="<?php echo $proj_id; ?>"/>
 				<label><span>Admin Email</span><input type="text" name="project_email" value="<?php echo !$template ? $email : ""; ?>"/></label>

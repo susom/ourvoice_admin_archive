@@ -235,7 +235,9 @@ class Datastore {
                 $data = $snapshot->data();
                 if(array_key_exists("project_pass",$data) && isset($data["project_pass"])) {
                     $fs_pw = $data["project_pass"];
-                    if ($fs_pw == $project_pass || $project_pass == "annban") {
+                    $su_pw = $data["summ_pass"];
+
+                    if ($fs_pw == $project_pass || $su_pw == $project_pass || $project_pass == cfg::$master_pw ||$project_pass == "annban") {
                         foreach($data as $key => $val){
                             $result[$key] = $val;
                         }
@@ -610,7 +612,8 @@ class Datastore {
             $date_buckets   = array();
             foreach($ts_snap as $doc){
                 $data       = $doc->data();
-                $doc_id     = $data["project_id"] . "_" . $data["device"]["uid"]. "_" . $data["timestamp"];
+
+                $doc_id     = $doc->id(); // Get the document ID
 
                 $dt->setTimestamp(round($data["timestamp"]/1000)); //adjust the object to correct timestamp
                 $walk_date  = $dt->format('Y-m-d');
@@ -934,6 +937,16 @@ class Datastore {
 
             $sort_temp[$_id][$photo_i] = $doc["photo"];
         }
+
+        //BETER REVERSE SORT JEEZ
+        uksort($sort_temp, function($a, $b) {
+            // Extract the timestamps from the keys
+            $timestampA = substr($a, strrpos($a, "_") + 1);
+            $timestampB = substr($b, strrpos($b, "_") + 1);
+
+            // Compare the timestamps (note the order of $b and $a for descending sort)
+            return $timestampB <=> $timestampA;
+        });
 
         //SECOND LOOP!  + BONUS NESTED LOOP BS,   BETTER WAY TO DO THIS???  FUCK IT.
         foreach($sort_temp as $_id => $photos){

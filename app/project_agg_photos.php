@@ -785,6 +785,7 @@ $page = "allwalks";
         function loadThumbs(pcode, filters){
             var data = { pcode: pcode, filters: filters, action:"load_thumbs" };
             // console.log("hit load thumbs", data);
+
             $.ajax({
                 method: "POST",
                 url: ajax_handler,
@@ -984,11 +985,14 @@ $page = "allwalks";
             $.each(gmarkers, function(){
                 var el 				= this;
                 var starting_icon 	= el.getIcon();
-                $("#" + this.extras["photo_id"]).hover(function(){
-                    el.setIcon({url: 'img/marker_purple.png'});
-                },function(){
-                    el.setIcon({url:starting_icon});
-                });
+
+                if( $('li[data-phid="' + el.extras["photo_id"] + '"]').length ){
+                    $('li[data-phid="' + el.extras["photo_id"] + '"]').hover(function(){
+                        el.setIcon({url: 'img/marker_purple.png'});
+                    },function(){
+                        el.setIcon({url:starting_icon});
+                    });
+                }
             });
 
             for(var i in gmarkers){
@@ -1001,13 +1005,14 @@ $page = "allwalks";
                         scaledSize: new google.maps.Size(100, 100), // scaled size
                     };
                     this.setIcon(icon);
-                    $("#" + photo_id).addClass("photoOn");
+
+                    $('li[data-phid="' + photo_id + '"]').addClass("photoOn");
                 });
                 google.maps.event.addListener(gmarkers[i], 'mouseout', function(event) {
                     var photo_id = this.extras["photo_id"];
                     var starting_icon = this.starting_icon.hasOwnProperty("url") ? this.starting_icon.url : this.starting_icon;
                     this.setIcon({url:starting_icon});
-                    $("#" + photo_id).removeClass("photoOn");
+                    $('li[data-phid="' + photo_id + '"]').removeClass("photoOn");
                 });
             }
         }
