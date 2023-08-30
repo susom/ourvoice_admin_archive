@@ -92,21 +92,27 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
         });
     }
 
-    // var LatLngBounds = new google.maps.LatLngBounds();
-    // if(o_walk_geos){
-    //     for(var i in o_walk_geos) {
-    //         if(o_walk_geos[i]){
-    //             var ltlnpt = new google.maps.LatLng(o_walk_geos[i]["lat"], o_walk_geos[i]["lng"]);
-    //             LatLngBounds.extend(ltlnpt);
-    //         }
-    //     }
-    // }else{
-    //     for(var i in geotags) {
-    //         LatLngBounds.extend(walkMap[i]);
-    //     }
-    // }
-    //
-    // window[map_id].fitBounds(LatLngBounds);
+    var LatLngBounds = new google.maps.LatLngBounds();
+    if(o_walk_geos){
+        for(var i in o_walk_geos) {
+            if(o_walk_geos[i]){
+                var geotag = o_walk_geos[i];
+                if(geotag.hasOwnProperty("geotag")){
+                    geotag = geotag.geotag;
+                }
+                var lat = geotag.hasOwnProperty("lat") ? geotag["lat"] : geotag["latitude"];
+                var lng = geotag.hasOwnProperty("lng") ? geotag["lng"] : geotag["longitude"];
+                var ltlnpt = new google.maps.LatLng(lat,lng);
+                LatLngBounds.extend(ltlnpt);
+            }
+        }
+    }else{
+        for(var i in geotags) {
+            LatLngBounds.extend(walkMap[i]);
+        }
+    }
+
+    window[map_id].fitBounds(LatLngBounds);
 
 //NEW
      // infoWindow = new google.maps.InfoWindow();
