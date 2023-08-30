@@ -315,6 +315,7 @@ function printRow($doc, $i){
     // $url_path    = $_SERVER['HTTP_ORIGIN'].dirname($_SERVER['PHP_SELF'])."/";
     $count_empty = 0;
 
+
     foreach($photos as $n => $photo){
 
         if(is_null($photo) || isset($photo["_deleted"])){
@@ -330,7 +331,10 @@ function printRow($doc, $i){
             $long   = 0;
             $lat    = 0;
         }
-        $timestamp  = isset($photo["geotag"]["timestamp"]) ? $photo["geotag"]["timestamp"] : 0;
+        $timestamp = isset($photo["geotag"]["timestamp"])
+            ? $photo["geotag"]["timestamp"]
+            : (isset($photo["timestamp"]) ? $photo["timestamp"] : $doc["timestamp"]);
+
         $goodbad    = "";
         if($photo["goodbad"] > 1){
             $goodbad  .= "<span class='goodbad good'></span>";
