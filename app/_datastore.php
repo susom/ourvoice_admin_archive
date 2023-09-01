@@ -1071,14 +1071,7 @@ class Datastore {
         }
     }
 
-    public function purgeCache($google_bucket, $url){
-        $parsed = str_replace('?ik-sdk-version=php-2.0.0',"", $url);
 
-        $cacheRequestId = $this->imageKit->purgeCache($parsed);
-        if (isset($cacheRequestId->success))
-            return $purgeCacheStatus = $this->imageKit->getPurgeCacheStatus($cacheRequestId->success['requestId']);
-        return false;
-    }
     public function getStorageFile($google_bucket, $id_string , $file_name, $image_transform=array()){
         $temp       = explode("_", $id_string);
         $pcode      = $temp[0];
