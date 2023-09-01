@@ -4,9 +4,9 @@
 		<?php
 		if(isset($_SESSION["summ_pw"])){
 			if( $page == "summary"){
-	            echo '<a class="inproject btn btn-danger" href="project_agg_photos.php?id='.$active_project_id.'">All Walk Photos</a>';
+	            echo '<a class="inproject btn btn-primary" href="project_agg_photos.php?id='.$active_project_id.'">All Walk Photos</a>';
 			}else{
-				echo '<a class="inproject btn btn-danger" href="summary.php">Back to Project Summary</a>';
+				echo '<a class="inproject btn btn-default" href="summary.php">Back to Project Summary</a>';
 			}
 
 			if( $page != "photo_detail"){
