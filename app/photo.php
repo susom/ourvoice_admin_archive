@@ -206,9 +206,9 @@ $page = "photo_detail";
 			echo 	"</section>";
 
 			echo "<section class='side'>";
-			echo "<button type = 'button' id = 'pixelateSubmit' class = 'btn btn-success hidden' style='float:right'>Submit</button>";
+			echo "<button type = 'button' id = 'pixelateSubmit' data-loading class = 'btn btn-success hidden' style='float:right'>Submit</button>";
 			echo "<button type = 'button' id = 'pixelate' class='btn btn-primary' style='float:right'>Pixelate</button>";
-
+            echo "<div id='pixelateLoading' class='alert alert-info hidden' role='alert'>Submitting pixelation... your page will automatically refresh</div>";
 			echo "<aside>
 					<b id = 'lat' value = '$lat'>lat: $lat</b>
 					<b id = 'long' value = '$long'>long: $long</b>
@@ -333,8 +333,9 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
     $("#pixelateSubmit").on("click",function(){
         if(!jQuery.isEmptyObject(data)){
             if(confirm('Are you sure you want to pixelate this area? This action cannot be undone.')){
-                // console.log(data)
-
+                $(this).addClass("disabled hidden");
+                $('#pixelate').addClass("disabled hidden");
+                $('#pixelateLoading').removeClass("hidden");
                 $.ajax({
                     method: "POST",
                     url: ajax_handler,
@@ -343,26 +344,17 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
                         photo_num: photo_i,
                         coordinates: data,
                         rotation: rotationOffset,
-                        action:"pixelation"
-                    })
-                    .done(res => {
-                        console.log(res);
-                        $("#pixelate")
-                            .removeClass("btn-danger")
-                            .addClass("btn-primary")
-                            .text("Pixelate");
-
-                        $(".covering_canvas").off().css("cursor", "");
-
-                        ctx.clearRect(0,0,canvas.width,canvas.height); //clear rect
-                        data = {};
-
-                        // $(canvas).off();	//turn off events
-                        $("#pixelateSubmit").addClass("hidden");
-                        // window.location.reload();
-                    })
-                    .fail((e) => console.log(e));
+                        action: "pixelation"
+                    }
                 })
+                .done(res => {
+                    console.log(res);
+                    window.location.reload();
+                })
+                .fail((e) => {
+                    console.log(e)
+                    $('#pixelateLoading').text('Something went wrong, pixelation failed')
+                });
             }
         }
     })
@@ -422,9 +414,6 @@ $(document).ready(function(){
         let canvas = $(".covering_canvas")[0];
         let width_pic = $("#main_photo")[0].getBoundingClientRect().width;
         let height_pic = $("#main_photo")[0].getBoundingClientRect().height;
-        console.log(doc_id, photo_i, rotationOffset)
-        console.log(canvas, width_pic, height_pic)
-        console.log($(this))
 
         setCanvas(canvas, rotationOffset, width_pic, height_pic);
 

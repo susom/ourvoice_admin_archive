@@ -1084,13 +1084,13 @@ class Datastore {
         $pcode      = $temp[0];
         $uuid       = $temp[1];
         $walk_ts    = $temp[2];
-
+        $time       = time();
 //        $base   = $this->imageKit->url(['path' => "/$pcode/$uuid/$walk_ts/$file_name"]);
 //        $this->purgeCache(cfg::$gcp_bucketName, $base);
 
         if(!empty($image_transform)){
             //for image kit CDN photos only
-            $file_uri   = "/$pcode/$uuid/$walk_ts/$file_name";
+            $file_uri   = "/$pcode/$uuid/$walk_ts/$file_name?ignoreCache=1&time=$time";
             $transform  = array();
             $transform["width"] = '1.0';
             $transform["c"]     = 'maintain_ratio';
@@ -1151,11 +1151,7 @@ class Datastore {
             );
             return $imageURL;
         }else{
-            //for audio/mp3/rawphotos
-            $file_uri   = "https://storage.googleapis.com/$google_bucket/$pcode/$uuid/$walk_ts/$file_name";
-//            $this->purgeCache(cfg::$gcp_bucketName, $file_uri);
-
-            return $file_uri;
+           return "https://storage.googleapis.com/$google_bucket/$pcode/$uuid/$walk_ts/$file_name?ignoreCache=1&time=time()";
         }
     }
 
