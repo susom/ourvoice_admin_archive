@@ -24,6 +24,7 @@ script:
     gcloud beta run deploy $CLOUD_RUN_SERVICE \
       --image="$IMAGE:${TRAVIS_COMMIT}" \
       --platform=managed \
+      --memory="2 Gi" \
       --region="${CLOUD_RUN_REGION}" \
       --set-secrets="/secrets/oidc_client_config.conf=$OIDC_CONFIG, \
         /secrets2/_config.php=$CONFIG, \
