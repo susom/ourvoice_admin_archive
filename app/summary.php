@@ -95,11 +95,13 @@ $page = "summary";
 
         			//AUTOMATICALLY SHOW MOST RECENT DATE's DATA, AJAX THE REST
 //        			$response 	= $ds->filter_by_projid($active_project_id, $date);
+
                     $response 	= $ds->getWalksByIds($walk_ids);
         			foreach($response as $i => $row){
                         $doc = $row;
                         echo "<a name='".$doc["project_id"]."'></a>";
                         echo implode("",printRow($doc, $i));
+
                     }
         			echo "</div>";
         			echo "</aside>";
@@ -271,7 +273,6 @@ $(document).ready(function(){
 						$(this).remove() });
 				},1500);
 
-                console.log("wtf", response);
 				setTimeout(function(){
 					$(target).append(response);
 					$(".thumbs").find("li").unbind();

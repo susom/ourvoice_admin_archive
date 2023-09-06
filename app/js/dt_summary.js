@@ -21,7 +21,7 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
 	}
 	// Create the map
 	window[map_id] = new google.maps.Map(document.getElementById(map_id), myOptions);
-	
+
     if(map_id != "google_map_photos"){
         new google.maps.Marker({
             map      : window[map_id],
@@ -81,7 +81,7 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
             };
             gmarkers.push(marker);
     	}
-        
+
     	// Creates the polyline object (connecting the dots)
         var polyline = new google.maps.Polyline({
           map: window[map_id],
@@ -91,11 +91,18 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
           strokeWeight: 0
         });
     }
+
     var LatLngBounds = new google.maps.LatLngBounds();
     if(o_walk_geos){
         for(var i in o_walk_geos) {
             if(o_walk_geos[i]){
-                var ltlnpt = new google.maps.LatLng(o_walk_geos[i]["lat"], o_walk_geos[i]["lng"]);
+                var geotag = o_walk_geos[i];
+                if(geotag.hasOwnProperty("geotag")){
+                    geotag = geotag.geotag;
+                }
+                var lat = geotag.hasOwnProperty("lat") ? geotag["lat"] : geotag["latitude"];
+                var lng = geotag.hasOwnProperty("lng") ? geotag["lng"] : geotag["longitude"];
+                var ltlnpt = new google.maps.LatLng(lat,lng);
                 LatLngBounds.extend(ltlnpt);
             }
         }
@@ -105,8 +112,8 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
         }
     }
 
-    window[map_id].fitBounds(LatLngBounds); 
-    
+    window[map_id].fitBounds(LatLngBounds);
+
 //NEW
      // infoWindow = new google.maps.InfoWindow();
     // var test = document.getElementById(map_id);
