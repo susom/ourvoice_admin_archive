@@ -266,14 +266,24 @@ function printRow($doc, $i){
     foreach($forjsongeo as $geotag){
         if(isset($geotag["geotag"])){
             $geotag = $geotag["geotag"];
-        }
 
-        $coord = $geotag["lat"].",".$geotag["lng"];
-        if($n%$n_jump == 0){
-            $path_coords[] = $coord;
+
+            $coord  = null;
+
+            if (isset($geotag['latitude']) && isset($geotag['longitude'])) {
+                $coord = $geotag['latitude'] . "," . $geotag['longitude'];
+            } elseif (isset($geotag['lat']) && isset($geotag['lng'])) {
+                $coord = $geotag['lat'] . "," . $geotag['lng'];
+            }
+
+            if($coord){
+                if($n%$n_jump == 0){
+                    $path_coords[] = $coord;
+                }
+                $geopoints[] = $coord;
+                $n++;
+            }
         }
-        $geopoints[] = $coord;
-        $n++;
     }
     $spread         = implode("|",$path_coords);
     $mapurl         = 'https://maps.googleapis.com/maps/api/staticmap?key='.cfg::$gmaps_key.'&size=420x300&zoom=16&path=color:0x0000FFd7|weight:3|' . $spread;
