@@ -115,37 +115,37 @@ function detectFaces($id, $old, $photo_name, $rev){
 
 }
 
-
-function filterFaces($vertices,$image,$id, $pixel_count){
-	$passed = false;
-	foreach($vertices as $faces){
-		$width = isset($faces[0]) && isset($faces[2]) ? $faces[2] - $faces[0] : 0;
-		$height = isset($faces[1]) && isset($faces[7]) ? $faces[7] - $faces[1] : 0;
-		$scale_pixels = isset($pixel_count)? ($pixel_count/(50000)) : 15;
-		if($width != 0 && $height != 0){
-			//have to crop out the faces first then apply filter
-			$crop = imagecrop($image,['x'=>$faces[0],'y'=>$faces[1],'width'=>$width, 'height'=>$height]);
-			// pixelate($crop, $scale_pixels,$scale_pixels);
-			pixelate($crop);
-			//put faces back on the original image
-			imagecopymerge($image, $crop, $faces[0], $faces[1], 0, 0, $width, $height, 100);
-			$passed = true;
-		}
-		// $gaussian = array(array(1.0, 3.0, 1.0), array(3.0, 4.0, 3.0), array(1.0, 3.0, 1.0));
-		// $divisor = array_sum(array_map('array_sum',$gaussian));
-		// 	$col = imagecolorallocate($new, 255, 255, 255);
-		// 	imagepolygon($new, $faces, 4, $col);
-		// 	//imagecrop($new,$faces);
-		// for($i = 0 ; $i < $itr ; $i++)
-		// 	imageconvolution($crop, $gaussian, $divisor, 0);
-	}
-	//save image locally
-	if($passed){
-		return $image;
-	}
-	else
-		return false;
-}
+//Not used
+//function filterFaces($vertices,$image,$id, $pixel_count){
+//	$passed = false;
+//	foreach($vertices as $faces){
+//		$width = isset($faces[0]) && isset($faces[2]) ? $faces[2] - $faces[0] : 0;
+//		$height = isset($faces[1]) && isset($faces[7]) ? $faces[7] - $faces[1] : 0;
+//		$scale_pixels = isset($pixel_count)? ($pixel_count/(50000)) : 15;
+//		if($width != 0 && $height != 0){
+//			//have to crop out the faces first then apply filter
+//			$crop = imagecrop($image,['x'=>$faces[0],'y'=>$faces[1],'width'=>$width, 'height'=>$height]);
+//			// pixelate($crop, $scale_pixels,$scale_pixels);
+//			pixelate($crop);
+//			//put faces back on the original image
+//			imagecopymerge($image, $crop, $faces[0], $faces[1], 0, 0, $width, $height, 100);
+//			$passed = true;
+//		}
+//		// $gaussian = array(array(1.0, 3.0, 1.0), array(3.0, 4.0, 3.0), array(1.0, 3.0, 1.0));
+//		// $divisor = array_sum(array_map('array_sum',$gaussian));
+//		// 	$col = imagecolorallocate($new, 255, 255, 255);
+//		// 	imagepolygon($new, $faces, 4, $col);
+//		// 	//imagecrop($new,$faces);
+//		// for($i = 0 ; $i < $itr ; $i++)
+//		// 	imageconvolution($crop, $gaussian, $divisor, 0);
+//	}
+//	//save image locally
+//	if($passed){
+//		return $image;
+//	}
+//	else
+//		return false;
+//}
 
 function pixelate($image, $pixel_width = 20, $pixel_height = 20){
     if(isset($image)){

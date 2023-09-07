@@ -1071,22 +1071,19 @@ class Datastore {
         }
     }
 
+
     public function getStorageFile($google_bucket, $id_string , $file_name, $image_transform=array()){
         $temp       = explode("_", $id_string);
         $pcode      = $temp[0];
         $uuid       = $temp[1];
         $walk_ts    = $temp[2];
-
-        //once fix pixelation, need to "purge cache"
-        /*
-         $this->imageKit->purgeCacheApi(array(
-                                            "url" => "https://ik.imagekit.io/your_imagekit_id/default-image.jpg"
-                                        ));
-        */
+        $time       = time();
+//        $base   = $this->imageKit->url(['path' => "/$pcode/$uuid/$walk_ts/$file_name"]);
+//        $this->purgeCache(cfg::$gcp_bucketName, $base);
 
         if(!empty($image_transform)){
             //for image kit CDN photos only
-            $file_uri   = "/$pcode/$uuid/$walk_ts/$file_name";
+            $file_uri   = "/$pcode/$uuid/$walk_ts/$file_name?ignoreCache=1&time=$time";
             $transform  = array();
             $transform["width"] = '1.0';
             $transform["c"]     = 'maintain_ratio';
@@ -1147,9 +1144,7 @@ class Datastore {
             );
             return $imageURL;
         }else{
-            //for audio/mp3/rawphotos
-            $file_uri   = "https://storage.googleapis.com/$google_bucket/$pcode/$uuid/$walk_ts/$file_name";
-            return $file_uri;
+           return "https://storage.googleapis.com/$google_bucket/$pcode/$uuid/$walk_ts/$file_name?ignoreCache=1&time=time()";
         }
     }
 
@@ -1655,6 +1650,28 @@ class Datastore {
 
         //UPLOAD from TEMP DIR on DISK
         $uploaded           = $this->upload_object($storageCLient, $bucketName, $new_attach_id, $filepath);
+
+        return $uploaded;
+    }
+
+    public function uploadPixelation($attach_id, $walk_id, $bucketName, $storageClient, $filepath=false){
+        # UPLOAD TO CLOUD STORAGE
+        $folder_components  = explode("_",$walk_id);
+
+        $project_id         = $folder_components[0];
+        $device_id          = $folder_components[1];
+        $walk_ts            = $folder_components[2];
+        $attachment_prefix  = "$project_id/$device_id/$walk_ts/";
+        $file_suffix        = str_replace($walk_id."_","",$attach_id);
+
+        $file_suffix        = str_replace("jpeg", "jpg", $file_suffix);
+
+        $filepath           = !$filepath ? 'temp/'.$walk_id.'/'.$attach_id : $filepath;
+//        $new_attach_id      = $attachment_prefix . $file_suffix;
+        $new_attach_id      = $attachment_prefix . $file_suffix;
+
+        //UPLOAD from TEMP DIR on DISK
+        $uploaded           = $this->upload_object($storageClient, $bucketName, $new_attach_id, $filepath);
 
         return $uploaded;
     }

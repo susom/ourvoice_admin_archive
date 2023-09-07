@@ -814,7 +814,6 @@ function detectFaces($id, $old, $photo_name){
 }
 
 function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
-    echo $pixel_count;
     $passed = false;
     if($rotationOffset){ //rotate back
         if($rotationOffset == 1){
@@ -883,11 +882,8 @@ function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
 
     //save image locally
     if($passed){
-        echo 'yes';
         return $image;
-
     }else{
-        echo 'no';
         return false;
     }
 }

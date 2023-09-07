@@ -7,7 +7,7 @@ services:
       - "8112:80"
 
     environment:
-      - XDEBUG_ENABLED=0
+      - XDEBUG_ENABLED=1
       - PORT=80
       - LOCAL_DEV=1
     volumes:

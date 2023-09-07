@@ -1,5 +1,6 @@
 <?php
 require_once "common.php";
+use Google\Cloud\Storage\StorageClient;
 
 $action = filter_var($_POST["action"], FILTER_SANITIZE_STRING);
 if(!empty($_POST["action"])){
@@ -385,11 +386,8 @@ if(!empty($_POST["action"])){
             $url            = cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $pic_reference;
             $response       = $ds->doCurl($url);
             $storage 		= json_decode($response,1);
-            //print_r($storage);
 
             $present_flag = false;
-            //print_r($pic_number);
-            //print_r($storage["photos"]);
             $tag_loc = $storage["photos"][$pic_number]["tags"];
             if(isset($tag_loc)){
                 echo "exisdt";
@@ -416,52 +414,61 @@ if(!empty($_POST["action"])){
 
         case 'pixelation':
             if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordinates'])){
-                $face_coord 	= json_decode(filter_var($_POST["coordinates"], FILTER_SANITIZE_STRING),1);
-                $_id 			= filter_var($_POST["pic_id"], FILTER_SANITIZE_STRING);
-                $photo_num 		= filter_var($_POST["photo_num"], FILTER_SANITIZE_NUMBER_INT);
-                $rotationOffset = filter_var($_POST["rotation"], FILTER_SANITIZE_NUMBER_INT);
-                $photo_num 		= 'photo_'.$photo_num . '.jpg';
-                $id 			= $_id."_".$photo_num;
+                try {
+                    $coordinates_unfiltered = json_decode($_POST['coordinates']);
+                    $face_coordinates = array();
 
-                //find rev by curling to couch
-                $url 			= cfg::$couch_url . "/". cfg::$couch_attach_db . "/" .$id;
-                $result 		= $ds->doCurl($url);
-                $result 		= json_decode($result,1);
-                $rev 			= ($result['_rev']);
-
-                //find the offset so canvas can be specified for each image based on portal rotation
-                // $rOffset = findRotationOffset(cfg::$couch_url . "/" . cfg::$couch_users_db . "/" . $id);
-                // 0 = none, 1 = base, 2 = 90 degree rotation
-
-                $picture 		= $ds->doCurl($url . '/' . $photo_num); //returns the actual image in string format
-                $new 			= imagecreatefromstring($picture); //set the actual picture for editing
-                $pixel_count 	= (imagesx($new)*imagesy($new)); //scale pixel to % image size
-                $altered_image 	= filterFaces($face_coord, $new, $_id, $pixel_count, $rotationOffset);
-                if(isset($altered_image) && $altered_image){
-                    $filepath = "./temp/$_id.jpg";
-                    if(file_exists($filepath)){
-                        unlink("./temp/$_id.jpg");
+                    foreach($coordinates_unfiltered as $key=>$value) {
+                        $face_coordinates[$key] = filter_var($value, FILTER_SANITIZE_STRING);
                     }
 
-                    // if(file_exists($filepath))
-                    // 	unset($filepath);
+                    $_id 			= filter_var($_POST["pic_id"], FILTER_SANITIZE_STRING);
+                    $photo_num 		= filter_var($_POST["photo_num"], FILTER_SANITIZE_NUMBER_INT);
+                    $rotationOffset = filter_var($_POST["rotation"], FILTER_SANITIZE_NUMBER_INT);
+                    $photo_num 		= 'photo_'.$photo_num . '.jpg';
+                    $id 			= $_id."_".$photo_num;
 
-                    imagejpeg($altered_image, $filepath); //save it
-                    imagedestroy($altered_image);
-                    $content_type   = 'image/jpeg';
-                    $attach_url 	= cfg::$couch_url . "/" . cfg::$couch_attach_db;
-                    $couchurl       = $attach_url."/".$id."/".$photo_num."?rev=".$rev;
-                    $content_type   = 'image/jpeg';
-                    $response       = $ds->uploadAttach($couchurl, $filepath, $content_type);
 
-                    $storageCLient = new StorageClient([
-                        'keyFilePath'   => $keyPath,
-                        'projectId'     => $gcp_project_id
-                    ]);
+                    $photo_uri     = $ds->getStorageFile(cfg::$gcp_bucketName, $_id, $photo_num);
+                    $new 			= imagecreatefromstring(file_get_contents($photo_uri)); //set the actual picture for editing
+                    $pixel_count 	= imagesx($new)* imagesy($new);
+                    $altered_image 	= filterFaces($face_coordinates, $new, $_id, $pixel_count, $rotationOffset);
 
-                    //UPLOAD TO GOOGLE BUCKET
-                    $uploaded   	= $ds->uploadCloudStorage($id ,$_id , $gcp_bucketName, $storageCLient,  $filepath);
-                    //refresh page
+                    if(isset($altered_image) && $altered_image){
+                        $filepath = "./temp/$_id.jpg";
+                        if(!is_dir("./temp"))
+                            mkdir("./temp");
+
+                        if (file_exists($filepath))
+                            unlink("./temp/$_id.jpg");
+
+                        imagejpeg($altered_image, $filepath); //save it
+                        imagedestroy($altered_image);
+
+                        $storageClient = new StorageClient([
+                            'keyFilePath'   => cfg::$FireStorekeyPath,
+                            'projectId'     => cfg::$gcp_bucketID
+                        ]);
+
+                        //UPLOAD TO GOOGLE BUCKET
+                        $uploaded   	= $ds->uploadPixelation($id ,$_id , cfg::$gcp_bucketName, $storageClient,  $filepath);
+                        if(isset($uploaded)){
+                            $return = array(
+                                'status' => 200,
+                                'message' => "Pixelation Successful."
+                            );
+                            http_response_code(200);
+                        } else {
+                            $return = array(
+                                'status' => 400,
+                                'message' => "Pixelation Unsuccessful."
+                            );
+                            http_response_code(400);
+                        }
+                        print_r(json_encode($return));
+                    }
+                } catch (exception $e) {
+                    return 'Caught exception: ' .  $e->getMessage() . "\n";
                 }
             }
         break;
