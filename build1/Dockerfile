@@ -1,4 +1,4 @@
-FROM php:8.0.6-apache-buster
+FROM php:8.0-apache-buster
 
 # Configure PHP for Cloud Run.
 # Precompile PHP code with opcache.
@@ -43,4 +43,5 @@ RUN set -eux; \
 # Install grpc extension for PHP
 RUN pecl install grpc; \
   docker-php-ext-enable grpc
+
 
