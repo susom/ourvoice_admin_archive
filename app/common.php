@@ -237,9 +237,27 @@ function printRow($doc, $i){
     if (empty($geotags)){
         foreach($photos as $photo){
             if(!empty($photo["geotag"])){
-                $geotags[] = $photo["geotag"];
+                $geotags[] = array("geotag" => $photo["geotag"]);
                 break;
             }
+        }
+    }else{
+        $check_structure = current($geotags);
+        //NEED A UNIFORM STRUCTURE BETWEEN OLD CORDOVA APP AND NEW PWA APP DATA
+        if(!array_key_exists("geotag", $check_structure)){
+            $geotags = array_map(function($element) {
+                $newElement = ['geotag' => []];
+                foreach ($element as $key => $value) {
+                    if ($key === 'lat') {
+                        $newElement['geotag']['latitude'] = $value;
+                    } elseif ($key === 'lng') {
+                        $newElement['geotag']['longitude'] = $value;
+                    } else {
+                        $newElement['geotag'][$key] = $value;
+                    }
+                }
+                return $newElement;
+            }, $geotags);
         }
     }
 

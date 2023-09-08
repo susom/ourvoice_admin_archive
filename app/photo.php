@@ -252,9 +252,9 @@ $page = "photo_detail";
 </div>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/autosize.js/3.0.20/autosize.js"></script>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>"></script>
-<script src="js/jquery-ui.js"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>&callback=emtpy_cb"></script>
+<script src="js/jquery-ui.js"></script>
 <script>
 var ajax_handler = "ajaxHandler.php";
 function addmarker(latilongi,map_id) {
