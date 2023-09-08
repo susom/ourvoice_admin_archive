@@ -150,3 +150,8 @@ function drawGMap(o_geotags, i_uniquemap, zoom_level, o_walk_geos){
 
 	return gmarkers;
 }
+
+//required callback for inline maps gapi usage
+function emtpy_cb() {
+    return;
+}
