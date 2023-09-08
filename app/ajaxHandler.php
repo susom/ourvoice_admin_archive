@@ -2,8 +2,10 @@
 require_once "common.php";
 use Google\Cloud\Storage\StorageClient;
 
+error_log("Entering AJAX handler");
 $action = filter_var($_POST["action"], FILTER_SANITIZE_STRING);
 if(!empty($_POST["action"])){
+    error_log("Action received: " . $action);
     // POSSIBLE POST VARS COMING IN
     $_id        = !empty($_POST["doc_id"])      ? filter_var($_POST["doc_id"], FILTER_SANITIZE_STRING) : null;
     $url        = !empty($_POST["url"])         ? filter_var($_POST["url"], FILTER_SANITIZE_ENCODED) :null;
@@ -413,6 +415,7 @@ if(!empty($_POST["action"])){
         break;
 
         case 'pixelation':
+            error_log("Entering case 'pixelation'");
             if(isset($_POST["pic_id"]) && isset($_POST['photo_num'])&& isset($_POST['coordinates'])){
                 try {
                     $coordinates_unfiltered = json_decode($_POST['coordinates']);
@@ -459,6 +462,7 @@ if(!empty($_POST["action"])){
                             );
                             http_response_code(200);
                         } else {
+                            error_log("Pixelation Unsuccessful: uploaded not set");
                             $return = array(
                                 'status' => 400,
                                 'message' => "Pixelation Unsuccessful."
@@ -468,7 +472,9 @@ if(!empty($_POST["action"])){
                         print_r(json_encode($return));
                     }
                 } catch (exception $e) {
-                    return 'Caught exception: ' .  $e->getMessage() . "\n";
+                    error_log('Caught exception in pixelation: ' .  $e->getMessage());
+                    http_response_code(500);
+                    echo json_encode(['status' => 500, 'message' => 'Internal Server Error']);
                 }
             }
         break;
@@ -597,6 +603,7 @@ if(!empty($_POST["action"])){
     if($ajax_resp) {
         print_r($response);
     }
-}else{
+}else {
+    error_log("Exiting AJAX handler with error: action not set");
     echo json_encode(array("error" => "something went wrong"));
 }
