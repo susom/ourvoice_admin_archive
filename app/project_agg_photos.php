@@ -34,8 +34,8 @@ $page = "allwalks";
 <script src="js/jquery-3.3.1.min.js"></script>
 <script src="js/jquery-ui.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>&callback=emtpy_cb"></script>
 </head>
 <body id="main" class="<?php echo $page ?>">
 <div id="content">
