@@ -207,7 +207,7 @@ $page = "photo_detail";
 
 			echo "<section class='side'>";
 			echo "<button type = 'button' id = 'pixelateSubmit' data-loading class = 'btn btn-success hidden' style='float:right'>Submit</button>";
-			echo "<button type = 'button' id = 'pixelate' class='btn btn-primary' style='float:right'>Pixelate</button>";
+			echo "<button type = 'button' id = 'pixelate' class='btn btn-primary' style='float:right'>Select Area for Pixelation</button>";
             echo "<div id='pixelateLoading' class='alert alert-info hidden' role='alert'>Submitting pixelation... your page will automatically refresh</div>";
 			echo "<aside>
 					<b id = 'lat' value = '$lat'>lat: $lat</b>
@@ -352,7 +352,7 @@ function drawPixelation(doc_id = 0, photo_i = 0, rotationOffset){
                     window.location.reload();
                 })
                 .fail((e) => {
-                    console.log(e)
+                    console.log('failed', e)
                     $('#pixelateLoading').text('Something went wrong, pixelation failed')
                 });
             }
@@ -428,7 +428,7 @@ $(document).ready(function(){
         } else {
             $(this).removeClass("btn-danger")
                 .addClass("btn-primary")
-                .text("Pixelate");
+                .text("Select Area for Pixelation");
             $("#pixelateSubmit").addClass("hidden");
             $(".covering_canvas")
                 .off()
