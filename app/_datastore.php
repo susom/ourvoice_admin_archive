@@ -41,7 +41,7 @@ class Datastore {
                                 cfg::$imgkit_url
                             );
     }
-
+    
     public function doCurl($url, $data = null, $method = "GET", $username = null, $password = null) {
         $process = curl_init($url);
         if($this->firestore){
@@ -237,7 +237,7 @@ class Datastore {
                     $fs_pw = $data["project_pass"];
                     $su_pw = $data["summ_pass"];
 
-                    if ($fs_pw == $project_pass || $su_pw == $project_pass || $project_pass == cfg::$master_pw ||$project_pass == "annban") {
+                    if ($fs_pw == $project_pass || $su_pw == $project_pass || $project_pass == cfg::$master_pw ) {
                         foreach($data as $key => $val){
                             $result[$key] = $val;
                         }
