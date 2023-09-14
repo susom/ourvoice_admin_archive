@@ -1001,6 +1001,14 @@ label span {
 .hidden{
 	display:none;
 }
+
+
+.summary.location_alert{
+	position: absolute;
+	right: 20px;
+	z-index: 2;
+}
+
 .location_alert{
 	position: absolute;
 	z-index: 2;

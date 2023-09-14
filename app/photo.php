@@ -74,7 +74,7 @@ $page = "photo_detail";
 	        $timestamp = $long = $lat = "";
             list($project_id, $device_uuid, $walk_timestamp) = explode("_", $_id);
 
-			if(array_key_exists("geotag", $photo)){
+			if(array_key_exists("geotag", $photo) && !empty($photo["geotag"])){
 	            $long 		= isset($photo["geotag"]["lng"])?  $photo["geotag"]["lng"] : $photo["geotag"]["longitude"];
 	            $lat 		= isset($photo["geotag"]["lat"]) ? $photo["geotag"]["lat"] : $photo["geotag"]["latitude"];
 	            $timestamp  = array_key_exists("timestamp", $photo["geotag"]) ? $photo["geotag"]["timestamp"] :  $walk_timestamp;
