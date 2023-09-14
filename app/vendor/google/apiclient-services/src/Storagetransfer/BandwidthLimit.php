@@ -19,21 +19,12 @@ namespace Google\Service\Storagetransfer;
 
 class BandwidthLimit extends \Google\Model
 {
-  /**
-   * @var string
-   */
   public $limitMbps;
 
-  /**
-   * @param string
-   */
   public function setLimitMbps($limitMbps)
   {
     $this->limitMbps = $limitMbps;
   }
-  /**
-   * @return string
-   */
   public function getLimitMbps()
   {
     return $this->limitMbps;

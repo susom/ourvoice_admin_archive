@@ -21,9 +21,6 @@ class VmUtilizationInfo extends \Google\Model
 {
   protected $utilizationType = VmUtilizationMetrics::class;
   protected $utilizationDataType = '';
-  /**
-   * @var string
-   */
   public $vmId;
   protected $vmwareVmDetailsType = VmwareVmDetails::class;
   protected $vmwareVmDetailsDataType = '';
@@ -42,16 +39,10 @@ class VmUtilizationInfo extends \Google\Model
   {
     return $this->utilization;
   }
-  /**
-   * @param string
-   */
   public function setVmId($vmId)
   {
     $this->vmId = $vmId;
   }
-  /**
-   * @return string
-   */
   public function getVmId()
   {
     return $this->vmId;

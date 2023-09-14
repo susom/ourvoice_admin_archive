@@ -20,9 +20,6 @@ namespace Google\Service\Bigquery;
 class Explanation extends \Google\Model
 {
   public $attribution;
-  /**
-   * @var string
-   */
   public $featureName;
 
   public function setAttribution($attribution)
@@ -33,16 +30,10 @@ class Explanation extends \Google\Model
   {
     return $this->attribution;
   }
-  /**
-   * @param string
-   */
   public function setFeatureName($featureName)
   {
     $this->featureName = $featureName;
   }
-  /**
-   * @return string
-   */
   public function getFeatureName()
   {
     return $this->featureName;

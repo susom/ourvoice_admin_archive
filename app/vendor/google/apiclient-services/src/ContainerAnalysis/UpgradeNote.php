@@ -22,9 +22,6 @@ class UpgradeNote extends \Google\Collection
   protected $collection_key = 'distributions';
   protected $distributionsType = UpgradeDistribution::class;
   protected $distributionsDataType = 'array';
-  /**
-   * @var string
-   */
   public $package;
   protected $versionType = Version::class;
   protected $versionDataType = '';
@@ -45,16 +42,10 @@ class UpgradeNote extends \Google\Collection
   {
     return $this->distributions;
   }
-  /**
-   * @param string
-   */
   public function setPackage($package)
   {
     $this->package = $package;
   }
-  /**
-   * @return string
-   */
   public function getPackage()
   {
     return $this->package;

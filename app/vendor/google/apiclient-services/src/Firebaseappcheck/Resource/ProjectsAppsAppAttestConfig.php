@@ -31,7 +31,7 @@ use Google\Service\Firebaseappcheck\GoogleFirebaseAppcheckV1betaBatchGetAppAttes
 class ProjectsAppsAppAttestConfig extends \Google\Service\Resource
 {
   /**
-   * Atomically gets the AppAttestConfigs for the specified list of apps.
+   * Gets the AppAttestConfigs for the specified list of apps atomically.
    * (appAttestConfig.batchGet)
    *
    * @param string $parent Required. The parent project name shared by all

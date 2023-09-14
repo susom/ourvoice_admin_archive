@@ -21,9 +21,6 @@ class CreateCustomClassRequest extends \Google\Model
 {
   protected $customClassType = CustomClass::class;
   protected $customClassDataType = '';
-  /**
-   * @var string
-   */
   public $customClassId;
 
   /**
@@ -40,16 +37,10 @@ class CreateCustomClassRequest extends \Google\Model
   {
     return $this->customClass;
   }
-  /**
-   * @param string
-   */
   public function setCustomClassId($customClassId)
   {
     $this->customClassId = $customClassId;
   }
-  /**
-   * @return string
-   */
   public function getCustomClassId()
   {
     return $this->customClassId;

@@ -298,10 +298,6 @@ class CertificateAuthorityService extends \Google\Service
                   'location' => 'query',
                   'type' => 'string',
                 ],
-                'skipGracePeriod' => [
-                  'location' => 'query',
-                  'type' => 'boolean',
-                ],
               ],
             ],'disable' => [
               'path' => 'v1/{+name}:disable',

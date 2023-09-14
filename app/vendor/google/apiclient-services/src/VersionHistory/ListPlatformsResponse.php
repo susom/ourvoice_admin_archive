@@ -20,23 +20,14 @@ namespace Google\Service\VersionHistory;
 class ListPlatformsResponse extends \Google\Collection
 {
   protected $collection_key = 'platforms';
-  /**
-   * @var string
-   */
   public $nextPageToken;
   protected $platformsType = Platform::class;
   protected $platformsDataType = 'array';
 
-  /**
-   * @param string
-   */
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
-  /**
-   * @return string
-   */
   public function getNextPageToken()
   {
     return $this->nextPageToken;

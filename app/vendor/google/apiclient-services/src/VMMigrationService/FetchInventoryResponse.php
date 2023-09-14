@@ -19,23 +19,14 @@ namespace Google\Service\VMMigrationService;
 
 class FetchInventoryResponse extends \Google\Model
 {
-  /**
-   * @var string
-   */
   public $updateTime;
   protected $vmwareVmsType = VmwareVmsDetails::class;
   protected $vmwareVmsDataType = '';
 
-  /**
-   * @param string
-   */
   public function setUpdateTime($updateTime)
   {
     $this->updateTime = $updateTime;
   }
-  /**
-   * @return string
-   */
   public function getUpdateTime()
   {
     return $this->updateTime;

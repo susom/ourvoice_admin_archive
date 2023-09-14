@@ -17,32 +17,11 @@
 
 namespace Google\Service\Dataproc;
 
-class GkeClusterConfig extends \Google\Collection
+class GkeClusterConfig extends \Google\Model
 {
-  protected $collection_key = 'nodePoolTarget';
-  /**
-   * @var string
-   */
-  public $gkeClusterTarget;
   protected $namespacedGkeDeploymentTargetType = NamespacedGkeDeploymentTarget::class;
   protected $namespacedGkeDeploymentTargetDataType = '';
-  protected $nodePoolTargetType = GkeNodePoolTarget::class;
-  protected $nodePoolTargetDataType = 'array';
 
-  /**
-   * @param string
-   */
-  public function setGkeClusterTarget($gkeClusterTarget)
-  {
-    $this->gkeClusterTarget = $gkeClusterTarget;
-  }
-  /**
-   * @return string
-   */
-  public function getGkeClusterTarget()
-  {
-    return $this->gkeClusterTarget;
-  }
   /**
    * @param NamespacedGkeDeploymentTarget
    */
@@ -56,20 +35,6 @@ class GkeClusterConfig extends \Google\Collection
   public function getNamespacedGkeDeploymentTarget()
   {
     return $this->namespacedGkeDeploymentTarget;
-  }
-  /**
-   * @param GkeNodePoolTarget[]
-   */
-  public function setNodePoolTarget($nodePoolTarget)
-  {
-    $this->nodePoolTarget = $nodePoolTarget;
-  }
-  /**
-   * @return GkeNodePoolTarget[]
-   */
-  public function getNodePoolTarget()
-  {
-    return $this->nodePoolTarget;
   }
 }
 

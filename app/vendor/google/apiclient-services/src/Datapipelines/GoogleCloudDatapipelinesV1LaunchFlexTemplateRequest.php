@@ -21,17 +21,8 @@ class GoogleCloudDatapipelinesV1LaunchFlexTemplateRequest extends \Google\Model
 {
   protected $launchParameterType = GoogleCloudDatapipelinesV1LaunchFlexTemplateParameter::class;
   protected $launchParameterDataType = '';
-  /**
-   * @var string
-   */
   public $location;
-  /**
-   * @var string
-   */
   public $projectId;
-  /**
-   * @var bool
-   */
   public $validateOnly;
 
   /**
@@ -48,44 +39,26 @@ class GoogleCloudDatapipelinesV1LaunchFlexTemplateRequest extends \Google\Model
   {
     return $this->launchParameter;
   }
-  /**
-   * @param string
-   */
   public function setLocation($location)
   {
     $this->location = $location;
   }
-  /**
-   * @return string
-   */
   public function getLocation()
   {
     return $this->location;
   }
-  /**
-   * @param string
-   */
   public function setProjectId($projectId)
   {
     $this->projectId = $projectId;
   }
-  /**
-   * @return string
-   */
   public function getProjectId()
   {
     return $this->projectId;
   }
-  /**
-   * @param bool
-   */
   public function setValidateOnly($validateOnly)
   {
     $this->validateOnly = $validateOnly;
   }
-  /**
-   * @return bool
-   */
   public function getValidateOnly()
   {
     return $this->validateOnly;

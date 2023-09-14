@@ -20,23 +20,14 @@ namespace Google\Service\RecaptchaEnterprise;
 class GoogleCloudRecaptchaenterpriseV1ListRelatedAccountGroupsResponse extends \Google\Collection
 {
   protected $collection_key = 'relatedAccountGroups';
-  /**
-   * @var string
-   */
   public $nextPageToken;
   protected $relatedAccountGroupsType = GoogleCloudRecaptchaenterpriseV1RelatedAccountGroup::class;
   protected $relatedAccountGroupsDataType = 'array';
 
-  /**
-   * @param string
-   */
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
-  /**
-   * @return string
-   */
   public function getNextPageToken()
   {
     return $this->nextPageToken;

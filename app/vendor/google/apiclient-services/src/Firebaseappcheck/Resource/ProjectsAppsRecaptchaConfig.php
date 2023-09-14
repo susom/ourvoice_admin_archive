@@ -31,7 +31,7 @@ use Google\Service\Firebaseappcheck\GoogleFirebaseAppcheckV1betaRecaptchaConfig;
 class ProjectsAppsRecaptchaConfig extends \Google\Service\Resource
 {
   /**
-   * Atomically gets the RecaptchaConfigs for the specified list of apps. For
+   * Gets the RecaptchaConfigs for the specified list of apps atomically. For
    * security reasons, the `site_secret` field is never populated in the response.
    * (recaptchaConfig.batchGet)
    *

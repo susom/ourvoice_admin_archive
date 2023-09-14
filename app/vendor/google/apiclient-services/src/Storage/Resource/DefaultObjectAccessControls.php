@@ -40,6 +40,8 @@ class DefaultObjectAccessControls extends \Google\Service\Resource
    * allAuthenticatedUsers.
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string provisionalUserProject The project to be billed for this
+   * request if the target bucket is requester-pays bucket.
    * @opt_param string userProject The project to be billed for this request.
    * Required for Requester Pays buckets.
    */
@@ -59,6 +61,8 @@ class DefaultObjectAccessControls extends \Google\Service\Resource
    * allAuthenticatedUsers.
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string provisionalUserProject The project to be billed for this
+   * request if the target bucket is requester-pays bucket.
    * @opt_param string userProject The project to be billed for this request.
    * Required for Requester Pays buckets.
    * @return ObjectAccessControl
@@ -77,6 +81,8 @@ class DefaultObjectAccessControls extends \Google\Service\Resource
    * @param ObjectAccessControl $postBody
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string provisionalUserProject The project to be billed for this
+   * request if the target bucket is requester-pays bucket.
    * @opt_param string userProject The project to be billed for this request.
    * Required for Requester Pays buckets.
    * @return ObjectAccessControl
@@ -99,6 +105,8 @@ class DefaultObjectAccessControls extends \Google\Service\Resource
    * @opt_param string ifMetagenerationNotMatch If present, only return default
    * ACL listing if the bucket's current metageneration does not match the given
    * value.
+   * @opt_param string provisionalUserProject The project to be billed for this
+   * request if the target bucket is requester-pays bucket.
    * @opt_param string userProject The project to be billed for this request.
    * Required for Requester Pays buckets.
    * @return ObjectAccessControls
@@ -120,6 +128,8 @@ class DefaultObjectAccessControls extends \Google\Service\Resource
    * @param ObjectAccessControl $postBody
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string provisionalUserProject The project to be billed for this
+   * request if the target bucket is requester-pays bucket.
    * @opt_param string userProject The project to be billed for this request.
    * Required for Requester Pays buckets.
    * @return ObjectAccessControl
@@ -141,6 +151,8 @@ class DefaultObjectAccessControls extends \Google\Service\Resource
    * @param ObjectAccessControl $postBody
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string provisionalUserProject The project to be billed for this
+   * request if the target bucket is requester-pays bucket.
    * @opt_param string userProject The project to be billed for this request.
    * Required for Requester Pays buckets.
    * @return ObjectAccessControl

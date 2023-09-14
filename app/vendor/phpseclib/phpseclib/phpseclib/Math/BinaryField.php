@@ -16,9 +16,10 @@
 
 namespace phpseclib3\Math;
 
-use phpseclib3\Common\Functions\Strings;
-use phpseclib3\Math\BinaryField\Integer;
+use ParagonIE\ConstantTime\Hex;
 use phpseclib3\Math\Common\FiniteField;
+use phpseclib3\Math\BinaryField\Integer;
+use phpseclib3\Common\Functions\Strings;
 
 /**
  * Binary Finite Fields
@@ -42,9 +43,6 @@ class BinaryField extends FiniteField
      * @var int
      */
     protected $instanceID;
-
-    /** @var BigInteger */
-    private $randomMax;
 
     /**
      * Default constructor
@@ -77,7 +75,7 @@ class BinaryField extends FiniteField
 
         // implements algorithm 2.40 (in section 2.3.5) in "Guide to Elliptic Curve Cryptography"
         // with W = 8
-        $reduce = function ($c) use ($u, $mStart, $m, $t, $finalMask, $pad, $h) {
+        $reduce = function($c) use ($u, $mStart, $m, $t, $finalMask, $pad, $h) {
             $c = str_pad($c, $pad, "\0", STR_PAD_LEFT);
             for ($i = $mStart; $i >= $m;) {
                 $g = $h >> 3;
@@ -116,7 +114,7 @@ class BinaryField extends FiniteField
      * Returns an instance of a dynamically generated PrimeFieldInteger class
      *
      * @param string $num
-     * @return Integer
+     * @return object
      */
     public function newInteger($num)
     {
@@ -126,7 +124,7 @@ class BinaryField extends FiniteField
     /**
      * Returns an integer on the finite field between one and the prime modulo
      *
-     * @return Integer
+     * @return object
      */
     public function randomInteger()
     {
@@ -141,7 +139,7 @@ class BinaryField extends FiniteField
     /**
      * Returns the length of the modulo in bytes
      *
-     * @return int
+     * @return integer
      */
     public function getLengthInBytes()
     {
@@ -151,7 +149,7 @@ class BinaryField extends FiniteField
     /**
      * Returns the length of the modulo in bits
      *
-     * @return int
+     * @return integer
      */
     public function getLength()
     {
@@ -162,7 +160,7 @@ class BinaryField extends FiniteField
      * Converts a base-2 string to a base-256 string
      *
      * @param string $x
-     * @param int|null $size
+     * @param integer $size 
      * @return string
      */
     public static function base2ToBase256($x, $size = null)

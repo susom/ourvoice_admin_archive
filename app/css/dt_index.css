@@ -350,3 +350,7 @@ input[readonly]{
 	cursor: pointer;
 }
 
+
+.app_meta legend em{
+	font-size:77%
+}

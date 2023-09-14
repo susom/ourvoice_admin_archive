@@ -22,15 +22,9 @@ class MigrationError extends \Google\Collection
   protected $collection_key = 'helpLinks';
   protected $actionItemType = LocalizedMessage::class;
   protected $actionItemDataType = '';
-  /**
-   * @var string
-   */
   public $code;
   protected $errorMessageType = LocalizedMessage::class;
   protected $errorMessageDataType = '';
-  /**
-   * @var string
-   */
   public $errorTime;
   protected $helpLinksType = Link::class;
   protected $helpLinksDataType = 'array';
@@ -49,16 +43,10 @@ class MigrationError extends \Google\Collection
   {
     return $this->actionItem;
   }
-  /**
-   * @param string
-   */
   public function setCode($code)
   {
     $this->code = $code;
   }
-  /**
-   * @return string
-   */
   public function getCode()
   {
     return $this->code;
@@ -77,16 +65,10 @@ class MigrationError extends \Google\Collection
   {
     return $this->errorMessage;
   }
-  /**
-   * @param string
-   */
   public function setErrorTime($errorTime)
   {
     $this->errorTime = $errorTime;
   }
-  /**
-   * @return string
-   */
   public function getErrorTime()
   {
     return $this->errorTime;

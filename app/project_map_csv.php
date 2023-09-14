@@ -12,7 +12,7 @@ header('Content-Disposition: attachment; filename=maps_'.$active_project_id.'.cs
 $output = fopen('php://output', 'w');
 
 // output the column headings
-fputcsv($output, array('walk id', 'photo name', 'type', 'latitude', 'longitude','good/bad','date', 'transcription/text'));
+fputcsv($output, array('walk id', 'photo name', 'type', 'latitude', 'longitude','good/bad','date', 'tags', 'transcription/text'));
 
 if( $active_project_id ){
 	//FIRST GET JUST THE DATES AVAILABLE IN THIS PROJECT
@@ -26,6 +26,7 @@ if( $active_project_id ){
 		}
 	}
 
+	$transcript = "";
 	foreach($photos as $item){
 		$sesh_id= substr($item["id"], -4);
 
@@ -50,8 +51,10 @@ if( $active_project_id ){
 				break;
 		}
 
-		$long 	= !empty($tag['lng']) ? $tag['lng'] : null;
-		$lat 	= !empty($tag['lat']) ? $tag['lat'] : null;
+		//make adjustment for pwa shit.
+		$long 	= !empty($tag['lng']) ? $tag['lng'] : (!empty($tag['longitude']) ? $tag['longitude'] : null);
+		$lat 	= !empty($tag['lat']) ? $tag['lat'] : (!empty($tag['latitude']) ? $tag['latitude'] : null);
+
 		if(isset($photo['audios']) && !empty($photo['audios'])){
 			$transcript = "";
 
@@ -62,12 +65,17 @@ if( $active_project_id ){
 			}
 		}
 
+		$tags = "";
+		if(isset($photo["tags"])){
+			$tags = implode(", ", $photo["tags"]);
+		}
+
+
 		if(!empty($photo["text_comment"])){
 			$transcript .= "[Text] " . $photo['text_comment'];
 		};
 
-
-		fputcsv($output, array($sesh_id, $photo['name'], 'photo', $lat, $long, $goodbad, $date, $transcript));
+		fputcsv($output, array($sesh_id, $photo['name'], 'photo', $lat, $long, $goodbad, $date, $tags, $transcript));
 		$transcript = "";
 	}
 }

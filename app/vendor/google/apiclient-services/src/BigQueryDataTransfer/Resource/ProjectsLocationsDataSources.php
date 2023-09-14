@@ -34,7 +34,10 @@ class ProjectsLocationsDataSources extends \Google\Service\Resource
 {
   /**
    * Returns true if valid credentials exist for the given data source and
-   * requesting user. (dataSources.checkValidCreds)
+   * requesting user. Some data sources doesn't support service account, so we
+   * need to talk to them on behalf of the end user. This API just checks whether
+   * we have OAuth token for the particular user, which is a pre-requisite before
+   * user can create a transfer config. (dataSources.checkValidCreds)
    *
    * @param string $name Required. The data source in the form:
    * `projects/{project_id}/dataSources/{data_source_id}` or
@@ -50,7 +53,8 @@ class ProjectsLocationsDataSources extends \Google\Service\Resource
     return $this->call('checkValidCreds', [$params], CheckValidCredsResponse::class);
   }
   /**
-   * Retrieves a supported data source and returns its settings. (dataSources.get)
+   * Retrieves a supported data source and returns its settings, which can be used
+   * for UI rendering. (dataSources.get)
    *
    * @param string $name Required. The field will contain name of the resource
    * requested, for example: `projects/{project_id}/dataSources/{data_source_id}`
@@ -66,12 +70,12 @@ class ProjectsLocationsDataSources extends \Google\Service\Resource
     return $this->call('get', [$params], DataSource::class);
   }
   /**
-   * Lists supported data sources and returns their settings.
-   * (dataSources.listProjectsLocationsDataSources)
+   * Lists supported data sources and returns their settings, which can be used
+   * for UI rendering. (dataSources.listProjectsLocationsDataSources)
    *
    * @param string $parent Required. The BigQuery project id for which data
    * sources should be returned. Must be in the form: `projects/{project_id}` or
-   * `projects/{project_id}/locations/{location_id}`
+   * `projects/{project_id}/locations/{location_id}
    * @param array $optParams Optional parameters.
    *
    * @opt_param int pageSize Page size. The default page size is the maximum value

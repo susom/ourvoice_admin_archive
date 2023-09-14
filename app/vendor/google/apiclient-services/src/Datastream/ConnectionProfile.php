@@ -19,27 +19,15 @@ namespace Google\Service\Datastream;
 
 class ConnectionProfile extends \Google\Model
 {
-  /**
-   * @var string
-   */
   public $createTime;
-  /**
-   * @var string
-   */
   public $displayName;
   protected $forwardSshConnectivityType = ForwardSshTunnelConnectivity::class;
   protected $forwardSshConnectivityDataType = '';
   protected $gcsProfileType = GcsProfile::class;
   protected $gcsProfileDataType = '';
-  /**
-   * @var string[]
-   */
   public $labels;
   protected $mysqlProfileType = MysqlProfile::class;
   protected $mysqlProfileDataType = '';
-  /**
-   * @var string
-   */
   public $name;
   protected $oracleProfileType = OracleProfile::class;
   protected $oracleProfileDataType = '';
@@ -47,35 +35,20 @@ class ConnectionProfile extends \Google\Model
   protected $privateConnectivityDataType = '';
   protected $staticServiceIpConnectivityType = StaticServiceIpConnectivity::class;
   protected $staticServiceIpConnectivityDataType = '';
-  /**
-   * @var string
-   */
   public $updateTime;
 
-  /**
-   * @param string
-   */
   public function setCreateTime($createTime)
   {
     $this->createTime = $createTime;
   }
-  /**
-   * @return string
-   */
   public function getCreateTime()
   {
     return $this->createTime;
   }
-  /**
-   * @param string
-   */
   public function setDisplayName($displayName)
   {
     $this->displayName = $displayName;
   }
-  /**
-   * @return string
-   */
   public function getDisplayName()
   {
     return $this->displayName;
@@ -108,16 +81,10 @@ class ConnectionProfile extends \Google\Model
   {
     return $this->gcsProfile;
   }
-  /**
-   * @param string[]
-   */
   public function setLabels($labels)
   {
     $this->labels = $labels;
   }
-  /**
-   * @return string[]
-   */
   public function getLabels()
   {
     return $this->labels;
@@ -136,16 +103,10 @@ class ConnectionProfile extends \Google\Model
   {
     return $this->mysqlProfile;
   }
-  /**
-   * @param string
-   */
   public function setName($name)
   {
     $this->name = $name;
   }
-  /**
-   * @return string
-   */
   public function getName()
   {
     return $this->name;
@@ -192,16 +153,10 @@ class ConnectionProfile extends \Google\Model
   {
     return $this->staticServiceIpConnectivity;
   }
-  /**
-   * @param string
-   */
   public function setUpdateTime($updateTime)
   {
     $this->updateTime = $updateTime;
   }
-  /**
-   * @return string
-   */
   public function getUpdateTime()
   {
     return $this->updateTime;

@@ -19,39 +19,21 @@ namespace Google\Service\VMMigrationService;
 
 class LocalizedMessage extends \Google\Model
 {
-  /**
-   * @var string
-   */
   public $locale;
-  /**
-   * @var string
-   */
   public $message;
 
-  /**
-   * @param string
-   */
   public function setLocale($locale)
   {
     $this->locale = $locale;
   }
-  /**
-   * @return string
-   */
   public function getLocale()
   {
     return $this->locale;
   }
-  /**
-   * @param string
-   */
   public function setMessage($message)
   {
     $this->message = $message;
   }
-  /**
-   * @return string
-   */
   public function getMessage()
   {
     return $this->message;

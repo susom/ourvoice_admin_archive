@@ -138,23 +138,9 @@ class FirebaseRealtimeDatabase extends \Google\Service
                   'location' => 'query',
                   'type' => 'string',
                 ],
-                'showDeleted' => [
-                  'location' => 'query',
-                  'type' => 'boolean',
-                ],
               ],
             ],'reenable' => [
               'path' => 'v1beta/{+name}:reenable',
-              'httpMethod' => 'POST',
-              'parameters' => [
-                'name' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-              ],
-            ],'undelete' => [
-              'path' => 'v1beta/{+name}:undelete',
               'httpMethod' => 'POST',
               'parameters' => [
                 'name' => [

@@ -21,14 +21,13 @@
 namespace phpseclib3\Crypt\EC\Formats\Keys;
 
 use ParagonIE\ConstantTime\Base64;
-use phpseclib3\Common\Functions\Strings;
+use phpseclib3\Math\BigInteger;
 use phpseclib3\Crypt\EC\BaseCurves\Base as BaseCurve;
-use phpseclib3\Crypt\EC\BaseCurves\Montgomery as MontgomeryCurve;
 use phpseclib3\Crypt\EC\BaseCurves\Prime as PrimeCurve;
 use phpseclib3\Crypt\EC\BaseCurves\TwistedEdwards as TwistedEdwardsCurve;
-use phpseclib3\Exception\BadConfigurationException;
+use phpseclib3\Crypt\EC\BaseCurves\Montgomery as MontgomeryCurve;
+use phpseclib3\Common\Functions\Strings;
 use phpseclib3\Exception\UnsupportedCurveException;
-use phpseclib3\Math\BigInteger;
 
 /**
  * XML Formatted EC Key Handler
@@ -69,10 +68,6 @@ abstract class XML
 
         if (!Strings::is_stringable($key)) {
             throw new \UnexpectedValueException('Key should be a string - not a ' . gettype($key));
-        }
-
-        if (!class_exists('DOMDocument')) {
-            throw new BadConfigurationException('The dom extension is not setup correctly on this system');
         }
 
         $use_errors = libxml_use_internal_errors(true);
@@ -125,7 +120,7 @@ abstract class XML
         $query = '/';
         $names = explode('/', $name);
         foreach ($names as $name) {
-            $query .= "/*[translate(local-name(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='$name']";
+            $query.= "/*[translate(local-name(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='$name']";
         }
         $result = $xpath->query($query);
         if (!isset($error)) {
@@ -157,9 +152,7 @@ abstract class XML
         }
         $node = $nodes->item(0);
         $ns_name = $node->lookupPrefix($ns);
-        if ($ns_name) {
-            $node->removeAttributeNS($ns, $ns_name);
-        }
+        $node->removeAttributeNS($ns, $ns_name);
         return $dom->saveXML($node);
     }
 
@@ -435,7 +428,7 @@ abstract class XML
             $temp = $result['specifiedCurve'];
             switch ($temp['fieldID']['fieldType']) {
                 case 'prime-field':
-                    $xml .= '<' . $pre . 'PrimeFieldParamsType>' . "\r\n" .
+                    $xml.= '<' . $pre . 'PrimeFieldParamsType>' . "\r\n" .
                            '<' . $pre . 'P>' . $temp['fieldID']['parameters'] . '</' . $pre . 'P>' . "\r\n" .
                            '</' . $pre . 'PrimeFieldParamsType>' . "\r\n";
                     $a = $curve->getA();
@@ -445,7 +438,7 @@ abstract class XML
                 default:
                     throw new UnsupportedCurveException('Field Type of ' . $temp['fieldID']['fieldType'] . ' is not supported');
             }
-            $xml .= '</' . $pre . 'FieldParams>' . "\r\n" .
+            $xml.= '</' . $pre . 'FieldParams>' . "\r\n" .
                    '<' . $pre . 'CurveParamsType>' . "\r\n" .
                    '<' . $pre . 'A>' . $a . '</' . $pre . 'A>' . "\r\n" .
                    '<' . $pre . 'B>' . $b . '</' . $pre . 'B>' . "\r\n" .
@@ -470,14 +463,14 @@ abstract class XML
             $temp = $result['specifiedCurve'];
             switch ($temp['fieldID']['fieldType']) {
                 case 'prime-field':
-                    $xml .= '<' . $pre . 'Prime>' . "\r\n" .
+                    $xml.= '<' . $pre . 'Prime>' . "\r\n" .
                            '<' . $pre . 'P>' . Base64::encode($temp['fieldID']['parameters']->toBytes()) . '</' . $pre . 'P>' . "\r\n" .
                            '</' . $pre . 'Prime>' . "\r\n" ;
                     break;
                 default:
                     throw new UnsupportedCurveException('Field Type of ' . $temp['fieldID']['fieldType'] . ' is not supported');
             }
-            $xml .= '</' . $pre . 'FieldID>' . "\r\n" .
+            $xml.= '</' . $pre . 'FieldID>' . "\r\n" .
                    '<' . $pre . 'Curve>' . "\r\n" .
                    '<' . $pre . 'A>' . Base64::encode($temp['curve']['a']) . '</' . $pre . 'A>' . "\r\n" .
                    '<' . $pre . 'B>' . Base64::encode($temp['curve']['b']) . '</' . $pre . 'B>' . "\r\n" .

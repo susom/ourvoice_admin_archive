@@ -21,9 +21,6 @@ class SkaffoldVersion extends \Google\Model
 {
   protected $supportEndDateType = Date::class;
   protected $supportEndDateDataType = '';
-  /**
-   * @var string
-   */
   public $version;
 
   /**
@@ -40,16 +37,10 @@ class SkaffoldVersion extends \Google\Model
   {
     return $this->supportEndDate;
   }
-  /**
-   * @param string
-   */
   public function setVersion($version)
   {
     $this->version = $version;
   }
-  /**
-   * @return string
-   */
   public function getVersion()
   {
     return $this->version;

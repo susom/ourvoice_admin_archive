@@ -22,9 +22,6 @@ class GoogleChromeManagementV1GraphicsStatusReport extends \Google\Collection
   protected $collection_key = 'displays';
   protected $displaysType = GoogleChromeManagementV1DisplayInfo::class;
   protected $displaysDataType = 'array';
-  /**
-   * @var string
-   */
   public $reportTime;
 
   /**
@@ -41,16 +38,10 @@ class GoogleChromeManagementV1GraphicsStatusReport extends \Google\Collection
   {
     return $this->displays;
   }
-  /**
-   * @param string
-   */
   public function setReportTime($reportTime)
   {
     $this->reportTime = $reportTime;
   }
-  /**
-   * @return string
-   */
   public function getReportTime()
   {
     return $this->reportTime;

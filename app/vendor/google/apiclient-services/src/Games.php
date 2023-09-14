@@ -400,10 +400,6 @@ class Games extends \Google\Service
                   'location' => 'query',
                   'type' => 'string',
                 ],
-                'playerIdConsistencyToken' => [
-                  'location' => 'query',
-                  'type' => 'string',
-                ],
               ],
             ],'list' => [
               'path' => 'games/v1/players/me/players/{collection}',

@@ -192,16 +192,6 @@ class CloudMemorystoreforMemcached extends \Google\Service
                   'type' => 'string',
                 ],
               ],
-            ],'rescheduleMaintenance' => [
-              'path' => 'v1/{+instance}:rescheduleMaintenance',
-              'httpMethod' => 'POST',
-              'parameters' => [
-                'instance' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-              ],
             ],'updateParameters' => [
               'path' => 'v1/{+name}:updateParameters',
               'httpMethod' => 'PATCH',

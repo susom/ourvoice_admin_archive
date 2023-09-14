@@ -237,15 +237,37 @@ function printRow($doc, $i){
     if (empty($geotags)){
         foreach($photos as $photo){
             if(!empty($photo["geotag"])){
-                $geotags[] = $photo["geotag"];
+                $geotags[] = array("geotag" => $photo["geotag"]);
                 break;
             }
+        }
+    }else{
+        $check_structure = current($geotags);
+        //NEED A UNIFORM STRUCTURE BETWEEN OLD CORDOVA APP AND NEW PWA APP DATA
+        if(!array_key_exists("geotag", $check_structure)){
+            $geotags = array_map(function($element) {
+                $newElement = ['geotag' => []];
+                foreach ($element as $key => $value) {
+                    if ($key === 'lat') {
+                        $newElement['geotag']['latitude'] = $value;
+                    } elseif ($key === 'lng') {
+                        $newElement['geotag']['longitude'] = $value;
+                    } else {
+                        $newElement['geotag'][$key] = $value;
+                    }
+                }
+                return $newElement;
+            }, $geotags);
         }
     }
 
     // filter out low accuracy
     $forjsongeo = array_filter($geotags,function($tag){
-        return $tag["accuracy"] <= 50;
+        if(isset($tag["geotag"])){
+            $tag = $tag["geotag"];
+        }
+
+        return isset($tag["accuracy"]) ? $tag["accuracy"] <= 50 : true;
     });
 
     // use the unaccurate if nothing was marked high acc.
@@ -260,12 +282,26 @@ function printRow($doc, $i){
     $n              = 0;
     $path_coords    = array();
     foreach($forjsongeo as $geotag){
-        $coord = $geotag["lat"].",".$geotag["lng"];
-        if($n%$n_jump == 0){
-            $path_coords[] = $coord;
+        if(isset($geotag["geotag"])){
+            $geotag = $geotag["geotag"];
+
+
+            $coord  = null;
+
+            if (isset($geotag['latitude']) && isset($geotag['longitude'])) {
+                $coord = $geotag['latitude'] . "," . $geotag['longitude'];
+            } elseif (isset($geotag['lat']) && isset($geotag['lng'])) {
+                $coord = $geotag['lat'] . "," . $geotag['lng'];
+            }
+
+            if($coord){
+                if($n%$n_jump == 0){
+                    $path_coords[] = $coord;
+                }
+                $geopoints[] = $coord;
+                $n++;
+            }
         }
-        $geopoints[] = $coord;
-        $n++;
     }
     $spread         = implode("|",$path_coords);
     $mapurl         = 'https://maps.googleapis.com/maps/api/staticmap?key='.cfg::$gmaps_key.'&size=420x300&zoom=16&path=color:0x0000FFd7|weight:3|' . $spread;
@@ -307,6 +343,7 @@ function printRow($doc, $i){
     // $url_path    = $_SERVER['HTTP_ORIGIN'].dirname($_SERVER['PHP_SELF'])."/";
     $count_empty = 0;
 
+
     foreach($photos as $n => $photo){
 
         if(is_null($photo) || isset($photo["_deleted"])){
@@ -322,7 +359,10 @@ function printRow($doc, $i){
             $long   = 0;
             $lat    = 0;
         }
-        $timestamp  = isset($photo["geotag"]["timestamp"]) ? $photo["geotag"]["timestamp"] : 0;
+        $timestamp = isset($photo["geotag"]["timestamp"])
+            ? $photo["geotag"]["timestamp"]
+            : (isset($photo["timestamp"]) ? $photo["timestamp"] : $doc["timestamp"]);
+
         $goodbad    = "";
         if($photo["goodbad"] > 1){
             $goodbad  .= "<span class='goodbad good'></span>";
@@ -343,8 +383,8 @@ function printRow($doc, $i){
         $img_id         = $doc["_id"]."_".$photo_name;
 
         //https://storage.googleapis.com/$google_bucket/$project_id/$uuid/$ts/$photo_name
-        $uuid           = $doc["device"]["uid"];
-        $walk_ts        = $doc["timestamp"];
+//        $uuid           = $doc["device"]["uid"];
+//        $walk_ts        = $doc["timestamp"];
 
         $transform  = array("transform" => "thumbnail", "rotate" => $rotate);
         $file_uri   = $ds->getStorageFile(cfg::$gcp_bucketName, $doc["_id"], $photo_name, $transform);
@@ -548,10 +588,6 @@ function getAllDataPicLI($photo_o){
 }
 
 
-
-
-
-
 //SOME PHOTO PAGE FUNCTIONALITY
 // PHOTO PAGE FUNCTIONS (AUDIO TRANSCRIPTION, FACE PIXELATION)
 function getFullUrl($partialUrl){
@@ -627,11 +663,6 @@ function scanForBackUpFiles($backedup, $backup_dir){
     }
 }
 
-
-
-
-
-
 function getConvertedAudio($attach_url){
     //FIRST DOWNLOAD THE AUDIO FILE to TEMP;
 
@@ -658,7 +689,9 @@ function getConvertedAudio($attach_url){
     return $newAudioPath;
 }
 
-//use Google\Cloud\Speech\SpeechClient;
+
+use Google\Cloud\Speech\SpeechClient;
+
 function transcribeAudio($attach_url, $lang=null){
     $gcp_lang = array(
         "en"    => "en-US",
@@ -809,7 +842,6 @@ function detectFaces($id, $old, $photo_name){
 }
 
 function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
-    echo $pixel_count;
     $passed = false;
     if($rotationOffset){ //rotate back
         if($rotationOffset == 1){
@@ -878,11 +910,8 @@ function filterFaces($vertices,$image,$id, $pixel_count, $rotationOffset = 0){
 
     //save image locally
     if($passed){
-        echo 'yes';
         return $image;
-
     }else{
-        echo 'no';
         return false;
     }
 }
@@ -905,115 +934,4 @@ function pixelate($image, $pixelate_x = 12, $pixelate_y = 12){
             }
         }
     }
-}
-
-
-//TEXT TRANSLATION
-use Google\Cloud\Translate\TranslateClient;
-function detectLanguage($text){
-    $translationServiceClient = new TranslateClient([
-        'projectId'     => cfg::$gcp_project_id,
-        'keyFilePath'   => cfg::$FireStorekeyPath
-    ]);
-    $formattedParent    = $translationServiceClient->detectLanguage($text);
-
-    return $formattedParent;
-}
-
-function translateToEnglish($text){
-    $formattedParent    = detectLanguage($text);
-    $languageCode       = array_key_exists("languageCode", $formattedParent) ? $formattedParent["languageCode"] : "null";
-    $confidence         = array_key_exists("confidence", $formattedParent) ? $formattedParent["confidence"] : "null";
-
-    $translationServiceClient = new TranslateClient([
-        'projectId'     => cfg::$gcp_project_id,
-        'keyFilePath'   => cfg::$FireStorekeyPath
-    ]);
-    $translation    = $translationServiceClient->translate($text, [$languageCode, "en"]);
-
-
-    return $translation;
-}
-
-//SPEECH TO TEXT
-use Google\Cloud\Speech\V1p1beta1\SpeechClient;
-use Google\Cloud\Speech\V1p1beta1\RecognitionAudio;
-use Google\Cloud\Speech\V1p1beta1\RecognitionConfig;
-use Google\Cloud\Speech\V1p1beta1\RecognitionConfig\AudioEncoding;
-$fskp = cfg::$FireStorekeyPath;
-putenv("GOOGLE_APPLICATION_CREDENTIALS={$fskp}");
-function transcribeSpeech($uri, $alt_language_codes=array()){
-    $main_languageCode = "en-US";
-
-    // change these variables if necessary
-    $encoding           = AudioEncoding::MP3;
-    $sampleRateHertz    = 16000;
-
-    // set string as audio content
-    $audio = (new RecognitionAudio())
-        ->setUri($uri);
-
-    $max_alternatives = count($alt_language_codes) > 1 ? count($alt_language_codes)  : 1;
-    // set config
-    $config = (new RecognitionConfig())
-        ->setEncoding($encoding)
-        ->setSampleRateHertz($sampleRateHertz)
-        ->setLanguageCode($main_languageCode)
-        ->setAlternativeLanguageCodes($alt_language_codes);
-
-    // create the speech client
-    $client     = new SpeechClient();
-
-    // create the asyncronous recognize operation
-    $operation  = $client->longRunningRecognize($config, $audio);
-    $operation->pollUntilComplete();
-
-    if ($operation->operationSucceeded()) {
-        $response = $operation->getResult();
-
-        // each result is for a consecutive portion of the audio. iterate
-        // through them to get the transcripts for the entire audio file.
-        foreach ($response->getResults() as $result) {
-            $alternatives   = $result->getAlternatives();
-            $mostLikely     = $alternatives[0];
-            $transcript     = $mostLikely->getTranscript();
-            $confidence     = $mostLikely->getConfidence();
-            $txn            = array("transcript" => $transcript, "confidence" => $confidence);
-        }
-
-        $client->close();
-        return $txn;
-    } else {
-        $client->close();
-        return $operation->getError();
-    }
-}
-
-function convertGoogleLanguageCode($ov_lang_code){
-    $ret_lang = null;
-    $gcp_lang = array(
-        "en"    => "en-US",
-        "es"    => "es-MX",
-        "nl"    => "nl-NL",
-        "am"    => "am-ET",
-        "ar"    => "ar-AE",
-        "tw"    => "zh-TW",
-        "ch"    => "zh-CN",
-        "pt"    => "pt-PT",
-        "iw"    => "iw-IL",
-        "fr"    => "fr-FR",
-        "sw"    => "sv-SE",
-        "ru"    => "ru-RU",
-        "th"    => "th-TH"
-    );
-
-    if(array_key_exists($ov_lang_code,$gcp_lang)){
-        $ret_lang = $gcp_lang[$ov_lang_code];
-    }
-
-    return $ret_lang;
-}
-
-function convertGoogleBucketRef($uri){
-    return str_replace("https://storage.googleapis.com", "gs:/" ,$uri);
 }

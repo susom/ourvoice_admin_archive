@@ -22,9 +22,6 @@ class GoogleChromeManagementV1ListTelemetryDevicesResponse extends \Google\Colle
   protected $collection_key = 'devices';
   protected $devicesType = GoogleChromeManagementV1TelemetryDevice::class;
   protected $devicesDataType = 'array';
-  /**
-   * @var string
-   */
   public $nextPageToken;
 
   /**
@@ -41,16 +38,10 @@ class GoogleChromeManagementV1ListTelemetryDevicesResponse extends \Google\Colle
   {
     return $this->devices;
   }
-  /**
-   * @param string
-   */
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
-  /**
-   * @return string
-   */
   public function getNextPageToken()
   {
     return $this->nextPageToken;

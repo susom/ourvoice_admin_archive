@@ -21,9 +21,6 @@ class DocumentOutputConfig extends \Google\Model
 {
   protected $gcsDestinationType = GcsDestination::class;
   protected $gcsDestinationDataType = '';
-  /**
-   * @var string
-   */
   public $mimeType;
 
   /**
@@ -40,16 +37,10 @@ class DocumentOutputConfig extends \Google\Model
   {
     return $this->gcsDestination;
   }
-  /**
-   * @param string
-   */
   public function setMimeType($mimeType)
   {
     $this->mimeType = $mimeType;
   }
-  /**
-   * @return string
-   */
   public function getMimeType()
   {
     return $this->mimeType;

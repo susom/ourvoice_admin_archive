@@ -20,23 +20,14 @@ namespace Google\Service\Datastream;
 class ListStreamObjectsResponse extends \Google\Collection
 {
   protected $collection_key = 'streamObjects';
-  /**
-   * @var string
-   */
   public $nextPageToken;
   protected $streamObjectsType = StreamObject::class;
   protected $streamObjectsDataType = 'array';
 
-  /**
-   * @param string
-   */
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
-  /**
-   * @return string
-   */
   public function getNextPageToken()
   {
     return $this->nextPageToken;

@@ -19,21 +19,12 @@ namespace Google\Service\PaymentsResellerSubscription;
 
 class GoogleCloudPaymentsResellerSubscriptionV1PromotionIntroductoryPricingDetailsIntroductoryPricingSpec extends \Google\Model
 {
-  /**
-   * @var int
-   */
   public $recurrenceCount;
 
-  /**
-   * @param int
-   */
   public function setRecurrenceCount($recurrenceCount)
   {
     $this->recurrenceCount = $recurrenceCount;
   }
-  /**
-   * @return int
-   */
   public function getRecurrenceCount()
   {
     return $this->recurrenceCount;

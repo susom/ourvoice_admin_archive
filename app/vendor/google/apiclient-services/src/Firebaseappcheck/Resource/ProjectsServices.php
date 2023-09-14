@@ -33,7 +33,7 @@ use Google\Service\Firebaseappcheck\GoogleFirebaseAppcheckV1betaService;
 class ProjectsServices extends \Google\Service\Resource
 {
   /**
-   * Atomically updates the specified Service configurations.
+   * Updates the specified Service configurations atomically.
    * (services.batchUpdate)
    *
    * @param string $parent Required. The parent project name shared by all Service

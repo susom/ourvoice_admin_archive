@@ -40,7 +40,7 @@ class MockStatus
     public $code;
     public $details;
     public $metadata;
-    public function __construct($code, $details = null, array $metadata = [])
+    public function __construct($code, $details = null, $metadata = null)
     {
         $this->code = $code;
         $this->details = $details;

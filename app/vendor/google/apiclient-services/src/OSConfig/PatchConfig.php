@@ -23,17 +23,10 @@ class PatchConfig extends \Google\Model
   protected $aptDataType = '';
   protected $gooType = GooSettings::class;
   protected $gooDataType = '';
-  /**
-   * @var bool
-   */
-  public $migInstancesAllowed;
   protected $postStepType = ExecStep::class;
   protected $postStepDataType = '';
   protected $preStepType = ExecStep::class;
   protected $preStepDataType = '';
-  /**
-   * @var string
-   */
   public $rebootConfig;
   protected $windowsUpdateType = WindowsUpdateSettings::class;
   protected $windowsUpdateDataType = '';
@@ -71,20 +64,6 @@ class PatchConfig extends \Google\Model
     return $this->goo;
   }
   /**
-   * @param bool
-   */
-  public function setMigInstancesAllowed($migInstancesAllowed)
-  {
-    $this->migInstancesAllowed = $migInstancesAllowed;
-  }
-  /**
-   * @return bool
-   */
-  public function getMigInstancesAllowed()
-  {
-    return $this->migInstancesAllowed;
-  }
-  /**
    * @param ExecStep
    */
   public function setPostStep(ExecStep $postStep)
@@ -112,16 +91,10 @@ class PatchConfig extends \Google\Model
   {
     return $this->preStep;
   }
-  /**
-   * @param string
-   */
   public function setRebootConfig($rebootConfig)
   {
     $this->rebootConfig = $rebootConfig;
   }
-  /**
-   * @return string
-   */
   public function getRebootConfig()
   {
     return $this->rebootConfig;

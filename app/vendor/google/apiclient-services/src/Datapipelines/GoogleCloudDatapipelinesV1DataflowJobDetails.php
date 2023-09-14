@@ -19,24 +19,15 @@ namespace Google\Service\Datapipelines;
 
 class GoogleCloudDatapipelinesV1DataflowJobDetails extends \Google\Model
 {
-  /**
-   * @var int
-   */
   public $currentWorkers;
   public $resourceInfo;
   protected $sdkVersionType = GoogleCloudDatapipelinesV1SdkVersion::class;
   protected $sdkVersionDataType = '';
 
-  /**
-   * @param int
-   */
   public function setCurrentWorkers($currentWorkers)
   {
     $this->currentWorkers = $currentWorkers;
   }
-  /**
-   * @return int
-   */
   public function getCurrentWorkers()
   {
     return $this->currentWorkers;

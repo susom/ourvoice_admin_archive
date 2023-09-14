@@ -69,6 +69,12 @@ include("inc/check_login.php");
     </div>
 <script>
 	$(document).ready(function(){
+        <?php
+        if(isset($_GET["msg"])){
+            echo "alert('" . filter_var($_GET["msg"], FILTER_SANITIZE_STRING) . "');\n";
+        }
+        ?>
+
 		pdata = <?php echo json_encode($ALL_PROJ_DATA);?>;
 		implementSearch(pdata);
 	});

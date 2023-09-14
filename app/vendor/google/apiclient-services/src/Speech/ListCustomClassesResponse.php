@@ -22,9 +22,6 @@ class ListCustomClassesResponse extends \Google\Collection
   protected $collection_key = 'customClasses';
   protected $customClassesType = CustomClass::class;
   protected $customClassesDataType = 'array';
-  /**
-   * @var string
-   */
   public $nextPageToken;
 
   /**
@@ -41,16 +38,10 @@ class ListCustomClassesResponse extends \Google\Collection
   {
     return $this->customClasses;
   }
-  /**
-   * @param string
-   */
   public function setNextPageToken($nextPageToken)
   {
     $this->nextPageToken = $nextPageToken;
   }
-  /**
-   * @return string
-   */
   public function getNextPageToken()
   {
     return $this->nextPageToken;

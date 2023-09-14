@@ -19,20 +19,20 @@ namespace Google\Service\Firestore;
 
 class TransactionOptions extends \Google\Model
 {
-  protected $readOnlyType = FirestoreReadOnly::class;
+  protected $readOnlyType = ReadOnly::class;
   protected $readOnlyDataType = '';
   protected $readWriteType = ReadWrite::class;
   protected $readWriteDataType = '';
 
   /**
-   * @param FirestoreReadOnly
+   * @param ReadOnly
    */
-  public function setReadOnly(FirestoreReadOnly $readOnly)
+  public function setReadOnly(ReadOnly $readOnly)
   {
     $this->readOnly = $readOnly;
   }
   /**
-   * @return FirestoreReadOnly
+   * @return ReadOnly
    */
   public function getReadOnly()
   {

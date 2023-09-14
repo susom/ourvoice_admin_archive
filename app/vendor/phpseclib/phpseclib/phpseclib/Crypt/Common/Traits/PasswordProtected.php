@@ -40,7 +40,7 @@ trait PasswordProtected
      * @see self::createKey()
      * @see self::load()
      * @access public
-     * @param string|bool $password
+     * @param string|boolean $password
      */
     public function withPassword($password = false)
     {

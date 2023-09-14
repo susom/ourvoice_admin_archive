@@ -22,9 +22,6 @@ class KubernetesResource extends \Google\Collection
   protected $collection_key = 'membershipResources';
   protected $connectResourcesType = ResourceManifest::class;
   protected $connectResourcesDataType = 'array';
-  /**
-   * @var string
-   */
   public $membershipCrManifest;
   protected $membershipResourcesType = ResourceManifest::class;
   protected $membershipResourcesDataType = 'array';
@@ -45,16 +42,10 @@ class KubernetesResource extends \Google\Collection
   {
     return $this->connectResources;
   }
-  /**
-   * @param string
-   */
   public function setMembershipCrManifest($membershipCrManifest)
   {
     $this->membershipCrManifest = $membershipCrManifest;
   }
-  /**
-   * @return string
-   */
   public function getMembershipCrManifest()
   {
     return $this->membershipCrManifest;

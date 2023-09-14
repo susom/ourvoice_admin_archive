@@ -382,14 +382,6 @@ class Drive extends \Google\Service
                   'type' => 'string',
                   'required' => true,
                 ],
-                'allowItemDeletion' => [
-                  'location' => 'query',
-                  'type' => 'boolean',
-                ],
-                'useDomainAdminAccess' => [
-                  'location' => 'query',
-                  'type' => 'boolean',
-                ],
               ],
             ],'get' => [
               'path' => 'drives/{driveId}',

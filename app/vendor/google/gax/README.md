@@ -1,6 +1,8 @@
 # Google API Core for PHP
 
-![Build Status](https://github.com/googleapis/gax-php/actions/workflows/tests.yml/badge.svg))
+[![Build Status](https://api.travis-ci.org/googleapis/gax-php.svg?branch=master)](https://travis-ci.org/googleapis/gax-php)
+
+[![Code Coverage](https://img.shields.io/codecov/c/github/googleapis/gax-php.svg)](https://codecov.io/github/googleapis/gax-php)
 
 -   [Documentation](http://googleapis.github.io/gax-php)
 
@@ -26,7 +28,7 @@ Contributions to this library are always welcome and highly encouraged.
 See the [CONTRIBUTING][] documentation for more information on how to get
 started.
 
-[CONTRIBUTING]: https://github.com/googleapis/gax-php/blob/main/.github/CONTRIBUTING.md
+[CONTRIBUTING]: https://github.com/googleapis/gax-php/blob/master/.github/CONTRIBUTING.md
 
 ## Versioning
 
@@ -88,11 +90,10 @@ be found for Mac or Windows.
 
     ```sh
     > vendor/bin/phpcbf -s --standard=./ruleset.xml
-    > vendor/bin/phpcs -s --standard=./ruleset.xml
     ```
 
 ## License
 
 BSD - See [LICENSE][] for more information.
 
-[LICENSE]: https://github.com/googleapis/gax-php/blob/main/LICENSE
+[LICENSE]: https://github.com/googleapis/gax-php/blob/master/LICENSE

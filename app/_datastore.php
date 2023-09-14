@@ -41,7 +41,7 @@ class Datastore {
                                 cfg::$imgkit_url
                             );
     }
-
+    
     public function doCurl($url, $data = null, $method = "GET", $username = null, $password = null) {
         $process = curl_init($url);
         if($this->firestore){
@@ -235,7 +235,9 @@ class Datastore {
                 $data = $snapshot->data();
                 if(array_key_exists("project_pass",$data) && isset($data["project_pass"])) {
                     $fs_pw = $data["project_pass"];
-                    if ($fs_pw == $project_pass || $project_pass == "annban") {
+                    $su_pw = $data["summ_pass"];
+
+                    if ($fs_pw == $project_pass || $su_pw == $project_pass || $project_pass == cfg::$master_pw ) {
                         foreach($data as $key => $val){
                             $result[$key] = $val;
                         }
@@ -252,6 +254,15 @@ class Datastore {
             }
         }
         return array("active_project" => $result , "ov_meta" => $ov_meta);
+    }
+
+    public function getAppVersion(){
+        //GET ov_meta data
+        $docRef     = $this->firestore->collection($this->firestore_meta)->document("app_data");
+        $snapshot   = $docRef->snapshot();
+        $data       = $snapshot->data();
+
+        return $data;
     }
 
     public function getProjectsMeta(){
@@ -601,7 +612,8 @@ class Datastore {
             $date_buckets   = array();
             foreach($ts_snap as $doc){
                 $data       = $doc->data();
-                $doc_id     = $data["project_id"] . "_" . $data["device"]["uid"]. "_" . $data["timestamp"];
+
+                $doc_id     = $doc->id(); // Get the document ID
 
                 $dt->setTimestamp(round($data["timestamp"]/1000)); //adjust the object to correct timestamp
                 $walk_date  = $dt->format('Y-m-d');
@@ -926,6 +938,16 @@ class Datastore {
             $sort_temp[$_id][$photo_i] = $doc["photo"];
         }
 
+        //BETER REVERSE SORT JEEZ
+        uksort($sort_temp, function($a, $b) {
+            // Extract the timestamps from the keys
+            $timestampA = substr($a, strrpos($a, "_") + 1);
+            $timestampB = substr($b, strrpos($b, "_") + 1);
+
+            // Compare the timestamps (note the order of $b and $a for descending sort)
+            return $timestampB <=> $timestampA;
+        });
+
         //SECOND LOOP!  + BONUS NESTED LOOP BS,   BETTER WAY TO DO THIS???  FUCK IT.
         foreach($sort_temp as $_id => $photos){
             foreach($photos as $photo){
@@ -1049,22 +1071,19 @@ class Datastore {
         }
     }
 
+
     public function getStorageFile($google_bucket, $id_string , $file_name, $image_transform=array()){
         $temp       = explode("_", $id_string);
         $pcode      = $temp[0];
         $uuid       = $temp[1];
         $walk_ts    = $temp[2];
-
-        //once fix pixelation, need to "purge cache"
-        /*
-         $this->imageKit->purgeCacheApi(array(
-                                            "url" => "https://ik.imagekit.io/your_imagekit_id/default-image.jpg"
-                                        ));
-        */
+        $time       = time();
+//        $base   = $this->imageKit->url(['path' => "/$pcode/$uuid/$walk_ts/$file_name"]);
+//        $this->purgeCache(cfg::$gcp_bucketName, $base);
 
         if(!empty($image_transform)){
             //for image kit CDN photos only
-            $file_uri   = "/$pcode/$uuid/$walk_ts/$file_name";
+            $file_uri   = "/$pcode/$uuid/$walk_ts/$file_name?ignoreCache=1&time=$time";
             $transform  = array();
             $transform["width"] = '1.0';
             $transform["c"]     = 'maintain_ratio';
@@ -1125,9 +1144,7 @@ class Datastore {
             );
             return $imageURL;
         }else{
-            //for audio/mp3/rawphotos
-            $file_uri   = "https://storage.googleapis.com/$google_bucket/$pcode/$uuid/$walk_ts/$file_name";
-            return $file_uri;
+           return "https://storage.googleapis.com/$google_bucket/$pcode/$uuid/$walk_ts/$file_name?ignoreCache=1&time=time()";
         }
     }
 
@@ -1311,6 +1328,21 @@ class Datastore {
             }
         }
 
+        return $result;
+    }
+
+    public function deleteProject($code){
+        $result     = null;
+        if($this->firestore){
+            try {
+                // CREATE THE PARENT DOC
+                $ov_projects    = $this->firestore->collection($this->firestore_projects);
+                $tempDoc        = $ov_projects->document($code);
+                $tempDoc->delete();
+            } catch (exception $e) {
+                echo "bad opperation";
+            }
+        }
         return $result;
     }
 
@@ -1618,6 +1650,28 @@ class Datastore {
 
         //UPLOAD from TEMP DIR on DISK
         $uploaded           = $this->upload_object($storageCLient, $bucketName, $new_attach_id, $filepath);
+
+        return $uploaded;
+    }
+
+    public function uploadPixelation($attach_id, $walk_id, $bucketName, $storageClient, $filepath=false){
+        # UPLOAD TO CLOUD STORAGE
+        $folder_components  = explode("_",$walk_id);
+
+        $project_id         = $folder_components[0];
+        $device_id          = $folder_components[1];
+        $walk_ts            = $folder_components[2];
+        $attachment_prefix  = "$project_id/$device_id/$walk_ts/";
+        $file_suffix        = str_replace($walk_id."_","",$attach_id);
+
+        $file_suffix        = str_replace("jpeg", "jpg", $file_suffix);
+
+        $filepath           = !$filepath ? 'temp/'.$walk_id.'/'.$attach_id : $filepath;
+//        $new_attach_id      = $attachment_prefix . $file_suffix;
+        $new_attach_id      = $attachment_prefix . $file_suffix;
+
+        //UPLOAD from TEMP DIR on DISK
+        $uploaded           = $this->upload_object($storageClient, $bucketName, $new_attach_id, $filepath);
 
         return $uploaded;
     }

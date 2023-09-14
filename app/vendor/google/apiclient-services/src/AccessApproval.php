@@ -87,16 +87,6 @@ class AccessApproval extends \Google\Service
                   'required' => true,
                 ],
               ],
-            ],'getServiceAccount' => [
-              'path' => 'v1/{+name}',
-              'httpMethod' => 'GET',
-              'parameters' => [
-                'name' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-              ],
             ],'updateAccessApprovalSettings' => [
               'path' => 'v1/{+name}',
               'httpMethod' => 'PATCH',
@@ -203,16 +193,6 @@ class AccessApproval extends \Google\Service
                   'required' => true,
                 ],
               ],
-            ],'getServiceAccount' => [
-              'path' => 'v1/{+name}',
-              'httpMethod' => 'GET',
-              'parameters' => [
-                'name' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-              ],
             ],'updateAccessApprovalSettings' => [
               'path' => 'v1/{+name}',
               'httpMethod' => 'PATCH',
@@ -310,16 +290,6 @@ class AccessApproval extends \Google\Service
                 ],
               ],
             ],'getAccessApprovalSettings' => [
-              'path' => 'v1/{+name}',
-              'httpMethod' => 'GET',
-              'parameters' => [
-                'name' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-              ],
-            ],'getServiceAccount' => [
               'path' => 'v1/{+name}',
               'httpMethod' => 'GET',
               'parameters' => [

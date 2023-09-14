@@ -34,8 +34,8 @@ $page = "allwalks";
 <script src="js/jquery-3.3.1.min.js"></script>
 <script src="js/jquery-ui.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>"></script>
 <script type="text/javascript" src="js/dt_summary.js?v=<?php echo time();?>"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=<?php echo cfg::$gmaps_key; ?>&callback=emtpy_cb"></script>
 </head>
 <body id="main" class="<?php echo $page ?>">
 <div id="content">
@@ -785,6 +785,7 @@ $page = "allwalks";
         function loadThumbs(pcode, filters){
             var data = { pcode: pcode, filters: filters, action:"load_thumbs" };
             // console.log("hit load thumbs", data);
+
             $.ajax({
                 method: "POST",
                 url: ajax_handler,
@@ -889,7 +890,8 @@ $page = "allwalks";
             if(audios_txn.length> 0){
                 for(var i in audios_txn){
                     if(audios_txn[i]){
-                        var txp = $("<p>").addClass("audios_txns").text(audios_txn[i]["text"]);
+                        var actual  = audios_txn[i].hasOwnProperty("text") ? audios_txn[i]["text"] : audios_txn[i];
+                        var txp     = $("<p>").addClass("audios_txns").text(actual);
                         imgtxt.append(txp);
                     }
                 }
@@ -983,11 +985,14 @@ $page = "allwalks";
             $.each(gmarkers, function(){
                 var el 				= this;
                 var starting_icon 	= el.getIcon();
-                $("#" + this.extras["photo_id"]).hover(function(){
-                    el.setIcon({url: 'img/marker_purple.png'});
-                },function(){
-                    el.setIcon({url:starting_icon});
-                });
+
+                if( $('li[data-phid="' + el.extras["photo_id"] + '"]').length ){
+                    $('li[data-phid="' + el.extras["photo_id"] + '"]').hover(function(){
+                        el.setIcon({url: 'img/marker_purple.png'});
+                    },function(){
+                        el.setIcon({url:starting_icon});
+                    });
+                }
             });
 
             for(var i in gmarkers){
@@ -1000,13 +1005,14 @@ $page = "allwalks";
                         scaledSize: new google.maps.Size(100, 100), // scaled size
                     };
                     this.setIcon(icon);
-                    $("#" + photo_id).addClass("photoOn");
+
+                    $('li[data-phid="' + photo_id + '"]').addClass("photoOn");
                 });
                 google.maps.event.addListener(gmarkers[i], 'mouseout', function(event) {
                     var photo_id = this.extras["photo_id"];
                     var starting_icon = this.starting_icon.hasOwnProperty("url") ? this.starting_icon.url : this.starting_icon;
                     this.setIcon({url:starting_icon});
-                    $("#" + photo_id).removeClass("photoOn");
+                    $('li[data-phid="' + photo_id + '"]').removeClass("photoOn");
                 });
             }
         }

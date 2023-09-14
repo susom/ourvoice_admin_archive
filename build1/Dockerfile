@@ -1,4 +1,4 @@
-FROM php:8.0.6-apache-buster
+FROM php:8.0-apache-buster
 
 # Configure PHP for Cloud Run.
 # Precompile PHP code with opcache.
@@ -24,6 +24,7 @@ RUN set -eux; \
      wget \
      ca-certificates \
      libpng-dev \
+     libjpeg62-turbo-dev \
      libzip-dev \
      zip \
      vim \
@@ -36,6 +37,9 @@ RUN set -eux; \
 # ZipArchive
   && docker-php-ext-configure zip \
   && docker-php-ext-install zip \
+# GD extention 
+  && docker-php-ext-configure gd --with-jpeg \
+  && docker-php-ext-install gd \
 # CLEANUP
   && rm -rf /var/log/dpkg.log /var/log/alternatives.log /var/log/apt \
   && rm libapache2-mod-auth-openidc_2.4.6-1.buster+1_amd64.deb
@@ -43,4 +47,5 @@ RUN set -eux; \
 # Install grpc extension for PHP
 RUN pecl install grpc; \
   docker-php-ext-enable grpc
+
 

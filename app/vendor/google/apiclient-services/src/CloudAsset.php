@@ -39,7 +39,6 @@ class CloudAsset extends \Google\Service
       "https://www.googleapis.com/auth/cloud-platform";
 
   public $assets;
-  public $effectiveIamPolicies;
   public $feeds;
   public $operations;
   public $savedQueries;
@@ -98,31 +97,6 @@ class CloudAsset extends \Google\Service
                   'type' => 'string',
                 ],
                 'relationshipTypes' => [
-                  'location' => 'query',
-                  'type' => 'string',
-                  'repeated' => true,
-                ],
-              ],
-            ],
-          ]
-        ]
-    );
-    $this->effectiveIamPolicies = new CloudAsset\Resource\EffectiveIamPolicies(
-        $this,
-        $this->serviceName,
-        'effectiveIamPolicies',
-        [
-          'methods' => [
-            'batchGet' => [
-              'path' => 'v1/{+scope}/effectiveIamPolicies:batchGet',
-              'httpMethod' => 'GET',
-              'parameters' => [
-                'scope' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-                'names' => [
                   'location' => 'query',
                   'type' => 'string',
                   'repeated' => true,

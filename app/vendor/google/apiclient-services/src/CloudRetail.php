@@ -48,7 +48,6 @@ class CloudRetail extends \Google\Service
   public $projects_locations_catalogs_placements;
   public $projects_locations_catalogs_userEvents;
   public $projects_locations_operations;
-  public $projects_operations;
 
   /**
    * Constructs the internal representation of the CloudRetail service.
@@ -199,16 +198,6 @@ class CloudRetail extends \Google\Service
                   'required' => true,
                 ],
               ],
-            ],'addLocalInventories' => [
-              'path' => 'v2/{+product}:addLocalInventories',
-              'httpMethod' => 'POST',
-              'parameters' => [
-                'product' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-              ],
             ],'create' => [
               'path' => 'v2/{+parent}/products',
               'httpMethod' => 'POST',
@@ -299,16 +288,6 @@ class CloudRetail extends \Google\Service
               ],
             ],'removeFulfillmentPlaces' => [
               'path' => 'v2/{+product}:removeFulfillmentPlaces',
-              'httpMethod' => 'POST',
-              'parameters' => [
-                'product' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-              ],
-            ],'removeLocalInventories' => [
-              'path' => 'v2/{+product}:removeLocalInventories',
               'httpMethod' => 'POST',
               'parameters' => [
                 'product' => [
@@ -496,48 +475,6 @@ class CloudRetail extends \Google\Service
         ]
     );
     $this->projects_locations_operations = new CloudRetail\Resource\ProjectsLocationsOperations(
-        $this,
-        $this->serviceName,
-        'operations',
-        [
-          'methods' => [
-            'get' => [
-              'path' => 'v2/{+name}',
-              'httpMethod' => 'GET',
-              'parameters' => [
-                'name' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-              ],
-            ],'list' => [
-              'path' => 'v2/{+name}/operations',
-              'httpMethod' => 'GET',
-              'parameters' => [
-                'name' => [
-                  'location' => 'path',
-                  'type' => 'string',
-                  'required' => true,
-                ],
-                'filter' => [
-                  'location' => 'query',
-                  'type' => 'string',
-                ],
-                'pageSize' => [
-                  'location' => 'query',
-                  'type' => 'integer',
-                ],
-                'pageToken' => [
-                  'location' => 'query',
-                  'type' => 'string',
-                ],
-              ],
-            ],
-          ]
-        ]
-    );
-    $this->projects_operations = new CloudRetail\Resource\ProjectsOperations(
         $this,
         $this->serviceName,
         'operations',
