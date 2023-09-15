@@ -39,8 +39,21 @@ $page = "photo_detail";
 				$_SESSION["DT"]["project_list"][$proj_idx]["tags"] = array();
 			}
 
-            $walk_bounding_geos = json_encode($doc["bounding_geos"]);
-
+            //need for forward compatability?
+            $bounding_geos = [];
+            $count = 1;
+            foreach ($doc["bounding_geos"] as $item) {
+                if(isset($item["lat"])){
+                    $bounding_geos[$count] = [
+                        "geotag" => [
+                            "latitude" => $item["lat"],
+                            "longitude" => $item["lng"]
+                        ]
+                    ];
+                    $count++;
+                }
+            }
+            $walk_bounding_geos = json_encode($bounding_geos);
 
             $photo 		= $doc["photo"];
 			$device 	= $doc["device"]["platform"] ?? null;

@@ -2,9 +2,7 @@ function drawGMap(o_geotags, walkid, zoom_level = 16, o_walk_geos) {
     const map_id = "google_map_" + walkid;
     const walkMap = [];
 
-
     var geotags = o_geotags;
-
 
     // Check if o_geotags is an object or array and iterate accordingly
     if (Array.isArray(o_geotags)) {
@@ -40,6 +38,7 @@ function drawGMap(o_geotags, walkid, zoom_level = 16, o_walk_geos) {
         scrollwheel: false,
         mapTypeId: google.maps.MapTypeId.ROADMAP,
     };
+
 
 
     // Create the map
@@ -116,27 +115,38 @@ function drawGMap(o_geotags, walkid, zoom_level = 16, o_walk_geos) {
     }
 
     var LatLngBounds = new google.maps.LatLngBounds();
-    if(o_walk_geos){
-        for(var i in o_walk_geos) {
-            if(o_walk_geos[i]){
+    var hasAdditionalGeos = false;  // New variable to track if there are additional geos
+
+    if (o_walk_geos && Object.keys(o_walk_geos).length) {
+        hasAdditionalGeos = true;
+        for (var i in o_walk_geos) {
+            if (o_walk_geos[i]) {
                 var geotag = o_walk_geos[i];
-                if(geotag.hasOwnProperty("geotag")){
+                if (geotag.hasOwnProperty("geotag")) {
                     geotag = geotag.geotag;
                 }
-
-                console.log("what the fuck now", geotag);
-
                 var lat = geotag.hasOwnProperty("lat") ? geotag["lat"] : geotag["latitude"];
                 var lng = geotag.hasOwnProperty("lng") ? geotag["lng"] : geotag["longitude"];
-                var ltlnpt = new google.maps.LatLng(lat,lng);
+                var ltlnpt = new google.maps.LatLng(lat, lng);
                 LatLngBounds.extend(ltlnpt);
             }
         }
-    }else{
-        for(var i in geotags) {
-            LatLngBounds.extend(walkMap[i-1]);
+    } else {
+        for (var i in geotags) {
+            var new_i = geotags.length == 1 ? 0 : i-1;
+            LatLngBounds.extend(walkMap[new_i]);
         }
     }
+
+    if (hasAdditionalGeos) {
+        // Fit the map to these bounds if there are additional geos
+        window[map_id].fitBounds(LatLngBounds);
+    } else {
+        // Set the center and zoom manually if no additional geos
+        window[map_id].setCenter(walkMap[0]);
+        window[map_id].setZoom(zoom_level);
+    }
+
 
     window[map_id].fitBounds(LatLngBounds);
 
