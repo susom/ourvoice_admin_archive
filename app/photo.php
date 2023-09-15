@@ -40,13 +40,17 @@ $page = "photo_detail";
 			}
 
             //need for forward compatability?
-            $bounding_geos = [];
-            $count = 1;
+            $bounding_geos  = [];
+            $count          = 1;
             foreach ($doc["bounding_geos"] as $item) {
+                if(array_key_exists("geotag",$item)){
+                    $item = $item["geotag"];
+                }
+
                 if(isset($item["lat"])){
                     $bounding_geos[$count] = [
                         "geotag" => [
-                            "latitude" => $item["lat"],
+                            "latitude"  => $item["lat"],
                             "longitude" => $item["lng"]
                         ]
                     ];
@@ -202,7 +206,6 @@ $page = "photo_detail";
 				$geotags   = array();
 				$geotags[] = array("lat" => $lat, "lng" => $long);
 				$json_geo  = json_encode($geotags);
-
 				$gmaps[]   = "drawGMap($json_geo, 0, 16, $walk_bounding_geos);\n";
 
 			echo 		"</div>";
