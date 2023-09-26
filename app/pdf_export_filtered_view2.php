@@ -148,7 +148,6 @@ function makePhotoPage($pcode, $active_pid, $photo, $highlight_tag){
 	$ph_id 		= $old ? $_id : $_id . "_" . $photo_name;
 	$photo_uri 	= "passthru.php?_id=".$ph_id."&_file=$photo_name" . $old;
 
-	//TODO this fucking thing.  Wont show passtrhu so have to call couch directly for now.  
 	if($old == "&_old=2"){
 		// https://uname:pw@ourvoice-cdb.med.stanford.edu/disc_attachments/AFUM_c9adec2879e0d0b5_5_1511886084386/photo_0.jpg
 		$img_url = "https://".cfg::$couch_user.":".cfg::$couch_pw."@ourvoice-cdb.med.stanford.edu/disc_attachments/$_id/$photo_name";

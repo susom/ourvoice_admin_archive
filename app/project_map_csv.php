@@ -51,7 +51,6 @@ if( $active_project_id ){
 				break;
 		}
 
-		//make adjustment for pwa shit.
 		$long 	= !empty($tag['lng']) ? $tag['lng'] : (!empty($tag['longitude']) ? $tag['longitude'] : null);
 		$lat 	= !empty($tag['lat']) ? $tag['lat'] : (!empty($tag['latitude']) ? $tag['latitude'] : null);
 

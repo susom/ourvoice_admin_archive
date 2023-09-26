@@ -582,7 +582,6 @@ if(!empty($_POST["action"])){
         break;
 
         case "archive":
-            // due to unfreshness of SESSION multiple people saving and shit, we need to pull fresh version before pushing back up
             $url 		= cfg::$couch_url . "/" . cfg::$couch_proj_db . "/" . cfg::$couch_config_db;
             $response 	= $ds->doCurl($url);
             $payload 	= $_SESSION["DT"] = json_decode($response,1);

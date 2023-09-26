@@ -46,8 +46,6 @@ class Header extends React.Component{
     var ph = this.state.data.set;
     this.rec_counter = 0;
 
-      console.log("shithead",unique_names);
-
     for(var i = 0 ; i < ph.length ; i++){
       if(unique_names[ph[i].abv] != null){
         rows.push(<Entry abv = {ph[i].abv} full = {ph[i].full} rec = {ph[i].rec_time} non_rec = {ph[i].non_rec_times}/>);

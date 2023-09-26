@@ -792,8 +792,6 @@ $page = "allwalks";
                 data: data,
                 dataType : "json",
                 success: function(response){
-                    // console.log(data,response);
-                    // why the fuck was this container id with "tags"?
                     $("#tags").empty();
                     $("#tags").html(response.code_block);
 

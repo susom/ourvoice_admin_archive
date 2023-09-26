@@ -690,7 +690,6 @@ class Datastore {
             $midnight_plus  = $midnight + 86400000;
             $ov_walks       = $this->firestore->collection($this->walks_collection);
 
-            //TODO NEED AWAY TO QUERY BOTH INTERGER AND STRING FUCKING TIMESTAMPS
             $query          = $ov_walks->where('project_id', '=', $project_code)
                 ->where('timestamp', '>=', $midnight)
                 ->where('timestamp', '<', $midnight_plus);
@@ -719,8 +718,6 @@ class Datastore {
 //                array_push($result, $walk_data);
             }
 
-            //TODO THIS IS FUCKED UP, BOTH BLOCKS EXACTLY THE SAME EXCEPT FOR THE STRVAL()
-            //FUCK THIS SHIT FUCK THIS SHIT FUCK IT! SOEM TIMESTAMPS ARE INT SOME ARE STRINGS WHAT THEFUCK MAN
             $midnight       = strval($midnight);
             $midnight_plus  = strval($midnight_plus);
             $query          = $ov_walks->where('project_id', '=', $project_code)
@@ -853,7 +850,6 @@ class Datastore {
         $photo_geos     = array();
         $code_block     = array();
 
-        //WHAT THE FUCK IS THIS SHIT, NEED TO LOOP THROUGH 3 times? 
         $sort_temp      = array();
         if(!empty($response)){
             $_id    = $walk_id;
@@ -924,7 +920,6 @@ class Datastore {
         $photo_geos     = array();
         $code_block     = array();
 
-        //WHAT THE FUCK IS THIS SHIT, NEED TO LOOP THROUGH 3 times?
         $sort_temp      = array();
         foreach($response as $doc){
             $_id        = $doc["id"];
@@ -948,7 +943,6 @@ class Datastore {
             return $timestampB <=> $timestampA;
         });
 
-        //SECOND LOOP!  + BONUS NESTED LOOP BS,   BETTER WAY TO DO THIS???  FUCK IT.
         foreach($sort_temp as $_id => $photos){
             foreach($photos as $photo){
                 // GATHER EVERY GEO TAG FOR EVERY PHOTO IN THIS WALK, AT LEAST THIS HAS NO ORDER HALLELUJAH
@@ -1177,8 +1171,6 @@ class Datastore {
             $nowtime        = time()*1000;
             $nowtime_minus  = $nowtime - ($days*86400000);
 
-
-            //TODO HERE TOO? FUCK THIS SHIT
             $ov_walks       = $this->firestore->collection($this->walks_collection);
             $query          = $ov_walks
                 ->where('timestamp', '>', $nowtime_minus)
@@ -1205,7 +1197,6 @@ class Datastore {
                 }
             }
 
-            //TODO THIS IS SOME FUCKING BULLSHIT, BUT I DONT HAVE ONE FUCKING DAY OF TIME WITHOUT BEING PESTERED WITH URGENT DEMANDS TO ADDRESS IT SO FUCK IT !
             $nowtime        = strval($nowtime);
             $nowtime_minus  = strval($nowtime_minus);
             $query          = $ov_walks
